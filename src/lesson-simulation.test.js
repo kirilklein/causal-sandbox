@@ -503,34 +503,3 @@ test("IPW calculation divides by arm weight totals and labels absent groups", ()
   assert.equal(ipwCalculation([], [])[0].mean, null);
   assert.equal(ipwCalculation([], [])[1].mean, null);
 });
-
-test("outcome teaching arithmetic uses the current fit and the entire sample", () => {
-  for (const seed of [4217, 4218, 100]) {
-    for (const effect of [-2, 0, 2]) {
-      const state = { ...lessonBaseline(4), seed, effect };
-      const data = simulateLesson(state);
-      const fitted = estimate(data, ["C"], state);
-      const result = lessonResult(state);
-      const { person, count, sum } = result.outcomeCalculation;
-      assert.deepEqual(person, {
-        C: data[0].C,
-        ...fitted.outcomePredictions[0],
-      });
-      assert.equal(count, data.length);
-      assert.equal(sum / count, result.regression);
-      assert.equal(
-        sum,
-        fitted.outcomePredictions.reduce((s, { m0, m1 }) => s + (m1 - m0), 0),
-      );
-      assert.notEqual(person.m1 - person.m0, effect);
-      assert.notEqual(person.m0, data[0].Y);
-      assert.notEqual(person.m1, data[0].Y);
-    }
-  }
-  const baseline = lessonBaseline(4);
-  assert.notDeepEqual(
-    lessonResult(baseline).outcomeCalculation,
-    lessonResult({ ...baseline, seed: baseline.seed + 1 }).outcomeCalculation,
-  );
-  assert.equal(lessonResult(lessonBaseline(5)).outcomeCalculation, undefined);
-});

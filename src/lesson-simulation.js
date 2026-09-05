@@ -113,18 +113,6 @@ export function lessonResult(state, noise) {
     regression: result.values[2],
     aipw: result.values[4],
     clipped: result.clipped,
-    ...(state.level === 4
-      ? {
-          outcomeCalculation: {
-            person: { C: data[0].C, ...result.outcomePredictions[0] },
-            count: data.length,
-            sum: result.outcomePredictions.reduce(
-              (sum, { m0, m1 }) => sum + (m1 - m0),
-              0,
-            ),
-          },
-        }
-      : {}),
     ...(state.level === 3
       ? { calculation: ipwCalculation(data, result.weights) }
       : {}),

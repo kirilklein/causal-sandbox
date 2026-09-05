@@ -32,6 +32,12 @@ robustness to the earlier missing-information limitation.
 
 ## Review boundaries
 
+Match explanation length to conceptual difficulty. Keep intuitive operations
+brief; examples should resolve a likely misunderstanding, not make every method
+equally elaborate. Collider adjustment and TMLE targeting warrant more explanation
+than predicting outcomes and averaging differences. Remove repetition from optional
+details as well as the initial screen.
+
 [Color conventions](color-conventions.md) defines the agreed variable palette,
 adjustment captions, and method/truth styling (#20), applied to the existing
 lessons and sandbox. Equation highlights and the new lesson estimate plot remain
@@ -337,20 +343,12 @@ migrate the other formulas tracked by #19 or add AIPW/TMLE explanations.
 
 ### Outcome predictions at first introduction
 
-Lesson 4 shows the first person in the current sample with baseline health held
-fixed, their fitted outcomes with and without treatment, and the difference.
-These are model predictions, not two observed outcomes. The values come directly
-from the estimator's `outcomePredictions` output, using the same fit and full
-precision as the reported effect.
+Lesson 4 states the operation once: fit an outcome model, predict each person
+under both treatments at the same baseline health, and average the differences.
+One optional explanation contains the averaging formula, symbol definitions,
+the distinction between predictions and observations, and why both methods work
+in this world. There are no prediction cards, worked arithmetic, or separate
+model-details disclosure. The estimator and its outputs are unchanged.
 
-“How do predictions become an effect?” opens the averaging expression and the
-actual sum of all 2,400 predicted differences divided by the sample size. Native
-MathML and a plain-language reading explain the expression. The detail notes that
-this additive model predicts the same contrast for everyone; averaging remains
-the general operation. Redraw refreshes the example and totals; restart restores
-the sample and closes the detail. Opening explanations leaves the experiment intact.
-
-Arithmetic checks cover a known outcome surface with negative, zero, and positive
-effects, and reconstruct the lesson estimate across seeds. Browser checks cover
-displayed arithmetic, disclosure state, redraw/reset, keyboard/touch, and phone
-layouts. A new-learner walkthrough and screen-reader listening remain pending.
+Browser checks cover explanation state, redraw/reset, keyboard/touch, and phone
+layouts. New-learner comprehension and screen-reader listening remain untested.

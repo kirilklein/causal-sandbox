@@ -1,6 +1,5 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
-import { lessonBaseline, lessonResult } from "../src/lesson-simulation.js";
 const browser = await chromium.launch({
   headless: true,
   channel: process.env.CI ? undefined : "chrome",
@@ -285,53 +284,17 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#regression-explanation").isVisible(), true);
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
-  const outcomeExample = () => page.locator("#outcome-example").innerText();
-  const initialOutcomeExample = await outcomeExample();
+  assert.equal(await page.locator(".learning details").count(), 1);
+  assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   const outcomeSeed = await page.locator("#sample-label").innerText();
-  const checkOutcomeArithmetic = async (seed) => {
-    const expected = lessonResult({
-      ...lessonBaseline(4),
-      seed,
-    }).outcomeCalculation;
-    assert.equal(
-      await page.locator("#outcome-prediction-1").innerText(),
-      expected.person.m1.toFixed(3),
-    );
-    assert.equal(
-      await page.locator("#outcome-prediction-0").innerText(),
-      expected.person.m0.toFixed(3),
-    );
-    assert.ok(
-      (await page.locator("#outcome-worked-difference").innerText()).includes(
-        (expected.person.m1 - expected.person.m0).toFixed(3),
-      ),
-    );
-    assert.equal(
-      await page.locator("#outcome-difference-sum").innerText(),
-      expected.sum.toFixed(3),
-    );
-    assert.deepEqual(
-      await page.locator("#outcome-worked-effect mn").allTextContents(),
-      [
-        expected.sum.toFixed(3),
-        String(expected.count),
-        await page.locator("#regression").innerText(),
-      ],
-    );
-  };
-  assert.equal(await page.locator("#outcome-arithmetic").isVisible(), false);
-  assert.match(initialOutcomeExample, /not two observed outcomes/);
-  await page.locator("#outcome-averaging summary").focus();
+  await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
-  await checkOutcomeArithmetic(4217);
   assert.equal(await result(), fourth);
   assert.equal(await page.locator("#sample-label").innerText(), outcomeSeed);
-  assert.equal(await outcomeExample(), initialOutcomeExample);
-  assert.equal(
-    await page
-      .locator("#outcome-averaging summary")
-      .evaluate((el) => el === document.activeElement),
-    true,
+  assert.equal(await page.locator("#outcome-formula").isVisible(), true);
+  assert.match(
+    await page.locator(".lesson-explanation").innerText(),
+    /predictions, not two observed outcomes/,
   );
   for (const width of [320, 1280]) {
     await page.setViewportSize({ width, height: 900 });
@@ -340,34 +303,22 @@ try {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     );
-    const mathFits = await page
-      .locator(".outcome-calculation math")
-      .evaluateAll((els) =>
-        els.every((el) => el.getBoundingClientRect().right <= innerWidth),
-      );
-    assert.ok(mathFits);
-    await page
-      .locator(".outcome-calculation")
-      .screenshot({ path: `/tmp/causal-outcome-calculation-${width}.png` });
+    const formula = await page.locator("#outcome-formula").boundingBox();
+    assert.ok(formula.x >= 0 && formula.x + formula.width <= width);
+    await page.screenshot({
+      path: `/tmp/causal-outcome-concise-${width}.png`,
+      fullPage: true,
+    });
   }
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.locator("#outcome-averaging summary").tap();
-  assert.equal(await page.locator("#outcome-arithmetic").isVisible(), false);
-  await page.locator("#outcome-averaging summary").tap();
-  await page.locator(".lesson-details summary").tap();
-  assert.equal(await result(), fourth);
-  await page.locator(".lesson-explanation summary").focus();
-  await page.keyboard.press("Enter");
+  await page.locator(".lesson-explanation summary").tap();
+  assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   assert.equal(await result(), fourth);
   await page.locator("#redraw").tap();
   assert.notEqual(await result(), fourth);
-  assert.notEqual(await outcomeExample(), initialOutcomeExample);
-  assert.equal(await page.locator("#outcome-arithmetic").isVisible(), true);
-  await checkOutcomeArithmetic(4218);
   await page.locator("#restart").tap();
   assert.equal(await result(), fourth);
-  assert.equal(await outcomeExample(), initialOutcomeExample);
-  assert.equal(await page.locator("#outcome-arithmetic").isVisible(), false);
+  assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.ok(
     await page.evaluate(
