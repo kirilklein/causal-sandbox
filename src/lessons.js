@@ -45,7 +45,7 @@ const lessons = [
     transition:
       "We return to the same confounded world, now accounting for baseline health in both models. The true total effect is still 2.",
     instruction:
-      "Reveal an outcome model and compare its estimate with IPW and truth. Redraw to see how both vary.",
+      "Compare outcome regression and IPW with the unadjusted difference and truth. Redraw to see how the estimates vary.",
     explanation:
       "We fit an outcome model using treatment and baseline health. For every person, we predict an outcome with treatment and an outcome without treatment, keeping their baseline health fixed. Averaging those differences gives the standardized outcome-regression estimate. Both models correctly describe this simple world, so both methods can estimate the effect, although neither must equal the truth in a sample.",
     next: "Both approaches rely on a model. What happens when a model is too simple?",
@@ -125,7 +125,7 @@ function controls(level) {
   if (level === 3)
     return '<button id="reveal-ipw">Try weighting the groups</button><div id="weighting" hidden><p>We estimate each person’s treatment probability from baseline health. Weighting uses these probabilities to make a more comparable pair of groups.</p><label class="lesson-switch"><input id="adjustment" type="checkbox"> Account for baseline health</label></div>';
   if (level === 4)
-    return '<button id="reveal-regression">Predict outcomes under both treatments</button><p id="regression-explanation" hidden>For each person, predict an outcome with treatment and one without it, keeping baseline health fixed. Average the differences to estimate the effect.</p>';
+    return '<p id="regression-explanation">For each person, predict an outcome with treatment and one without it, keeping baseline health fixed. Average the differences to estimate the effect.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
       ["simple", "Simple relationships"],
@@ -162,11 +162,10 @@ function enter(level, focus = true) {
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 3 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
-        ${level === 4 ? '<details class="familiar-result"><summary>Recall the unadjusted difference</summary><p>Without accounting for baseline health: <strong id="unadjusted"></strong></p></details>' : ""}
         ${(level >= 4 && level <= 6) || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
         ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
@@ -206,15 +205,6 @@ function enter(level, focus = true) {
     e.target.hidden = true;
     update();
   });
-  document
-    .querySelector("#reveal-regression")
-    ?.addEventListener("click", (e) => {
-      revealed = true;
-      e.target.hidden = true;
-      document.querySelector("#regression-explanation").hidden = false;
-      update();
-      document.querySelector("#redraw").focus();
-    });
   document
     .querySelector("#model-experiment")
     ?.addEventListener("change", (e) => {
@@ -294,8 +284,7 @@ function update() {
   if (state.level >= 4) {
     document.querySelector("#regression").textContent =
       result.regression.toFixed(2);
-    document.querySelector("#regression-result").hidden =
-      state.level === 4 && !revealed;
+    document.querySelector("#regression-result").hidden = false;
   }
   if ((state.level >= 4 && state.level <= 6) || state.level === 10) {
     document.querySelector("#model-weight-note").textContent = result.clipped

@@ -66,8 +66,9 @@ keyboard and touch, mobile width, and explanation invariance.
 ## Model-reasoning contract
 
 Level 4 reuses the level-3 confounded world with both models correctly specified.
-It reveals standardized outcome regression and collapses the familiar unadjusted
-comparison. Level 5 starts with simple relationships and reduces selection to 0.8.
+It shows standardized outcome regression, IPW, and the familiar unadjusted
+comparison beside truth immediately, with a short explanation of the predictions.
+Level 5 starts with simple relationships and reduces selection to 0.8.
 Its radio choices change the world, keeping both analyst models simple. A compact
 plot compares the true relationship with predictions from the fitted model for
 the selected experiment: untreated outcome or treatment probability. Solid and
