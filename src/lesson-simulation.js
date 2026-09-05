@@ -113,6 +113,9 @@ export function lessonResult(state, noise) {
     regression: result.values[2],
     aipw: result.values[4],
     clipped: result.clipped,
+    ...(state.level === 3
+      ? { calculation: ipwCalculation(data, result.weights) }
+      : {}),
     ...(state.level === 10
       ? {
           overlap: overlapDiagnostics(
@@ -150,6 +153,25 @@ export function overlapDiagnostics(data, propensities, weights) {
       topShare: sum
         ? armWeights.slice(0, topCount).reduce((s, w) => s + w, 0) / sum
         : null,
+    };
+  });
+}
+
+// Reuse the estimator's exact weights, including clipping, for teaching arithmetic.
+export function ipwCalculation(data, weights) {
+  return [0, 1].map((arm) => {
+    let weightedSum = 0,
+      totalWeight = 0;
+    data.forEach((person, i) => {
+      if (person.A !== arm) return;
+      const weight = weights[i];
+      weightedSum += weight * person.Y;
+      totalWeight += weight;
+    });
+    return {
+      weightedSum,
+      totalWeight,
+      mean: totalWeight > 0 ? weightedSum / totalWeight : null,
     };
   });
 }

@@ -149,13 +149,22 @@ try {
     .evaluate((el) => el.outerHTML);
   const unadjusted = await page.locator("#unadjusted").innerText();
   await page.getByRole("button", { name: "Try IPW", exact: true }).focus();
+  const ipwScroll = await page.evaluate(() => scrollY);
+  const ipwButtonTop = (await page.locator("#reveal-ipw").boundingBox()).y;
   await page.keyboard.press("Enter");
+  assert.equal(await page.evaluate(() => scrollY), ipwScroll);
+  assert.equal(
+    (await page.locator("#reveal-ipw").boundingBox()).y,
+    ipwButtonTop,
+  );
+  assert.equal(await page.locator("#weighting").getAttribute("open"), null);
+  assert.equal(await page.locator("#weight-examples").isVisible(), false);
   assert.equal(await page.locator("#adjustment").count(), 0);
-  assert.equal(await page.locator("#reveal-ipw").isVisible(), false);
+  assert.equal(await page.locator("#reveal-ipw").isVisible(), true);
   assert.equal(await page.locator("#balance").isVisible(), true);
   assert.equal(
     await page
-      .locator("#ipw-result")
+      .locator("#reveal-ipw")
       .evaluate((el) => el === document.activeElement),
     true,
   );
@@ -174,8 +183,52 @@ try {
     );
   assert.ok((await balanceGap("after")) < (await balanceGap("before")));
   const weighted = await result();
+  await page.keyboard.press("Enter");
+  assert.equal(await result(), weighted);
+  const resultTop = await page
+    .locator(".lesson-results")
+    .evaluate((el) => el.getBoundingClientRect().top + scrollY);
+  await page.locator("#weighting > summary").click();
+  assert.equal(
+    await page
+      .locator(".lesson-results")
+      .evaluate((el) => el.getBoundingClientRect().top + scrollY),
+    resultTop,
+  );
+  assert.equal(await result(), weighted);
+  const examples = await page.locator("#weight-examples").innerText();
+  assert.match(examples, /Illustrative probabilities/);
+  assert.deepEqual(
+    await page.locator(".ipw-weight-table tbody tr").allTextContents(),
+    ["0.1101.11", "0.522", "0.91.1110"],
+  );
+  await page.locator("#ipw-calculation summary").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await result(), weighted);
+  assert.ok(
+    (await page.locator("#ipw-worked-effect").innerText()).endsWith(
+      await page.locator("#ipw").innerText(),
+    ),
+  );
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    assert.ok((await page.locator("#weighting math mfrac").count()) >= 5);
+    await page.screenshot({
+      path: `/tmp/ipw-calculation-${width}.png`,
+      fullPage: true,
+    });
+  }
+  await page.locator("#ipw-calculation summary").tap();
+  assert.equal(await result(), weighted);
+
   await page.locator("#redraw").click();
   assert.notEqual(await result(), weighted);
+  assert.equal(await page.locator("#weight-examples").innerText(), examples);
   assert.equal(await page.locator("#ipw-result").isVisible(), true);
   assert.equal(await page.locator("#balance").isVisible(), true);
   await page.locator("#restart").click();
@@ -193,7 +246,11 @@ try {
   assert.equal(await result(), third);
   assert.equal(await page.locator("#balance").isVisible(), false);
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("#reveal-ipw").scrollIntoViewIfNeeded();
+  const mobileIpwScroll = await page.evaluate(() => scrollY);
   await page.locator("#reveal-ipw").tap();
+  assert.equal(await page.evaluate(() => scrollY), mobileIpwScroll);
+  assert.equal(await page.locator("#weight-examples").isVisible(), false);
   assert.equal(await page.locator("#ipw-result").isVisible(), true);
   assert.equal(await result(), weighted);
   assert.ok(

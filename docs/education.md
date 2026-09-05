@@ -319,3 +319,18 @@ help invariance, keyboard and touch controls, and desktop/mobile layout.
 New-learner comprehension testing remains pending.
 
 Reference: [Austin (2021), weighting and effective sample size](https://pmc.ncbi.nlm.nih.gov/articles/PMC9293235/).
+
+### IPW calculation at first introduction
+
+Before Try IPW in lesson 3, a two-sentence health example explains which people
+receive more weight and why. Applying IPW keeps focus on the button and reveals
+results and balance without inserting explanatory text above them. Below that
+comparison, “Why these weights?” opens a table of illustrative treatment probabilities
+(0.1, 0.5, 0.9), connecting that intuition to treated weights 1/p and untreated
+weights 1/(1 − p). These examples are explicitly separate from the current sample.
+A nested optional calculation shows the within-group weighted-average formula, actual full-sample
+weighted outcome sums and weight totals, and their difference. Displayed numbers
+are rounded; estimates use full precision. Redraw refreshes sample totals; illustrative weights remain fixed.
+Native MathML supplies fractions and sums with equivalent text descriptions; no
+external rendering assets are needed. This focused #46 implementation does not
+migrate the other formulas tracked by #19 or add AIPW/TMLE explanations.
