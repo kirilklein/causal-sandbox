@@ -10,30 +10,31 @@ Keep Treatment (A), Outcome (Y), Baseline health (C), and the existing role labe
 in graphs. Do not add a second set of example labels, including small grey text or
 parenthetical subtitles. Extra labels compete with the experiment for attention.
 
-Put a short example in the relevant lesson explanation, where learners can open
-it without changing the experiment. Start with mediator and collider examples;
-add others only when a learner walkthrough reveals a specific difficulty.
+Use at most a few words or a short inline phrase in the relevant explanation.
+Do not add a separate example paragraph, heading, or story before the explanation.
+Leave the mediator explanation as it is; use “such as later care use” as the
+collider cue. Add others only when a learner walkthrough reveals a specific difficulty.
 The existing smoking example in hidden confounding can remain local to that lesson.
 
 | Lesson                                              | Use of examples                                                                                                                                                               |
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Randomization and confounding                       | Keep the current general labels and explanation; no additional story by default.                                                                                              |
 | IPW and outcome regression                          | Worked patient rows can explain weights and predictions using the existing variable names. They do not require a named medication or disease.                                 |
-| Mediator                                            | Use a brief illustration of an intermediate change that carries part of the treatment effect to the outcome. State that it occurs after A and before Y.                       |
-| Collider                                            | Use a brief illustration of later care use influenced by treatment and the already-measured outcome. State that it occurs after Y and cannot change that earlier outcome.     |
+| Mediator                                            | Keep the existing explanation without an added example.                                                                                                                       |
+| Collider                                            | Use only the inline cue “such as later care use.” The lesson already states that K follows Y.                                                                                 |
 | Hidden confounding and revisit                      | Retain the existing unmeasured smoking example and its fictional assumptions. Do not impose it on other lessons.                                                              |
 | Model specification, double robustness, and overlap | Reuse the established variables; add no new story just to accompany a new method or limitation.                                                                               |
 | Full sandbox                                        | Preserve its explicit separate world with two observed covariates and a continuous hidden cause. Do not silently substitute the lesson's single C or binary smoking variable. |
 
 ## Scientific checks for the copy pass
 
-The mediator example must fit A → M → Y alongside A → Y and the measured common
+Any future mediator cue must fit A → M → Y alongside A → Y and the measured common
 cause C. The implemented toy world has M = A + error and
 Y = 2A + 1.5C + M + error: total effect 3, direct contribution 2. A clinical
 illustration must not turn these invented values into treatment evidence or imply
 that adjusting for a mediator generally identifies a direct effect.
 
-The collider example must fit A → K ← Y, with K measured after Y. The implemented
+The collider cue must fit A → K ← Y, with K measured after Y. The implemented
 K = A + Y + error is a continuous score. “Later care use” can illustrate this
 mechanism; it does not make K a literal visit count. Avoid “hospitalization” alone:
 it could suggest a binary event, selection into the study, or care that changes
@@ -56,8 +57,7 @@ is never the only way to distinguish a role. The palette remains to be chosen.
 across weighting, outcome prediction, and AIPW without a curriculum-wide story.
 Keep actual simulated values distinct from explicitly illustrative arithmetic.
 
-The mediator and collider lessons include short fictional examples at the start
-of “Explain what is happening.” They illustrate practice time carrying a training
-program's effect and later care use as a shared consequence of treatment and an
-earlier outcome. Graph labels and simulations retain their general form. Check
-learner comprehension before adding more examples.
+The mediator explanation has no added example. The collider explanation includes
+only “such as later care use,” with timing already stated in the lesson.
+Graph labels and simulations retain their general form. Check learner
+comprehension before adding more examples.
