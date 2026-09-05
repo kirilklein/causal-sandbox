@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Causal sandbox color examples</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        color: #273d33;
+        background: #f5f4ef;
+      }
+      main {
+        max-width: 840px;
+        margin: auto;
+      }
+      section {
+        padding: 20px;
+        margin: 20px 0;
+        background: #fcfcf8;
+        border-radius: 16px;
+      }
+      h1 {
+        font-size: 28px;
+      }
+      h2 {
+        font-size: 20px;
+      }
+      .nodes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      svg {
+        width: 100%;
+        display: block;
+      }
+      text {
+        font:
+          16px system-ui,
+          sans-serif;
+        fill: #273d33;
+        text-anchor: middle;
+      }
+      .hex {
+        font-size: 13px;
+      }
+      a {
+        color: #315e48;
+      }
+      @media (max-width: 420px) {
+        body {
+          padding: 12px;
+        }
+        section {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Color conventions</h1>
+      <p>
+        Documentation examples for #20. Pale fills identify variables; labels
+        and arrows carry their meaning.
+      </p>
+      <section>
+        <h2>Variable palette</h2>
+        <div class="nodes">
+          <svg viewBox="0 0 240 92" role="img" aria-label="Treatment (A)">
+            <rect x="4" y="4" width="232" height="84" rx="16" fill="#e6efe9" />
+            <text x="120" y="43">Treatment (A)</text>
+            <text class="hex" x="120" y="68">#e6efe9</text>
+          </svg>
+          <svg viewBox="0 0 240 92" role="img" aria-label="Baseline health (C)">
+            <rect x="4" y="4" width="232" height="84" rx="16" fill="#ece9e2" />
+            <text x="120" y="43">Baseline health (C)</text>
+            <text class="hex" x="120" y="68">#ece9e2</text>
+          </svg>
+          <svg viewBox="0 0 240 92" role="img" aria-label="Outcome (Y)">
+            <rect x="4" y="4" width="232" height="84" rx="16" fill="#e5ebf4" />
+            <text x="120" y="43">Outcome (Y)</text>
+            <text class="hex" x="120" y="68">#e5ebf4</text>
+          </svg>
+          <svg viewBox="0 0 240 92" role="img" aria-label="Mediator (M)">
+            <rect x="4" y="4" width="232" height="84" rx="16" fill="#f3ecd9" />
+            <text x="120" y="43">Mediator (M)</text>
+            <text class="hex" x="120" y="68">#f3ecd9</text>
+          </svg>
+          <svg viewBox="0 0 240 92" role="img" aria-label="Collider (K)">
+            <rect x="4" y="4" width="232" height="84" rx="16" fill="#f2e3dc" />
+            <text x="120" y="43">Collider (K)</text>
+            <text class="hex" x="120" y="68">#f2e3dc</text>
+          </svg>
+          <svg viewBox="0 0 240 92" role="img" aria-label="Unmeasured (U)">
+            <rect
+              x="4"
+              y="4"
+              width="232"
+              height="84"
+              rx="16"
+              fill="#f5f4ef"
+              stroke="#537565"
+              stroke-width="2"
+              stroke-dasharray="6 4"
+            />
+            <text x="120" y="43">Unmeasured (U)</text>
+            <text class="hex" x="120" y="68">#f5f4ef</text>
+          </svg>
+        </div>
+      </section>
+      <section>
+        <h2>Adjustment changes the caption</h2>
+        <p>
+          Use the same node fills and geometry in both states. No adjustment
+          frame or checkmark is added to the graph.
+        </p>
+        <div class="nodes">
+          <div>
+            <svg
+              viewBox="0 0 240 92"
+              role="img"
+              aria-label="Baseline health C, without an outline"
+            >
+              <rect
+                x="4"
+                y="4"
+                width="232"
+                height="84"
+                rx="16"
+                fill="#ece9e2"
+              />
+              <text x="120" y="52">Baseline health (C)</text>
+            </svg>
+            <p>Treatment model: no adjustment.</p>
+          </div>
+          <div>
+            <svg
+              viewBox="0 0 240 92"
+              role="img"
+              aria-label="Baseline health C, still without an outline"
+            >
+              <rect
+                x="4"
+                y="4"
+                width="232"
+                height="84"
+                rx="16"
+                fill="#ece9e2"
+              />
+              <text x="120" y="52">Baseline health (C)</text>
+            </svg>
+            <p>Treatment model: adjusting for C.</p>
+          </div>
+        </div>
+        <p>
+          Mediator lesson: “Outcome model: adjusting for C only” becomes
+          “Outcome model: adjusting for C and M.” The graph stays fixed.
+        </p>
+      </section>
+      <section>
+        <h2>Estimates against truth</h2>
+        <p>
+          Illustrative values, not simulation results. All methods have the same
+          marker color. Separate rows, names, and numbers identify them.
+        </p>
+        <svg
+          viewBox="0 0 300 230"
+          role="img"
+          aria-label="Truth 2. IPW 1.6, outcome regression 2.2, AIPW 1.9. No uncertainty intervals."
+        >
+          <text x="205" y="20" style="fill: #315e48">Truth 2</text>
+          <path
+            d="M205 30V202"
+            stroke="#315e48"
+            stroke-width="2"
+            stroke-dasharray="6 4"
+          />
+          <g style="text-anchor: start">
+            <text x="4" y="65" style="text-anchor: start">IPW</text>
+            <text x="4" y="125" style="text-anchor: start">Regression</text>
+            <text x="4" y="185" style="text-anchor: start">AIPW</text>
+          </g>
+          <g fill="#273d33">
+            <circle cx="191" cy="60" r="4" />
+            <circle cx="212" cy="120" r="4" />
+            <circle cx="201.5" cy="180" r="4" />
+          </g>
+          <text x="276" y="65">1.6</text>
+          <text x="276" y="125">2.2</text>
+          <text x="276" y="185">1.9</text>
+          <path d="M135 203H240" stroke="#537565" />
+          <text x="135" y="225">0</text>
+          <text x="170" y="225">1</text>
+          <text x="205" y="225">2</text>
+          <text x="240" y="225">3</text>
+        </svg>
+      </section>
+      <p>
+        See <a href="color-conventions.md">the full conventions</a> for
+        contrasts, equation use, and implementation boundaries.
+      </p>
+    </main>
+  </body>
+</html>

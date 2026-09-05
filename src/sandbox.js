@@ -30,7 +30,7 @@ document.querySelector("#app").innerHTML = `
 <div class="controls"><div class="control-group"><div class="group-heading">TREATMENT <span>The effect you put into the world</span></div>${slider("direct", "A → Y", "How much treatment A directly changes outcome Y.", -1, 4, 0.1)}</div><div class="control-group"><div class="group-heading">${helpButton("confounder", "OBSERVED CONFOUNDING")}<span class="c-color">C = C₁, C₂</span></div><div class="slider-pair">${slider("ca", "C → A", "How strongly observed C influences who receives treatment. Zero removes this path.", 0, 3, 0.1)}${slider("cy", "C → Y", "How strongly observed C changes outcome Y. Zero removes this path.", 0, 3, 0.1)}</div></div><div class="control-group"><div class="group-heading">${helpButton("hidden", "HIDDEN CONFOUNDING")}<span class="u-color">U · never observed</span></div><div class="slider-pair">${slider("ua", "U → A", "How strongly hidden U influences who receives treatment. Zero removes this path.", 0, 3, 0.1)}${slider("uy", "U → Y", "How strongly hidden U changes outcome Y. Zero removes this path.", 0, 3, 0.1)}</div></div><details class="path-controls"><summary>Mediator pathway <span>A → M → Y</span></summary><div class="slider-pair">${slider("am", "A → M", "How strongly treatment A changes mediator M.", 0, 2, 0.1)}${slider("my", "M → Y", "How strongly mediator M changes outcome Y.", 0, 2, 0.1)}</div></details></div></section>
 <div class="right-column"><section class="data panel"><div class="panel-heading"><div><span class="step">02</span><h2>What you observe</h2></div><span class="small-tag">n = 2,400</span></div><div class="population-meta"><span><i class="dot untreated"></i>Untreated <b id="n0"></b></span><span><i class="dot treated"></i>Treated <b id="n1"></b></span><span class="axis-note">Outcome Y →</span></div><div class="canvas-wrap"><canvas id="population" role="img" aria-label="Two population clouds comparing outcomes of untreated and treated individuals"></canvas></div><div class="visibility-row"><span class="choice-explanation"><b>Analyst can see</b><small>Measured and available, but not used automatically.</small></span>${["C", "M", "K"].map((k) => `<button class="variable-toggle" data-visible="${k}" aria-pressed="true"><b>${k}</b><span>Visible</span><span class="eye">◉</span></button>`).join("")}<span class="locked-variable" title="U exists in the world but is never available to the analyst">U <span>Hidden · locked</span></span></div></section>
 <section class="estimates panel"><div class="panel-heading"><div><span class="step">03</span><h2>Can we recover the effect?</h2></div><span class="small-tag">TOTAL EFFECT</span></div><div class="truth-card"><div><span>${helpButton("ate", "Total effect (ATE)")}</span><small id="truth-formula"></small></div><strong id="truth-value">2.00</strong><svg viewBox="0 0 65 32"><path d="M1 25H22L32 6L42 25H65" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="32" cy="6" r="3" fill="currentColor"/></svg></div>
-<div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b><small>Variables the estimators actually use.</small></span>${["C", "M", "K"].map((k) => `<div class="adjust-choice"><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div><div class="model-controls" aria-label="Analyst models"><div class="model-intro"><span>ANALYST’S MODELS</span><small id="model-purpose">Choose how the analysis uses C₁ and C₂.</small><small id="model-availability">C groups two observed covariates: C₁ and C₂.</small></div><div class="model-pair">${["outcome", "treatment"].map((k) => `<div class="model-control"><div class="term-label"><label for="${k}-model">${k === "outcome" ? "Outcome model" : "Treatment model"}</label>${k === "treatment" ? helpButton("propensity", "Propensity score") : ""}</div><small id="${k}-purpose">${k === "outcome" ? "Predicts outcome Y under each treatment." : "Predicts each person’s chance of treatment."}</small><select id="${k}-model" aria-describedby="model-purpose model-availability ${k}-purpose ${k}-terms"><option value="main">C₁ and C₂ separately</option><option value="interaction">Include C₁ × C₂ interaction</option></select><small id="${k}-terms"></small></div>`).join("")}</div></div><div class="effect-chart" id="effects"></div><div class="estimate-key"><span><i class="dot close"></i>${helpButton("error", "Within 0.15 of truth")}</span><span><i class="dot biased"></i>Further from truth</span><span>Fixed-sample point estimates, not intervals</span></div><div id="lesson" class="lesson" aria-live="polite"></div><div id="overlap" class="overlap"><span id="overlap-warning"></span><span class="overlap-help"><span class="term-label">${helpButton("overlap")}</span><span class="term-label">${helpButton("ess")}</span></span></div></section></div></div>
+<div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b><small>Variables the estimators actually use.</small></span>${["C", "M", "K"].map((k) => `<div class="adjust-choice"><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div><div class="model-controls" aria-label="Analyst models"><div class="model-intro"><span>ANALYST’S MODELS</span><small id="model-purpose">Choose how the analysis uses C₁ and C₂.</small><small id="model-availability">C groups two observed covariates: C₁ and C₂.</small></div><div class="model-pair">${["outcome", "treatment"].map((k) => `<div class="model-control"><div class="term-label"><label for="${k}-model">${k === "outcome" ? "Outcome model" : "Treatment model"}</label>${k === "treatment" ? helpButton("propensity", "Propensity score") : ""}</div><small id="${k}-purpose">${k === "outcome" ? "Predicts outcome Y under each treatment." : "Predicts each person’s chance of treatment."}</small><select id="${k}-model" aria-describedby="model-purpose model-availability ${k}-purpose ${k}-terms"><option value="main">C₁ and C₂ separately</option><option value="interaction">Include C₁ × C₂ interaction</option></select><small id="${k}-terms"></small></div>`).join("")}</div></div><div class="effect-chart" id="effects"></div><div class="estimate-key"><span>${helpButton("error", "Distance from truth")}</span><span>Fixed-sample point estimates, not intervals</span></div><div id="lesson" class="lesson" aria-live="polite"></div><div id="overlap" class="overlap"><span id="overlap-warning"></span><span class="overlap-help"><span class="term-label">${helpButton("overlap")}</span><span class="term-label">${helpButton("ess")}</span></span></div></section></div></div>
 <footer><span>${icon} A known world. An imperfect view. A better question.</span><span>Same 2,400 people after every change <i>·</i> Seed 4217 <button id="reset">Reset world ↺</button></span></footer></main>
 <dialog id="about" aria-labelledby="about-title"><div class="dialog-heading"><span class="eyebrow">UNDER THE SURFACE</span><button id="close-about" aria-label="Close explanation">×</button></div><h2 id="about-title">A world with an answer key.</h2><details class="glossary"><summary>Glossary · causal terms in plain language</summary><dl>${Object.entries(
   glossary,
@@ -89,24 +89,18 @@ function renderGraph() {
         (!state.visible.has(a) && !["A", "Y"].includes(a)) ||
         (!state.visible.has(b) && !["A", "Y"].includes(b));
       const strength = key ? state.p[key] : 0.9;
-      const harm = b === "K" && state.adjust.has("K");
-      return `<path d="${d}" fill="none" stroke="${harm ? "#b96d4f" : hidden ? "#9c95ad" : "#6e8e83"}" stroke-width="${harm ? 2.5 : 1 + Math.abs(strength) * 0.55}" stroke-dasharray="${hidden ? "5 5" : ""}" opacity="${a === "U" && !state.truth ? 0 : strength === 0 ? 0.18 : 0.8}" marker-end="url(#arrow)"/>`;
+      return `<path d="${d}" fill="none" stroke="var(--causal-path)" stroke-width="${1 + Math.abs(strength) * 0.55}" stroke-dasharray="${hidden ? "5 5" : ""}" opacity="${a === "U" && !state.truth ? 0 : strength === 0 ? 0.18 : 1}" marker-end="url(#arrow)"/>`;
     })
     .join("");
   document.querySelector("#nodes").innerHTML = Object.entries(coords)
     .map(([k, [x, y]]) => {
-      const hidden = !state.visible.has(k) && !["A", "Y"].includes(k),
-        selected = state.adjust.has(k);
-      return `<g transform="translate(${x} ${y})" opacity="${k === "U" && !state.truth ? 0 : 1}"><circle r="${selected ? 29 : 25}" fill="${{ A: "#e6efe9", Y: "#e5ebf4", C: "#e7eee6", U: "#efecf3", M: "#f5f0e4", K: "#f4e9e1" }[k]}" stroke="${selected ? (k === "C" ? "#357c65" : "#b96d4f") : hidden ? "#aaa1b8" : "#d0d8cf"}" stroke-width="${selected ? 2 : 1}" stroke-dasharray="${hidden ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text>${selected ? '<circle cx="21" cy="-20" r="7" fill="' + (k === "C" ? "#357c65" : "#b96d4f") + '"/><text x="21" y="-17" text-anchor="middle" fill="white" font-size="9">✓</text>' : ""}</g>`;
+      const hidden = !state.visible.has(k) && !["A", "Y"].includes(k);
+      return `<g transform="translate(${x} ${y})" opacity="${k === "U" && !state.truth ? 0 : 1}"><circle r="25" fill="var(--node-${k})" stroke="${hidden ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${hidden ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
     })
     .join("");
-  document.querySelector("#graph-hint").textContent = state.adjust.has("K")
-    ? "Collider path conditioned on"
-    : state.adjust.has("M")
-      ? "Mediator path blocked"
-      : state.adjust.has("C")
-        ? "C included in adjustment"
-        : "Select an adjustment below ↘";
+  document.querySelector("#graph-hint").textContent = state.adjust.size
+    ? `Adjusted methods: adjusting for ${["C", "M", "K"].filter((k) => state.adjust.has(k)).join(", ")}`
+    : "Adjusted methods: no adjustment";
 }
 let latestData, latestResult;
 function drawPopulation() {
@@ -133,8 +127,10 @@ function drawPopulation() {
     ctx.fillStyle = "#8a908a";
     ctx.fillText(tick, x(tick), h - 5);
   }
+  const colors = getComputedStyle(canvas);
+  const arms = [0, 1].map((a) => colors.getPropertyValue(`--arm-${a}`).trim());
   latestData.forEach((d) => {
-    ctx.fillStyle = d.A ? "#557ba879" : "#5a8b7079";
+    ctx.fillStyle = arms[d.A];
     const yy = rowY(d.A) + (d.jitter - 0.5) * (h - 24) * 0.34;
     ctx.beginPath();
     ctx.arc(Math.max(4, Math.min(w - 4, x(d.Y))), yy, 1.5, 0, Math.PI * 2);
@@ -145,7 +141,7 @@ function drawPopulation() {
     [1, latestResult.mean1],
   ]) {
     const yy = rowY(a);
-    ctx.strokeStyle = a ? "#315d8c" : "#286648";
+    ctx.strokeStyle = arms[a];
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x(mean), yy - (h - 24) * 0.2);
@@ -153,9 +149,9 @@ function drawPopulation() {
     ctx.stroke();
   }
   ctx.textAlign = "left";
-  ctx.fillStyle = "#66756a";
+  ctx.fillStyle = arms[0];
   ctx.fillText("A = 0", 2, rowY(0) + 3);
-  ctx.fillStyle = "#53759a";
+  ctx.fillStyle = arms[1];
   ctx.fillText("A = 1", 2, rowY(1) + 3);
   canvas.setAttribute(
     "aria-label",
@@ -249,7 +245,7 @@ function update() {
     "IPW",
     "AIPW",
   ];
-  const chartMarkup = `<div class="chart-axis"><span>ESTIMATOR</span><div><span>${(truth - span).toFixed(1)}</span><b>TRUTH</b><span>${(truth + span).toFixed(1)}</span></div><span>ESTIMATE</span></div>${latestResult.values.map((v, i) => `<div class="effect-row" data-estimator="${i}"><span class="estimator-label">${i >= 2 ? helpButton(["", "", "regression", "ipw", "aipw"][i], names[i]) : `<span>${names[i]}${i === 1 ? "<small>Y ~ A</small>" : ""}</span>`}</span><div class="effect-track"><i class="truth-line"></i><i class="bias-line" style="left:${Math.min(50, pos(v))}%;width:${Math.abs(pos(v) - 50)}%;background:${Math.abs(v - truth) < 0.15 ? "#82a691" : "#c99878"}"></i><i class="estimate-dot ${Math.abs(v - truth) < 0.15 ? "good" : "bad"}" style="left:${pos(v)}%" title="Difference from truth ${(v - truth).toFixed(2)}"></i></div><strong class="${Math.abs(v - truth) < 0.15 ? "good-text" : ""}">${v.toFixed(2)}</strong></div>`).join("")}`;
+  const chartMarkup = `<div class="chart-axis"><span>ESTIMATOR</span><div><span>${(truth - span).toFixed(1)}</span><b>TRUTH</b><span>${(truth + span).toFixed(1)}</span></div><span>ESTIMATE</span></div>${latestResult.values.map((v, i) => `<div class="effect-row" data-estimator="${i}"><span class="estimator-label">${i >= 2 ? helpButton(["", "", "regression", "ipw", "aipw"][i], names[i]) : `<span>${names[i]}${i === 1 ? "<small>Y ~ A</small>" : ""}</span>`}</span><div class="effect-track"><i class="truth-line"></i><i class="bias-line" style="left:${Math.min(50, pos(v))}%;width:${Math.abs(pos(v) - 50)}%"></i><i class="estimate-dot" style="left:${pos(v)}%" title="Difference from truth ${(v - truth).toFixed(2)}"></i></div><strong>${v.toFixed(2)}</strong></div>`).join("")}`;
   const effects = document.querySelector("#effects");
   if (!effects.children.length) effects.innerHTML = chartMarkup;
   else {

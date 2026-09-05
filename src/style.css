@@ -1,5 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap");
 :root {
+  --node-A: #e6efe9;
+  --node-C: #ece9e2;
+  --node-Y: #e5ebf4;
+  --node-M: #f3ecd9;
+  --node-K: #f2e3dc;
+  --node-U: #f5f4ef;
+  --causal-path: #537565;
+  --estimate: #273d33;
+  --truth: #315e48;
+  --arm-0: #286648;
+  --arm-1: #315d8c;
   font-family: "DM Sans", sans-serif;
   color: #273d33;
   background: #f5f4ef;
@@ -223,19 +234,20 @@ h2 {
   font-family: Manrope, sans-serif;
   font-size: 18px;
   font-weight: 650;
-  fill: #3d5148;
+  fill: #273d33;
 }
 .node-label {
   font-size: 8px;
   letter-spacing: 1px;
-  fill: #8d9387;
+  fill: #526054;
 }
 .graph-key {
   display: flex;
   justify-content: flex-start;
   gap: 16px;
   font-size: 8px;
-  color: #919586;
+  color: #526054;
+  flex-wrap: wrap;
   padding: 9px 0 18px;
   align-items: center;
 }
@@ -246,17 +258,17 @@ h2 {
 }
 #graph-hint {
   margin-left: auto;
-  color: #84967f;
+  color: #526054;
   font-size: 8px;
 }
 .key-line {
   width: 15px;
   height: 0;
-  border-top: 1px solid #779287;
+  border-top: 1px solid var(--causal-path);
 }
 .key-line.dashed {
   border-top-style: dashed;
-  border-color: #9c95ad;
+  border-color: var(--causal-path);
 }
 .controls {
   border-top: 1px solid #e5e6dc;
@@ -281,10 +293,10 @@ h2 {
   color: #929787;
 }
 .group-heading .u-color {
-  color: #9b8ba9;
+  color: #526054;
 }
 .group-heading .c-color {
-  color: #5f8569;
+  color: #526054;
 }
 .slider-pair {
   display: grid;
@@ -401,15 +413,11 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.untreated,
-.close {
-  background: #719d7e;
+.untreated {
+  background: var(--arm-0);
 }
 .treated {
-  background: #6b8bb4;
-}
-.biased {
-  background: #c59475;
+  background: var(--arm-1);
 }
 .population-meta .axis-note {
   margin-left: auto;
@@ -566,7 +574,7 @@ canvas {
 }
 .chart-axis b {
   font-weight: 500;
-  color: #77906b;
+  color: var(--truth);
   font-size: 7px;
 }
 .chart-axis > span:last-child {
@@ -589,10 +597,7 @@ canvas {
   text-align: right;
   font-weight: 550;
   font-variant-numeric: tabular-nums;
-  color: #ac7d60;
-}
-.effect-row .good-text {
-  color: #63885a;
+  color: var(--estimate);
 }
 .effect-track {
   height: 100%;
@@ -604,15 +609,17 @@ canvas {
   left: 50%;
   top: 0;
   height: 100%;
-  border-left: 1px dashed #7f9e6f;
+  border-left: 2px dashed var(--truth);
 }
 .bias-line {
+  background: var(--estimate);
   position: absolute;
   height: 3px;
   top: calc(50% - 1px);
   opacity: 0.6;
 }
 .estimate-dot {
+  background: var(--estimate);
   position: absolute;
   width: 9px;
   height: 9px;
@@ -622,12 +629,6 @@ canvas {
   border: 2px solid #fcfcf8;
   box-sizing: content-box;
   margin-top: -2px;
-}
-.estimate-dot.good {
-  background: #739a65;
-}
-.estimate-dot.bad {
-  background: #c69574;
 }
 .estimate-key {
   display: flex;
@@ -1103,7 +1104,7 @@ button:hover {
 }
 .node-members {
   font-size: 8px;
-  fill: #7c9175;
+  fill: #526054;
 }
 .model-controls {
   background: #f4f6ee;

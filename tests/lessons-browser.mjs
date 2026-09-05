@@ -65,8 +65,23 @@ try {
     await page.locator("#ipw").innerText(),
     await page.locator("#unadjusted").innerText(),
   );
+  const unweightedGraph = await page
+    .locator("#lesson-graph svg")
+    .evaluate((el) => el.outerHTML);
+  assert.match(
+    await page.locator("#lesson-graph .sample-note").innerText(),
+    /no adjustment/,
+  );
   await page.keyboard.press("Space");
   assert.equal(await page.locator("#adjustment").isChecked(), true);
+  assert.equal(
+    await page.locator("#lesson-graph svg").evaluate((el) => el.outerHTML),
+    unweightedGraph,
+  );
+  assert.match(
+    await page.locator("#lesson-graph .sample-note").innerText(),
+    /adjusting for C/,
+  );
   assert.ok(
     Math.abs(Number(await page.locator("#ipw").innerText()) - 2) < 0.15,
   );
@@ -159,9 +174,31 @@ try {
     const paths = await graph
       .locator("g path")
       .evaluateAll((els) => els.map((el) => el.getAttribute("d")));
+    const nodeAppearance = await graph
+      .locator("rect")
+      .evaluateAll((els) =>
+        els.map((el) => [el.outerHTML, getComputedStyle(el).stroke]),
+      );
+    assert.ok(nodeAppearance.every(([, stroke]) => stroke === "none"));
+    assert.match(
+      await page.locator("#lesson-graph .sample-note").innerText(),
+      /adjusting for C only/,
+    );
     await page.locator("#post-adjustment").focus();
     await page.keyboard.press("Space");
     assert.equal(await page.locator("#post-adjustment").isChecked(), true);
+    assert.deepEqual(
+      await graph
+        .locator("rect")
+        .evaluateAll((els) =>
+          els.map((el) => [el.outerHTML, getComputedStyle(el).stroke]),
+        ),
+      nodeAppearance,
+    );
+    assert.match(
+      await page.locator("#lesson-graph .sample-note").innerText(),
+      level === 7 ? /adjusting for C and M/ : /adjusting for C and K/,
+    );
     assert.ok(
       Number(await page.locator("#regression").innerText()) <
         (level === 7 ? 2.2 : 0.7),

@@ -414,14 +414,14 @@ function update() {
     const strength = state.hiddenStrength;
     document.querySelector("#lesson-graph").innerHTML = `
       <svg viewBox="0 0 540 300" role="img" aria-label="Baseline health C is measured and causes treatment and outcome. Smoking status U is unmeasured and ${strength === 0 ? "currently has no influence; its faded paths are inactive" : "also causes treatment and outcome"}. Treatment causes outcome. Only C is adjusted for.">
-        <defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#537565"/></marker></defs>
-        <g fill="none" stroke="#537565" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M220 60L100 125"/><path d="M320 60L440 125"/><path d="M155 145H380"/></g>
-        <g data-hidden-paths fill="none" stroke="#537565" stroke-width="${1 + strength}" stroke-dasharray="6 4" opacity="${strength === 0 ? 0.25 : 1}" marker-end="url(#lesson-arrow)"><path d="M220 235L100 169"/><path d="M320 235L440 169"/></g>
-        <rect x="165" y="10" width="210" height="50" rx="16" fill="#e7eee6"/><text x="270" y="41">Baseline health (C)</text>
-        <rect x="15" y="125" width="140" height="42" rx="16" fill="#e6efe9"/><text x="85" y="152">Treatment<tspan class="graph-symbol"> (A)</tspan></text>
-        <rect x="385" y="125" width="140" height="42" rx="16" fill="#e5ebf4"/><text x="455" y="152">Outcome<tspan class="graph-symbol"> (Y)</tspan></text>
-        <rect x="165" y="235" width="210" height="50" rx="16" fill="#f5f4ef" stroke="#537565" stroke-dasharray="6 4"/><text x="270" y="266">Smoking status (U)</text>
-      </svg><p class="sample-note">Dashed paths: unmeasured smoking status. At zero strength, these paths are inactive.</p>`;
+        <defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs>
+        <g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M220 60L100 125"/><path d="M320 60L440 125"/><path d="M155 145H380"/></g>
+        <g data-hidden-paths fill="none" stroke="var(--causal-path)" stroke-width="${1 + strength}" stroke-dasharray="6 4" opacity="${strength === 0 ? 0.25 : 1}" marker-end="url(#lesson-arrow)"><path d="M220 235L100 169"/><path d="M320 235L440 169"/></g>
+        <rect x="165" y="10" width="210" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="41">Baseline health (C)</text>
+        <rect x="15" y="125" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="152">Treatment<tspan class="graph-symbol"> (A)</tspan></text>
+        <rect x="385" y="125" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="152">Outcome<tspan class="graph-symbol"> (Y)</tspan></text>
+        <rect x="165" y="235" width="210" height="50" rx="16" fill="var(--node-U)" stroke="var(--causal-path)" stroke-dasharray="6 4"/><text x="270" y="266">Smoking status (U)</text>
+      </svg><p class="sample-note">Treatment and outcome models: adjusting for C. Dashed paths: unmeasured smoking status. At zero strength, these paths are inactive.</p>`;
     return;
   }
   const commonCause = state.level > 1;
@@ -433,7 +433,7 @@ function update() {
     ? `Baseline health causes outcome${state.selection ? " and treatment" : ""}. ${treatmentDescription}`
     : `${treatmentDescription} Treatment is assigned at random.`;
   document.querySelector("#lesson-graph").innerHTML =
-    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#537565"/></marker></defs><g fill="none" stroke="#537565" stroke-width="2" marker-end="url(#lesson-arrow)">${state.effect !== 0 ? `<path d="M155 ${commonCause ? 145 : 45}H380"/>` : ""}${commonCause ? `<path d="M320 65L400 123"/>${state.selection ? '<path d="M220 65L130 123"/>' : ""}` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="#e7eee6"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="#e6efe9"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="#e5ebf4"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>`;
+    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)">${state.effect !== 0 ? `<path d="M155 ${commonCause ? 145 : 45}H380"/>` : ""}${commonCause ? `<path d="M320 65L400 123"/>${state.selection ? '<path d="M220 65L130 123"/>' : ""}` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${state.level >= 3 ? `<p class="sample-note">${state.level === 3 ? (state.adjusted ? "Treatment model: adjusting for C." : "Treatment model: no adjustment.") : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
 }
 
 function overlapPanel() {
@@ -456,7 +456,7 @@ function renderOverlap(arms) {
         .map((count, i) => {
           const percent = arm.count ? (100 * count) / arm.count : 0;
           const height = percent * 1.1;
-          return `<rect x="${40 + i * 27}" y="${135 - height}" width="24" height="${height}" fill="${a ? "#ad562e" : "#315e48"}"><title>${i * 10}–${(i + 1) * 10}% probability: ${count} people (${percent.toFixed(1)}%)</title></rect>`;
+          return `<rect x="${40 + i * 27}" y="${135 - height}" width="24" height="${height}" fill="${a ? "var(--arm-1)" : "var(--arm-0)"}"><title>${i * 10}–${(i + 1) * 10}% probability: ${count} people (${percent.toFixed(1)}%)</title></rect>`;
         })
         .join("");
       return `<figure class="overlap-histogram"><figcaption>${labels[a]}</figcaption><svg viewBox="0 0 320 185" role="img" aria-label="${labels[a]}: distribution of fitted treatment probability. ${arm.bins.map((count, i) => `${i * 10} to ${(i + 1) * 10} percent probability: ${count} people`).join("; ")}"><text x="40" y="16">People in this arm (%)</text>${[0, 50, 100].map((v) => `<path d="M40 ${135 - v * 1.1}H310" stroke="#dde3db"/><text x="34" y="${139 - v * 1.1}" text-anchor="end">${v}</text>`).join("")}${bars}<text x="40" y="153">0</text><text x="175" y="153" text-anchor="middle">0.5</text><text x="310" y="153" text-anchor="end">1</text><text x="175" y="176" text-anchor="middle">Fitted treatment probability</text></svg></figure>`;
@@ -495,16 +495,16 @@ function renderRoleGraph() {
   const description = `Baseline health causes treatment and outcome. Treatment causes outcome. ${mediator ? "Treatment causes the intermediate response, which causes outcome." : "Treatment and outcome cause the follow-up score; the score causes neither."} We adjust for baseline health${state.postAdjusted ? ` and ${role.toLowerCase()}` : " only"}.`;
   const nodes = mediator
     ? [
-        ["C", 170, 16, 200, 48, "Baseline health", "#e7eee6"],
-        ["A", 10, 158, 130, 48, "Treatment", "#e6efe9"],
-        ["Y", 400, 158, 130, 48, "Outcome", "#e5ebf4"],
-        ["M", 195, 150, 150, 64, "Intermediate|response", "#f4e9db"],
+        ["C", 170, 16, 200, 48, "Baseline health", "var(--node-C)"],
+        ["A", 10, 158, 130, 48, "Treatment", "var(--node-A)"],
+        ["Y", 400, 158, 130, 48, "Outcome", "var(--node-Y)"],
+        ["M", 195, 150, 150, 64, "Intermediate|response", "var(--node-M)"],
       ]
     : [
-        ["C", 70, 16, 200, 48, "Baseline health", "#e7eee6"],
-        ["A", 10, 158, 130, 48, "Treatment", "#e6efe9"],
-        ["Y", 205, 158, 130, 48, "Outcome", "#e5ebf4"],
-        ["K", 390, 150, 140, 64, "Follow-up|score", "#f4e9db"],
+        ["C", 70, 16, 200, 48, "Baseline health", "var(--node-C)"],
+        ["A", 10, 158, 130, 48, "Treatment", "var(--node-A)"],
+        ["Y", 205, 158, 130, 48, "Outcome", "var(--node-Y)"],
+        ["K", 390, 150, 140, 64, "Follow-up|score", "var(--node-K)"],
       ];
   const paths = mediator
     ? [
@@ -523,16 +523,16 @@ function renderRoleGraph() {
       ];
   document.querySelector("#lesson-graph").innerHTML =
     `<svg class="role-graph" viewBox="0 0 540 290" role="img" aria-label="${description}">
-      <defs><marker id="lesson-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1 1L9 5L1 9Z" fill="#537565"/></marker></defs>
-      <g fill="none" stroke="#537565" stroke-width="1.8" stroke-linecap="butt" marker-end="url(#lesson-arrow)">
+      <defs><marker id="lesson-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1 1L9 5L1 9Z" fill="var(--causal-path)"/></marker></defs>
+      <g fill="none" stroke="var(--causal-path)" stroke-width="1.8" stroke-linecap="butt" marker-end="url(#lesson-arrow)">
         ${paths.map((d) => `<path d="${d}"/>`).join("")}
       </g>
       ${nodes
         .map(([id, x, y, width, height, label, fill]) => {
           const lines = label.split("|");
-          return `<rect class="role-node ${id === "C" || (id === symbol && state.postAdjusted) ? "adjusted" : ""}" x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="${fill}"/>
+          return `<rect class="role-node" x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="${fill}"/>
           <text x="${x + width / 2}" y="${y + height / 2 + (lines.length === 1 ? 6 : -6)}">${lines[0]}${lines.length > 1 ? `<tspan x="${x + width / 2}" dy="24">${lines[1]}<tspan class="graph-symbol"> (${id})</tspan></tspan>` : `<tspan class="graph-symbol"> (${id})</tspan>`}</text>`;
         })
         .join("")}
-    </svg><p class="sample-note">Outlined variables are included in our outcome model. Arrows describe the world and stay fixed.</p>`;
+    </svg><p class="sample-note">Outcome model: adjusting for C${state.postAdjusted ? ` and ${symbol}` : " only"}. Arrows describe the world and stay fixed.</p>`;
 }
