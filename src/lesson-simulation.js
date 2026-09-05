@@ -2,25 +2,27 @@ import { makeNoise, estimate } from "./simulation.js";
 
 // Complete lesson state; no advanced sandbox setting is shared with this world.
 export function lessonBaseline(level) {
-  if (![1, 2, 3, 4, 5, 6].includes(level)) throw new Error("Unknown lesson");
+  if (![1, 2, 3, 4, 5, 6, 7, 8].includes(level))
+    throw new Error("Unknown lesson");
   return {
     level,
     seed: 4217,
     n: 2400,
     effect: 2,
-    selection: level >= 5 ? 0.8 : level >= 3 ? 1.2 : 0,
+    selection: level >= 5 && level <= 6 ? 0.8 : level >= 3 ? 1.2 : 0,
     outcomeInfluence: level === 1 ? 0 : 1.5,
     adjusted: level >= 4,
     outcomeCurve: level === 6 ? 2 : 0,
     treatmentCurve: level === 6 ? 0.9 : 0,
     outcomeQuadratic: level === 6,
     treatmentQuadratic: level === 6,
+    postAdjusted: false,
   };
 }
 
-// One actual baseline variable; no mediator, collider, hidden cause or interaction.
+// Later lessons add one post-treatment variable to the same baseline world.
 export function simulateLesson(state, noise = makeNoise(state.n, state.seed)) {
-  return noise.map(({ C1: C, a, eY }) => {
+  return noise.map(({ C1: C, a, eY, eM, eK }) => {
     const A = +(
       a <
       1 /
@@ -29,14 +31,19 @@ export function simulateLesson(state, noise = makeNoise(state.n, state.seed)) {
             0.8 - state.selection * C - state.treatmentCurve * (C ** 2 - 1),
           ))
     );
+    const M = state.level === 7 ? A + eM : 0;
+    const Y =
+      state.effect * A +
+      state.outcomeInfluence * C +
+      state.outcomeCurve * (C ** 2 - 1) +
+      M +
+      eY;
     return {
       ...(state.level > 1 ? { C } : {}),
       A,
-      Y:
-        state.effect * A +
-        state.outcomeInfluence * C +
-        state.outcomeCurve * (C ** 2 - 1) +
-        eY,
+      Y,
+      ...(state.level === 7 ? { M } : {}),
+      ...(state.level === 8 ? { K: A + Y + eK } : {}),
     };
   });
 }
@@ -49,7 +56,10 @@ export function lessonResult(state, noise) {
           C: Math.sqrt(3) * (i / 20 - 1),
         }))
       : undefined;
-  const result = estimate(data, state.adjusted ? ["C"] : [], {
+  const adjustment = state.adjusted ? ["C"] : [];
+  if (state.postAdjusted && state.level === 7) adjustment.push("M");
+  if (state.postAdjusted && state.level === 8) adjustment.push("K");
+  const result = estimate(data, adjustment, {
     ...state,
     predictionPoints,
   });
@@ -84,6 +94,7 @@ export function lessonResult(state, noise) {
           })),
         }
       : {}),
+    totalEffect: state.effect + (state.level === 7 ? 1 : 0),
     unadjusted: result.values[0],
     ipw: result.values[3],
     regression: result.values[2],

@@ -259,3 +259,8 @@
   color: #657365;
   font-size: 13px;
 }
+
+.role-graph .role-node.adjusted {
+  stroke: #315e48;
+  stroke-width: 2;
+}
