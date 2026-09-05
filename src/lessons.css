@@ -12,6 +12,10 @@
   font-size: 16px;
   line-height: 1.6;
 }
+.brand-tagline {
+  margin: 0 0 20px;
+  color: #395b49;
+}
 .learning h1 {
   font-size: clamp(28px, 5vw, 40px);
   margin: 10px 0;
@@ -271,7 +275,7 @@
 }
 @media (max-width: 500px) {
   .lesson-header {
-    padding: 0 20px;
+    padding: 14px 20px;
     gap: 16px;
   }
   .learning {

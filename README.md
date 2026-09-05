@@ -1,6 +1,8 @@
-# Causal sandbox
+# Causal Sandbox
 
-Learn causal inference through guided experiments, then explore a world you can configure. Runs entirely in your browser.
+**Learn causal inference by changing the world.**
+
+Change a setting and compare your estimate with the known causal effect. Start with guided lessons, then explore the full sandbox. Runs entirely in your browser.
 
 ## Guided lessons
 

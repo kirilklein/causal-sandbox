@@ -1,3 +1,4 @@
+import icon from "./brand.svg?raw";
 import "./lessons.css";
 import { effectComparison } from "./effect-comparison.js";
 import { makeNoise } from "./simulation.js";
@@ -253,8 +254,9 @@ function enter(level, focus = true, callback = false) {
   const previous = revisiting ? 6 : availableLevels[position - 1];
   const next = availableLevels[position + 1];
   app.innerHTML = `
-    <header class="lesson-header"><a class="brand" href="./">causal<span class="brand-dot">.</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
+    <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
     <main class="learning">
+      ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
       ${lessonNavigation(position)}
       <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
       <p class="lesson-transition">${lesson.transition}</p>
