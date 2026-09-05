@@ -92,7 +92,18 @@ const lessons = [
       "Start with baseline-health adjustment alone. Then include the follow-up score in the outcome model. The world stays fixed; only the comparison changes.",
     explanation:
       "The score is a collider: two arrows meet at it, treatment → score ← outcome. Among people with the same score, having treatment leaves less of the score to be explained by the outcome. Holding the score fixed creates a misleading relationship and can distort the treatment estimate, even while we correctly account for baseline health. Measured variables are not automatically valid adjustment variables.",
-    next: "Level 9 about hidden common causes is being developed separately. Continue to level 10 to explore another limitation: too little overlap.",
+    next: "We can account for measured baseline health. What if another common cause is missing from our data?",
+  },
+  {
+    title: "A hidden common cause",
+    question: "What if an important confounder is unavailable?",
+    transition:
+      "Baseline health (C) is still measured and adjusted for. Now add smoking status (U), which is missing from our data. We show it in the graph so you can see what the models cannot use.",
+    instruction:
+      "Turn up smoking’s influence on treatment and outcome. Do the estimates still track the true effect?",
+    explanation:
+      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for baseline health. The estimates mix this difference with the treatment effect. IPW, outcome regression, and AIPW cannot adjust for information they do not have. Double robustness does not protect against hidden confounding. Sample variation means estimates need not move steadily away from truth at every slider step.",
+    next: "Even measured confounders do not guarantee useful comparisons. Next, remove the hidden cause and explore too little overlap.",
   },
 ];
 lessons[9] = {
@@ -118,6 +129,8 @@ enter(availableLevels.includes(requested) ? requested : 1, false);
 function controls(level) {
   if (level === 10)
     return `<fieldset class="model-choices" id="overlap-selection"><legend>How strongly does baseline health determine treatment?</legend><label class="lesson-switch"><input type="radio" name="overlap-selection" value="1.2" checked> Moderate selection</label><label class="lesson-switch"><input type="radio" name="overlap-selection" value="5"> Strong selection</label></fieldset>`;
+  if (level === 9)
+    return '<label for="hidden-strength">Hidden confounding strength <output id="hidden-strength-output">0.0</output></label><input id="hidden-strength" type="range" min="0" max="2" step="0.1" value="0" aria-describedby="hidden-strength-help"><p id="hidden-strength-help" class="sample-note">0: no influence · 2: strong influence on both treatment and outcome. Both models always adjust for C; neither can use U.</p>';
   if (level === 1)
     return '<label for="effect">True treatment effect <output id="effect-output">2.0</output></label><input id="effect" type="range" min="-1" max="4" step="0.1" value="2">';
   if (level === 2)
@@ -162,11 +175,11 @@ function enter(level, focus = true) {
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 9 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
-        ${(level >= 4 && level <= 6) || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
+        ${(level >= 4 && level <= 6) || level === 9 || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
         ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
@@ -178,6 +191,12 @@ function enter(level, focus = true) {
       <nav class="lesson-actions" aria-label="Continue learning">${previous ? '<button id="back">← Back</button>' : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       <p class="lesson-credit">Guided prompts inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>.</p>
     </main>`;
+  document.querySelector("#hidden-strength")?.addEventListener("input", (e) => {
+    state.hiddenStrength = +e.target.value;
+    document.querySelector("#hidden-strength-output").textContent =
+      state.hiddenStrength.toFixed(1);
+    update();
+  });
   document
     .querySelector("#overlap-selection")
     ?.addEventListener("change", (e) => {
@@ -286,19 +305,21 @@ function update() {
       result.regression.toFixed(2);
     document.querySelector("#regression-result").hidden = false;
   }
-  if ((state.level >= 4 && state.level <= 6) || state.level === 10) {
+  if (state.level === 10) renderOverlap(result.overlap);
+  if (
+    (state.level >= 4 && state.level <= 6) ||
+    state.level === 9 ||
+    state.level === 10
+  ) {
     document.querySelector("#model-weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${state.level === 6 || state.level === 10 ? "IPW and AIPW" : "IPW"}.`
+      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${state.level === 6 || state.level === 9 || state.level === 10 ? "IPW and AIPW" : "IPW"}.`
       : "No treatment probabilities were clipped in this sample.";
   }
-  if (state.level === 10) {
+  if (state.level === 6 || state.level === 9 || state.level === 10) {
     document.querySelector("#aipw").textContent = result.aipw.toFixed(2);
     document.querySelector("#aipw-result").hidden = false;
-    renderOverlap(result.overlap);
   }
   if (state.level === 6) {
-    document.querySelector("#aipw").textContent = result.aipw.toFixed(2);
-    document.querySelector("#aipw-result").hidden = false;
     const count =
       Number(state.outcomeQuadratic) + Number(state.treatmentQuadratic);
     document.querySelector("#robustness-note").textContent =
@@ -341,6 +362,20 @@ function update() {
         : "We now hold the follow-up score fixed. Conditioning on this shared consequence can distort the treatment comparison."
       : "We account for baseline health only, leaving the total treatment effect intact. Try including the new variable.";
     renderRoleGraph();
+    return;
+  }
+  if (state.level === 9) {
+    const strength = state.hiddenStrength;
+    document.querySelector("#lesson-graph").innerHTML = `
+      <svg viewBox="0 0 540 300" role="img" aria-label="Baseline health C is measured and causes treatment and outcome. Smoking status U is unmeasured and ${strength === 0 ? "currently has no influence; its faded paths are inactive" : "also causes treatment and outcome"}. Treatment causes outcome. Only C is adjusted for.">
+        <defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#537565"/></marker></defs>
+        <g fill="none" stroke="#537565" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M220 60L100 125"/><path d="M320 60L440 125"/><path d="M155 145H380"/></g>
+        <g data-hidden-paths fill="none" stroke="#537565" stroke-width="${1 + strength}" stroke-dasharray="6 4" opacity="${strength === 0 ? 0.25 : 1}" marker-end="url(#lesson-arrow)"><path d="M220 235L100 169"/><path d="M320 235L440 169"/></g>
+        <rect x="165" y="10" width="210" height="50" rx="16" fill="#e7eee6"/><text x="270" y="41">Baseline health (C)</text>
+        <rect x="15" y="125" width="140" height="42" rx="16" fill="#e6efe9"/><text x="85" y="152">Treatment<tspan class="graph-symbol"> (A)</tspan></text>
+        <rect x="385" y="125" width="140" height="42" rx="16" fill="#e5ebf4"/><text x="455" y="152">Outcome<tspan class="graph-symbol"> (Y)</tspan></text>
+        <rect x="165" y="235" width="210" height="50" rx="16" fill="#f5f4ef" stroke="#537565" stroke-dasharray="6 4"/><text x="270" y="266">Smoking status (U)</text>
+      </svg><p class="sample-note">Dashed paths: unmeasured smoking status. At zero strength, these paths are inactive.</p>`;
     return;
   }
   const commonCause = state.level > 1;

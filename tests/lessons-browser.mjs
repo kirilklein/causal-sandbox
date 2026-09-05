@@ -367,8 +367,114 @@ try {
     await page.goto(`${url}?level=${level}`);
     assert.equal(await result(), expected);
   }
-  // Level 10 follows the implemented causal-role lessons, skipping unavailable 9.
+  // One slider, a fixed graph, and constant adjustment for measured C.
   await page.goto(`${url}?level=8`);
+  const eighth = await result();
+  await page.locator("#post-adjustment").check();
+  await page.locator("#continue").click();
+  assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 11/);
+  assert.equal(await page.locator(".lesson-result:visible").count(), 4);
+  assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
+  assert.equal(await page.locator("input").count(), 1);
+  const ninth = await result();
+  assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
+  const graphLabels = await page
+    .locator("#lesson-graph svg text")
+    .allTextContents();
+  assert.deepEqual(graphLabels, [
+    "Baseline health (C)",
+    "Treatment (A)",
+    "Outcome (Y)",
+    "Smoking status (U)",
+  ]);
+  assert.match(
+    await page.locator("#lesson-graph svg").getAttribute("aria-label"),
+    /no influence/,
+  );
+  const sample = await page.locator("#sample-label").innerText();
+  const positions = () =>
+    page.evaluate(() =>
+      ["#lesson-graph", "#hidden-strength", ".lesson-results"].map(
+        (selector) => {
+          const rect = document.querySelector(selector).getBoundingClientRect();
+          return { top: rect.top + scrollY, height: rect.height };
+        },
+      ),
+    );
+  const initialPositions = await positions();
+  await page.locator("#hidden-strength").focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(
+    await page.locator("#hidden-strength-output").innerText(),
+    "0.1",
+  );
+  await page.locator("#hidden-strength").fill("2");
+  const strong = await result();
+  assert.notEqual(strong, ninth);
+  assert.equal(await page.locator("#known-effect").innerText(), "2.00");
+  for (const method of ["ipw", "regression", "aipw"])
+    assert.ok(Number(await page.locator(`#${method}`).innerText()) > 2.7);
+  assert.equal(await page.locator("#sample-label").innerText(), sample);
+  assert.deepEqual(
+    await page.locator("#lesson-graph svg text").allTextContents(),
+    graphLabels,
+  );
+  assert.deepEqual(await positions(), initialPositions);
+  assert.match(
+    await page.locator("#lesson-graph svg").getAttribute("aria-label"),
+    /also causes/,
+  );
+  await page.locator(".lesson-explanation summary").click();
+  assert.equal(await result(), strong);
+  await page.screenshot({
+    path: "/tmp/causal-hidden-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobilePositions = await positions();
+  await page.locator("#hidden-strength").tap();
+  assert.notEqual(await page.locator("#hidden-strength").inputValue(), "2");
+  await page.locator("#hidden-strength").fill("0");
+  assert.equal(await result(), ninth);
+  assert.deepEqual(await positions(), mobilePositions);
+  await page.locator("#hidden-strength").fill("2");
+  assert.equal(await result(), strong);
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-hidden-mobile.png",
+    fullPage: true,
+  });
+  await page.locator("#redraw").tap();
+  assert.notEqual(await result(), strong);
+  await page.locator("#restart").tap();
+  assert.equal(await result(), ninth);
+  assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
+  await page.locator("#back").tap();
+  assert.equal(await result(), eighth);
+  await page.locator("#continue").tap();
+  assert.equal(await result(), ninth);
+  await page.goBack();
+  assert.equal(await result(), eighth);
+  await page.goForward();
+  assert.equal(await result(), ninth);
+  await page.locator(".lesson-nav summary").tap();
+  await page
+    .getByRole("link", { name: "A hidden common cause", exact: true })
+    .tap();
+  assert.equal(await result(), ninth);
+  await page.getByRole("link", { name: "Open full sandbox" }).click();
+  await page.locator("#world-select").selectOption("both");
+  await page.locator('input[value="K"]').check();
+  await page.goto(`${url}?level=9`);
+  assert.equal(await result(), ninth);
+  // Strong hidden confounding is reset before the overlap experiment.
+  await page.goto(`${url}?level=9`);
+  await page.locator("#hidden-strength").fill("2");
   await page.locator("#continue").click();
   assert.match(await page.locator("h1").innerText(), /Too little overlap/);
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 11/);
@@ -399,12 +505,12 @@ try {
     await page.locator("#model-weight-note").innerText(),
     /clipped.*IPW and AIPW/,
   );
-  const strong = await result();
+  const strongOverlap = await result();
   const strongDiagnostics = await diagnostics();
   await page.locator(".overlap-details summary").focus();
   await page.keyboard.press("Enter");
   await page.locator(".lesson-explanation summary").click();
-  assert.equal(await result(), strong);
+  assert.equal(await result(), strongOverlap);
   assert.equal(await diagnostics(), strongDiagnostics);
   await page.screenshot({
     path: "/tmp/causal-overlap-desktop.png",
@@ -419,7 +525,7 @@ try {
   await page
     .getByRole("radio", { name: "Strong selection", exact: true })
     .tap();
-  assert.equal(await result(), strong);
+  assert.equal(await result(), strongOverlap);
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -430,18 +536,18 @@ try {
     fullPage: true,
   });
   await page.locator("#redraw").tap();
-  assert.notEqual(await result(), strong);
+  assert.notEqual(await result(), strongOverlap);
   assert.notEqual(await diagnostics(), strongDiagnostics);
   await page.locator("#restart").tap();
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
   await page.locator("#back").tap();
-  assert.equal(await result(), roleBaselines[1][1]);
+  assert.equal(await result(), ninth);
   assert.equal(await page.locator("#propensity-histogram").count(), 0);
   await page.goBack();
   assert.equal(await result(), tenth);
   await page.goForward();
-  assert.equal(await result(), roleBaselines[1][1]);
+  assert.equal(await result(), ninth);
   await page.locator(".lesson-nav summary").tap();
   await page
     .getByRole("link", { name: "Too little overlap", exact: true })

@@ -2,10 +2,11 @@ import { makeNoise, estimate } from "./simulation.js";
 
 // Complete lesson state; no advanced sandbox setting is shared with this world.
 export function lessonBaseline(level) {
-  if (![1, 2, 3, 4, 5, 6, 7, 8, 10].includes(level))
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(level))
     throw new Error("Unknown lesson");
   return {
     level,
+    ...(level === 9 ? { hiddenStrength: 0 } : {}),
     seed: 4217,
     n: 2400,
     effect: 2,
@@ -20,15 +21,21 @@ export function lessonBaseline(level) {
   };
 }
 
-// Later lessons add one post-treatment variable to the same baseline world.
+// One measured baseline variable; level 9 adds unmeasured smoking status.
 export function simulateLesson(state, noise = makeNoise(state.n, state.seed)) {
-  return noise.map(({ C1: C, a, eY, eM, eK }) => {
+  return noise.map(({ C1: C, U: smokingDraw, a, eY, eM, eK }) => {
+    const U = +(smokingDraw > 0);
+    const hiddenInfluence =
+      state.level === 9 ? state.hiddenStrength * (U - 0.5) : 0;
     const A = +(
       a <
       1 /
         (1 +
           Math.exp(
-            0.8 - state.selection * C - state.treatmentCurve * (C ** 2 - 1),
+            0.8 -
+              state.selection * C -
+              state.treatmentCurve * (C ** 2 - 1) -
+              hiddenInfluence,
           ))
     );
     const M = state.level === 7 ? A + eM : 0;
@@ -37,9 +44,11 @@ export function simulateLesson(state, noise = makeNoise(state.n, state.seed)) {
       state.outcomeInfluence * C +
       state.outcomeCurve * (C ** 2 - 1) +
       M +
+      hiddenInfluence +
       eY;
     return {
       ...(state.level > 1 ? { C } : {}),
+      ...(state.level === 9 ? { U } : {}),
       A,
       Y,
       ...(state.level === 7 ? { M } : {}),
@@ -49,7 +58,10 @@ export function simulateLesson(state, noise = makeNoise(state.n, state.seed)) {
 }
 
 export function lessonResult(state, noise) {
-  const data = simulateLesson(state, noise);
+  const world = simulateLesson(state, noise);
+  // U is available only to the simulator, never to the analyst. C remains measured.
+  const data =
+    state.level === 9 ? world.map(({ A, C, Y }) => ({ A, C, Y })) : world;
   const predictionPoints =
     state.level === 5
       ? Array.from({ length: 41 }, (_, i) => ({
