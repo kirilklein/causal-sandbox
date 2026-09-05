@@ -3,6 +3,7 @@ import "./lessons.css";
 import { effectComparison } from "./effect-comparison.js";
 import { makeNoise } from "./simulation.js";
 import { lessonBaseline, lessonResult } from "./lesson-simulation.js";
+import { samplingView } from "./sampling-variation.js";
 
 const lessons = [
   {
@@ -161,6 +162,7 @@ const hiddenCallback = {
 };
 let state,
   noise,
+  studies = [],
   revealed = false,
   revisiting = false;
 const app = document.querySelector("#app");
@@ -260,6 +262,7 @@ function lessonNavigation(position) {
 function enter(level, focus = true, callback = false) {
   revisiting = callback;
   state = lessonBaseline(level);
+  studies = [];
   noise = makeNoise(state.n, state.seed);
   revealed = false;
   const lesson = revisiting ? hiddenCallback : lessons[level - 1];
@@ -286,6 +289,19 @@ function enter(level, focus = true, callback = false) {
         ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
+        ${
+          level <= 2
+            ? `<details class="sampling-variation"><summary>Compare repeated studies</summary>
+          <p>Repeat the study with another 2,400 people. Each dot is an unadjusted estimate; the dashed line marks the true effect. The filled dot is the latest study.</p>
+          <button id="repeat-study">Repeat study</button>
+          <p id="sampling-summary" class="sample-note" aria-live="polite"></p>
+          <div id="sampling-plot"></div>
+          <p>${level === 1 ? "Randomization lets estimates fluctuate around truth across studies. Their spread is sampling variation." : "At zero selection, estimates fluctuate around truth. With confounding, repeated estimates tend to remain away from truth: systematic error, or bias. Repeating a biased comparison does not fix it."} One study cannot show either pattern. This plot is not a confidence interval.</p>
+          <p class="sample-note">Changing the slider starts a new series with the current sample. Restart restores the initial world and sample.</p>
+          <details><summary>Study values</summary><div class="sampling-table"><table><caption>Unadjusted estimates in outcome units</caption><thead><tr><th scope="col">Study</th><th scope="col">Seed</th><th scope="col">Estimate</th><th scope="col">Difference from truth</th></tr></thead><tbody id="sampling-values"></tbody></table></div></details>
+        </details>`
+            : ""
+        }
       </section>
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>We fit treatment probabilities using baseline health (C), then compare weighted outcome averages. Each average divides by its group’s total weight. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
@@ -330,12 +346,14 @@ function enter(level, focus = true, callback = false) {
       update();
     });
   document.querySelector("#effect")?.addEventListener("input", (e) => {
+    studies = [];
     state.effect = +e.target.value;
     document.querySelector("#effect-output").textContent =
       state.effect.toFixed(1);
     update();
   });
   document.querySelector("#selection")?.addEventListener("input", (e) => {
+    studies = [];
     state.selection = +e.target.value;
     document.querySelector("#selection-output").textContent =
       state.selection.toFixed(1);
@@ -370,10 +388,11 @@ function enter(level, focus = true, callback = false) {
       state.postAdjusted = e.target.checked;
       update();
     });
-  document.querySelector("#redraw").addEventListener("click", () => {
-    noise = makeNoise(state.n, ++state.seed);
-    update();
-  });
+  for (const id of ["redraw", "repeat-study"])
+    document.querySelector(`#${id}`)?.addEventListener("click", () => {
+      noise = makeNoise(state.n, ++state.seed);
+      update();
+    });
   document
     .querySelector("#restart")
     .addEventListener("click", () => enter(level, true, revisiting));
@@ -437,6 +456,14 @@ function updateEstimate(id, estimate, truth) {
 
 function update() {
   const result = lessonResult(state, noise);
+  if (state.level <= 2) {
+    if (studies.at(-1)?.seed !== state.seed)
+      studies.push({ seed: state.seed, estimate: result.unadjusted });
+    const view = samplingView(studies, result.totalEffect);
+    document.querySelector("#sampling-summary").textContent = view.summary;
+    document.querySelector("#sampling-plot").innerHTML = view.plot;
+    document.querySelector("#sampling-values").innerHTML = view.rows;
+  }
   document.querySelector("#known-effect").textContent =
     result.totalEffect.toFixed(2);
   for (const id of ["unadjusted", "ipw", "regression", "aipw"]) {

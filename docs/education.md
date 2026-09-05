@@ -56,7 +56,45 @@ future work.
 
 Only implemented lessons appear in contents. Levels 1–10 now form a continuous
 sequence; “Level N of 11” includes the final sandbox. No scores, completion gates, accounts or stored
-progress. Later chapters and uncertainty are separate changes.
+progress. Later chapters and confidence intervals are separate changes.
+
+## Sampling variation (IV prerequisite, PR A)
+
+Placement in levels 1–2 is provisional. Keep the current presentation while final
+curriculum placement and visibility remain a later decision.
+
+Levels 1 and 2 offer an optional “Compare repeated studies” view, closed on
+entry. It reuses the existing unadjusted difference and independent seeded draws
+at n=2400. Both “Repeat study” and “Redraw sample” add one study, including when
+the view is closed. Opening explanations or study values preserves the series.
+Changing the effect or selection slider clears it and records the current sample
+under the new world. Restart and lesson/history navigation restore the initial
+sample and a single-study series. No batch or asynchronous computation remains
+to cancel when leaving.
+
+Each row plots one study's estimate minus the true effect on a fixed -0.5 to 2
+outcome-unit axis. Zero is the truth line in both lessons, including after effect
+changes. Filled dots identify the latest study. The summary shows the mean
+estimate and known effect; an optional table retains every seed, estimate, and
+difference. Off-scale estimates use boundary triangles and keep their exact
+values. Unavailable estimates remain in the study count and table; their
+exclusion from the mean is explicit. These are repeated-sample estimates, not
+confidence intervals.
+
+The randomized lesson introduces sampling spread. The confounding lesson then
+shows why repeated estimates can remain systematically away from truth; repeating
+the comparison does not repair confounding. No estimator, lesson order, or default
+world changes. IV estimation and validated confidence sets remain PRs B–D.
+
+Across 80 independent seeds (200–279), randomized estimates average 2.008 with
+SD 0.047, compared with approximately 0.044 from the known treatment probability
+and unit outcome-noise variance. The confounded estimates average 3.498 against
+truth 2. Tests also check the estimate against direct treatment-arm means,
+reproducibility, unavailable estimates, and off-scale rendering. Browser checks
+cover accumulation, disclosure invariance, slider resets, restart/history,
+keyboard/touch, and desktop/320px layouts. Learner comprehension remains pending:
+ask what the dots represent, what changes between studies, and why a tightly
+grouped set of estimates can still miss truth.
 
 ## Statistical audit and first-chapter contract
 
