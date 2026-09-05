@@ -47,6 +47,18 @@ npm run dev
 
 Pushes to `main` deploy to GitHub Pages.
 
+### Browser checks
+
+After installing dependencies, start the server in the worktree being tested:
+
+```sh
+npm run dev -- --port 5173 --strictPort
+```
+
+In another terminal in the same worktree, run `npm run test:browser`. The tests use `http://127.0.0.1:5173/causal-sandbox/` and local Google Chrome. `--strictPort` prevents Vite from silently moving to another port and leaving the tests pointed at a different checkout.
+
+For another port, set `APP_URL` to the full base URL, including `/causal-sandbox/`, when running the tests. To use Playwright's bundled Chromium instead of Chrome, run `npx playwright install chromium`, then `CI=1 npm run test:browser`. CI tests the built site; reproduce that with `npm run build` and `npm run preview -- --port 5173 --strictPort` in place of the dev server.
+
 ## The causal world
 
 C₁, C₂ are independent uniform on [-√3, √3]; U and the errors are standard normal.
