@@ -32,9 +32,6 @@ robustness to the earlier missing-information limitation.
 
 ## Review boundaries
 
-[Selective examples](selective-examples.md) records where concrete illustrations
-can help while preserving the existing graph labels (#27).
-
 [Color conventions](color-conventions.md) defines the agreed variable palette,
 adjustment captions, and method/truth styling (#20), applied to the existing
 lessons and sandbox. Equation highlights and the new lesson estimate plot remain
@@ -79,13 +76,12 @@ Level 1 sets selection and outcomeInfluence to zero and exposes only A and Y.
 Level 2 sets outcomeInfluence to 1.5 and lets selection vary from 0 to 1.2 in steps of 0.1, starting at zero.
 The slider preserves covariates and random draws; redraw is separate. Returning
 to zero restores random assignment, and entry/restart restores zero and the initial sample.
-Level 3 starts with selection 1.2 and fits logistic treatment assignment using C
-when adjustment is enabled. Without C, IPW uses an intercept-only model and equals
-the unadjusted difference. The control explicitly includes C in the treatment model;
-visible feedback explains why constant within-group weights leave both means
-unchanged when C is excluded. Result labels identify whether IPW uses C. Weighted
-balance uses the exact weights from the estimator, including its [0.02, 0.98]
-clipping policy.
+Level 3 starts with selection 1.2 and shows truth and the unadjusted difference.
+One “Try IPW” action fits treatment probabilities using baseline health (C) and
+reveals the adjusted estimate alongside before/after balance for the same sample.
+There is no adjustment checkbox or intermediate unadjusted IPW result. Redraw
+updates both estimates; restart restores the initial view. Weighted balance uses
+the estimator’s exact weights, including its [0.02, 0.98] clipping policy.
 
 In levels 1–4, 8, and 9, no C2, interaction, mediator, collider or hidden cause enters lesson
 records or outcomes. Every entry/restart sets n=2400, seed=4217, effect=2, the level's selection

@@ -16,6 +16,7 @@ try {
   await page.locator("#unadjusted").waitFor();
   const result = () => page.locator(".lesson-results").innerText();
   const first = await result();
+  assert.equal(await page.locator(".lesson-intuition").count(), 0);
   const estimateTint = () =>
     page
       .locator("#unadjusted")
@@ -124,62 +125,45 @@ try {
   await page.locator("#continue").click();
   const third = await result();
   assert.equal(await page.locator("#balance").isVisible(), false);
-  await page.locator("#reveal-ipw").click();
-  assert.equal(await page.locator("#adjustment").isChecked(), false);
-  assert.equal(
-    await page.locator("#ipw").innerText(),
-    await page.locator("#unadjusted").innerText(),
-  );
-  assert.match(
-    await page.locator("#weighting-model").innerText(),
-    /Weights are constant within each group/,
-  );
-  assert.equal(
-    await page.locator("#ipw-result > span:first-child").innerText(),
-    "IPW estimate · without C",
-  );
-  for (const arm of [0, 1]) {
-    assert.equal(
-      await page.locator(`#before-${arm}`).innerText(),
-      await page.locator(`#after-${arm}`).innerText(),
-    );
-  }
   const unweightedGraph = await page
     .locator("#lesson-graph svg")
     .evaluate((el) => el.outerHTML);
-  assert.match(
-    await page.locator("#lesson-graph .sample-note").innerText(),
-    /overall probability only \(no C\)/,
+  const unadjusted = await page.locator("#unadjusted").innerText();
+  await page.getByRole("button", { name: "Try IPW", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#adjustment").count(), 0);
+  assert.equal(await page.locator("#reveal-ipw").isVisible(), false);
+  assert.equal(await page.locator("#balance").isVisible(), true);
+  assert.equal(
+    await page
+      .locator("#ipw-result")
+      .evaluate((el) => el === document.activeElement),
+    true,
   );
-  await page.keyboard.press("Space");
-  assert.equal(await page.locator("#adjustment").isChecked(), true);
+  assert.equal(await page.locator("#unadjusted").innerText(), unadjusted);
   assert.equal(
     await page.locator("#lesson-graph svg").evaluate((el) => el.outerHTML),
     unweightedGraph,
   );
-  assert.match(
-    await page.locator("#lesson-graph .sample-note").innerText(),
-    /adjusting for C/,
-  );
   assert.ok(
     Math.abs(Number(await page.locator("#ipw").innerText()) - 2) < 0.15,
   );
-  assert.match(
-    await page.locator("#weighting-model").innerText(),
-    /probabilities now depend on baseline health/,
-  );
-  assert.equal(
-    await page.locator("#ipw-result > span:first-child").innerText(),
-    "IPW estimate · using C",
-  );
+  const balanceGap = async (when) =>
+    Math.abs(
+      Number(await page.locator(`#${when}-1`).innerText()) -
+        Number(await page.locator(`#${when}-0`).innerText()),
+    );
+  assert.ok((await balanceGap("after")) < (await balanceGap("before")));
   const weighted = await result();
-  await page.locator("#adjustment").uncheck();
-  assert.equal(
-    await page.locator("#ipw").innerText(),
-    await page.locator("#unadjusted").innerText(),
-  );
-  assert.match(await page.locator("#weighting-model").innerText(), /Without C/);
-  await page.locator("#adjustment").check();
+  await page.locator("#redraw").click();
+  assert.notEqual(await result(), weighted);
+  assert.equal(await page.locator("#ipw-result").isVisible(), true);
+  assert.equal(await page.locator("#balance").isVisible(), true);
+  await page.locator("#restart").click();
+  assert.equal(await result(), third);
+  assert.equal(await page.locator("#ipw-result").isVisible(), false);
+  assert.equal(await page.locator("#balance").isVisible(), false);
+  await page.getByRole("button", { name: "Try IPW", exact: true }).click();
   assert.equal(await result(), weighted);
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), weighted);
@@ -191,8 +175,8 @@ try {
   assert.equal(await page.locator("#balance").isVisible(), false);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("#reveal-ipw").tap();
-  await page.locator("#adjustment").tap();
-  assert.equal(await page.locator("#adjustment").isChecked(), true);
+  assert.equal(await page.locator("#ipw-result").isVisible(), true);
+  assert.equal(await result(), weighted);
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -308,6 +292,22 @@ try {
       paths,
     );
     const adjusted = await result();
+    const intuition = page.locator(".lesson-intuition");
+    assert.equal(await intuition.getAttribute("open"), null);
+    assert.equal(
+      await intuition.locator("summary").innerText(),
+      level === 7
+        ? "Example: exercise and fitness"
+        : "Example: follow-up care in healthcare",
+    );
+    await intuition.locator("summary").focus();
+    await page.keyboard.press("Enter");
+    assert.equal(await intuition.locator("p").first().isVisible(), true);
+    assert.equal(await result(), adjusted);
+    assert.equal(
+      await page.locator(".lesson-explanation").getAttribute("open"),
+      null,
+    );
     await page.locator(".lesson-explanation summary").click();
     await page.locator(".lesson-details summary").click();
     assert.equal(await result(), adjusted);
@@ -316,6 +316,12 @@ try {
       fullPage: true,
     });
     await page.setViewportSize({ width: 390, height: 844 });
+    await intuition.locator("summary").tap();
+    assert.equal(await intuition.getAttribute("open"), null);
+    assert.equal(await result(), adjusted);
+    await intuition.locator("summary").tap();
+    assert.equal(await intuition.locator("p").first().isVisible(), true);
+    assert.equal(await result(), adjusted);
     await page.locator("#post-adjustment").tap();
     assert.equal(await result(), baseline);
     assert.ok(
@@ -333,6 +339,7 @@ try {
     await page.locator("#restart").tap();
     assert.equal(await result(), baseline);
     assert.equal(await page.locator("#post-adjustment").isChecked(), false);
+    assert.equal(await intuition.getAttribute("open"), null);
     await page.setViewportSize({ width: 1280, height: 900 });
   }
   // One slider, a fixed graph, and constant adjustment for measured C.
@@ -340,6 +347,7 @@ try {
   await page.locator("#post-adjustment").check();
   await page.locator("#continue").click();
   assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
+  assert.equal(await page.locator(".lesson-intuition").count(), 0);
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 7 of 11/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
