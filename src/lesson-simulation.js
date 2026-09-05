@@ -75,6 +75,7 @@ export function lessonResult(state, noise) {
   const result = estimate(data, adjustment, {
     ...state,
     predictionPoints,
+    aipwDetails: state.level === 6,
   });
   const means = (weights) =>
     [0, 1].map((arm) => {
@@ -112,6 +113,9 @@ export function lessonResult(state, noise) {
     ipw: result.values[3],
     regression: result.values[2],
     aipw: result.values[4],
+    ...(state.level === 6
+      ? { aipwContributions: result.aipwContributions }
+      : {}),
     clipped: result.clipped,
     ...(state.level === 3
       ? { calculation: ipwCalculation(data, result.weights) }

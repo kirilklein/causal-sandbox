@@ -1088,6 +1088,93 @@ try {
   assert.equal(await page.locator("#selection").inputValue(), "0");
   assert.match(await page.locator("#sample-label").innerText(), /4217/);
   assert.equal(await page.locator("#sampling-plot").isVisible(), false);
+  // AIPW is display lesson 9, with stable numeric ID 6.
+  await page.goto(`${url}?lesson=double-robustness`);
+  const aipwInitial = await result();
+  const calculation = page.locator(".aipw-calculation");
+  const calculationToggle = calculation.locator(":scope > summary");
+  assert.equal(await calculation.getAttribute("open"), null);
+  await calculationToggle.focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await result(), aipwInitial);
+  const numbers = page.locator(".aipw-numbers");
+  assert.equal(await numbers.getAttribute("open"), null);
+  assert.equal(await calculation.locator("table:visible").count(), 0);
+  await numbers.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await result(), aipwInitial);
+  const arithmetic = () => page.locator("#aipw-arithmetic").innerText();
+  const initialArithmetic = await arithmetic();
+  const reconciles = async () => {
+    assert.equal(
+      await page.locator("#aipw-worked-effect").innerText(),
+      await page.locator("#aipw").innerText(),
+    );
+  };
+  await reconciles();
+  for (const selector of ["#outcome-quadratic", "#treatment-quadratic"]) {
+    await page.locator(selector).uncheck();
+    assert.notEqual(await arithmetic(), initialArithmetic);
+    assert.equal(await calculation.getAttribute("open"), "");
+    assert.equal(await numbers.getAttribute("open"), "");
+    assert.match(await page.locator("#sample-label").innerText(), /4217/);
+    await reconciles();
+  }
+  await page.locator("#outcome-quadratic").check();
+  await reconciles();
+  await page.locator("#treatment-quadratic").check();
+  assert.equal(await arithmetic(), initialArithmetic);
+  await page.locator("#redraw").click();
+  assert.notEqual(await arithmetic(), initialArithmetic);
+  await reconciles();
+  await page.locator("#restart").click();
+  assert.equal(await calculation.getAttribute("open"), null);
+  assert.equal(await result(), aipwInitial);
+  await calculationToggle.tap();
+  assert.equal(await numbers.getAttribute("open"), null);
+  await numbers.locator("summary").tap();
+  assert.equal(await arithmetic(), initialArithmetic);
+  await numbers.locator("summary").tap();
+  const normalization = page.locator(".aipw-normalization");
+  await normalization.locator("summary").tap();
+  assert.equal(await result(), aipwInitial);
+  await normalization.locator("summary").tap();
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const theme of ["light", "dark"]) {
+      await page.locator("#theme").selectOption(theme);
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      );
+      assert.ok(
+        await calculation
+          .locator("math")
+          .evaluateAll((elements) =>
+            elements.every(
+              (el) =>
+                el.getAttribute("aria-label") &&
+                el.getBoundingClientRect().width <=
+                  el.parentElement.getBoundingClientRect().width + 1,
+            ),
+          ),
+      );
+      await calculation.screenshot({
+        path: `/tmp/causal-aipw-${width}-${theme}.png`,
+      });
+      assert.equal(await result(), aipwInitial);
+    }
+  }
+  await calculationToggle.tap();
+  assert.equal(await result(), aipwInitial);
+  await page.locator("#revisit-hidden").click();
+  assert.equal(await calculation.count(), 0);
+  await page.goBack();
+  assert.equal(await calculation.getAttribute("open"), null);
+  assert.equal(await result(), aipwInitial);
+  await page.goto(`${url}?lesson=outcome-regression`);
+  assert.equal(await calculation.count(), 0);
   assert.deepEqual(errors, []);
   console.log(
     "Lesson navigation, baseline resets, help, keyboard and mobile checks passed.",

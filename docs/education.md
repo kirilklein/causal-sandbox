@@ -184,6 +184,38 @@ Browser checks cover disclosure, both world experiments, independent model
 switches, explanation invariance, direct entry, restart, backward/forward
 navigation, keyboard controls, and mobile layout for the model chapter.
 
+## AIPW formula and optional calculation (level 9)
+
+A closed “How is AIPW calculated?” section follows the general explanation.
+It leads with a large annotated formula: average the predicted treatment contrast
+plus s × w × r over people. Matching boxes define r as the observed regression
+error, w as the IPW weight for the treatment received, and s as +1 for treated or
+−1 for untreated. Predictions use a treatment subscript and explicit C argument,
+avoiding crowded treatment/person double subscripts. Native MathML supplies
+fractions, hats, and text equivalents; the formula stacks at phone widths.
+
+“Check with this sample” holds one optional table for the first treated and first
+untreated person. The mean contrast, mean correction, and AIPW estimate use every
+record. Averaging and clipping have a separate optional explanation. These
+disclosures preserve their open state during model changes and redraws.
+
+The optional `aipwDetails` estimator output exposes the fitted values already used
+in its calculation, including clipped probabilities and received-treatment weights.
+It does not change estimation. Only stable lesson ID 6 (display position 9) requests
+these records. Restart and navigation close the disclosures. Opening an explanation
+leaves the sample, model choices, and estimates unchanged.
+
+AIPW averages contributions over n. The displayed IPW uses within-group Hájek
+normalization, so the explanation starts from outcome regression plus a correction,
+not the displayed IPW plus a correction. Rounding affects presentation only.
+Tests reconstruct the estimate across all four model combinations and both clipping
+tails, check unchanged estimator results, and cover keyboard/touch, resets, history,
+and light/dark layouts at desktop and 320px widths. Screen-reader use and learner
+comprehension remain pending. Ask why the untreated error is subtracted and whether
+the correction must move an estimate closer to truth. The IPW and outcome-regression
+explanations from #46/#47 are integrated; comprehension of the connected sequence
+still needs a learner walkthrough.
+
 ## New-learner walkthrough (pending)
 
 Ask a learner with no causal-inference training to use the default page on their
