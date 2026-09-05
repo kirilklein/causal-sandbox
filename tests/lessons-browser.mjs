@@ -342,6 +342,111 @@ try {
     await page.goto(`${url}?level=${level}`);
     assert.equal(await result(), expected);
   }
+  // One slider, a fixed graph, and constant adjustment for measured C.
+  await page.goto(`${url}?level=8`);
+  const eighth = await result();
+  await page.locator("#post-adjustment").check();
+  await page.locator("#continue").click();
+  assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 11/);
+  assert.equal(await page.locator(".lesson-result:visible").count(), 4);
+  assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
+  assert.equal(await page.locator("input").count(), 1);
+  const ninth = await result();
+  assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
+  const graphLabels = await page
+    .locator("#lesson-graph svg text")
+    .allTextContents();
+  assert.deepEqual(graphLabels, [
+    "Baseline health (C)",
+    "Treatment (A)",
+    "Outcome (Y)",
+    "Smoking status (U)",
+  ]);
+  assert.match(
+    await page.locator("#lesson-graph svg").getAttribute("aria-label"),
+    /no influence/,
+  );
+  const sample = await page.locator("#sample-label").innerText();
+  const positions = () =>
+    page.evaluate(() =>
+      ["#lesson-graph", "#hidden-strength", ".lesson-results"].map(
+        (selector) => {
+          const rect = document.querySelector(selector).getBoundingClientRect();
+          return { top: rect.top + scrollY, height: rect.height };
+        },
+      ),
+    );
+  const initialPositions = await positions();
+  await page.locator("#hidden-strength").focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(
+    await page.locator("#hidden-strength-output").innerText(),
+    "0.1",
+  );
+  await page.locator("#hidden-strength").fill("2");
+  const strong = await result();
+  assert.notEqual(strong, ninth);
+  assert.equal(await page.locator("#known-effect").innerText(), "2.00");
+  for (const method of ["ipw", "regression", "aipw"])
+    assert.ok(Number(await page.locator(`#${method}`).innerText()) > 2.7);
+  assert.equal(await page.locator("#sample-label").innerText(), sample);
+  assert.deepEqual(
+    await page.locator("#lesson-graph svg text").allTextContents(),
+    graphLabels,
+  );
+  assert.deepEqual(await positions(), initialPositions);
+  assert.match(
+    await page.locator("#lesson-graph svg").getAttribute("aria-label"),
+    /also causes/,
+  );
+  await page.locator(".lesson-explanation summary").click();
+  assert.equal(await result(), strong);
+  await page.screenshot({
+    path: "/tmp/causal-hidden-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobilePositions = await positions();
+  await page.locator("#hidden-strength").tap();
+  assert.notEqual(await page.locator("#hidden-strength").inputValue(), "2");
+  await page.locator("#hidden-strength").fill("0");
+  assert.equal(await result(), ninth);
+  assert.deepEqual(await positions(), mobilePositions);
+  await page.locator("#hidden-strength").fill("2");
+  assert.equal(await result(), strong);
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-hidden-mobile.png",
+    fullPage: true,
+  });
+  await page.locator("#redraw").tap();
+  assert.notEqual(await result(), strong);
+  await page.locator("#restart").tap();
+  assert.equal(await result(), ninth);
+  assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
+  await page.locator("#back").tap();
+  assert.equal(await result(), eighth);
+  await page.locator("#continue").tap();
+  assert.equal(await result(), ninth);
+  await page.goBack();
+  assert.equal(await result(), eighth);
+  await page.goForward();
+  assert.equal(await result(), ninth);
+  await page.locator(".lesson-nav summary").tap();
+  await page
+    .getByRole("link", { name: "A hidden common cause", exact: true })
+    .tap();
+  assert.equal(await result(), ninth);
+  await page.getByRole("link", { name: "Open full sandbox" }).click();
+  await page.locator("#world-select").selectOption("both");
+  await page.locator('input[value="K"]').check();
+  await page.goto(`${url}?level=9`);
+  assert.equal(await result(), ninth);
   assert.deepEqual(errors, []);
   console.log(
     "Lesson navigation, baseline resets, help, keyboard and mobile checks passed.",

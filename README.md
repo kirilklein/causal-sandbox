@@ -14,7 +14,7 @@ Open the full sandbox at any time to explore additional variables, model choices
 
 Predict, try a change, compare the result, and open an explanation when needed. Redraw to explore sample variation. Back, contents, and restart establish the complete lesson baseline, including the sample seed. No completion gate or saved progress.
 
-[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 1–8 are implemented; levels 9–11 are still to come; the full sandbox remains a separate advanced experiment.
+[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 1–9 are implemented; levels 10–11 are still to come; the full sandbox remains a separate advanced experiment.
 
 ## In the full sandbox
 

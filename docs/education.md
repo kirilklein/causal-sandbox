@@ -1,7 +1,7 @@
 # Progressive education delivery
 
-The default experience is a sequence of small experiments. Levels 1–8 implement randomization → one common cause → inverse probability
-weighting → outcome regression → model failure → double robustness → mediator → collider.
+The default experience is a sequence of small experiments. Levels 1–9 implement randomization → one common cause → inverse probability
+weighting → outcome regression → model failure → double robustness → mediator → collider → hidden confounding.
 The existing advanced sandbox is available through `?sandbox`.
 
 ## Review boundaries
@@ -14,17 +14,17 @@ The existing advanced sandbox is available through `?sandbox`.
    the same C and independent model choices. Repeated simulations check separate
    failures and all four model combinations. Learner comprehension remains to be
    assessed; automated checks do not substitute for a new-learner walkthrough.
-3. **Causal limitations (remaining #8) and overlap (#9):** levels 7–8 implement
-   separate mediator and collider experiments. Levels 9–10 remain: unavailable
-   confounders and overlap. Each returns
+3. **Causal limitations (remaining #8) and overlap (#9):** levels 7–9 implement
+   separate mediator, collider, and hidden-confounding experiments. Level 10
+   will introduce overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 10.
 4. **Final sandbox integration:** level 11, a clean baseline and exact experiment
    transfer. The current two-covariate sandbox is an early escape route, not a
    representation of a beginner lesson. Its link starts a separate experiment.
 
-Only implemented lessons appear in contents; “Level N of 8” avoids
-advertising unavailable navigation. No scores, completion gates, accounts or stored
+Only implemented lessons appear in contents. Levels 1–9 now form a continuous
+sequence; “Level N of 11” refers to the planned full journey. No scores, completion gates, accounts or stored
 progress. Later chapters and uncertainty are separate changes.
 
 ## Statistical audit and first-chapter contract
@@ -166,3 +166,41 @@ entry, restart, back/forward, keyboard/touch, help invariance, fixed graph arrow
 and desktop/mobile rendering. Learner comprehension is still untested: ask why
 M carries an effect, why K does not, and why including each changes the comparison
 without changing the total effect we are trying to estimate.
+
+## Hidden common cause (level 9)
+
+Level 9 keeps measured baseline health C and adds binary, unmeasured smoking
+status U. This is a fictional teaching example, not a model of smoking's actual
+prevalence or effects. U is 1 for half the population and independent of C.
+One strength slider s runs from 0 to 2 and controls both pathways:
+
+```
+P(A=1 | C,U) = sigmoid(-0.8 + 1.2*C + s*(U - 0.5))
+Y = 2*A + 1.5*C + s*(U - 0.5) + error
+Total population ATE = 2
+```
+
+The slider changes the world, keeping the same people, smoking status, and
+underlying random draws. Treatment and outcome can change as the pathways grow.
+Both fitted models always include C and never receive U. At zero strength,
+the generating process reduces to the familiar level-4 baseline. IPW, outcome
+regression, and AIPW remain visible beside truth throughout.
+
+The graph always shows C and U in fixed positions. Dashed styling identifies U
+as unmeasured; its pathways fade at zero, with text explaining that they are
+inactive. There are no availability or reveal checkboxes. Reading explanations
+does not change the experiment; restarting restores strength zero and seed 4217.
+
+Tests use 40 independent samples at strengths 0, 0.5, 1, 1.5, and 2. Mean bias
+increases across these strengths for all three methods, from absolute bias below
+0.03 at zero to about +0.86 at strength 2. No analyst probabilities are clipped.
+A diagnostic fit including both C and U keeps absolute mean bias below 0.06,
+supporting the missing-information mechanism. That diagnostic is never exposed
+to the learner's models. Tests also verify the equations, constant total effect,
+fixed covariates and draws, and exclusion of U from analysis data. These checks
+support a tendency across samples, not monotonic divergence in every sample.
+
+Browser checks cover the slider by keyboard and touch, fixed graph and result
+positions, explanation invariance, redraw, restart, direct/contents entry,
+history, sandbox isolation, and phone layout. Learner comprehension remains
+untested. The full sandbox link continues to start a separate experiment.
