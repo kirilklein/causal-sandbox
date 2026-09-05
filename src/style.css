@@ -168,6 +168,7 @@ h1 {
 .workspace {
   display: grid;
   grid-template-columns: 1.02fr 1fr;
+  grid-template-areas: "world estimates" "world data";
   gap: 18px;
   align-items: start;
 }
@@ -209,6 +210,46 @@ h2 {
   font-size: 11px;
   color: var(--text-muted);
   margin: 7px 0 0 27px;
+}
+.graph-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.switch-track {
+  width: 30px;
+  height: 18px;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+.switch-track::after {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+.graph-toggle[aria-checked="true"] .switch-track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.graph-toggle[aria-checked="true"] .switch-track::after {
+  transform: translateX(12px);
+  background: var(--on-accent);
+}
+.graph-toggle-help {
+  margin: 6px 0 10px;
+  color: var(--text-muted);
+  font-size: 10px;
 }
 .graph-wrap {
   margin-top: 12px;
@@ -365,8 +406,19 @@ input[type="range"]::-moz-range-thumb {
   margin: 15px 0 6px;
 }
 .right-column {
-  display: grid;
-  gap: 16px;
+  display: contents;
+}
+.world {
+  grid-area: world;
+}
+.estimates {
+  grid-area: estimates;
+}
+.data {
+  grid-area: data;
+}
+.estimates #lesson {
+  margin-bottom: 16px;
 }
 .data,
 .estimates {
@@ -428,6 +480,8 @@ canvas {
   border-top: 1px solid var(--border);
   padding-top: 13px;
   margin-top: 2px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 .choice-explanation {
   display: grid;
@@ -465,8 +519,10 @@ canvas {
   background: var(--surface-subtle);
   color: var(--text-muted);
 }
-.eye {
-  font-size: 9px;
+.variable-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+  color: var(--text);
 }
 .locked-variable {
   margin-left: auto;
@@ -479,14 +535,14 @@ canvas {
 }
 .truth-card {
   margin: 16px 0 13px;
-  background: var(--accent-surface);
+  background: var(--node-Y);
   border: 1px solid var(--border);
   border-radius: 7px;
   padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 18px;
-  color: var(--accent);
+  color: var(--text);
 }
 .truth-card > div > span {
   font-size: 11px;
@@ -571,6 +627,7 @@ canvas {
 }
 .effect-row {
   height: 31px;
+  min-height: 34px;
 }
 .effect-row > span {
   font-size: 10px;
@@ -588,6 +645,18 @@ canvas {
   font-variant-numeric: tabular-nums;
   color: var(--estimate);
 }
+.effect-value {
+  text-align: right;
+}
+.effect-value strong,
+.effect-value small {
+  display: block;
+  line-height: 14px;
+}
+.effect-row .effect-value small {
+  margin: 0;
+  font-size: 9px;
+}
 .effect-track {
   height: 100%;
   position: relative;
@@ -602,14 +671,21 @@ canvas {
   border-left: 2px dashed var(--truth);
 }
 .bias-line {
-  background: var(--estimate);
+  background: color-mix(
+    in srgb,
+    var(--error-mark) var(--error-tint, 0%),
+    var(--estimate)
+  );
   position: absolute;
   height: 3px;
   top: calc(50% - 1px);
-  opacity: 0.6;
 }
 .estimate-dot {
-  background: var(--estimate);
+  background: color-mix(
+    in srgb,
+    var(--error-mark) var(--error-tint, 0%),
+    var(--estimate)
+  );
   position: absolute;
   width: 9px;
   height: 9px;
@@ -622,8 +698,9 @@ canvas {
 }
 .estimate-key {
   display: flex;
+  flex-wrap: wrap;
   gap: 13px;
-  font-size: 7px;
+  font-size: 9px;
   color: var(--text-muted);
   margin: 9px 0 15px;
 }
@@ -864,6 +941,7 @@ button:hover {
   }
   .workspace {
     grid-template-columns: 1fr;
+    grid-template-areas: "estimates" "world" "data";
   }
   .world {
     padding: 20px;
@@ -873,9 +951,6 @@ button:hover {
   }
   .panel-description {
     margin-left: 0;
-  }
-  .right-column {
-    gap: 16px;
   }
   .data,
   .estimates {
@@ -981,9 +1056,6 @@ button:hover {
   .data,
   .estimates {
     padding: 15px 19px;
-  }
-  .right-column {
-    gap: 13px;
   }
   .population-meta {
     margin-top: 12px;
@@ -1243,6 +1315,149 @@ button:hover {
   margin-top: 5px;
   color: var(--text-secondary);
   font-size: 9px;
+}
+#overlap-warning {
+  margin: 0;
+  font-size: 11px;
+}
+.overlap-experiment {
+  margin-top: 18px;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.overlap-experiment summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+.overlap-experiment p {
+  margin: 12px 0;
+}
+.overlap-experiment figure {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.overlap-experiment figcaption {
+  color: var(--text);
+  font-weight: 600;
+}
+.overlap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 12px;
+}
+.overlap-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.overlap-legend i {
+  width: 10px;
+  height: 10px;
+}
+.overlap-arm-0 {
+  border: 1px solid var(--arm-0);
+  background: color-mix(in srgb, var(--arm-0) 18%, transparent);
+}
+.overlap-arm-1 {
+  background: var(--arm-1);
+}
+.overlap-experiment svg {
+  display: block;
+  width: 100%;
+  font-size: 15px;
+  fill: var(--text-secondary);
+}
+.overlap-experiment table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.overlap-experiment caption {
+  text-align: left;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.overlap-experiment a {
+  color: var(--accent);
+}
+.overlap-experiment th,
+.overlap-experiment td {
+  padding: 8px 4px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+.overlap-experiment th:first-child {
+  text-align: left;
+}
+.overlap-experiment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 18px;
+}
+.overlap-estimates {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.overlap-estimates > div {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.overlap-estimates > div:not(.overlap-truth) {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--page)
+  );
+}
+:root[data-theme="dark"] .overlap-estimates > div:not(.overlap-truth) {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+.world .panel-heading {
+  flex-wrap: wrap;
+}
+.overlap-estimates strong {
+  display: block;
+  color: var(--text);
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.overlap-estimates small {
+  display: block;
+  font-size: 11px;
+}
+.overlap-truth {
+  background: var(--node-Y);
+}
+.overlap-assumptions {
+  margin-top: 16px;
+}
+.overlap-experiment table {
+  margin-top: 12px;
+}
+@media (max-width: 760px) {
+  .overlap-experiment-grid {
+    grid-template-columns: 1fr;
+  }
+  .overlap-experiment .panel-heading {
+    flex-wrap: wrap;
+  }
+}
+.overlap-experiment :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .term-help {
   position: fixed;

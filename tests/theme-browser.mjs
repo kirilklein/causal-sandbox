@@ -90,6 +90,13 @@ try {
       }
       for (const line of ["truth", "fitted", "arm-0", "arm-1"])
         check(line, "surface", 3);
+      for (let i = 0; i <= 10; i++) {
+        const mark = rgb("estimate").map(
+          (v, j) => v * (1 - i / 10) + (rgb("error-mark")[j] * i) / 10,
+        );
+        if (ratio(mark, rgb("surface")) < 3)
+          failures.push(`estimate mark tint ${i}`);
+      }
       check("on-accent", "accent", 4.5);
       check("note-text", "note-surface", 4.5);
       check("warning", "surface", 4.5);

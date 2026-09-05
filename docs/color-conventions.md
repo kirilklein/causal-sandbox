@@ -90,9 +90,11 @@ presentation changes.
   and fitted predictions with notation and nearby labels; do not introduce a hue
   for each quantity. A prediction of Y may share Y's background, but must retain
   prediction notation and a label.
-- For the planned estimate plot, use neutral `--estimate` markers, separate
-  named method rows, and readable numeric estimates. Do not allocate a hue to
-  every estimator or change marker color with its distance from truth.
+- Sandbox estimate markers and connecting bars use the lesson error scale:
+  blend `--estimate` toward `--error-mark` as absolute error grows from 0 to 2
+  outcome units. Keep named rows, numeric estimates, and signed errors. The mark
+  color is a stronger red than the card surface so thin graphics retain contrast.
+  This replaces the earlier neutral-marker decision at the user’s request.
 - Use `--truth` for truth with an explicit “Truth” label. In estimate plots, use a
   dashed vertical reference line; in model comparisons, preserve the existing
   solid truth curve versus dashed fitted curve (`--fitted`), with a local legend.
@@ -121,7 +123,8 @@ signed difference from the lesson's total-effect target. Differences use the
 unrounded results, displayed to two decimals without negative zero. Stronger red
 means farther from truth in this sample; it does not establish bias, significance,
 or invalidity. Missing/non-finite results are labeled Unavailable. The sandbox's
-existing plot retains neutral markers; intervals remain separate inference work.
+plot uses the same error scale for its marks and bars; intervals remain separate
+inference work. The independent overlap card uses the lesson background tints.
 
 ## Acceptance and application
 
@@ -143,8 +146,9 @@ hidden status, and estimates must remain understandable without hue differences.
 Simulations support inspection; they do not establish learner comprehension.
 
 Implemented here: shared CSS node colors, stable lesson and sandbox graphs,
-model-specific adjustment captions, consistent treatment-arm colors, and neutral
-sandbox estimates against labeled truth. The examples document these choices.
+model-specific adjustment captions, consistent treatment-arm colors, and continuous
+error colors for sandbox estimates against labeled truth. The static examples
+predate the sandbox error-color update.
 
 Remaining application: equation rendering and worked formulas (#19/#17).
 They must reuse these conventions without

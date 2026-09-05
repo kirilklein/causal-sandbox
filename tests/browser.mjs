@@ -1,5 +1,7 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
+import { defaults, makeNoise, simulate, estimate } from "../src/simulation.js";
+import { sandboxOverlap } from "../src/sandbox-overlap.js";
 const browser = await chromium.launch({
   headless: true,
   channel: process.env.CI ? undefined : "chrome",
@@ -36,6 +38,21 @@ try {
     await page.locator(".adjust-row .choice-explanation").innerText(),
     /estimators actually use/,
   );
+  assert.equal(await page.locator(".data [data-visible]").count(), 0);
+  assert.equal(await page.locator(".estimates [data-visible]").count(), 3);
+  const availabilityBounds = await page
+    .locator(".visibility-row")
+    .boundingBox();
+  const adjustmentBounds = await page.locator(".adjust-row").boundingBox();
+  assert.ok(
+    availabilityBounds.y + availabilityBounds.height <= adjustmentBounds.y,
+  );
+  assert.equal(
+    await page
+      .getByRole("switch", { name: "Show hidden factor U" })
+      .getAttribute("aria-checked"),
+    "true",
+  );
   for (const model of ["outcome", "treatment"]) {
     assert.match(
       await page.locator(`#${model}-model`).getAttribute("aria-describedby"),
@@ -54,16 +71,52 @@ try {
       population: document
         .querySelector("#population")
         .getAttribute("aria-label"),
-      controls: [...document.querySelectorAll("input, select")].map((el) => [
-        el.value,
-        el.checked,
-        el.disabled,
-      ]),
+      controls: [
+        ...document.querySelectorAll(
+          ".workspace input, .workspace select, #world-select, #theme",
+        ),
+      ].map((el) => [el.value, el.checked, el.disabled]),
       visibility: [...document.querySelectorAll("[data-visible]")].map((el) =>
         el.getAttribute("aria-pressed"),
       ),
     }));
   const beforeHelp = await simulationView();
+  const estimateStyles = () =>
+    page.locator(".effect-row").evaluateAll((rows) =>
+      rows.map((row) => ({
+        tint: Number.parseFloat(row.style.getPropertyValue("--error-tint")),
+        mark: getComputedStyle(row.querySelector(".estimate-dot"))
+          .backgroundColor,
+        bar: getComputedStyle(row.querySelector(".bias-line")).backgroundColor,
+        difference: row
+          .querySelector(".effect-value small")
+          .getAttribute("aria-label"),
+      })),
+    );
+  const unadjustedStyles = await estimateStyles();
+  assert.ok(
+    unadjustedStyles.every((style) => style.tint > 75 && style.tint < 85),
+  );
+  assert.ok(
+    unadjustedStyles.every(
+      (style) =>
+        style.mark === style.bar && /from truth/.test(style.difference),
+    ),
+  );
+  await page.locator('input[value="C"]').check();
+  const adjustedStyles = await estimateStyles();
+  assert.deepEqual(adjustedStyles.slice(0, 2), unadjustedStyles.slice(0, 2));
+  assert.ok(
+    adjustedStyles
+      .slice(2)
+      .every(
+        (style, i) =>
+          style.tint < unadjustedStyles[i + 2].tint &&
+          style.mark !== unadjustedStyles[i + 2].mark,
+      ),
+  );
+  await page.locator("#reset").click();
+  assert.deepEqual(await simulationView(), beforeHelp);
   const hoverTerm = page.locator('.help-button[popovertarget="help-ipw"]');
   const hoverPanel = page.locator("#help-ipw");
   assert.equal(await hoverTerm.innerText(), "IPW");
@@ -212,7 +265,14 @@ try {
   assert.ok((await values())[0] > 3);
   await page.locator('input[value="C"]').check();
   assert.ok(Math.abs((await values())[4] - 2) < 0.15);
+  const observedBeforeHideC = await page
+    .locator("#population")
+    .getAttribute("aria-label");
   await page.locator('[data-visible="C"]').click();
+  assert.equal(
+    await page.locator("#population").getAttribute("aria-label"),
+    observedBeforeHideC,
+  );
   assert.equal(await page.locator('input[value="C"]').isDisabled(), true);
   assert.ok((await values())[4] > 3);
   await page.locator('[data-visible="C"]').click();
@@ -245,8 +305,13 @@ try {
     assert.equal(await slider.inputValue(), name === "direct" ? "4" : "3");
   }
   assert.ok((await values()).every(Number.isFinite));
-  await page.locator("#truth").click();
-  assert.match(await page.locator("#truth").innerText(), /Reveal/);
+  const beforeHideU = await simulationView();
+  await page.locator("#show-u").click();
+  assert.equal(
+    await page.locator("#show-u").getAttribute("aria-checked"),
+    "false",
+  );
+  assert.deepEqual(await simulationView(), beforeHideU);
   assert.equal(
     await page
       .locator("#nodes g")
@@ -254,8 +319,11 @@ try {
       .getAttribute("opacity"),
     "0",
   );
-  await page.locator("#truth").click();
-  assert.match(await page.locator("#truth").innerText(), /Hide/);
+  await page.locator("#show-u").click();
+  assert.equal(
+    await page.locator("#show-u").getAttribute("aria-checked"),
+    "true",
+  );
   await page.locator(".path-controls summary").click();
   for (const k of ["am", "my"]) {
     await page.locator(`[data-param="${k}"]`).focus();
@@ -420,7 +488,147 @@ try {
     path: "/tmp/causal-worlds-mobile.png",
     fullPage: true,
   });
+  // The focused card owns its experiment; neither set of controls changes the other.
+  await page.locator("#reset").click();
+  const overlap = page.locator("#overlap-experiment");
+  const overlapSlider = page.locator("#overlap-strength");
+  const overlapView = () =>
+    overlap.evaluate((el) => ({
+      strength: el.querySelector("input").value,
+      estimates: el.querySelector(".overlap-estimates").textContent,
+      histogram: el.querySelector("svg").getAttribute("aria-label"),
+      weights: el.querySelector("tbody").textContent,
+    }));
+  const baselineOverlap = await overlapView();
+  await page.locator('input[value="C"]').check();
+  await page.locator("#world-select").selectOption("both");
+  await page.locator("#treatment-model").selectOption("interaction");
+  await page.locator('[data-visible="C"]').click();
+  assert.deepEqual(await overlapView(), baselineOverlap);
+  const mainBeforeOverlap = await simulationView();
+  const details = overlap.locator("#overlap-weight-details");
+  await details.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  assert.deepEqual(await overlapView(), baselineOverlap);
+  for (const strength of [0, 3]) {
+    await overlapSlider.focus();
+    await page.keyboard.press(strength ? "End" : "Home");
+    assert.deepEqual(await simulationView(), mainBeforeOverlap);
+    const data = simulate(
+      { ...defaults, ca: strength, am: 0, my: 0 },
+      makeNoise(),
+    );
+    const result = estimate(data, ["C"]);
+    const arms = sandboxOverlap(data, result);
+    for (const [key, value] of [
+      ["regression", result.values[2]],
+      ["ipw", result.values[3]],
+      ["aipw", result.values[4]],
+    ])
+      assert.equal(
+        await page.locator(`#overlap-${key}`).innerText(),
+        value.toFixed(2),
+      );
+    assert.equal(await overlap.locator("svg").count(), 1);
+    for (const [a, arm] of arms.entries()) {
+      const bars = await overlap
+        .locator(`[data-arm="${a}"] rect title`)
+        .allTextContents();
+      assert.equal(bars.length, 10);
+      arm.bins.forEach((count, i) =>
+        assert.match(bars[i], new RegExp(`: ${count} people`)),
+      );
+      const cells = await page
+        .locator(`#overlap-weight-summary td:nth-child(${a + 2})`)
+        .allTextContents();
+      assert.deepEqual(cells, [
+        arm.count.toLocaleString("en-US"),
+        `${arm.clipped} (${((100 * arm.clipped) / arm.count).toFixed(1)}%)`,
+        arm.ess.toFixed(0),
+      ]);
+    }
+    assert.equal(
+      await overlap.locator(".overlap-truth strong").innerText(),
+      "2.00",
+    );
+  }
+  const strongOverlap = await overlapView();
+  await page.locator("#reset").click();
+  assert.deepEqual(await overlapView(), strongOverlap);
+  assert.deepEqual(await simulationView(), beforeHelp);
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await details.locator("summary").tap();
+    await details.locator("summary").tap();
+    assert.deepEqual(await overlapView(), strongOverlap);
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `Page overflow at ${width}px`,
+    );
+    assert.ok(
+      await overlap.evaluate((el) => el.scrollWidth <= el.clientWidth),
+      `Experiment overflow at ${width}px`,
+    );
+    await page.screenshot({
+      path: `/tmp/causal-sandbox-overlap-${width}.png`,
+      fullPage: true,
+    });
+    await overlap.screenshot({ path: `/tmp/causal-overlap-card-${width}.png` });
+    const lightFill = await overlap
+      .locator("rect")
+      .first()
+      .evaluate((el) => getComputedStyle(el).fill);
+    await page.getByLabel("Color theme").selectOption("dark");
+    assert.deepEqual(await overlapView(), strongOverlap);
+    assert.notEqual(
+      await overlap
+        .locator("rect")
+        .first()
+        .evaluate((el) => getComputedStyle(el).fill),
+      lightFill,
+    );
+    await overlap.screenshot({
+      path: `/tmp/causal-overlap-card-${width}-dark.png`,
+    });
+    await page.getByLabel("Color theme").selectOption("system");
+  }
+  await page.locator("#overlap-restart").click();
+  assert.deepEqual(await overlapView(), baselineOverlap);
+  assert.deepEqual(await simulationView(), beforeHelp);
+  // On a laptop all five main estimates are above the fold, ahead of model controls.
+  for (const [width, height] of [
+    [1280, 800],
+    [1440, 900],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const results = await page.locator("#effects").boundingBox();
+    const controls = await page.locator(".adjust-row").boundingBox();
+    const clouds = await page.locator(".data").boundingBox();
+    assert.ok(
+      results.y + results.height < height,
+      "All estimates should fit above the fold",
+    );
+    assert.ok(
+      results.y + results.height <= controls.y,
+      "Estimates precede analysis controls",
+    );
+    assert.ok(results.y < clouds.y, "Estimates precede outcome clouds");
+    await page.screenshot({ path: `/tmp/causal-results-first-${width}.png` });
+  }
+  await page.locator(".lessons-link").click();
+  await page.locator("#continue").waitFor();
+  await page.goBack();
+  await page.locator("#effects").waitFor();
+  assert.deepEqual(await simulationView(), beforeHelp);
+  assert.deepEqual(await overlapView(), baselineOverlap);
   // Time the complete synchronous slider update, including estimation and rendering.
+  await page.locator('input[value="C"]').check();
+  await page.locator("#world-select").selectOption("both");
+  await page.locator("#outcome-model").selectOption("interaction");
+  await page.locator("#treatment-model").selectOption("interaction");
   const timings = await page.evaluate(() => {
     const control = document.querySelector('[data-param="direct"]');
     const original = control.value;

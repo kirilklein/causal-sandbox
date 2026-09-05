@@ -1,4 +1,7 @@
+import { effectComparison } from "./effect-comparison.js";
 import { arrowStrength } from "./arrow-strength.js";
+import { sandboxOverlap } from "./sandbox-overlap.js";
+import { setupOverlapExperiment } from "./overlap-experiment.js";
 import { themeControl } from "./theme.js";
 import icon from "./brand.svg?raw";
 import "./style.css";
@@ -17,21 +20,22 @@ const state = {
   p: { ...defaults },
   visible: new Set(["C", "M", "K"]),
   adjust: new Set(),
-  truth: true,
+  showU: true,
   preset: 1,
   world: worlds[0],
   models: { outcome: false, treatment: false },
 };
 document.querySelector("#app").innerHTML = `
 <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a class="lessons-link" href="./">Start the lessons</a><button id="methods" class="text-button">How this world works <span>↗</span></button>${themeControl()}</header>
-<main><section class="intro"><div><div class="eyebrow">LEVEL 11 OF 11 · FULL SANDBOX</div><h1>Change the world.<br class="mobile-break"> Question the evidence.</h1><p>This starts a separate experiment. C now groups two measured baseline variables, C₁ and C₂. An interaction lets the influence of one depend on the other. Combine the causal pathways and model choices below.</p></div><div class="world-picker"><label for="world-select">THE WORLD’S RELATIONSHIPS</label><small id="world-help">Choose how C₁ and C₂ shape the simulated population.</small><select id="world-select" aria-describedby="world-help world-description">${worlds.map((w) => `<option value="${w.id}">${w.name}</option>`).join("")}</select><span id="world-description"></span></div></section>
+<main><section class="intro"><div><div class="eyebrow">LEVEL 11 OF 11 · FULL SANDBOX</div><h1>Change the world.<br class="mobile-break"> Question the evidence.</h1><p>This starts a separate experiment. C now groups two measured baseline variables, C₁ and C₂. Start with additive relationships and observed confounding. Then combine pathways and model choices; Reset world restores this starting point.</p></div><div class="world-picker"><label for="world-select">THE WORLD’S RELATIONSHIPS</label><small id="world-help">Choose how C₁ and C₂ shape the simulated population.</small><select id="world-select" aria-describedby="world-help world-description">${worlds.map((w) => `<option value="${w.id}">${w.name}</option>`).join("")}</select><span id="world-description"></span></div></section>
 <nav class="presets" aria-label="Scenarios"><span class="preset-label">TRY A SCENARIO</span>${presets.map((p, i) => `<button data-preset="${i}" title="${p.name}" class="${i === 1 ? "active" : ""}"><span class="preset-icon">${p.icon}</span>${p.short}</button>`).join("")}</nav>
-<div class="workspace"><section class="world panel"><div class="panel-heading"><div><span class="step">01</span><h2>The causal world</h2></div><button id="truth" class="text-button">◉ Hide causal truth</button></div><p class="panel-description">Adjustable arrows darken as strength increases within each slider’s range. Faint arrows at zero are inactive; shading shows magnitude, not sign.</p>
+<div class="workspace"><section class="world panel"><div class="panel-heading"><div><span class="step">01</span><h2>The causal world</h2></div><button id="show-u" class="graph-toggle" role="switch" aria-checked="true" aria-describedby="show-u-help"><span class="switch-track" aria-hidden="true"></span>Show hidden factor U</button></div><p id="show-u-help" class="graph-toggle-help">U is never available to the analyst. This switch only changes the diagram.</p><p class="panel-description">Adjustable arrows darken as strength increases within each slider’s range. Faint arrows at zero are inactive; shading shows magnitude, not sign.</p>
 <div class="graph-wrap"><svg id="dag" viewBox="0 0 600 290" role="img" aria-label="Causal graph: C (the pair C1 and C2) and hidden U cause treatment A and outcome Y. A causes mediator M and Y. A and Y cause collider K."><defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="context-stroke"/></marker></defs><g id="edges"></g><g id="nodes"></g></svg><div class="graph-key"><span><i class="key-line"></i>Causal path</span><span><i class="key-line dashed"></i>Hidden to analyst</span><span id="graph-hint">Select an adjustment below ↘</span></div></div>
 <div class="controls"><div class="control-group"><div class="group-heading">TREATMENT <span>The effect you put into the world</span></div>${slider("direct", "A → Y", "How much treatment A directly changes outcome Y.", -1, 4, 0.1)}</div><div class="control-group"><div class="group-heading">${helpButton("confounder", "OBSERVED CONFOUNDING")}<span class="c-color">C = C₁, C₂</span></div><div class="slider-pair">${slider("ca", "C → A", "How strongly observed C influences who receives treatment. Zero removes this path.", 0, 3, 0.1)}${slider("cy", "C → Y", "How strongly observed C changes outcome Y. Zero removes this path.", 0, 3, 0.1)}</div></div><div class="control-group"><div class="group-heading">${helpButton("hidden", "HIDDEN CONFOUNDING")}<span class="u-color">U · never observed</span></div><div class="slider-pair">${slider("ua", "U → A", "How strongly hidden U influences who receives treatment. Zero removes this path.", 0, 3, 0.1)}${slider("uy", "U → Y", "How strongly hidden U changes outcome Y. Zero removes this path.", 0, 3, 0.1)}</div></div><details class="path-controls"><summary>Mediator pathway <span>A → M → Y</span></summary><div class="slider-pair">${slider("am", "A → M", "How strongly treatment A changes mediator M.", 0, 2, 0.1)}${slider("my", "M → Y", "How strongly mediator M changes outcome Y.", 0, 2, 0.1)}</div></details></div></section>
-<div class="right-column"><section class="data panel"><div class="panel-heading"><div><span class="step">02</span><h2>What you observe</h2></div><span class="small-tag">n = 2,400</span></div><div class="population-meta"><span><i class="dot untreated"></i>Untreated <b id="n0"></b></span><span><i class="dot treated"></i>Treated <b id="n1"></b></span><span class="axis-note">Outcome Y →</span></div><div class="canvas-wrap"><canvas id="population" role="img" aria-label="Two population clouds comparing outcomes of untreated and treated individuals"></canvas></div><div class="visibility-row"><span class="choice-explanation"><b>Analyst can see</b><small>Measured and available, but not used automatically.</small></span>${["C", "M", "K"].map((k) => `<button class="variable-toggle" data-visible="${k}" aria-pressed="true"><b>${k}</b><span>Visible</span><span class="eye">◉</span></button>`).join("")}<span class="locked-variable" title="U exists in the world but is never available to the analyst">U <span>Hidden · locked</span></span></div></section>
-<section class="estimates panel"><div class="panel-heading"><div><span class="step">03</span><h2>Can we recover the effect?</h2></div><span class="small-tag">TOTAL EFFECT</span></div><div class="truth-card"><div><span>${helpButton("ate", "Total effect (ATE)")}</span><small id="truth-formula"></small></div><strong id="truth-value">2.00</strong><svg viewBox="0 0 65 32"><path d="M1 25H22L32 6L42 25H65" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="32" cy="6" r="3" fill="currentColor"/></svg></div>
-<div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b><small>Variables the estimators actually use.</small></span>${["C", "M", "K"].map((k) => `<div class="adjust-choice"><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div><div class="model-controls" aria-label="Analyst models"><div class="model-intro"><span>ANALYST’S MODELS</span><small id="model-purpose">Choose how the analysis uses C₁ and C₂.</small><small id="model-availability">C groups two observed covariates: C₁ and C₂.</small></div><div class="model-pair">${["outcome", "treatment"].map((k) => `<div class="model-control"><div class="term-label"><label for="${k}-model">${k === "outcome" ? "Outcome model" : "Treatment model"}</label>${k === "treatment" ? helpButton("propensity", "Propensity score") : ""}</div><small id="${k}-purpose">${k === "outcome" ? "Predicts outcome Y under each treatment." : "Predicts each person’s chance of treatment."}</small><select id="${k}-model" aria-describedby="model-purpose model-availability ${k}-purpose ${k}-terms"><option value="main">C₁ and C₂ separately</option><option value="interaction">Include C₁ × C₂ interaction</option></select><small id="${k}-terms"></small></div>`).join("")}</div></div><div class="effect-chart" id="effects"></div><div class="estimate-key"><span>${helpButton("error", "Distance from truth")}</span><span>Fixed-sample point estimates, not intervals</span></div><div id="lesson" class="lesson" aria-live="polite"></div><div id="overlap" class="overlap"><span id="overlap-warning"></span><span class="overlap-help"><span class="term-label">${helpButton("overlap")}</span><span class="term-label">${helpButton("ess")}</span></span></div></section></div></div>
+<div class="right-column">
+<section class="estimates panel"><div class="panel-heading"><div><span class="step">02</span><h2>Can we recover the effect?</h2></div><span class="small-tag">TOTAL EFFECT</span></div><div class="truth-card"><div><span>${helpButton("ate", "Total effect (ATE)")}</span><small id="truth-formula"></small></div><strong id="truth-value">2.00</strong><svg viewBox="0 0 65 32"><path d="M1 25H22L32 6L42 25H65" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="32" cy="6" r="3" fill="currentColor"/></svg></div>
+<div class="effect-chart" id="effects"></div><div class="estimate-key"><span>${helpButton("error", "Distance from truth")}</span><span>Redder = farther from truth · signed errors below</span></div><div id="lesson" class="lesson" aria-live="polite"></div><div class="visibility-row"><span class="choice-explanation"><b>Analyst can see</b><small>Measured and available, but not used automatically.</small></span>${["C", "M", "K"].map((k) => `<button class="variable-toggle" data-visible="${k}" aria-label="${k} available to analyst" aria-pressed="true"><b>${k}</b><span>Visible</span></button>`).join("")}<span class="locked-variable" title="U exists in the world but is never available to the analyst">U <span>Hidden · locked</span></span></div><div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b><small>Variables the estimators actually use.</small></span>${["C", "M", "K"].map((k) => `<div class="adjust-choice"><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div><div class="model-controls" aria-label="Analyst models"><div class="model-intro"><span>ANALYST’S MODELS</span><small id="model-purpose">Choose how the analysis uses C₁ and C₂.</small><small id="model-availability">C groups two observed covariates: C₁ and C₂.</small></div><div class="model-pair">${["outcome", "treatment"].map((k) => `<div class="model-control"><div class="term-label"><label for="${k}-model">${k === "outcome" ? "Outcome model" : "Treatment model"}</label>${k === "treatment" ? helpButton("propensity", "Propensity score") : ""}</div><small id="${k}-purpose">${k === "outcome" ? "Predicts outcome Y under each treatment." : "Predicts each person’s chance of treatment."}</small><select id="${k}-model" aria-describedby="model-purpose model-availability ${k}-purpose ${k}-terms"><option value="main">C₁ and C₂ separately</option><option value="interaction">Include C₁ × C₂ interaction</option></select><small id="${k}-terms"></small></div>`).join("")}</div></div><div id="overlap" class="overlap"><p id="overlap-warning" role="status"></p><span class="overlap-help"><span class="term-label">${helpButton("overlap")}</span><span class="term-label">${helpButton("ess")}</span></span>
+</div></section><section class="data panel"><div class="panel-heading"><div><span class="step">03</span><h2>What you observe</h2></div><span class="small-tag">n = 2,400</span></div><div class="population-meta"><span><i class="dot untreated"></i>Untreated <b id="n0"></b></span><span><i class="dot treated"></i>Treated <b id="n1"></b></span><span class="axis-note">Outcome Y →</span></div><div class="canvas-wrap"><canvas id="population" role="img" aria-label="Two population clouds comparing outcomes of untreated and treated individuals"></canvas></div></section></div></div><section id="overlap-experiment" class="panel overlap-experiment" aria-labelledby="overlap-experiment-title"></section>
 <footer><span>${icon} A known world. An imperfect view. A better question.</span><span>Same 2,400 people after every change <i>·</i> Seed 4217 <button id="reset">Reset world ↺</button></span></footer></main>
 <dialog id="about" aria-labelledby="about-title"><div class="dialog-heading"><span class="eyebrow">UNDER THE SURFACE</span><button id="close-about" aria-label="Close explanation">×</button></div><h2 id="about-title">A world with an answer key.</h2><details class="glossary"><summary>Glossary · causal terms in plain language</summary><dl>${Object.entries(
   glossary,
@@ -51,7 +55,7 @@ Y = direct·A + cy·(S + oy·I) + uy·U + my·M + εY
 K = 0.9·A + 0.9·Y + εK
 
 Total causal effect = direct + am·my
-World interactions: ta ∈ {0, 0.7}; oy ∈ {0, 1.5}</pre><p><b>World versus model:</b> the four worlds switch interaction terms in the generating equations. The analyst independently chooses whether to include C₁ × C₂ in each fitted model. Main effects hold each covariate’s contribution constant across values of the other; C₁ × C₂ allows one covariate’s influence to depend on the other. Both covariates are included whenever C is adjusted for. Hiding C removes both, including their interaction.</p><p><b>Measured versus adjusted:</b> “Analyst can see” makes a variable available. “Adjust for” actually includes it in estimation. C always represents both observed covariates, C₁ and C₂.</p><p><b>Double robustness:</b> with sufficient observed adjustment and overlap, AIPW can remain consistent if either fitted model represents the relevant conditional mean correctly. Including an interaction alone does not solve hidden confounding or post-treatment adjustment. A single sample need not favor AIPW.</p><p><b>Raw / naive:</b> mean difference and ordinary regression Y ~ A are identical for binary treatment. These baselines intentionally ignore the adjustment set.</p><p><b>Regression:</b> average predicted outcomes under A=1 minus A=0, using a pooled OLS model with the selected variables and optional interaction. <b>IPW:</b> normalized inverse propensity weights from logistic regression. <b>AIPW:</b> the same outcome predictions as regression plus inverse-weighted residual correction, using the chosen propensity model.</p><p>Propensities are clipped to [0.02, 0.98]. The app flags clipping and low effective sample size. The same fixed population is reused after every change; finite-sample estimates need not equal the truth.</p><p><b>Post-treatment adjustment:</b> M blocks the mediated path; regression can recover the direct effect when its outcome model is correctly specified. IPW/AIPW with M or K are illustrative invalid total-effect adjustments, not guaranteed direct-effect estimators. K is measured after Y.</p><p>Hiding causal truth conceals hidden paths in the graph. The known total effect stays visible as the teaching reference. Revealing U never makes it observable to estimators.</p><p class="help-credit">Contextual glossary and planned guided experiments inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>. Explanations written for this sandbox.</p></dialog>
+World interactions: ta ∈ {0, 0.7}; oy ∈ {0, 1.5}</pre><p><b>World versus model:</b> the four worlds switch interaction terms in the generating equations. The analyst independently chooses whether to include C₁ × C₂ in each fitted model. Main effects hold each covariate’s contribution constant across values of the other; C₁ × C₂ allows one covariate’s influence to depend on the other. Both covariates are included whenever C is adjusted for. Hiding C removes both, including their interaction.</p><p><b>Measured versus adjusted:</b> “Analyst can see” makes a variable available. “Adjust for” actually includes it in estimation. C always represents both observed covariates, C₁ and C₂.</p><p><b>Double robustness:</b> with sufficient observed adjustment and overlap, AIPW can remain consistent if either fitted model represents the relevant conditional mean correctly. Including an interaction alone does not solve hidden confounding or post-treatment adjustment. A single sample need not favor AIPW.</p><p><b>Raw / naive:</b> mean difference and ordinary regression Y ~ A are identical for binary treatment. These baselines intentionally ignore the adjustment set.</p><p><b>Regression:</b> average predicted outcomes under A=1 minus A=0, using a pooled OLS model with the selected variables and optional interaction. <b>IPW:</b> normalized inverse propensity weights from logistic regression. <b>AIPW:</b> the same outcome predictions as regression plus inverse-weighted residual correction, using the chosen propensity model.</p><p>Propensities are clipped to [0.02, 0.98]. The app flags clipping and low effective sample size. The same fixed population is reused after every change; finite-sample estimates need not equal the truth.</p><p><b>Post-treatment adjustment:</b> M blocks the mediated path; regression can recover the direct effect when its outcome model is correctly specified. IPW/AIPW with M or K are illustrative invalid total-effect adjustments, not guaranteed direct-effect estimators. K is measured after Y.</p><p>“Show hidden factor U” toggles U and its arrows in the diagram. It changes neither the world nor the estimates; U is always unavailable to the analyst. The total effect stays visible.</p><p class="help-credit">Contextual glossary and planned guided experiments inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>. Explanations written for this sandbox.</p></dialog>
 ${Object.entries(glossary)
   .map(
     ([key, term]) =>
@@ -84,19 +88,25 @@ const edges = [
   ["Y", "K", null, "M490 179L323 243"],
 ];
 function renderGraph() {
+  document
+    .querySelector("#dag")
+    .setAttribute(
+      "aria-label",
+      `Causal graph: C (the pair C1 and C2) causes treatment A and outcome Y. ${state.showU ? "Unmeasured U also causes A and Y. " : ""}A causes mediator M and Y. A and Y cause collider K.`,
+    );
   document.querySelector("#edges").innerHTML = edges
     .map(([a, b, key, d]) => {
       const hidden =
         (!state.visible.has(a) && !["A", "Y"].includes(a)) ||
         (!state.visible.has(b) && !["A", "Y"].includes(b));
       const strength = key ? state.p[key] : 0.9;
-      return `<path d="${d}" fill="none" stroke="var(--causal-path)" ${a === "U" && !state.truth ? 'opacity="0"' : key ? arrowStrength(strength, key === "direct" ? 4 : ["am", "my"].includes(key) ? 2 : 3) : 'stroke-width="2"'} stroke-dasharray="${hidden ? "5 5" : ""}" marker-end="url(#arrow)"/>`;
+      return `<path d="${d}" fill="none" stroke="var(--causal-path)" ${a === "U" && !state.showU ? 'opacity="0"' : key ? arrowStrength(strength, key === "direct" ? 4 : ["am", "my"].includes(key) ? 2 : 3) : 'stroke-width="2"'} stroke-dasharray="${hidden ? "5 5" : ""}" marker-end="url(#arrow)"/>`;
     })
     .join("");
   document.querySelector("#nodes").innerHTML = Object.entries(coords)
     .map(([k, [x, y]]) => {
       const hidden = !state.visible.has(k) && !["A", "Y"].includes(k);
-      return `<g transform="translate(${x} ${y})" opacity="${k === "U" && !state.truth ? 0 : 1}"><circle r="25" fill="var(--node-${k})" stroke="${hidden ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${hidden ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
+      return `<g transform="translate(${x} ${y})" opacity="${k === "U" && !state.showU ? 0 : 1}"><circle r="25" fill="var(--node-${k})" stroke="${hidden ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${hidden ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
     })
     .join("");
   document.querySelector("#graph-hint").textContent = state.adjust.size
@@ -159,6 +169,17 @@ function drawPopulation() {
     `Outcome clouds: untreated mean ${latestResult.mean0.toFixed(2)}, treated mean ${latestResult.mean1.toFixed(2)}. Vertical marks show group means.`,
   );
 }
+function renderOverlap() {
+  const arms = sandboxOverlap(latestData, latestResult);
+  const labels = ["Untreated", "Treated"];
+  const ess = (arm) => (arm.ess === null ? "Unavailable" : arm.ess.toFixed(0));
+  document.querySelector("#overlap-warning").textContent = arms.some(
+    (arm) => arm.clipped || (arm.ess !== null && arm.ess < arm.count * 0.25),
+  )
+    ? `Clipping or concentrated weights: ${arms.map((arm, a) => `${labels[a].toLowerCase()} ${arm.clipped} clipped, ESS ${ess(arm)} of ${arm.count}`).join("; ")}. Check the treatment model; explore overlap in the separate experiment below.`
+    : "";
+}
+
 function update() {
   const adjustment = [...state.adjust].filter((k) => state.visible.has(k));
   latestData = simulate(state.p, noise, state.world);
@@ -221,9 +242,7 @@ function update() {
     el.disabled = !state.visible.has(el.value);
     el.closest("label").classList.toggle("unavailable", el.disabled);
   });
-  document.querySelector("#truth").textContent = state.truth
-    ? "◉ Hide causal truth"
-    : "◉ Reveal causal truth";
+  document.querySelector("#show-u").setAttribute("aria-checked", state.showU);
   document.querySelector("#truth-value").textContent = truth.toFixed(2);
   document.querySelector("#truth-formula").textContent =
     `${state.p.direct.toFixed(1)} direct + ${(state.p.am * state.p.my).toFixed(1)} mediated`;
@@ -246,7 +265,15 @@ function update() {
     "IPW",
     "AIPW",
   ];
-  const chartMarkup = `<div class="chart-axis"><span>ESTIMATOR</span><div><span>${(truth - span).toFixed(1)}</span><b>TRUTH</b><span>${(truth + span).toFixed(1)}</span></div><span>ESTIMATE</span></div>${latestResult.values.map((v, i) => `<div class="effect-row" data-estimator="${i}"><span class="estimator-label">${i >= 2 ? helpButton(["", "", "regression", "ipw", "aipw"][i], names[i]) : `<span>${names[i]}${i === 1 ? "<small>Y ~ A</small>" : ""}</span>`}</span><div class="effect-track"><i class="truth-line"></i><i class="bias-line" style="left:${Math.min(50, pos(v))}%;width:${Math.abs(pos(v) - 50)}%"></i><i class="estimate-dot" style="left:${pos(v)}%" title="Difference from truth ${(v - truth).toFixed(2)}"></i></div><strong>${v.toFixed(2)}</strong></div>`).join("")}`;
+  const comparisons = latestResult.values.map((value) =>
+    effectComparison(value, truth),
+  );
+  const chartMarkup = `<div class="chart-axis"><span>ESTIMATOR</span><div><span>${(truth - span).toFixed(1)}</span><b>TRUTH</b><span>${(truth + span).toFixed(1)}</span></div><span>ESTIMATE</span></div>${latestResult.values
+    .map((v, i) => {
+      const comparison = comparisons[i];
+      return `<div class="effect-row" data-estimator="${i}" style="--error-tint:${comparison.tint}%"><span class="estimator-label">${i >= 2 ? helpButton(["", "", "regression", "ipw", "aipw"][i], names[i]) : `<span>${names[i]}${i === 1 ? "<small>Y ~ A</small>" : ""}</span>`}</span><div class="effect-track"><i class="truth-line"></i><i class="bias-line" style="left:${Math.min(50, pos(v))}%;width:${Math.abs(pos(v) - 50)}%"></i><i class="estimate-dot" style="left:${pos(v)}%" title="${comparison.difference}"></i></div><span class="effect-value"><strong>${comparison.value}</strong><small aria-label="${comparison.difference}">${comparison.difference.replace(" from truth", "")}</small></span></div>`;
+    })
+    .join("")}`;
   const effects = document.querySelector("#effects");
   if (!effects.children.length) effects.innerHTML = chartMarkup;
   else {
@@ -256,6 +283,13 @@ function update() {
       template.content.querySelector(".chart-axis").innerHTML;
     effects.querySelectorAll(".effect-row").forEach((row, i) => {
       const next = template.content.querySelectorAll(".effect-row")[i];
+      row.style.setProperty("--error-tint", `${comparisons[i].tint}%`);
+      const difference = row.querySelector(".effect-value small");
+      difference.textContent = comparisons[i].difference.replace(
+        " from truth",
+        "",
+      );
+      difference.setAttribute("aria-label", comparisons[i].difference);
       for (const selector of [".bias-line", ".estimate-dot"]) {
         const el = row.querySelector(selector),
           target = next.querySelector(selector);
@@ -281,7 +315,7 @@ function update() {
       "<b>Better estimators can’t see the unseen.</b> U affects treatment and outcome. Adjusting for C cannot remove this hidden confounding.";
   else if (state.p.ca * state.p.cy > 0 && !state.adjust.has("C"))
     lesson = state.visible.has("C")
-      ? "<b>Association isn’t the effect.</b> C influences both treatment and outcome. Check C above to close that backdoor path."
+      ? "<b>Association isn’t the effect.</b> C influences both treatment and outcome. Check C below to close that backdoor path."
       : "<b>The confounder still exists.</b> Hiding C removes it from adjustment, not from the world. Make C visible to recover the effect.";
   else if (
     hasC &&
@@ -310,10 +344,7 @@ function update() {
       "<b>Treatment is unconfounded.</b> The groups are comparable before treatment. Their outcome difference tracks the true effect.";
   document.querySelector("#lesson").innerHTML =
     `<span class="lesson-icon">↳</span><p>${lesson}</p>`;
-  document.querySelector("#overlap-warning").textContent =
-    latestResult.clipped || latestResult.ess < noise.length * 0.25
-      ? `${latestResult.clipped} propensities clipped to [0.02, 0.98] · weighted effective n ≈ ${Math.round(latestResult.ess)}. Limited overlap can distort estimates.`
-      : "";
+  renderOverlap();
   renderGraph();
   drawPopulation();
 }
@@ -362,12 +393,12 @@ document.querySelectorAll(".adjust-option input").forEach((el) =>
     update();
   }),
 );
-document.querySelector("#truth").addEventListener("click", () => {
-  state.truth = !state.truth;
+document.querySelector("#show-u").addEventListener("click", () => {
+  state.showU = !state.showU;
   update();
 });
 document.querySelector("#reset").addEventListener("click", () => {
-  state.truth = true;
+  state.showU = true;
   state.world = worlds[0];
   state.models = { outcome: false, treatment: false };
   preset(1);
@@ -384,6 +415,7 @@ new ResizeObserver(() => {
   if (latestData) drawPopulation();
 }).observe(document.querySelector(".canvas-wrap"));
 update();
+setupOverlapExperiment(document.querySelector("#overlap-experiment"));
 
 setupHelp();
 
