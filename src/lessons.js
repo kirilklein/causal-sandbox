@@ -39,9 +39,9 @@ const lessons = [
     transition:
       "We return to the same baseline-health world with treatment selection on and a true effect of 2. First, look at the unadjusted difference.",
     instruction:
-      "Open the weighting experiment, then account for baseline health.",
+      "Try IPW, then compare the estimate and baseline-health balance before and after weighting.",
     explanation:
-      "A propensity score is a person's probability of receiving treatment given baseline health. Inverse probability weighting (IPW) gives more weight to treated people with lower treatment probabilities and untreated people with higher treatment probabilities. We compare the weighted outcome averages. Here the treatment model includes the correct baseline-health relationship, and C is the only common cause. Weighting tends to reduce imbalance and bias across samples; it need not bring every estimate closer to truth.",
+      "A propensity score is a person's probability of receiving treatment given baseline health. Inverse probability weighting (IPW) gives more weight to treated people with lower treatment probabilities and untreated people with higher treatment probabilities. We compare the weighted outcome averages. Here the treatment model captures the correct baseline-health relationship, and C is the only common cause. Weighting tends to reduce imbalance and bias across samples; it need not bring every estimate closer to truth.",
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
@@ -212,7 +212,7 @@ function controls(level) {
   if (level === 2)
     return '<label for="selection">Baseline health’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Baseline health’s influence on the outcome stays fixed.</p>';
   if (level === 3)
-    return '<button id="reveal-ipw">Try weighting the groups</button><div id="weighting" hidden><p>We estimate each person’s treatment probability from baseline health. Weighting uses these probabilities to make a more comparable pair of groups.</p><label class="lesson-switch"><input id="adjustment" type="checkbox"> Account for baseline health</label></div>';
+    return '<button id="reveal-ipw">Try IPW</button><p id="weighting" hidden>Weighting gives more weight to people whose baseline health is less common in their treatment group.</p>';
   if (level === 4)
     return '<p id="regression-explanation">For each person, predict an outcome with treatment and one without it, keeping baseline health fixed. Average the differences to estimate the effect.</p>';
   if (level === 5)
@@ -277,7 +277,7 @@ function enter(level, focus = true, callback = false) {
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
         <p class="sample-note">Stronger red means farther from truth in this sample.</p>
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
@@ -287,7 +287,7 @@ function enter(level, focus = true, callback = false) {
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
       </section>
-      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>With baseline health unchecked, the treatment model uses one overall probability for everyone, so IPW equals the unadjusted difference. With it checked, we fit logistic treatment probabilities using C. We normalize weights within each group. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
+      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>We fit treatment probabilities using baseline health (C), then compare weighted outcome averages. Each average divides by its group’s total weight. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level >= 4 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. A controlled direct effect compares treatment choices while fixing M at a specified value. Holding M fixed recovers that effect here because the additive simulation has no treatment–mediator interaction or unmeasured mediator–outcome confounding. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
@@ -341,16 +341,13 @@ function enter(level, focus = true, callback = false) {
       state.selection.toFixed(1);
     update();
   });
-  document.querySelector("#adjustment")?.addEventListener("change", (e) => {
-    state.adjusted = e.target.checked;
-    update();
-  });
   document.querySelector("#reveal-ipw")?.addEventListener("click", (e) => {
     revealed = true;
+    state.adjusted = true;
     document.querySelector("#weighting").hidden = false;
-    document.querySelector("#adjustment").focus();
     e.target.hidden = true;
     update();
+    document.querySelector("#ipw-result").focus();
   });
   document
     .querySelector("#model-experiment")
@@ -531,7 +528,7 @@ function update() {
     ? `Baseline health causes outcome${state.selection ? " and treatment" : ""}. ${treatmentDescription}`
     : `${treatmentDescription} Treatment is assigned at random.`;
   document.querySelector("#lesson-graph").innerHTML =
-    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)">${state.effect !== 0 ? `<path d="M155 ${commonCause ? 145 : 45}H380"/>` : ""}${commonCause ? `<path d="M320 65L400 123"/>${state.selection ? '<path d="M220 65L130 123"/>' : ""}` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${state.level >= 3 ? `<p class="sample-note">${state.level === 3 ? (state.adjusted ? "Treatment model: adjusting for C." : "Treatment model: no adjustment.") : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
+    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)">${state.effect !== 0 ? `<path d="M155 ${commonCause ? 145 : 45}H380"/>` : ""}${commonCause ? `<path d="M320 65L400 123"/>${state.selection ? '<path d="M220 65L130 123"/>' : ""}` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${state.level >= 3 && (state.level !== 3 || revealed) ? `<p class="sample-note">${state.level === 3 ? "IPW accounts for baseline health (C)." : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
 }
 
 function overlapPanel() {
