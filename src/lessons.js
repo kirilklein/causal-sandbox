@@ -24,9 +24,9 @@ const lessons = [
     transition:
       "We reset the treatment effect to 2 and add one measured variable: baseline health (C). Higher C raises the outcome. Treatment starts randomized.",
     instruction:
-      "Let baseline health influence treatment assignment. Compare the outcome difference with the true effect.",
+      "Increase baseline health’s influence on treatment assignment. Compare the outcome difference with the true effect.",
     explanation:
-      "When baseline health affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment. Their outcome difference mixes the treatment effect with the influence of baseline health. Turning selection off restores random assignment; C still affects the outcome.",
+      "When baseline health affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment. Their outcome difference mixes the treatment effect with the influence of baseline health. Returning the slider to zero restores random assignment; C still affects the outcome. Sample variation means the estimate need not move steadily away from truth at every step.",
     next: "How can we compare the groups while accounting for their different baseline health?",
   },
   {
@@ -178,7 +178,7 @@ function controls(level) {
   if (level === 1)
     return '<label for="effect">True treatment effect <output id="effect-output">2.0</output></label><input id="effect" type="range" min="-1" max="4" step="0.1" value="2">';
   if (level === 2)
-    return '<label class="lesson-switch"><input id="selection" type="checkbox"> Baseline health influences treatment assignment</label>';
+    return '<label for="selection">Baseline health’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Baseline health’s influence on the outcome stays fixed.</p>';
   if (level === 3)
     return '<button id="reveal-ipw">Try weighting the groups</button><div id="weighting" hidden><p>We estimate each person’s treatment probability from baseline health. Weighting uses these probabilities to make a more comparable pair of groups.</p><label class="lesson-switch"><input id="adjustment" type="checkbox"> Account for baseline health</label></div>';
   if (level === 4)
@@ -255,8 +255,10 @@ function enter(level, focus = true, callback = false) {
       state.effect.toFixed(1);
     update();
   });
-  document.querySelector("#selection")?.addEventListener("change", (e) => {
-    state.selection = e.target.checked ? 1.2 : 0;
+  document.querySelector("#selection")?.addEventListener("input", (e) => {
+    state.selection = +e.target.value;
+    document.querySelector("#selection-output").textContent =
+      state.selection.toFixed(1);
     update();
   });
   document.querySelector("#adjustment")?.addEventListener("change", (e) => {
