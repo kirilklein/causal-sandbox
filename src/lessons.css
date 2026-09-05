@@ -264,3 +264,32 @@
   stroke: #315e48;
   stroke-width: 2;
 }
+
+#propensity-histogram {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.overlap-histogram {
+  margin: 0;
+}
+.overlap-histogram figcaption {
+  font-weight: 600;
+}
+.overlap-histogram svg {
+  width: 100%;
+  display: block;
+}
+.overlap-histogram text {
+  font-size: 12px;
+  fill: #526054;
+}
+@media (max-width: 500px) {
+  #propensity-histogram {
+    grid-template-columns: 1fr;
+  }
+  .overlap-diagnostics th,
+  .overlap-diagnostics td {
+    padding: 8px 4px;
+  }
+}
