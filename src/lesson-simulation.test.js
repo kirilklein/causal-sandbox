@@ -5,6 +5,7 @@ import {
   lessonBaseline,
   simulateLesson,
   lessonResult,
+  overlapDiagnostics,
 } from "./lesson-simulation.js";
 
 test("beginner worlds contain only the stated variables and mechanisms", () => {
@@ -238,4 +239,105 @@ test("model preview uses the fitted models and the same generating relationships
     result.preview.map((p) => p.fitted),
     redraw.preview.map((p) => p.fitted),
   );
+});
+
+test("overlap lesson restores observed C and correct simple models with paired draws", () => {
+  const baseline = lessonBaseline(10);
+  assert.deepEqual(baseline, { ...lessonBaseline(4), level: 10 });
+  const noise = makeNoise(baseline.n, baseline.seed);
+  const moderate = simulateLesson(baseline, noise);
+  const strong = simulateLesson({ ...baseline, selection: 5 }, noise);
+  moderate.forEach((d, i) => {
+    assert.deepEqual(Object.keys(d).sort(), ["A", "C", "Y"]);
+    assert.equal(d.C, strong[i].C);
+    assert.ok(Math.abs(strong[i].Y - d.Y - 2 * (strong[i].A - d.A)) < 1e-12);
+  });
+  assert.ok(strong.some((d, i) => d.A !== moderate[i].A));
+  const result = lessonResult({ ...baseline, selection: 5 }, noise);
+  const fit = estimate(strong, ["C"], baseline);
+  for (const arm of [0, 1]) {
+    const summary = result.overlap[arm];
+    const indices = strong.flatMap((d, i) => (d.A === arm ? [i] : []));
+    const weights = indices.map(
+      (i) =>
+        1 /
+        (arm
+          ? Math.max(0.02, Math.min(0.98, fit.propensities[i]))
+          : 1 - Math.max(0.02, Math.min(0.98, fit.propensities[i]))),
+    );
+    const total = weights.reduce((s, w) => s + w, 0);
+    assert.equal(summary.count, indices.length);
+    assert.equal(
+      summary.bins.reduce((s, n) => s + n, 0),
+      indices.length,
+    );
+    assert.ok(
+      Math.abs(
+        summary.ess - total ** 2 / weights.reduce((s, w) => s + w ** 2, 0),
+      ) < 1e-9,
+    );
+    assert.ok(summary.ess > 0 && summary.ess <= summary.count);
+    const top = weights
+      .sort((a, b) => b - a)
+      .slice(0, Math.ceil(indices.length / 100));
+    assert.ok(
+      Math.abs(summary.topShare - top.reduce((s, w) => s + w, 0) / total) <
+        1e-12,
+    );
+  }
+});
+
+test("strong selection reduces support and increases weight concentration across samples", () => {
+  const results = [1.2, 5].map((selection) =>
+    Array.from({ length: 40 }, (_, i) =>
+      lessonResult({ ...lessonBaseline(10), selection, seed: 100 + i }),
+    ),
+  );
+  const average = (rs, get) => rs.reduce((s, r) => s + get(r) / rs.length, 0);
+  for (const arm of [0, 1]) {
+    const ess = (rs) => average(rs, (r) => r.overlap[arm].ess);
+    const share = (rs) => average(rs, (r) => r.overlap[arm].topShare);
+    assert.ok(ess(results[1]) < ess(results[0]) * 0.6);
+    assert.ok(share(results[1]) > share(results[0]) * 2);
+  }
+  assert.equal(
+    average(results[0], (r) => r.clipped),
+    0,
+  );
+  assert.ok(average(results[1], (r) => r.clipped) > 1000);
+  for (const method of ["ipw", "regression", "aipw"]) {
+    const variance = (rs) => {
+      const mean = average(rs, (r) => r[method]);
+      return average(rs, (r) => (r[method] - mean) ** 2);
+    };
+    assert.ok(variance(results[1]) > variance(results[0]) * 1.5);
+    assert.ok(results.flat().every((r) => Number.isFinite(r[method])));
+  }
+  // A correct outcome model can still perform well: no guaranteed failure claim.
+  assert.ok(Math.abs(average(results[1], (r) => r.regression - 2)) < 0.06);
+  assert.ok(Math.abs(average(results[1], (r) => r.aipw - 2)) < 0.06);
+});
+
+test("overlap summaries handle bin edges, equal weights, concentration and an empty arm", () => {
+  const data = Array.from({ length: 100 }, () => ({ A: 1 }));
+  const ps = data.map((_, i) => (i === 0 ? 0 : i === 99 ? 1 : 0.5));
+  const equal = overlapDiagnostics(
+    data,
+    ps,
+    data.map(() => 2),
+  );
+  assert.equal(equal[0].ess, null);
+  assert.equal(equal[0].topShare, null);
+  assert.equal(equal[1].ess, 100);
+  assert.equal(equal[1].topShare, 0.01);
+  assert.equal(equal[1].bins[0], 1);
+  assert.equal(equal[1].bins[9], 1);
+  assert.equal(equal[1].bins[5], 98);
+  const concentrated = overlapDiagnostics(
+    data,
+    ps,
+    data.map((_, i) => (i ? 1 : 50)),
+  );
+  assert.equal(concentrated[1].ess, 149 ** 2 / 2599);
+  assert.equal(concentrated[1].topShare, 50 / 149);
 });

@@ -70,17 +70,32 @@ const lessons = [
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
       "Augmented inverse probability weighting (AIPW) combines the outcome predictions with a propensity-weighted correction based on their errors. Under the causal assumptions and with adequate overlap, it is consistent if either model is correctly specified: across increasingly large samples, it approaches the true effect. This does not promise exact recovery or the best estimate in every sample. When both models are wrong, that protection is lost. Model choices do not fix missing confounders or invalid adjustment.",
-    next: "The next chapter will ask which variables it is valid to adjust for. Those lessons are still to come; the full sandbox is available as a separate advanced experiment.",
+    next: "Lessons 7–9 about causal roles are being developed separately. Continue to level 10 to explore another limitation: too little overlap.",
   },
 ];
+lessons[9] = {
+  title: "Too little overlap",
+  question:
+    "What if almost everyone with the same baseline health receives the same treatment?",
+  transition:
+    "We return to the simple world: baseline health (C) is observed and included in both correctly specified models. There are no hidden causes or post-treatment variables. The true total effect is 2.",
+  instruction:
+    "Strengthen treatment selection, then compare the treatment probabilities and weights. Redraw to explore how the estimates vary.",
+  explanation:
+    "Overlap means people with similar baseline health can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models. An estimate can still be close to truth in a particular sample.",
+  next: "You can now explore how these limitations combine in the full sandbox. That link starts a separate advanced experiment.",
+};
+const availableLevels = lessons.flatMap((lesson, i) => (lesson ? [i + 1] : []));
 let state,
   noise,
   revealed = false;
 const app = document.querySelector("#app");
 const requested = Number(new URLSearchParams(location.search).get("level"));
-enter([1, 2, 3, 4, 5, 6].includes(requested) ? requested : 1, false);
+enter(availableLevels.includes(requested) ? requested : 1, false);
 
 function controls(level) {
+  if (level === 10)
+    return `<fieldset class="model-choices" id="overlap-selection"><legend>How strongly does baseline health determine treatment?</legend><label class="lesson-switch"><input type="radio" name="overlap-selection" value="1.2" checked> Moderate selection</label><label class="lesson-switch"><input type="radio" name="overlap-selection" value="5"> Strong selection</label></fieldset>`;
   if (level === 1)
     return '<label for="effect">True treatment effect <output id="effect-output">2.0</output></label><input id="effect" type="range" min="-1" max="4" step="0.1" value="2">';
   if (level === 2)
@@ -110,29 +125,39 @@ function enter(level, focus = true) {
   noise = makeNoise(state.n, state.seed);
   revealed = false;
   const lesson = lessons[level - 1];
+  const position = availableLevels.indexOf(level);
+  const previous = availableLevels[position - 1];
+  const next = availableLevels[position + 1];
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./">causal<span class="brand-dot">.</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
     <main class="learning">
-      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${level} of ${lessons.length} · ${level < 4 ? "Foundations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${lessons.map((l, i) => `<li><a href="?level=${i + 1}" ${level === i + 1 ? 'aria-current="step"' : ""}>${l.title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
+      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${level} of 11 · ${level === 10 ? "Causal limitations" : level < 4 ? "Foundations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${lessons.map((l, i) => `<li value="${i + 1}"><a href="?level=${i + 1}" ${level === i + 1 ? 'aria-current="step"' : ""}>${l.title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
       <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
       <p class="lesson-transition">${lesson.transition}</p>
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 3 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 3 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
         ${level === 4 ? '<details class="familiar-result"><summary>Recall the unadjusted difference</summary><p>Without accounting for baseline health: <strong id="unadjusted"></strong></p></details>' : ""}
         ${level >= 4 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
+        ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
       </section>
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>With baseline health unchecked, the treatment model uses one overall probability for everyone, so IPW equals the unadjusted difference. With it checked, we fit logistic treatment probabilities using C. We normalize weights within each group. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
-      ${level >= 4 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
+      ${level >= 4 && level !== 10 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
-      <nav class="lesson-actions" aria-label="Continue learning">${level > 1 ? '<button id="back">← Back</button>' : ""}<button id="restart">Restart level</button>${level < lessons.length ? `<button id="continue" class="primary">Continue: ${lessons[level].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? '<button id="back">← Back</button>' : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       <p class="lesson-credit">Guided prompts inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>.</p>
     </main>`;
+  document
+    .querySelector("#overlap-selection")
+    ?.addEventListener("change", (e) => {
+      state.selection = Number(e.target.value);
+      update();
+    });
   document.querySelector("#effect")?.addEventListener("input", (e) => {
     state.effect = +e.target.value;
     document.querySelector("#effect-output").textContent =
@@ -187,10 +212,10 @@ function enter(level, focus = true) {
     .addEventListener("click", () => enter(level));
   document
     .querySelector("#back")
-    ?.addEventListener("click", () => navigate(level - 1));
+    ?.addEventListener("click", () => navigate(previous));
   document
     .querySelector("#continue")
-    ?.addEventListener("click", () => navigate(level + 1));
+    ?.addEventListener("click", () => navigate(next));
   update();
   if (focus) document.querySelector("h1").focus();
 }
@@ -200,7 +225,7 @@ function navigate(level) {
 }
 window.addEventListener("popstate", () => {
   const level = Number(new URLSearchParams(location.search).get("level"));
-  enter([1, 2, 3, 4, 5, 6].includes(level) ? level : 1);
+  enter(availableLevels.includes(level) ? level : 1);
 });
 function renderModelPreview(points) {
   const treatment = state.treatmentCurve !== 0;
@@ -237,8 +262,13 @@ function update() {
     document.querySelector("#regression-result").hidden =
       state.level === 4 && !revealed;
     document.querySelector("#model-weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${state.level === 6 ? "IPW and AIPW" : "IPW"}.`
+      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${state.level === 6 || state.level === 10 ? "IPW and AIPW" : "IPW"}.`
       : "No treatment probabilities were clipped in this sample.";
+  }
+  if (state.level === 10) {
+    document.querySelector("#aipw").textContent = result.aipw.toFixed(2);
+    document.querySelector("#aipw-result").hidden = false;
+    renderOverlap(result.overlap);
   }
   if (state.level === 6) {
     document.querySelector("#aipw").textContent = result.aipw.toFixed(2);
@@ -288,4 +318,56 @@ function update() {
     : `${treatmentDescription} Treatment is assigned at random.`;
   document.querySelector("#lesson-graph").innerHTML =
     `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#537565"/></marker></defs><g fill="none" stroke="#537565" stroke-width="2" marker-end="url(#lesson-arrow)">${state.effect !== 0 ? `<path d="M155 ${commonCause ? 145 : 45}H380"/>` : ""}${commonCause ? `<path d="M320 65L400 123"/>${state.selection ? '<path d="M220 65L130 123"/>' : ""}` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="#e7eee6"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="#e6efe9"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="#e5ebf4"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>`;
+}
+
+function overlapPanel() {
+  return `<section class="overlap-diagnostics" aria-labelledby="overlap-title">
+    <h3 id="overlap-title">Who supplies the comparison?</h3>
+    <p>Each histogram shows fitted treatment probabilities within one observed treatment group, before clipping. Similar distributions indicate more overlap.</p>
+    <div id="propensity-histogram"></div>
+    <p id="overlap-reading" aria-live="polite"></p>
+    <table><caption>Information after weighting, using the estimator’s clipped weights</caption><thead><tr><th scope="col">Diagnostic</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody id="overlap-summary"></tbody></table>
+    <p class="sample-note">Effective sample size (ESS) summarizes how uneven the weights are within each arm. It is not a count of remaining patients or an exact measure of estimator precision. “Top 1% weight share” is the fraction of that arm’s total weight carried by its highest-weight 1% of people (rounded up).</p>
+    <details class="overlap-details"><summary>How to read these diagnostics</summary><p>Probabilities near 0 or 1 mean one treatment is rare for that baseline profile. The histogram uses ten equal-width probability bins and percentages within each arm, so unequal group sizes do not drive the comparison.</p><p>For each arm, ESS is the squared sum of weights divided by the sum of squared weights. Equal weights give ESS equal to the group size; concentrated weights reduce it. No diagnostic here is a pass/fail threshold for causal validity.</p><p>IPW and AIPW use fitted probabilities clipped to [0.02, 0.98], limiting individual weights to 50. Clipping can introduce bias and make ESS look less extreme; it cannot restore missing comparisons. Outcome regression uses the correct additive model here but must extrapolate more under strong selection. This experiment has small but nonzero treatment probabilities, not a structural impossibility of treatment.</p><p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9293235/">Read more about weighting and effective sample size</a></p></details>
+  </section>`;
+}
+
+function renderOverlap(arms) {
+  const labels = ["Untreated", "Treated"];
+  document.querySelector("#propensity-histogram").innerHTML = arms
+    .map((arm, a) => {
+      const bars = arm.bins
+        .map((count, i) => {
+          const percent = arm.count ? (100 * count) / arm.count : 0;
+          const height = percent * 1.1;
+          return `<rect x="${40 + i * 27}" y="${135 - height}" width="24" height="${height}" fill="${a ? "#ad562e" : "#315e48"}"><title>${i * 10}–${(i + 1) * 10}% probability: ${count} people (${percent.toFixed(1)}%)</title></rect>`;
+        })
+        .join("");
+      return `<figure class="overlap-histogram"><figcaption>${labels[a]}</figcaption><svg viewBox="0 0 320 185" role="img" aria-label="${labels[a]}: distribution of fitted treatment probability. ${arm.bins.map((count, i) => `${i * 10} to ${(i + 1) * 10} percent probability: ${count} people`).join("; ")}"><text x="40" y="16">People in this arm (%)</text>${[0, 50, 100].map((v) => `<path d="M40 ${135 - v * 1.1}H310" stroke="#dde3db"/><text x="34" y="${139 - v * 1.1}" text-anchor="end">${v}</text>`).join("")}${bars}<text x="40" y="153">0</text><text x="175" y="153" text-anchor="middle">0.5</text><text x="310" y="153" text-anchor="end">1</text><text x="175" y="176" text-anchor="middle">Fitted treatment probability</text></svg></figure>`;
+    })
+    .join("");
+  const rows = [
+    ["People", (arm) => arm.count.toLocaleString("en-US")],
+    [
+      "Effective sample size",
+      (arm) => (arm.ess === null ? "Unavailable" : arm.ess.toFixed(0)),
+    ],
+    [
+      "Top 1% weight share",
+      (arm) =>
+        arm.topShare === null
+          ? "Unavailable"
+          : `${(100 * arm.topShare).toFixed(1)}% (${arm.topCount} people)`,
+    ],
+  ];
+  document.querySelector("#overlap-summary").innerHTML = rows
+    .map(
+      ([label, value]) =>
+        `<tr><th scope="row">${label}</th>${arms.map((arm) => `<td>${value(arm)}</td>`).join("")}</tr>`,
+    )
+    .join("");
+  document.querySelector("#overlap-reading").textContent =
+    state.selection > 1.2
+      ? "Strong selection makes the opposite treatment rare for many baseline profiles. Compare both arms’ effective sample sizes and weight shares, then redraw. A close estimate in this sample does not establish adequate support."
+      : "Start with moderate selection, then strengthen it using the same underlying sample draws. The true effect and both model specifications stay fixed.";
 }

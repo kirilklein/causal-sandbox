@@ -2,13 +2,14 @@ import { makeNoise, estimate } from "./simulation.js";
 
 // Complete lesson state; no advanced sandbox setting is shared with this world.
 export function lessonBaseline(level) {
-  if (![1, 2, 3, 4, 5, 6].includes(level)) throw new Error("Unknown lesson");
+  if (![1, 2, 3, 4, 5, 6, 10].includes(level))
+    throw new Error("Unknown lesson");
   return {
     level,
     seed: 4217,
     n: 2400,
     effect: 2,
-    selection: level >= 5 ? 0.8 : level >= 3 ? 1.2 : 0,
+    selection: level === 10 ? 1.2 : level >= 5 ? 0.8 : level >= 3 ? 1.2 : 0,
     outcomeInfluence: level === 1 ? 0 : 1.5,
     adjusted: level >= 4,
     outcomeCurve: level === 6 ? 2 : 0,
@@ -89,7 +90,43 @@ export function lessonResult(state, noise) {
     regression: result.values[2],
     aipw: result.values[4],
     clipped: result.clipped,
+    ...(state.level === 10
+      ? {
+          overlap: overlapDiagnostics(
+            data,
+            result.propensities,
+            result.weights,
+          ),
+        }
+      : {}),
     before: state.level > 1 ? means(data.map(() => 1)) : null,
     after: state.level > 1 ? means(result.weights) : null,
   };
+}
+
+// Histogram uses fitted probabilities before clipping; weight summaries use
+// the exact clipped weights used by IPW and the AIPW residual correction.
+export function overlapDiagnostics(data, propensities, weights) {
+  return [0, 1].map((arm) => {
+    const bins = Array(10).fill(0);
+    const armWeights = [];
+    data.forEach((d, i) => {
+      if (d.A !== arm) return;
+      bins[Math.min(9, Math.floor(propensities[i] * 10))]++;
+      armWeights.push(weights[i]);
+    });
+    armWeights.sort((a, b) => b - a);
+    const sum = armWeights.reduce((s, w) => s + w, 0);
+    const squares = armWeights.reduce((s, w) => s + w * w, 0);
+    const topCount = Math.ceil(armWeights.length * 0.01);
+    return {
+      count: armWeights.length,
+      bins,
+      ess: sum ? (sum * sum) / squares : null,
+      topCount,
+      topShare: sum
+        ? armWeights.slice(0, topCount).reduce((s, w) => s + w, 0) / sum
+        : null,
+    };
+  });
 }
