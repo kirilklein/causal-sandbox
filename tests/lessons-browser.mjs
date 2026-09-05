@@ -62,11 +62,14 @@ try {
   assert.ok(inactive[1] > 0 && inactive[1] < 1);
   await page.locator("#effect").fill("1");
   const positive = await appearance();
-  assert.ok(positive.every((value, i) => value > inactive[i]));
+  assert.equal(positive[0], inactive[0]);
+  assert.ok(positive[1] > inactive[1]);
   await page.locator("#effect").fill("-1");
   assert.deepEqual(await appearance(), positive);
   await page.locator("#effect").fill("4");
-  assert.ok((await appearance()).every((value, i) => value > positive[i]));
+  const strongest = await appearance();
+  assert.equal(strongest[0], inactive[0]);
+  assert.ok(strongest[1] > positive[1]);
   await page.locator("#effect").fill("0");
   await page.locator("#redraw").click();
   assert.match(await page.locator("#sample-label").innerText(), /4218/);
