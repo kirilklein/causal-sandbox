@@ -13,7 +13,7 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(
-    process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/",
+    `${process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/"}?sandbox`,
   );
   await page.locator(".effect-row").last().waitFor();
   for (const name of ["direct", "ca", "cy", "ua", "uy", "am", "my"]) {

@@ -2,13 +2,21 @@
 
 **Change the world. Question the evidence.**
 
-An interactive causal inference playground that runs entirely in your browser. Turn a causal dial, watch a fixed population of 2,400 people respond, and see which estimators recover the true effect — and which are fooled by confounders, colliders, and mediators.
+An interactive causal inference playground that runs entirely in your browser. Start with three small experiments: randomized treatment, a common cause, and adjustment with inverse probability weighting. Each introduces one question, a small graph, and estimates beside the known effect.
+
+Open the full sandbox at any time to explore additional variables, model choices, and causal structures. The first chapter uses one actual baseline-health variable; the advanced sandbox uses the two-covariate world described below.
 
 **▶ Live demo: https://kirilklein.github.io/causal-sandbox/**
 
 [![Causal sandbox screenshot](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/)
 
-## What you can do
+## First chapter
+
+Predict, try a change, compare the result, and open an explanation when needed. Redraw to explore sample variation. Back, contents, and restart establish the complete lesson baseline, including the sample seed. No completion gate or saved progress.
+
+[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 4–11 are not implemented yet; the full sandbox remains a separate advanced experiment.
+
+## In the full sandbox
 
 - **Edit the causal world.** Sliders set every arrow strength in a DAG with treatment A, outcome Y, observed covariates C (C₁, C₂), hidden confounder U, mediator M, and collider K.
 - **Play analyst.** Choose which variables the analyst can see, which to adjust for, and whether the outcome and propensity models include the C₁ × C₂ interaction.
@@ -26,12 +34,12 @@ npm install
 npm run dev
 ```
 
-| Command                | What it does                                          |
-| ---------------------- | ----------------------------------------------------- |
-| `npm run build`        | Static site in `dist/`                                |
-| `npm run preview`      | Serve the built site                                  |
-| `npm test`             | Statistical checks across 16 world/model combinations |
-| `npm run test:browser` | Playwright smoke test against a running dev server    |
+| Command                | What it does                                       |
+| ---------------------- | -------------------------------------------------- |
+| `npm run build`        | Static site in `dist/`                             |
+| `npm run preview`      | Serve the built site                               |
+| `npm test`             | Statistical checks for lessons and sandbox models  |
+| `npm run test:browser` | Playwright smoke test against a running dev server |
 
 Pushes to `main` deploy to GitHub Pages.
 
@@ -77,7 +85,7 @@ Things to keep in mind when reading the estimates:
 
 ## Acknowledgments
 
-The contextual glossary and planned guided experiments take inspiration from Carlos Mendez’s [Treatment Effects in Stata — Interactive Lab](https://carlos-mendez.org/post/stata_matching/web_app/). The explanations here are original and describe this sandbox’s causal world and estimators.
+The contextual glossary and guided experiments take inspiration from Carlos Mendez’s [Treatment Effects in Stata — Interactive Lab](https://carlos-mendez.org/post/stata_matching/web_app/). The explanations here are original and describe this sandbox’s causal world and estimators.
 
 ## License
 
