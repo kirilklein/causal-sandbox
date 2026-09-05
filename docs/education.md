@@ -81,8 +81,11 @@ The slider preserves covariates and random draws; redraw is separate. Returning
 to zero restores random assignment, and entry/restart restores zero and the initial sample.
 Level 3 starts with selection 1.2 and fits logistic treatment assignment using C
 when adjustment is enabled. Without C, IPW uses an intercept-only model and equals
-the unadjusted difference. Weighted balance uses the exact weights from the
-estimator, including its [0.02, 0.98] clipping policy.
+the unadjusted difference. The control explicitly includes C in the treatment model;
+visible feedback explains why constant within-group weights leave both means
+unchanged when C is excluded. Result labels identify whether IPW uses C. Weighted
+balance uses the exact weights from the estimator, including its [0.02, 0.98]
+clipping policy.
 
 In levels 1–4, 8, and 9, no C2, interaction, mediator, collider or hidden cause enters lesson
 records or outcomes. Every entry/restart sets n=2400, seed=4217, effect=2, the level's selection

@@ -130,12 +130,26 @@ try {
     await page.locator("#ipw").innerText(),
     await page.locator("#unadjusted").innerText(),
   );
+  assert.match(
+    await page.locator("#weighting-model").innerText(),
+    /Weights are constant within each group/,
+  );
+  assert.equal(
+    await page.locator("#ipw-result > span:first-child").innerText(),
+    "IPW estimate · without C",
+  );
+  for (const arm of [0, 1]) {
+    assert.equal(
+      await page.locator(`#before-${arm}`).innerText(),
+      await page.locator(`#after-${arm}`).innerText(),
+    );
+  }
   const unweightedGraph = await page
     .locator("#lesson-graph svg")
     .evaluate((el) => el.outerHTML);
   assert.match(
     await page.locator("#lesson-graph .sample-note").innerText(),
-    /no adjustment/,
+    /overall probability only \(no C\)/,
   );
   await page.keyboard.press("Space");
   assert.equal(await page.locator("#adjustment").isChecked(), true);
@@ -150,7 +164,23 @@ try {
   assert.ok(
     Math.abs(Number(await page.locator("#ipw").innerText()) - 2) < 0.15,
   );
+  assert.match(
+    await page.locator("#weighting-model").innerText(),
+    /probabilities now depend on baseline health/,
+  );
+  assert.equal(
+    await page.locator("#ipw-result > span:first-child").innerText(),
+    "IPW estimate · using C",
+  );
   const weighted = await result();
+  await page.locator("#adjustment").uncheck();
+  assert.equal(
+    await page.locator("#ipw").innerText(),
+    await page.locator("#unadjusted").innerText(),
+  );
+  assert.match(await page.locator("#weighting-model").innerText(), /Without C/);
+  await page.locator("#adjustment").check();
+  assert.equal(await result(), weighted);
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), weighted);
   await page.locator("#back").click();
