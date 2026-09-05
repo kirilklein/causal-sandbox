@@ -488,3 +488,22 @@
 .ipw-weight-table math {
   margin-top: 8px;
 }
+.outcome-predictions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.outcome-predictions > div {
+  padding: 12px;
+  background: var(--surface-subtle);
+  border-radius: 8px;
+}
+.outcome-predictions strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+}
+.outcome-calculation math {
+  font-size: 1.15em;
+}

@@ -203,7 +203,8 @@ export function estimate(data, adjustment, models = {}) {
     xs.map((x, i) => [...x, a[i]]),
     y,
   );
-  const weights = [];
+  const weights = [],
+    outcomePredictions = [];
   let s1 = 0,
     s0 = 0,
     w1 = 0,
@@ -217,6 +218,7 @@ export function estimate(data, adjustment, models = {}) {
       c = (1 - a[i]) / (1 - p),
       m0 = dot([...x, 0], beta),
       m1 = dot([...x, 1], beta);
+    outcomePredictions.push({ m0, m1 });
     s1 += t * y[i];
     s0 += c * y[i];
     w1 += t;
@@ -240,6 +242,7 @@ export function estimate(data, adjustment, models = {}) {
     clipped,
     ess: (w1 + w0) ** 2 / sumw2,
     weights,
+    outcomePredictions,
     propensities: ps,
     ...(models.predictionPoints
       ? {

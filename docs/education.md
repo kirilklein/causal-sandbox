@@ -334,3 +334,23 @@ are rounded; estimates use full precision. Redraw refreshes sample totals; illus
 Native MathML supplies fractions and sums with equivalent text descriptions; no
 external rendering assets are needed. This focused #46 implementation does not
 migrate the other formulas tracked by #19 or add AIPW/TMLE explanations.
+
+### Outcome predictions at first introduction
+
+Lesson 4 shows the first person in the current sample with baseline health held
+fixed, their fitted outcomes with and without treatment, and the difference.
+These are model predictions, not two observed outcomes. The values come directly
+from the estimator's `outcomePredictions` output, using the same fit and full
+precision as the reported effect.
+
+“How do predictions become an effect?” opens the averaging expression and the
+actual sum of all 2,400 predicted differences divided by the sample size. Native
+MathML and a plain-language reading explain the expression. The detail notes that
+this additive model predicts the same contrast for everyone; averaging remains
+the general operation. Redraw refreshes the example and totals; restart restores
+the sample and closes the detail. Opening explanations leaves the experiment intact.
+
+Arithmetic checks cover a known outcome surface with negative, zero, and positive
+effects, and reconstruct the lesson estimate across seeds. Browser checks cover
+displayed arithmetic, disclosure state, redraw/reset, keyboard/touch, and phone
+layouts. A new-learner walkthrough and screen-reader listening remain pending.

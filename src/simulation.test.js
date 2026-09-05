@@ -10,6 +10,21 @@ import {
   estimate,
 } from "./simulation.js";
 const noise = makeNoise();
+test("fitted predictions hold C fixed and recover a known outcome surface", () => {
+  for (const effect of [-2, 0, 3]) {
+    const data = [-2, -1, 0, 1, 2].flatMap((C) =>
+      [0, 1].map((A) => ({ C, A, Y: 4 + 1.5 * C + effect * A })),
+    );
+    const result = estimate(data, ["C"]);
+    result.outcomePredictions.forEach(({ m0, m1 }, i) => {
+      assert.ok(Math.abs(m0 - (4 + 1.5 * data[i].C)) < 1e-6);
+      assert.ok(Math.abs(m1 - (4 + 1.5 * data[i].C + effect)) < 1e-6);
+      assert.ok(Math.abs(m1 - m0 - effect) < 1e-6);
+    });
+    assert.ok(Math.abs(result.values[2] - effect) < 1e-6);
+  }
+});
+
 const run = (i, adjust = presets[i].adjust) =>
   estimate(simulate(presets[i].p, noise), adjust);
 test("fixed exogenous population and potential outcomes preserve the known ATE", () => {

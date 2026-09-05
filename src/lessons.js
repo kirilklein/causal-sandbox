@@ -1,6 +1,7 @@
 import { arrowStrength } from "./arrow-strength.js";
 import { themeControl } from "./theme.js";
 import { renderIpwCalculation } from "./ipw-calculation.js";
+import { renderOutcomeCalculation } from "./outcome-calculation.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import { effectComparison } from "./effect-comparison.js";
@@ -292,6 +293,7 @@ function enter(level, focus = true, callback = false) {
         ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         ${level === 3 ? '<details id="weighting" hidden><summary>Why these weights?</summary><div id="weight-examples"></div><details id="ipw-calculation"><summary>How do weights become an effect?</summary><div id="ipw-arithmetic"></div></details></details>' : ""}
+        ${level === 4 ? '<section class="outcome-calculation" aria-labelledby="outcome-calculation-title"><h3 id="outcome-calculation-title">One person, two predictions</h3><div id="outcome-example"></div><details id="outcome-averaging"><summary>How do predictions become an effect?</summary><div id="outcome-arithmetic"></div></details></section>' : ""}
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
         ${
           level <= 2
@@ -480,6 +482,7 @@ function update() {
     document.querySelector("#regression-result").hidden = false;
   }
   if (state.level === 10) renderOverlap(result.overlap);
+  if (state.level === 4) renderOutcomeCalculation(result.outcomeCalculation);
   if (
     (state.level >= 4 && state.level <= 6) ||
     state.level === 9 ||
