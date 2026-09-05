@@ -6,6 +6,7 @@ import {
   simulateLesson,
   lessonResult,
   overlapDiagnostics,
+  ipwCalculation,
 } from "./lesson-simulation.js";
 
 test("beginner worlds contain only the stated variables and mechanisms", () => {
@@ -465,4 +466,40 @@ test("overlap summaries handle bin edges, equal weights, concentration and an em
   );
   assert.equal(concentrated[1].ess, 149 ** 2 / 2599);
   assert.equal(concentrated[1].topShare, 50 / 149);
+});
+
+test("IPW teaching arithmetic reconstructs the estimator with and without clipping", () => {
+  for (const adjusted of [false, true]) {
+    for (const selection of [1.2, 8]) {
+      const state = { ...lessonBaseline(3), adjusted, selection };
+      const data = simulateLesson(state);
+      const fitted = estimate(data, adjusted ? ["C"] : [], state);
+      const result = lessonResult(state);
+      const groups = result.calculation;
+      assert.ok(Math.abs(groups[1].mean - groups[0].mean - result.ipw) < 1e-12);
+      groups.forEach(({ totalWeight }, arm) => {
+        assert.equal(
+          totalWeight,
+          data.reduce(
+            (sum, d, j) => sum + (d.A === arm ? fitted.weights[j] : 0),
+            0,
+          ),
+        );
+      });
+      if (adjusted && selection === 8) assert.ok(result.clipped > 0);
+    }
+  }
+});
+
+test("IPW calculation divides by arm weight totals and labels absent groups", () => {
+  const data = [
+    { A: 1, Y: 2 },
+    { A: 1, Y: 8 },
+    { A: 0, Y: 3 },
+  ];
+  const groups = ipwCalculation(data, [1, 3, 2]);
+  assert.equal(groups[1].mean, 6.5);
+  assert.equal(groups[0].mean, 3);
+  assert.equal(ipwCalculation([], [])[0].mean, null);
+  assert.equal(ipwCalculation([], [])[1].mean, null);
 });
