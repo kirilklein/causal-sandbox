@@ -91,6 +91,164 @@ try {
     path: "/tmp/causal-lesson-mobile.png",
     fullPage: true,
   });
+  // The model chapter keeps familiar results and reveals only the next method.
+  await page.locator("#continue").tap();
+  const fourth = await result();
+  assert.equal(await page.locator(".lesson-result:visible").count(), 2);
+  assert.equal(await page.locator("#unadjusted").isVisible(), false);
+  await page.locator("#reveal-regression").tap();
+  assert.equal(await page.locator(".lesson-result:visible").count(), 3);
+  await page.locator(".familiar-result summary").tap();
+  assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
+  assert.equal(await page.locator("#regression-explanation").isVisible(), true);
+  assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
+  const fourthRevealed = await result();
+  await page.locator(".lesson-details summary").tap();
+  assert.equal(await result(), fourthRevealed);
+  await page.locator("#continue").tap();
+  const fifth = await result();
+  assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
+  assert.equal(
+    await page.locator('input[name="model-experiment"]:checked').inputValue(),
+    "simple",
+  );
+  assert.equal(await page.locator("#unadjusted").count(), 0);
+  assert.equal(await page.locator("#aipw").count(), 0);
+  await page
+    .getByRole("radio", { name: "Simple relationships", exact: true })
+    .focus();
+  await page.keyboard.press("ArrowDown");
+  assert.equal(
+    await page
+      .getByRole("radio", {
+        name: "More complex outcome relationship",
+        exact: true,
+      })
+      .isChecked(),
+    true,
+  );
+  assert.equal(
+    await page.locator("#model-preview-title").innerText(),
+    "Expected outcome without treatment",
+  );
+  assert.match(
+    await page.locator("#model-description").innerText(),
+    /outcome missing the added pattern; treatment correctly specified/,
+  );
+  await page
+    .getByRole("radio", {
+      name: "More complex treatment assignment",
+      exact: true,
+    })
+    .check();
+  assert.match(
+    await page.locator("#model-description").innerText(),
+    /outcome correctly specified; treatment missing the added pattern/,
+  );
+  assert.match(
+    await page.locator("#world-description").innerText(),
+    /outcome relationship is simple again/,
+  );
+  assert.equal(
+    await page.locator("#model-preview-title").innerText(),
+    "Probability of receiving treatment",
+  );
+  assert.equal(
+    await page.locator("#model-preview svg path[data-curve]").count(),
+    2,
+  );
+  const treatmentExperiment = await result();
+  const plotBeforeRedraw = await page
+    .locator('[data-curve="fitted"]')
+    .getAttribute("d");
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-model-failure-mobile.png",
+    fullPage: true,
+  });
+  await page.locator("#redraw").tap();
+  assert.notEqual(await result(), treatmentExperiment);
+  assert.notEqual(
+    await page.locator('[data-curve="fitted"]').getAttribute("d"),
+    plotBeforeRedraw,
+  );
+  await page.locator("#restart").tap();
+  assert.equal(await result(), fifth);
+  await page
+    .getByRole("radio", {
+      name: "More complex treatment assignment",
+      exact: true,
+    })
+    .check();
+  await page.locator("#continue").tap();
+  const sixth = await result();
+  assert.equal(await page.locator("#aipw-result").isVisible(), true);
+  assert.equal(await page.locator("#outcome-quadratic").isChecked(), true);
+  assert.equal(await page.locator("#treatment-quadratic").isChecked(), true);
+  assert.equal(await page.locator(".lesson-controls button").count(), 0);
+  const ipwBefore = await page.locator("#ipw").innerText();
+  await page.locator("#outcome-quadratic").focus();
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#ipw").innerText(), ipwBefore);
+  assert.match(
+    await page.locator("#robustness-note").innerText(),
+    /Only the treatment model/,
+  );
+  assert.ok(
+    Math.abs(Number(await page.locator("#aipw").innerText()) - 2) < 0.2,
+  );
+  const regressionBefore = await page.locator("#regression").innerText();
+  await page.locator("#treatment-quadratic").tap();
+  assert.equal(await page.locator("#regression").innerText(), regressionBefore);
+  assert.match(
+    await page.locator("#robustness-note").innerText(),
+    /Both models miss/,
+  );
+  assert.ok(Number(await page.locator("#aipw").innerText()) > 3);
+  await page.locator("#outcome-quadratic").tap();
+  assert.match(
+    await page.locator("#robustness-note").innerText(),
+    /Only the outcome model/,
+  );
+  assert.ok(
+    Math.abs(Number(await page.locator("#aipw").innerText()) - 2) < 0.2,
+  );
+  await page.locator("#treatment-quadratic").tap();
+  assert.equal(await result(), sixth);
+  const bothCorrect = await result();
+  await page.locator(".lesson-explanation summary").tap();
+  await page.locator(".lesson-details summary").tap();
+  assert.equal(await result(), bothCorrect);
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-model-lesson-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.screenshot({
+    path: "/tmp/causal-model-lesson-desktop.png",
+    fullPage: true,
+  });
+  await page.locator("#restart").click();
+  assert.equal(await result(), sixth);
+  assert.equal(await page.locator("#outcome-quadratic").isChecked(), true);
+  assert.equal(await page.locator("#treatment-quadratic").isChecked(), true);
+  await page.locator("#back").click();
+  assert.equal(await result(), fifth);
+  await page.locator("#back").click();
+  assert.equal(await result(), fourth);
+  await page.goBack();
+  assert.equal(await result(), fifth);
+  await page.goForward();
+  assert.equal(await result(), fourth);
   await page.locator(".lesson-nav summary").tap();
   await page
     .getByRole("link", { name: "A randomized experiment", exact: true })
@@ -102,6 +260,14 @@ try {
   await page.getByRole("link", { name: "Start the lessons" }).click();
   assert.equal(await result(), first);
   assert.equal(await page.locator("input").count(), 1);
+  for (const [level, expected] of [
+    [4, fourth],
+    [5, fifth],
+    [6, sixth],
+  ]) {
+    await page.goto(`${url}?level=${level}`);
+    assert.equal(await result(), expected);
+  }
   assert.deepEqual(errors, []);
   console.log(
     "Lesson navigation, baseline resets, help, keyboard and mobile checks passed.",
