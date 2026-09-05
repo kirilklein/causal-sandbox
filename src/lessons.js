@@ -1,4 +1,5 @@
 import "./lessons.css";
+import { effectComparison } from "./effect-comparison.js";
 import { makeNoise } from "./simulation.js";
 import { lessonBaseline, lessonResult } from "./lesson-simulation.js";
 
@@ -262,6 +263,7 @@ function enter(level, focus = true, callback = false) {
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
         <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        <p class="sample-note">Stronger red means farther from truth in this sample.</p>
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
@@ -405,18 +407,31 @@ function renderModelPreview(points) {
     `<svg viewBox="0 0 360 165" role="img" aria-label="${title} by baseline health: solid line is the true relationship; dashed line is the fitted model.">${[lo, (lo + hi) / 2, hi].map((v) => `<path d="M42 ${y(v)}H342" stroke="#dde3db"/><text x="34" y="${y(v) + 4}" text-anchor="end">${treatment ? `${v * 100}%` : v}</text>`).join("")}<path data-curve="truth" d="${path(false)}" fill="none" stroke="#315e48" stroke-width="2.5"/><path data-curve="fitted" d="${path(true)}" fill="none" stroke="#ad562e" stroke-width="2.5" stroke-dasharray="6 4"/><text x="42" y="143">−1.7</text><text x="192" y="143" text-anchor="middle">0</text><text x="342" y="143" text-anchor="end">1.7</text><text x="192" y="161" text-anchor="middle">Baseline health (C)</text></svg>`;
 }
 
+function updateEstimate(id, estimate, truth) {
+  const value = document.querySelector(`#${id}`);
+  if (!value) return;
+  const comparison = effectComparison(estimate, truth);
+  value.textContent = comparison.value;
+  value.parentElement.style.setProperty("--error-tint", `${comparison.tint}%`);
+  let difference = value.parentElement.querySelector(".effect-difference");
+  if (!difference) {
+    difference = document.createElement("span");
+    difference.className = "effect-difference";
+    value.after(difference);
+  }
+  difference.textContent = comparison.difference;
+}
+
 function update() {
   const result = lessonResult(state, noise);
   document.querySelector("#known-effect").textContent =
     result.totalEffect.toFixed(2);
-  const unadjusted = document.querySelector("#unadjusted");
-  if (unadjusted) unadjusted.textContent = result.unadjusted.toFixed(2);
-  document.querySelector("#ipw").textContent = result.ipw.toFixed(2);
+  for (const id of ["unadjusted", "ipw", "regression", "aipw"]) {
+    updateEstimate(id, result[id], result.totalEffect);
+  }
   document.querySelector("#ipw-result").hidden =
     state.level === 7 || state.level === 8 || (state.level < 4 && !revealed);
   if (state.level >= 4) {
-    document.querySelector("#regression").textContent =
-      result.regression.toFixed(2);
     document.querySelector("#regression-result").hidden = false;
   }
   if (state.level === 10) renderOverlap(result.overlap);
@@ -430,7 +445,6 @@ function update() {
       : "No treatment probabilities were clipped in this sample.";
   }
   if (showsAipw(state.level)) {
-    document.querySelector("#aipw").textContent = result.aipw.toFixed(2);
     document.querySelector("#aipw-result").hidden = false;
   }
   if (state.level === 6) {

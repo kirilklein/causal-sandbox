@@ -1,8 +1,8 @@
 # Color conventions
 
 Implemented for #20 in the existing lesson and sandbox graphs, treatment-arm
-charts, and sandbox estimate markers. Future equation and lesson estimate-plot
-work follows the same conventions. Keep the cream page
+charts, and sandbox estimate markers. Lesson result cards now add continuous
+error feedback for #16. Future equation work follows the variable conventions. Keep the cream page
 background, pale node fills, dark text, and restrained green interface accents.
 
 Open the [visual examples](color-examples.html) in a browser to compare the palette,
@@ -79,6 +79,22 @@ presentation changes.
   explicit in text, separate from variable identity. Do not add uncertainty
   intervals without implemented inference.
 
+## Lesson result cards
+
+The true total effect uses the constant Outcome Y fill (`--node-Y`). Estimates
+blend from neutral `#f5f4ef` at zero absolute error to muted red `#df8b85` at an
+absolute error of 2 outcome units, saturating beyond 2. This fixed scale applies
+across lessons, estimators, slider changes, and redraws. It is a display scale,
+not a statistical threshold; it never divides by truth or rescales to other
+estimates. Equal errors above and below truth receive equal tint.
+
+Dark text preserves contrast. Each estimate retains its numeric value and a
+signed difference from the lesson's total-effect target. Differences use the
+unrounded results, displayed to two decimals without negative zero. Stronger red
+means farther from truth in this sample; it does not establish bias, significance,
+or invalidity. Missing/non-finite results are labeled Unavailable. The sandbox's
+existing plot retains neutral markers; intervals remain separate inference work.
+
 ## Acceptance and application
 
 Require at least 4.5:1 for ordinary text against its background and at least 3:1
@@ -102,8 +118,8 @@ Implemented here: shared CSS node colors, stable lesson and sandbox graphs,
 model-specific adjustment captions, consistent treatment-arm colors, and neutral
 sandbox estimates against labeled truth. The examples document these choices.
 
-Remaining application: equation rendering and worked formulas (#19/#17), and
-lesson estimate visualization (#16). They must reuse these conventions without
+Remaining application: equation rendering and worked formulas (#19/#17).
+They must reuse these conventions without
 changing estimator calculations or adding unsupported intervals.
 
 No dependencies, public APIs, or calculations change. Shared CSS custom

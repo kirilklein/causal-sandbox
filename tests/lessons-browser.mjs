@@ -16,6 +16,23 @@ try {
   await page.locator("#unadjusted").waitFor();
   const result = () => page.locator(".lesson-results").innerText();
   const first = await result();
+  const estimateTint = () =>
+    page
+      .locator("#unadjusted")
+      .evaluate((el) =>
+        Number.parseFloat(
+          el.parentElement.style.getPropertyValue("--error-tint"),
+        ),
+      );
+  const truthColor = () =>
+    page
+      .locator(".truth-result")
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+  assert.equal(await truthColor(), "rgb(229, 235, 244)");
+  assert.match(
+    await page.locator(".effect-difference:visible").innerText(),
+    /[+-]?\d+\.\d{2} from truth/,
+  );
   assert.equal(await page.locator(".lesson-result:visible").count(), 2);
   assert.deepEqual(
     await page.locator("#lesson-graph svg text").allTextContents(),
@@ -48,6 +65,7 @@ try {
   });
   await page.locator("#continue").click();
   const second = await result();
+  const initialTint = await estimateTint();
   assert.equal(await page.locator("#selection").inputValue(), "0");
   assert.match(
     await page.locator("#lesson-graph svg").getAttribute("aria-label"),
@@ -70,6 +88,9 @@ try {
   assert.equal(await result(), second);
   await selection.fill("1.2");
   const selected = await result();
+  const selectedTint = await estimateTint();
+  assert.ok(selectedTint > initialTint);
+  assert.equal(await truthColor(), "rgb(229, 235, 244)");
   await page.locator("#redraw").click();
   assert.equal(await selection.inputValue(), "1.2");
   assert.match(await page.locator("#sample-label").innerText(), /4218/);
@@ -77,6 +98,7 @@ try {
   assert.equal(await selection.inputValue(), "0");
   assert.equal(await page.locator("#selection-output").innerText(), "0.0");
   assert.equal(await result(), second);
+  assert.equal(await estimateTint(), initialTint);
   await page.setViewportSize({ width: 320, height: 740 });
   await selection.tap();
   assert.ok(Number(await selection.inputValue()) > 0);
@@ -154,7 +176,9 @@ try {
   await page.locator("#continue").tap();
   const fourth = await result();
   assert.deepEqual(
-    await page.locator(".lesson-result:visible span").allTextContents(),
+    await page
+      .locator(".lesson-result:visible > span:first-child")
+      .allTextContents(),
     [
       "True total effect",
       "Unadjusted difference",
