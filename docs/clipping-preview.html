@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en" data-theme-preference="system">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" />
+    <title>What changes when we clip? · Causal Sandbox</title>
+    <link rel="stylesheet" href="../src/theme.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 1020px;
+        margin: auto;
+        padding: 28px 24px 48px;
+      }
+      header,
+      .heading,
+      .control-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      header {
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+      }
+      a {
+        color: inherit;
+      }
+      button,
+      select {
+        font: inherit;
+        color: var(--text);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 8px 12px;
+      }
+      button,
+      summary {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
+      }
+      .eyebrow {
+        color: var(--text-muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-top: 28px;
+      }
+      h1 {
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.15;
+        letter-spacing: -0.04em;
+        margin: 10px 0 14px;
+      }
+      h2 {
+        font-size: 19px;
+        margin: 0;
+      }
+      p {
+        margin: 12px 0;
+      }
+      .lede {
+        max-width: 720px;
+        color: var(--text-secondary);
+      }
+      .experiment {
+        margin-top: 26px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+      }
+      .truth {
+        background: var(--node-Y);
+        padding: 8px 14px;
+        border-radius: 8px;
+        white-space: nowrap;
+      }
+      .control {
+        margin-top: 22px;
+        padding: 20px;
+        background: var(--surface-subtle);
+        border-radius: 10px;
+      }
+      output,
+      td,
+      .truth {
+        font-variant-numeric: tabular-nums;
+      }
+      output {
+        font-weight: 650;
+      }
+      input {
+        display: block;
+        width: 100%;
+        margin: 18px 0 8px;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .ends {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      .help,
+      .sample,
+      small {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .results {
+        margin-top: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      caption {
+        text-align: left;
+        font-weight: 650;
+        padding: 0 0 12px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border);
+      }
+      th:first-child {
+        text-align: left;
+      }
+      thead th {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 550;
+      }
+      td strong {
+        font-size: 21px;
+        font-weight: 650;
+      }
+      td small {
+        display: block;
+      }
+      td.selected {
+        background: color-mix(
+          in srgb,
+          var(--surface-subtle),
+          var(--error-surface) var(--error-tint)
+        );
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+      .actions .sample {
+        margin-left: auto;
+      }
+      details {
+        margin-top: 22px;
+      }
+      summary {
+        font-weight: 600;
+      }
+      details table {
+        margin-top: 16px;
+        font-size: 13px;
+      }
+      .note {
+        max-width: 760px;
+        color: var(--text-secondary);
+      }
+      @media (max-width: 540px) {
+        main {
+          padding: 18px 14px 32px;
+        }
+        header {
+          align-items: start;
+          font-size: 12px;
+        }
+        .experiment {
+          padding: 14px;
+        }
+        .heading {
+          align-items: start;
+          gap: 10px;
+        }
+        .truth {
+          font-size: 13px;
+        }
+        .control {
+          padding: 14px;
+        }
+        .control-label {
+          display: block;
+        }
+        output {
+          display: block;
+          margin-top: 4px;
+        }
+        th,
+        td {
+          padding: 10px 5px;
+          font-size: 12px;
+        }
+        td strong {
+          font-size: 18px;
+        }
+        td small {
+          font-size: 10px;
+        }
+        .actions .sample {
+          width: 100%;
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a href="../">Causal Sandbox</a><span id="theme-control"></span>
+      </header>
+      <p class="eyebrow">Overlap · experiment preview</p>
+      <h1>What changes when we clip?</h1>
+      <p class="lede">
+        Some people have few counterparts in the other treatment group. Raise
+        the clipping threshold to limit extreme weights, then compare the
+        estimates on the same sample.
+      </p>
+      <section class="experiment" aria-labelledby="experiment-title">
+        <div class="heading">
+          <h2 id="experiment-title">Same people. Same fitted models.</h2>
+          <span class="truth">True effect <b>2.00</b></span>
+        </div>
+        <div class="control">
+          <label class="control-label" for="threshold"
+            ><b>Probability-clipping threshold</b
+            ><output id="threshold-value" for="threshold"
+              >0.02 → [0.02, 0.98]</output
+            ></label
+          >
+          <input
+            id="threshold"
+            type="range"
+            min="0"
+            max="0.2"
+            step="0.01"
+            value="0.02"
+            aria-describedby="threshold-help"
+          />
+          <div class="ends"><span>0 · no clipping</span><span>0.20</span></div>
+          <p class="help" id="threshold-help">
+            Probabilities outside these bounds move to the nearest bound.
+            Everyone stays in the sample.
+          </p>
+        </div>
+        <div class="results" aria-live="polite" aria-atomic="true">
+          <p id="unavailable" hidden></p>
+          <table aria-label="Estimates with and without clipping">
+            <thead>
+              <tr>
+                <th scope="col">Method</th>
+                <th scope="col">No clipping</th>
+                <th scope="col">Selected threshold</th>
+              </tr>
+            </thead>
+            <tbody id="estimates"></tbody>
+          </table>
+        </div>
+        <p class="help">
+          Stronger red means farther from truth in this sample. It does not
+          measure statistical significance.
+        </p>
+        <div class="actions">
+          <button id="redraw">Draw another sample</button
+          ><button id="restart">Restart</button
+          ><span class="sample" id="sample"></span>
+        </div>
+        <details id="weights">
+          <summary>What happened to the weights?</summary>
+          <table>
+            <caption>
+              No clipping → selected threshold
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Diagnostic</th>
+                <th scope="col">Untreated</th>
+                <th scope="col">Treated</th>
+              </tr>
+            </thead>
+            <tbody id="diagnostics"></tbody>
+          </table>
+          <p class="help">
+            Effective sample size describes weight concentration, not retained
+            people or a guarantee of precision. The underlying treatment overlap
+            has not changed.
+          </p>
+        </details>
+      </section>
+      <p class="note">
+        Limiting weights can reduce variation across studies while introducing
+        bias. A single sample cannot show that tradeoff; moving closer to truth
+        here does not establish a better threshold.
+      </p>
+      <details>
+        <summary>What stays fixed in this experiment?</summary>
+        <p class="note">
+          There are 2,400 people, one measured baseline variable C, and strong
+          treatment selection (strength 3). Both models correctly adjust for C.
+          The total effect is 2, with no hidden confounding or post-treatment
+          adjustment.
+        </p>
+        <p class="note">
+          Moving the threshold reuses the same fitted probabilities and outcome
+          predictions. Outcome regression is unchanged. AIPW may respond less
+          because its outcome model is correct here; clipping cannot rescue a
+          wrong outcome model or supply missing comparisons.
+        </p>
+        <p class="note">
+          IPW normalizes weights separately in each treatment group. AIPW
+          averages predicted contrasts plus signed weighted errors over
+          everyone.
+          <a href="./clipping-experiment.md">Calculation and validation notes</a
+          >.
+        </p>
+      </details>
+    </main>
+    <script type="module">
+      import {
+        lessonBaseline,
+        simulateLesson,
+      } from "../src/lesson-simulation.js";
+      import {
+        fitClippingSample,
+        clippingResult,
+      } from "../src/clipping-experiment.js";
+      import { effectComparison } from "../src/effect-comparison.js";
+      import { setupTheme, themeControl } from "../src/theme.js";
+
+      document.querySelector("#theme-control").innerHTML = themeControl();
+      setupTheme();
+      const slider = document.querySelector("#threshold");
+      let seed = 4217;
+      let rows;
+      let baseline;
+      const methods = [
+        ["regression", "Outcome regression"],
+        ["ipw", "IPW"],
+        ["aipw", "AIPW"],
+      ];
+      function update() {
+        const threshold = Number(slider.value);
+        document.querySelector("#threshold-value").textContent =
+          `${threshold.toFixed(2)} → [${threshold.toFixed(2)}, ${(1 - threshold).toFixed(2)}]`;
+        const result = clippingResult(rows, threshold);
+        const error = document.querySelector("#unavailable");
+        error.hidden = result.available && baseline.available;
+        error.textContent = [baseline, result]
+          .filter((r) => !r.available)
+          .map((r) => r.reason)
+          .join(" ");
+        const cell = (r, key, selected) => {
+          const comparison = effectComparison(r.available ? r[key] : NaN, 2);
+          return `<td${selected ? ` class="selected" style="--error-tint:${comparison.tint}%"` : ""}><strong>${comparison.value}</strong><small>${comparison.difference}</small></td>`;
+        };
+        document.querySelector("#estimates").innerHTML = methods
+          .map(
+            ([key, label]) =>
+              `<tr data-method="${key}"><th scope="row">${label}</th>${cell(baseline, key, false)}${cell(result, key, true)}</tr>`,
+          )
+          .join("");
+        const diagnostics = [
+          ["People", "count", 0],
+          ["Clipped probabilities", "clipped", 0],
+          ["Largest weight", "maxWeight", 1],
+          ["Effective sample size", "ess", 0],
+        ];
+        document.querySelector("#diagnostics").innerHTML = diagnostics
+          .map(
+            ([label, key, digits]) =>
+              `<tr><th scope="row">${label}</th>${[0, 1].map((arm) => `<td>${baseline.available ? baseline.overlap[arm][key].toFixed(digits) : "Unavailable"} → ${result.available ? result.overlap[arm][key].toFixed(digits) : "Unavailable"}</td>`).join("")}</tr>`,
+          )
+          .join("");
+        document.querySelector("#sample").textContent =
+          `2,400 people · sample seed ${seed}`;
+      }
+      function draw() {
+        rows = fitClippingSample(
+          simulateLesson({ ...lessonBaseline(10), selection: 3, seed }),
+        );
+        baseline = clippingResult(rows, 0);
+        update();
+      }
+      slider.addEventListener("input", update);
+      document.querySelector("#redraw").addEventListener("click", () => {
+        seed++;
+        draw();
+      });
+      document.querySelector("#restart").addEventListener("click", () => {
+        seed = 4217;
+        slider.value = "0.02";
+        draw();
+      });
+      draw();
+    </script>
+  </body>
+</html>
