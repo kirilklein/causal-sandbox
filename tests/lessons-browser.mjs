@@ -284,15 +284,41 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#regression-explanation").isVisible(), true);
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
-  await page.locator(".lesson-details summary").tap();
-  assert.equal(await result(), fourth);
+  assert.equal(await page.locator(".learning details").count(), 1);
+  assert.equal(await page.locator("#outcome-formula").isVisible(), false);
+  const outcomeSeed = await page.locator("#sample-label").innerText();
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
+  assert.equal(await result(), fourth);
+  assert.equal(await page.locator("#sample-label").innerText(), outcomeSeed);
+  assert.equal(await page.locator("#outcome-formula").isVisible(), true);
+  assert.match(
+    await page.locator(".lesson-explanation").innerText(),
+    /predictions, not two observed outcomes/,
+  );
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    const formula = await page.locator("#outcome-formula").boundingBox();
+    assert.ok(formula.x >= 0 && formula.x + formula.width <= width);
+    await page.screenshot({
+      path: `/tmp/causal-outcome-concise-${width}.png`,
+      fullPage: true,
+    });
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator(".lesson-explanation summary").tap();
+  assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   assert.equal(await result(), fourth);
   await page.locator("#redraw").tap();
   assert.notEqual(await result(), fourth);
   await page.locator("#restart").tap();
   assert.equal(await result(), fourth);
+  assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.ok(
     await page.evaluate(

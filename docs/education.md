@@ -32,6 +32,12 @@ robustness to the earlier missing-information limitation.
 
 ## Review boundaries
 
+Match explanation length to conceptual difficulty. Keep intuitive operations
+brief; examples should resolve a likely misunderstanding, not make every method
+equally elaborate. Collider adjustment and TMLE targeting warrant more explanation
+than predicting outcomes and averaging differences. Remove repetition from optional
+details as well as the initial screen.
+
 [Color conventions](color-conventions.md) defines the agreed variable palette,
 adjustment captions, and method/truth styling (#20), applied to the existing
 lessons and sandbox. Equation highlights and the new lesson estimate plot remain
@@ -334,3 +340,15 @@ are rounded; estimates use full precision. Redraw refreshes sample totals; illus
 Native MathML supplies fractions and sums with equivalent text descriptions; no
 external rendering assets are needed. This focused #46 implementation does not
 migrate the other formulas tracked by #19 or add AIPW/TMLE explanations.
+
+### Outcome predictions at first introduction
+
+Lesson 4 states the operation once: fit an outcome model, predict each person
+under both treatments at the same baseline health, and average the differences.
+One optional explanation contains the averaging formula, symbol definitions,
+the distinction between predictions and observations, and why both methods work
+in this world. There are no prediction cards, worked arithmetic, or separate
+model-details disclosure. The estimator and its outputs are unchanged.
+
+Browser checks cover explanation state, redraw/reset, keyboard/touch, and phone
+layouts. New-learner comprehension and screen-reader listening remain untested.
