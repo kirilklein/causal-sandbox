@@ -49,6 +49,6 @@ export const glossary = {
   },
   error: {
     title: "Sample error and bias",
-    text: "An estimate can differ from truth because of random sampling as well as systematic problems. Statistical bias is an average error across repeated samples, so the difference in this one fixed sample is not itself a measurement of bias. The 0.15 coloring threshold is only a visual guide; it is neither a confidence interval nor a significance test.",
+    text: "An estimate can differ from truth because of random sampling as well as systematic problems. Statistical bias is an average error across repeated samples, so the difference in this one fixed sample is not itself a measurement of bias. The plot shows point estimates, not confidence intervals or significance tests.",
   },
 };

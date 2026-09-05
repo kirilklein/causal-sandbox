@@ -23,6 +23,11 @@ robustness to the earlier missing-information limitation.
 [Selective examples](selective-examples.md) records where concrete illustrations
 can help while preserving the existing graph labels (#27).
 
+[Color conventions](color-conventions.md) defines the agreed variable palette,
+adjustment captions, and method/truth styling (#20), applied to the existing
+lessons and sandbox. Equation highlights and the new lesson estimate plot remain
+future work.
+
 1. **First chapter (implemented, part of #8 and #11):** isolated lesson view,
    complete baselines, levels 1–3, one actual baseline variable, paired draws,
    independent redraw, IPW disclosure and a before/after balance comparison.
@@ -152,7 +157,7 @@ protect against. This comprehension walkthrough is still pending.
 Levels 5–6 explicitly return to the level-4 baseline (selection=1.2, simple
 relationships and models, baseline health always included). They show only the
 true total effect and familiar standardized outcome regression, with one switch
-for the new variable. Graph outlines show adjustment; arrows never change with
+for the new variable. Graph captions state the adjustment set; nodes and arrows never change with
 the switch. The world and draws stay fixed. Level 5 introduces the true breakdown;
 level 6 removes the mediator before adding the collider.
 
