@@ -1,22 +1,22 @@
 # Causal sandbox
 
-**Change the world. Question the evidence.**
-
-An interactive causal inference playground that runs entirely in your browser. Start with ten progressive lessons: randomized treatment, a common cause, IPW, outcome regression, a mediator, a collider, hidden confounding, model failure, double robustness, and overlap. An optional revisit after double robustness tests AIPW against hidden confounding. Each introduces one question, a small graph, and estimates beside the known effect.
-
-Open the full sandbox at any time to explore additional variables, model choices, and causal structures. The lessons use one actual baseline-health variable; the advanced sandbox uses the two-covariate world described below.
-
-**▶ Live demo: https://kirilklein.github.io/causal-sandbox/**
-
-[![Causal sandbox screenshot](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/)
+Learn causal inference through guided experiments, then explore a world you can configure. Runs entirely in your browser.
 
 ## Guided lessons
 
-Predict, try a change, compare the result, and open an explanation when needed. Redraw to explore sample variation. Back, contents, and restart establish the complete lesson baseline, including the sample seed. No completion gate or saved progress.
+**[Start the lessons →](https://kirilklein.github.io/causal-sandbox/?lesson=randomization)**
 
-[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 1–10 lead to the full sandbox at level 11, which starts a separate advanced experiment. Topic links use `?lesson=mediator` and similar names; old numeric `?level=` links retain their original topics.
+Start with randomization and introduce one concept at a time: confounding, adjustment, causal roles, and model assumptions. Change a setting and compare the estimate with the known effect.
 
-## In the full sandbox
+[![First lesson: treatment and outcome, an effect slider, and estimates beside the truth](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=randomization)
+
+## Full sandbox
+
+**[Explore the full sandbox →](https://kirilklein.github.io/causal-sandbox/?sandbox)**
+
+Choose the causal structure, available variables, and statistical models. This starts a separate experiment with two baseline covariates. “Start the lessons” in the header returns to the tutorial.
+
+[![Full sandbox: causal graph, population outcomes, adjustment controls, and estimated effects](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox)
 
 - **Edit the causal world.** Sliders set every arrow strength in a DAG with treatment A, outcome Y, observed covariates C (C₁, C₂), hidden confounder U, mediator M, and collider K.
 - **Play analyst.** Choose which variables the analyst can see, which to adjust for, and whether the outcome and propensity models include the C₁ × C₂ interaction.
@@ -26,6 +26,8 @@ Predict, try a change, compare the result, and open an explanation when needed. 
 - **Look up terms as you explore.** Pause over an underlined term, or tap or click it, for a short definition, or open the collapsed glossary in “How this world works.” Help supports keyboard navigation and Escape to close, without changing the simulation.
 
 The true effect is always known, so every estimate can be judged honestly. No backend, no data collection — it is a static page.
+
+[Curriculum and learner walkthrough](docs/education.md).
 
 ## Run locally
 
