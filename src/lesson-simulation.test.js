@@ -38,6 +38,51 @@ test("beginner worlds contain only the stated variables and mechanisms", () => {
   );
 });
 
+test("confounding strength preserves paired draws and the total effect", () => {
+  const baseline = lessonBaseline(2);
+  assert.equal(baseline.selection, 0);
+  const noise = makeNoise(baseline.n, baseline.seed);
+  const random = simulateLesson(baseline, noise);
+  for (const selection of [0, 0.1, 0.6, 1.2]) {
+    const state = { ...baseline, selection };
+    const data = simulateLesson(state, noise);
+    data.forEach((d, i) => {
+      assert.equal(d.C, random[i].C);
+      assert.equal(
+        d.A,
+        +(noise[i].a < 1 / (1 + Math.exp(0.8 - selection * d.C))),
+      );
+      assert.ok(Math.abs(d.Y - random[i].Y - 2 * (d.A - random[i].A)) < 1e-12);
+    });
+    assert.equal(lessonResult(state, noise).totalEffect, 2);
+    if (selection > 0) assert.ok(data.some((d, i) => d.A !== random[i].A));
+  }
+  assert.deepEqual(
+    simulateLesson({ ...baseline, selection: 1.2 }, noise),
+    simulateLesson(lessonBaseline(3), noise),
+  );
+});
+
+test("confounding grows across slider strengths on average over 40 samples", () => {
+  const means = [0, 0.3, 0.6, 0.9, 1.2].map((selection) => {
+    let bias = 0;
+    for (let seed = 100; seed < 140; seed++) {
+      bias +=
+        (lessonResult({ ...lessonBaseline(2), selection, seed }).unadjusted -
+          2) /
+        40;
+    }
+    return bias;
+  });
+  assert.ok(Math.abs(means[0]) < 0.06, `Randomized bias: ${means[0]}`);
+  for (let i = 1; i < means.length; i++)
+    assert.ok(means[i] > means[i - 1] + 0.1);
+  assert.ok(means.at(-1) > 1);
+  console.log(
+    `Confounding mean biases (0 to 1.2): ${means.map((b) => b.toFixed(3)).join(", ")}`,
+  );
+});
+
 test("baseline, adjustment, and redraw do not leak state or alter the world", () => {
   const baseline = lessonBaseline(3);
   const before = simulateLesson(baseline);

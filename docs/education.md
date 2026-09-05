@@ -64,7 +64,9 @@ Total population ATE = effect
 ```
 
 Level 1 sets selection and outcomeInfluence to zero and exposes only A and Y.
-Level 2 sets outcomeInfluence to 1.5 and lets selection switch from 0 to 1.2.
+Level 2 sets outcomeInfluence to 1.5 and lets selection vary from 0 to 1.2 in steps of 0.1, starting at zero.
+The slider preserves covariates and random draws; redraw is separate. Returning
+to zero restores random assignment, and entry/restart restores zero and the initial sample.
 Level 3 starts with selection 1.2 and fits logistic treatment assignment using C
 when adjustment is enabled. Without C, IPW uses an intercept-only model and equals
 the unadjusted difference. Weighted balance uses the exact weights from the

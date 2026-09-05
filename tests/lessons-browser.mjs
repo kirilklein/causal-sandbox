@@ -48,12 +48,55 @@ try {
   });
   await page.locator("#continue").click();
   const second = await result();
-  assert.equal(await page.locator("#selection").isChecked(), false);
+  assert.equal(await page.locator("#selection").inputValue(), "0");
   assert.match(
     await page.locator("#lesson-graph svg").getAttribute("aria-label"),
     /health causes outcome\./,
   );
-  await page.locator("#selection").check();
+  const selection = page.getByRole("slider", {
+    name: "Baseline health’s influence on treatment",
+  });
+  await selection.focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await selection.inputValue(), "0.1");
+  assert.equal(await page.locator("#selection-output").innerText(), "0.1");
+  assert.match(await page.locator("#sample-label").innerText(), /4217/);
+  await selection.fill("0.6");
+  const intermediate = await result();
+  assert.equal(await page.locator("#known-effect").innerText(), "2.00");
+  await page.locator(".lesson-explanation summary").click();
+  assert.equal(await result(), intermediate);
+  await selection.fill("0");
+  assert.equal(await result(), second);
+  await selection.fill("1.2");
+  const selected = await result();
+  await page.locator("#redraw").click();
+  assert.equal(await selection.inputValue(), "1.2");
+  assert.match(await page.locator("#sample-label").innerText(), /4218/);
+  await page.locator("#restart").click();
+  assert.equal(await selection.inputValue(), "0");
+  assert.equal(await page.locator("#selection-output").innerText(), "0.0");
+  assert.equal(await result(), second);
+  await page.setViewportSize({ width: 320, height: 740 });
+  await selection.tap();
+  assert.ok(Number(await selection.inputValue()) > 0);
+  assert.equal(await page.locator("#known-effect").innerText(), "2.00");
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-confounding-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await selection.fill("1.2");
+  assert.equal(await result(), selected);
+  await page.screenshot({
+    path: "/tmp/causal-confounding-desktop.png",
+    fullPage: true,
+  });
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#ipw-result").isVisible(), false);
   await page.locator("#continue").click();
@@ -90,6 +133,7 @@ try {
   assert.equal(await result(), weighted);
   await page.locator("#back").click();
   assert.equal(await result(), second);
+  assert.equal(await selection.inputValue(), "0");
   await page.goBack();
   assert.equal(await result(), third);
   assert.equal(await page.locator("#balance").isVisible(), false);
