@@ -1,0 +1,19 @@
+{
+  "name": "causal-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test src/simulation.test.js",
+    "test:browser": "node tests/browser.mjs",
+    "format": "prettier --write src tests index.html package.json README.md"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "prettier": "^3.9.6",
+    "vite": "^7.1.0"
+  }
+}
