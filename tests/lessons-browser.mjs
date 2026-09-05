@@ -51,7 +51,23 @@ try {
     await page.locator("#lesson-graph svg").getAttribute("aria-label"),
     /no effect/,
   );
-  assert.equal(await page.locator("#lesson-graph g path").count(), 0);
+  const effectArrow = page.locator("#lesson-graph g path");
+  assert.equal(await effectArrow.count(), 1);
+  const appearance = () =>
+    effectArrow.evaluate((el) => [
+      Number(el.getAttribute("stroke-width")),
+      Number(el.getAttribute("opacity")),
+    ]);
+  const inactive = await appearance();
+  assert.ok(inactive[1] > 0 && inactive[1] < 1);
+  await page.locator("#effect").fill("1");
+  const positive = await appearance();
+  assert.ok(positive.every((value, i) => value > inactive[i]));
+  await page.locator("#effect").fill("-1");
+  assert.deepEqual(await appearance(), positive);
+  await page.locator("#effect").fill("4");
+  assert.ok((await appearance()).every((value, i) => value > positive[i]));
+  await page.locator("#effect").fill("0");
   await page.locator("#redraw").click();
   assert.match(await page.locator("#sample-label").innerText(), /4218/);
   await page.locator("#restart").click();
