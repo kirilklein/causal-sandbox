@@ -257,6 +257,148 @@
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
+.aipw-calculation {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+.aipw-calculation math {
+  margin: 0;
+  font-family: "STIX Two Math", "Cambria Math", math;
+}
+.aipw-formula {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 28px 0 20px;
+  padding: 28px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.aipw-formula math,
+.aipw-plus {
+  font-size: 28px;
+}
+.aipw-average,
+.aipw-contrast,
+.aipw-correction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.aipw-average > span,
+.aipw-contrast > span,
+.aipw-correction > span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.aipw-summand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-inline: 2px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 12px;
+}
+.aipw-contrast {
+  border-bottom: 3px solid var(--sampling-truth);
+  padding: 12px 8px;
+  border-radius: 8px;
+  background: var(--node-Y);
+}
+.aipw-factors {
+  display: flex;
+  gap: 4px;
+}
+.aipw-factors > span {
+  padding: 10px 7px;
+  border-radius: 8px;
+}
+.aipw-residual {
+  background: var(--node-K);
+}
+.aipw-weight {
+  background: var(--node-M);
+}
+.aipw-sign {
+  background: var(--surface-subtle);
+}
+.aipw-prediction-note {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.aipw-prediction-note math {
+  display: inline math;
+  margin-inline: 3px;
+}
+.aipw-definitions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.aipw-definitions section {
+  padding: 16px 12px;
+  border-radius: 12px;
+}
+.aipw-definitions h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+.aipw-definitions math {
+  font-size: 22px;
+}
+.aipw-definitions p {
+  font-size: 13px;
+  margin-bottom: 0;
+}
+.aipw-numbers,
+.aipw-normalization {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+@media (max-width: 700px) {
+  .aipw-formula,
+  .aipw-summand {
+    flex-direction: column;
+  }
+  .aipw-formula {
+    padding: 20px 8px;
+  }
+  .aipw-definitions {
+    grid-template-columns: 1fr;
+  }
+}
+.aipw-calculation table {
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+.aipw-calculation td {
+  overflow-wrap: anywhere;
+}
+.aipw-calculation th:first-child {
+  width: 40%;
+}
+@media (max-width: 400px) {
+  .aipw-calculation th,
+  .aipw-calculation td {
+    padding: 8px 4px;
+  }
+}
+.aipw-totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.aipw-totals dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 .learning table {
   border-collapse: collapse;
   width: 100%;

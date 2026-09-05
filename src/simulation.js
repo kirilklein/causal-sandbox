@@ -204,6 +204,7 @@ export function estimate(data, adjustment, models = {}) {
     y,
   );
   const weights = [];
+  const aipwContributions = models.aipwDetails ? [] : undefined;
   let s1 = 0,
     s0 = 0,
     w1 = 0,
@@ -225,6 +226,23 @@ export function estimate(data, adjustment, models = {}) {
     sumw2 += (t + c) ** 2;
     regression += m1 - m0;
     aipw += m1 - m0 + t * (y[i] - m1) - c * (y[i] - m0);
+    if (aipwContributions) {
+      const residual = y[i] - (a[i] ? m1 : m0);
+      const correction = t * (y[i] - m1) - c * (y[i] - m0);
+      aipwContributions.push({
+        person: i + 1,
+        A: a[i],
+        Y: y[i],
+        m0,
+        m1,
+        p,
+        weight: t + c,
+        residual,
+        contrast: m1 - m0,
+        correction,
+        contribution: m1 - m0 + correction,
+      });
+    }
   });
   return {
     values: [
@@ -241,6 +259,7 @@ export function estimate(data, adjustment, models = {}) {
     ess: (w1 + w0) ** 2 / sumw2,
     weights,
     propensities: ps,
+    ...(aipwContributions ? { aipwContributions } : {}),
     ...(models.predictionPoints
       ? {
           predictions: models.predictionPoints.map((d) => ({
