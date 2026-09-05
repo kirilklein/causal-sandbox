@@ -904,6 +904,75 @@ try {
     path: "/tmp/causal-contents-mobile.png",
     fullPage: true,
   });
+  await page.goto(`${url}?lesson=randomization`);
+  assert.equal(await page.locator("#sampling-plot").isVisible(), false);
+  await page.locator(".sampling-variation > summary").click();
+  const studyValues = () =>
+    page.locator("#sampling-values td").allTextContents();
+  const initialStudy = await studyValues();
+  const truthLine = () => page.locator(".sampling-truth").getAttribute("x1");
+  const initialTruthLine = await truthLine();
+  await page.locator("#repeat-study").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#sampling-values tr").count(), 2);
+  assert.match(await page.locator("#sample-label").innerText(), /4218/);
+  assert.equal(
+    await page
+      .locator("#repeat-study")
+      .evaluate((el) => el === document.activeElement),
+    true,
+  );
+  const secondStudy = await studyValues();
+  assert.notEqual(secondStudy[4], initialStudy[1]);
+  await page.locator(".lesson-explanation summary").click();
+  await page.locator(".sampling-variation > summary").click();
+  await page.locator(".sampling-variation > summary").click();
+  assert.equal(await page.locator("#sampling-values tr").count(), 2);
+  await page.locator("#redraw").click();
+  assert.equal(await page.locator("#sampling-values tr").count(), 3);
+  await page.locator("#effect").fill("-1");
+  assert.equal(await page.locator("#sampling-values tr").count(), 1);
+  assert.match(
+    await page.locator("#sampling-summary").innerText(),
+    /True effect: -1.000/,
+  );
+  assert.equal(await truthLine(), initialTruthLine);
+  await page.locator("#restart").click();
+  assert.deepEqual(await studyValues(), initialStudy);
+  assert.equal(await page.locator("#sampling-plot").isVisible(), false);
+  await page.locator("#continue").click();
+  await page.locator(".sampling-variation > summary").click();
+  await page.locator("#selection").fill("1.2");
+  for (let i = 0; i < 19; i++) await page.locator("#repeat-study").click();
+  assert.equal(await page.locator("#sampling-values tr").count(), 20);
+  assert.equal(await truthLine(), initialTruthLine);
+  assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page
+    .locator(".sampling-variation")
+    .screenshot({ path: "/tmp/causal-sampling-desktop.png" });
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.locator("#repeat-study").tap();
+  assert.equal(await page.locator("#sampling-values tr").count(), 21);
+  await page.locator(".sampling-variation details summary").click();
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.locator(".sampling-variation details summary").click();
+  await page
+    .locator(".sampling-variation")
+    .screenshot({ path: "/tmp/causal-sampling-mobile.png" });
+  await page.locator("#selection").fill("0");
+  assert.equal(await page.locator("#sampling-values tr").count(), 1);
+  await page.locator("#continue").click();
+  assert.equal(await page.locator(".sampling-variation").count(), 0);
+  await page.goBack();
+  assert.equal(await page.locator("#sampling-values tr").count(), 1);
+  assert.equal(await page.locator("#selection").inputValue(), "0");
+  assert.match(await page.locator("#sample-label").innerText(), /4217/);
+  assert.equal(await page.locator("#sampling-plot").isVisible(), false);
   assert.deepEqual(errors, []);
   console.log(
     "Lesson navigation, baseline resets, help, keyboard and mobile checks passed.",

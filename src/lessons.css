@@ -366,6 +366,46 @@
   font-size: 13px;
 }
 
+.sampling-variation {
+  margin-top: 16px;
+  border-top: 1px solid #dedfd6;
+}
+#sampling-plot {
+  max-width: 520px;
+}
+#sampling-plot svg {
+  display: block;
+  width: 100%;
+}
+#sampling-plot text {
+  fill: #526054;
+  font-size: 11px;
+}
+.sampling-truth {
+  stroke: #4e6381;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.sampling-axis {
+  stroke: #657365;
+}
+.sampling-dot {
+  fill: #fafaf6;
+  stroke: #526054;
+  stroke-width: 1.5;
+}
+.sampling-current {
+  fill: #526054;
+}
+.sampling-table {
+  overflow-x: auto;
+}
+@media (max-width: 500px) {
+  #sampling-plot text {
+    font-size: 14px;
+  }
+}
+
 #propensity-histogram {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
