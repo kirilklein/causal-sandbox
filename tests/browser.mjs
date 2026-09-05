@@ -16,6 +16,32 @@ try {
     process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/",
   );
   await page.locator(".effect-row").last().waitFor();
+  for (const name of ["direct", "ca", "cy", "ua", "uy", "am", "my"]) {
+    const slider = page.locator(`[data-param="${name}"]`);
+    const descriptionId = await slider.getAttribute("aria-describedby");
+    assert.equal(descriptionId, `help-${name}`);
+    assert.ok(
+      (await page.locator(`#${descriptionId}`).textContent()).length > 20,
+    );
+  }
+  assert.match(
+    await page.locator("#world-select").getAttribute("aria-describedby"),
+    /world-help world-description/,
+  );
+  assert.match(
+    await page.locator(".visibility-row .choice-explanation").innerText(),
+    /not used automatically/,
+  );
+  assert.match(
+    await page.locator(".adjust-row .choice-explanation").innerText(),
+    /estimators actually use/,
+  );
+  for (const model of ["outcome", "treatment"]) {
+    assert.match(
+      await page.locator(`#${model}-model`).getAttribute("aria-describedby"),
+      new RegExp(`${model}-purpose.*${model}-terms`),
+    );
+  }
   const values = async () =>
     page
       .locator(".effect-row strong")
