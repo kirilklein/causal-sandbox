@@ -2,19 +2,19 @@
 
 **Change the world. Question the evidence.**
 
-An interactive causal inference playground that runs entirely in your browser. Start with three small experiments: randomized treatment, a common cause, and adjustment with inverse probability weighting. Each introduces one question, a small graph, and estimates beside the known effect.
+An interactive causal inference playground that runs entirely in your browser. Start with six progressive lessons: randomized treatment, a common cause, IPW, outcome regression, model failure, and double robustness. Each introduces one question, a small graph, and estimates beside the known effect.
 
-Open the full sandbox at any time to explore additional variables, model choices, and causal structures. The first chapter uses one actual baseline-health variable; the advanced sandbox uses the two-covariate world described below.
+Open the full sandbox at any time to explore additional variables, model choices, and causal structures. The lessons use one actual baseline-health variable; the advanced sandbox uses the two-covariate world described below.
 
 **▶ Live demo: https://kirilklein.github.io/causal-sandbox/**
 
 [![Causal sandbox screenshot](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/)
 
-## First chapter
+## Guided lessons
 
 Predict, try a change, compare the result, and open an explanation when needed. Redraw to explore sample variation. Back, contents, and restart establish the complete lesson baseline, including the sample seed. No completion gate or saved progress.
 
-[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 4–11 are not implemented yet; the full sandbox remains a separate advanced experiment.
+[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 1–6 are implemented; levels 7–11 are still to come; the full sandbox remains a separate advanced experiment.
 
 ## In the full sandbox
 

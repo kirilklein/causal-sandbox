@@ -129,12 +129,13 @@ export function simulate(p, noise, world = worlds[0]) {
 }
 // C is a single variable in lessons and a covariate pair in the full sandbox.
 // Interaction features require the covariate pair in the adjustment set.
-function features(d, adjustment, interaction) {
+function features(d, adjustment, interaction, quadratic) {
   return [
     1,
     ...adjustment.flatMap((k) =>
       k === "C" && !("C" in d) ? [d.C1, d.C2] : [d[k]],
     ),
+    ...(quadratic && adjustment.includes("C") && "C" in d ? [d.C ** 2] : []),
     ...(interaction && adjustment.includes("C") && !("C" in d)
       ? [d.C1 * d.C2]
       : []),
@@ -184,8 +185,12 @@ function fit(X, y, logistic = false) {
 }
 export function estimate(data, adjustment, models = {}) {
   const n = data.length,
-    xs = data.map((d) => features(d, adjustment, models.outcome)),
-    gs = data.map((d) => features(d, adjustment, models.treatment)),
+    xs = data.map((d) =>
+      features(d, adjustment, models.outcome, models.outcomeQuadratic),
+    ),
+    gs = data.map((d) =>
+      features(d, adjustment, models.treatment, models.treatmentQuadratic),
+    ),
     a = data.map((d) => d.A),
     y = data.map((d) => d.Y);
   const count = a.reduce((s, v) => s + v, 0),
@@ -235,5 +240,34 @@ export function estimate(data, adjustment, models = {}) {
     clipped,
     ess: (w1 + w0) ** 2 / sumw2,
     weights,
+    ...(models.predictionPoints
+      ? {
+          predictions: models.predictionPoints.map((d) => ({
+            outcome: dot(
+              [
+                ...features(
+                  d,
+                  adjustment,
+                  models.outcome,
+                  models.outcomeQuadratic,
+                ),
+                0,
+              ],
+              beta,
+            ),
+            treatment: sigmoid(
+              dot(
+                features(
+                  d,
+                  adjustment,
+                  models.treatment,
+                  models.treatmentQuadratic,
+                ),
+                propensity,
+              ),
+            ),
+          })),
+        }
+      : {}),
   };
 }
