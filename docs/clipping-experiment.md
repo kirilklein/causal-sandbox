@@ -9,13 +9,24 @@ preview is available; integration into lesson 10 remains separate.
 
 Run `npm run dev -- --port 5186 --strictPort`, then open
 [the experiment preview](http://127.0.0.1:5186/causal-sandbox/docs/clipping-preview.html).
-The page uses the shared theme palette and the module below. One slider compares
-no clipping with the selected threshold; redraw and restart are separate actions.
+The page uses the shared theme palette and the module below. Selection strength
+(0–5, starting at 3) changes treatment assignment with paired background draws and
+refits both models. A clipping slider (0–0.10 in steps of 0.001, starting at zero)
+reuses that sample and those fits. The histogram shows raw fitted scores by arm,
+with clipping bounds overlaid. Its bin counts and fixed 0–100% axis stay unchanged
+when clipping moves; each arm's bars sum to 100%. Redraw and restart are separate
+actions; restart restores both sliders and the original seed.
+
+The preview uses 400 people to make finite-sample weight instability more visible.
+It retains seed 4217. At selection 3, IPW is 1.75 without clipping, 1.87 at 0.005,
+and 2.98 at 0.10, against truth 2. This illustrates modest benefit and excessive
+clipping without selecting a new seed. The repeated-sample checks below establish
+that benefit and harm both occur beyond this opening example.
 The preview is served by Vite's development server, not included in the production
 site build.
 
 With the server running, `node tests/clipping-browser.mjs` checks arithmetic,
-fixed-sample behavior, keyboard/touch interaction, redraw/restart, light/dark
+both sliders, histogram accounting and invariance, keyboard/touch interaction, redraw/restart, light/dark
 themes, and 320px/desktop layout. Set `CLIPPING_URL` to use a different preview
 address. Screenshots are written to the ignored `test-results` directory.
 
@@ -114,14 +125,36 @@ Truth is 2. These are simulation results for this world, not guarantees or
 confidence intervals. The exact-population test separately shows failure of
 propensity-only AIPW after clipping when outcome predictions are wrong.
 
+### Revised preview setup
+
+An initial exploration used n = 400/800/2,400, selection strengths
+1.2/3/4/5/6, and seeds 100–179. The 400-person setup exposes more sampling
+variation; the finer slider includes the small thresholds skipped by the previous
+0.01 steps. A separate validation used 200 samples (seeds 1000–1199), n = 400,
+selection = 3, both models correct:
+
+| Threshold | IPW mean error | IPW root mean squared error | Samples closer to truth than no clipping |
+| --------- | -------------- | --------------------------- | ---------------------------------------- |
+| 0         | 0.156          | 0.574                       | —                                        |
+| 0.005     | 0.184          | 0.540                       | 55 / 200                                 |
+| 0.010     | 0.254          | 0.505                       | 65 / 200                                 |
+| 0.020     | 0.390          | 0.526                       | 53 / 200                                 |
+| 0.050     | 0.713          | 0.758                       | 30 / 200                                 |
+| 0.100     | 1.062          | 1.082                       | 6 / 200                                  |
+
+Reducing a few large errors can lower average squared error even when most samples
+do not improve. Neither the opening sample nor this simulation selects a generally
+optimal clipping threshold. The focused unit suite checks the zero/0.01/0.10
+comparison and the opening sample; browser checks validate histogram accounting
+and both sliders at the range boundaries.
+
 ## Later lesson integration
 
-Use one threshold slider on the existing fixed-sample overlap experiment. Keep
-raw-score overlap visible and unchanged as the threshold moves. Compare estimates
-and per-arm weight concentration; explain that an apparently steadier estimate
-can miss the target. Default to 0.02 to match the current lesson, offer zero as an
-explicit comparison, and label unavailable results. A redraw generates and fits
-a new sample; moving the threshold reuses its rows. Coordinate shared lesson
+Keep selection strength and probability clipping as separate controls. Use the
+raw-score distribution to explain how selection changes overlap, then compare
+unclipped and clipped estimates on the same sample. The preview starts unclipped;
+the existing estimator default remains 0.02. Label unavailable results. A redraw
+generates and fits a new sample; moving the threshold reuses its rows. Coordinate shared lesson
 sections and browser checks before integration. The standalone preview has browser
 coverage; integrated lesson checks, screen-reader listening, and learner
 comprehension remain pending.

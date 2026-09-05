@@ -94,8 +94,7 @@
         white-space: nowrap;
       }
       .control {
-        margin-top: 22px;
-        padding: 20px;
+        padding: 16px;
         background: var(--surface-subtle);
         border-radius: 10px;
       }
@@ -127,7 +126,57 @@
         color: var(--text-secondary);
       }
       .results {
-        margin-top: 20px;
+        min-width: 0;
+      }
+      .controls,
+      .comparisons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 22px;
+      }
+      .controls .control-label {
+        display: block;
+      }
+      .controls output {
+        display: block;
+        margin-top: 4px;
+      }
+      figure {
+        min-width: 0;
+        margin: 0;
+      }
+      figcaption {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .legend span::before {
+        content: "";
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+        border: 2px solid var(--arm-0);
+      }
+      .legend span:last-child::before {
+        background: var(--arm-1);
+        border-color: var(--arm-1);
+      }
+      #histogram {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+        overflow: visible;
+      }
+      #histogram text {
+        fill: var(--text-secondary);
+        font-size: 12px;
       }
       table {
         width: 100%;
@@ -191,7 +240,16 @@
         max-width: 760px;
         color: var(--text-secondary);
       }
+      @media (max-width: 800px) {
+        .controls,
+        .comparisons {
+          grid-template-columns: 1fr;
+        }
+      }
       @media (max-width: 540px) {
+        #histogram text {
+          font-size: 20px;
+        }
         main {
           padding: 18px 14px 32px;
         }
@@ -245,54 +303,141 @@
       <p class="eyebrow">Overlap · experiment preview</p>
       <h1>What changes when we clip?</h1>
       <p class="lede">
-        Some people have few counterparts in the other treatment group. Raise
-        the clipping threshold to limit extreme weights, then compare the
-        estimates on the same sample.
+        Make treatment choice more predictable to create extreme weights. Then
+        try modest clipping—and see what happens if you push it further.
       </p>
       <section class="experiment" aria-labelledby="experiment-title">
         <div class="heading">
-          <h2 id="experiment-title">Same people. Same fitted models.</h2>
+          <h2 id="experiment-title">Change overlap, then try clipping</h2>
           <span class="truth">True effect <b>2.00</b></span>
         </div>
-        <div class="control">
-          <label class="control-label" for="threshold"
-            ><b>Probability-clipping threshold</b
-            ><output id="threshold-value" for="threshold"
-              >0.02 → [0.02, 0.98]</output
-            ></label
-          >
-          <input
-            id="threshold"
-            type="range"
-            min="0"
-            max="0.2"
-            step="0.01"
-            value="0.02"
-            aria-describedby="threshold-help"
-          />
-          <div class="ends"><span>0 · no clipping</span><span>0.20</span></div>
-          <p class="help" id="threshold-help">
-            Probabilities outside these bounds move to the nearest bound.
-            Everyone stays in the sample.
-          </p>
+        <div class="controls">
+          <div class="control">
+            <label class="control-label" for="selection"
+              ><b>Treatment selection strength</b
+              ><output id="selection-value" for="selection">3.0</output></label
+            >
+            <input
+              id="selection"
+              type="range"
+              min="0"
+              max="5"
+              step="0.1"
+              value="3"
+              aria-describedby="selection-help"
+            />
+            <div class="ends">
+              <span>0 · more overlap</span><span>5 · poorer overlap</span>
+            </div>
+            <p class="help" id="selection-help">
+              Stronger selection makes the opposite treatment rarer for some
+              baseline profiles. Rare treatment choices can receive large
+              weights.
+            </p>
+          </div>
+          <div class="control">
+            <label class="control-label" for="threshold"
+              ><b>Probability-clipping threshold</b
+              ><output id="threshold-value" for="threshold"
+                >0.000 · no clipping</output
+              ></label
+            >
+            <input
+              id="threshold"
+              type="range"
+              min="0"
+              max="0.1"
+              step="0.001"
+              value="0"
+              aria-describedby="threshold-help"
+            />
+            <div class="ends">
+              <span>0 · no clipping</span><span>0.10</span>
+            </div>
+            <p class="help" id="threshold-help">
+              Move probabilities to these bounds without changing people or
+              fitted models. Start with a small threshold such as 0.005.
+            </p>
+          </div>
         </div>
-        <div class="results" aria-live="polite" aria-atomic="true">
-          <p id="unavailable" hidden></p>
-          <table aria-label="Estimates with and without clipping">
-            <thead>
-              <tr>
-                <th scope="col">Method</th>
-                <th scope="col">No clipping</th>
-                <th scope="col">Selected threshold</th>
-              </tr>
-            </thead>
-            <tbody id="estimates"></tbody>
-          </table>
+        <div class="comparisons">
+          <figure aria-labelledby="histogram-title">
+            <figcaption id="histogram-title">
+              Propensity scores before clipping
+            </figcaption>
+            <div class="legend"><span>Untreated</span><span>Treated</span></div>
+            <svg
+              id="histogram"
+              viewBox="0 0 420 230"
+              role="img"
+              aria-label="Fitted treatment probabilities by treatment arm"
+            >
+              <text x="40" y="17">People in each arm (%)</text>
+              <rect
+                id="lower-tail"
+                x="40"
+                y="30"
+                width="0"
+                height="150"
+                fill="var(--note-surface)"
+              />
+              <rect
+                id="upper-tail"
+                x="400"
+                y="30"
+                width="0"
+                height="150"
+                fill="var(--note-surface)"
+              />
+              <g stroke="var(--grid)">
+                <path d="M40 30H400 M40 105H400 M40 180H400" />
+              </g>
+              <g text-anchor="end">
+                <text x="34" y="34">100</text>
+                <text x="34" y="109">50</text>
+                <text x="34" y="184">0</text>
+              </g>
+              <g id="histogram-bars"></g>
+              <g
+                id="clip-guides"
+                stroke="var(--warning)"
+                stroke-dasharray="4 3"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path id="lower-guide" d="M40 30V180" />
+                <path id="upper-guide" d="M400 30V180" />
+              </g>
+              <text x="40" y="199">0</text>
+              <text x="220" y="199" text-anchor="middle">0.5</text>
+              <text x="400" y="199" text-anchor="end">1</text>
+              <text x="220" y="223" text-anchor="middle">
+                Fitted chance of treatment
+              </text>
+            </svg>
+            <p class="help">
+              Dashed lines mark clipping bounds. Bars show the raw scores and
+              stay fixed when you change clipping.
+            </p>
+          </figure>
+          <div class="results" aria-live="polite" aria-atomic="true">
+            <p id="unavailable" hidden></p>
+            <table aria-label="Estimates with and without clipping">
+              <thead>
+                <tr>
+                  <th scope="col">Method</th>
+                  <th scope="col">No clipping</th>
+                  <th scope="col">Selected threshold</th>
+                </tr>
+              </thead>
+              <tbody id="estimates"></tbody>
+            </table>
+            <p class="help">
+              Stronger red means farther from truth in this sample, not
+              statistical significance.
+            </p>
+          </div>
         </div>
-        <p class="help">
-          Stronger red means farther from truth in this sample. It does not
-          measure statistical significance.
-        </p>
         <div class="actions">
           <button id="redraw">Draw another sample</button
           ><button id="restart">Restart</button
@@ -315,8 +460,8 @@
           </table>
           <p class="help">
             Effective sample size describes weight concentration, not retained
-            people or a guarantee of precision. The underlying treatment overlap
-            has not changed.
+            people or a guarantee of precision. Clipping does not change the
+            underlying treatment overlap.
           </p>
         </details>
       </section>
@@ -328,16 +473,20 @@
       <details>
         <summary>What stays fixed in this experiment?</summary>
         <p class="note">
-          There are 2,400 people, one measured baseline variable C, and strong
-          treatment selection (strength 3). Both models correctly adjust for C.
-          The total effect is 2, with no hidden confounding or post-treatment
-          adjustment.
+          There are 400 people and one measured baseline variable C. Both models
+          correctly adjust for C. The total effect is 2, with no hidden
+          confounding or post-treatment adjustment.
+        </p>
+        <p class="note">
+          Selection strength changes treatment assignment and outcomes, keeping
+          baseline health and background random draws fixed. Both models are
+          refitted for that world.
         </p>
         <p class="note">
           Moving the threshold reuses the same fitted probabilities and outcome
           predictions. Outcome regression is unchanged. AIPW may respond less
-          because its outcome model is correct here; clipping cannot rescue a
-          wrong outcome model or supply missing comparisons.
+          because its outcome model is correct here. Clipping is no guarantee
+          against model misspecification and cannot supply missing comparisons.
         </p>
         <p class="note">
           IPW normalizes weights separately in each treatment group. AIPW
@@ -363,6 +512,8 @@
       document.querySelector("#theme-control").innerHTML = themeControl();
       setupTheme();
       const slider = document.querySelector("#threshold");
+      const selectionSlider = document.querySelector("#selection");
+      const n = 400;
       let seed = 4217;
       let rows;
       let baseline;
@@ -374,7 +525,26 @@
       function update() {
         const threshold = Number(slider.value);
         document.querySelector("#threshold-value").textContent =
-          `${threshold.toFixed(2)} → [${threshold.toFixed(2)}, ${(1 - threshold).toFixed(2)}]`;
+          threshold === 0
+            ? "0.000 · no clipping"
+            : `${threshold.toFixed(3)} → [${threshold.toFixed(3)}, ${(1 - threshold).toFixed(3)}]`;
+        document
+          .querySelector("#lower-tail")
+          .setAttribute("width", 360 * threshold);
+        document
+          .querySelector("#upper-tail")
+          .setAttribute("x", 400 - 360 * threshold);
+        document
+          .querySelector("#upper-tail")
+          .setAttribute("width", 360 * threshold);
+        document
+          .querySelector("#lower-guide")
+          .setAttribute("d", `M${40 + 360 * threshold} 30V180`);
+        document
+          .querySelector("#upper-guide")
+          .setAttribute("d", `M${400 - 360 * threshold} 30V180`);
+        document.querySelector("#clip-guides").style.display =
+          threshold === 0 ? "none" : "";
         const result = clippingResult(rows, threshold);
         const error = document.querySelector("#unavailable");
         error.hidden = result.available && baseline.available;
@@ -405,23 +575,58 @@
           )
           .join("");
         document.querySelector("#sample").textContent =
-          `2,400 people · sample seed ${seed}`;
+          `${n} people · sample seed ${seed}`;
       }
       function draw() {
+        const selection = Number(selectionSlider.value);
+        document.querySelector("#selection-value").textContent =
+          selection.toFixed(1);
         rows = fitClippingSample(
-          simulateLesson({ ...lessonBaseline(10), selection: 3, seed }),
+          simulateLesson({ ...lessonBaseline(10), n, selection, seed }),
         );
         baseline = clippingResult(rows, 0);
+        const arms = [0, 1].map((A) => ({
+          count: rows.filter((row) => row.A === A).length,
+          bins: Array(10).fill(0),
+        }));
+        rows.forEach(
+          ({ A, p }) => arms[A].bins[Math.min(9, Math.floor(p * 10))]++,
+        );
+        const labels = ["Untreated", "Treated"];
+        const description = arms
+          .map(
+            (arm, A) =>
+              `${labels[A]}: ${arm.count} people; ${arm.bins.map((count, i) => `${i / 10} to ${(i + 1) / 10}${i === 9 ? " inclusive" : " exclusive"}: ${count}`).join("; ")}`,
+          )
+          .join(". ");
+        document
+          .querySelector("#histogram")
+          .setAttribute(
+            "aria-label",
+            `Raw fitted propensity scores. ${description}`,
+          );
+        document.querySelector("#histogram-bars").innerHTML = arms
+          .map((arm, A) =>
+            arm.bins
+              .map((count, i) => {
+                const percent = arm.count ? (100 * count) / arm.count : 0;
+                return `<rect data-arm="${A}" data-bin="${i}" data-count="${count}" x="${42 + i * 36 + A * 16}" y="${180 - 1.5 * percent}" width="14" height="${1.5 * percent}" fill="var(--arm-${A})" ${A === 0 ? 'fill-opacity="0.18" stroke="var(--arm-0)"' : ""}><title>${labels[A]}, ${i / 10}–${(i + 1) / 10}: ${count} people (${percent.toFixed(1)}% of this arm)</title></rect>`;
+              })
+              .join(""),
+          )
+          .join("");
         update();
       }
       slider.addEventListener("input", update);
+      selectionSlider.addEventListener("input", draw);
       document.querySelector("#redraw").addEventListener("click", () => {
         seed++;
         draw();
       });
       document.querySelector("#restart").addEventListener("click", () => {
         seed = 4217;
-        slider.value = "0.02";
+        selectionSlider.value = "3";
+        slider.value = "0";
         draw();
       });
       draw();

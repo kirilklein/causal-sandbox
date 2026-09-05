@@ -25,10 +25,10 @@ try {
   await page.locator('[data-method="ipw"]').waitFor();
   const table = () => page.locator("#estimates").innerText();
   const initial = await table();
-  const rows = fitClippingSample(
-    simulateLesson({ ...lessonBaseline(10), selection: 3 }),
-  );
-  const checkValues = async (threshold) => {
+  const checkValues = async (threshold, selection = 3) => {
+    const rows = fitClippingSample(
+      simulateLesson({ ...lessonBaseline(10), n: 400, selection }),
+    );
     const result = clippingResult(rows, threshold);
     for (const key of ["regression", "ipw", "aipw"])
       assert.equal(
@@ -37,25 +37,63 @@ try {
           .innerText(),
         result[key].toFixed(2),
       );
+    for (const A of [0, 1]) {
+      const bins = Array(10).fill(0);
+      rows
+        .filter((row) => row.A === A)
+        .forEach(({ p }) => bins[Math.min(9, Math.floor(p * 10))]++);
+      assert.deepEqual(
+        await page
+          .locator(`#histogram-bars [data-arm="${A}"]`)
+          .evaluateAll((bars) => bars.map((bar) => Number(bar.dataset.count))),
+        bins,
+      );
+    }
   };
-  await checkValues(0.02);
+  await checkValues(0);
+  const histogram = () => page.locator("#histogram-bars").innerHTML();
+  const initialHistogram = await histogram();
   const seed = await page.locator("#sample").innerText();
   const unchanged = await page
     .locator("#estimates td:not(.selected)")
     .allTextContents();
   await page.locator("#threshold").focus();
   await page.keyboard.press("ArrowRight");
-  assert.equal(await page.locator("#threshold").inputValue(), "0.03");
-  await checkValues(0.03);
+  assert.equal(await page.locator("#threshold").inputValue(), "0.001");
+  await checkValues(0.001);
   assert.equal(await page.locator("#sample").innerText(), seed);
   assert.deepEqual(
     await page.locator("#estimates td:not(.selected)").allTextContents(),
     unchanged,
   );
-  for (const threshold of ["0", "0.2", "0.02"]) {
+  for (const threshold of ["0", "0.005", "0.01", "0.1", "0"]) {
     await page.locator("#threshold").fill(threshold);
     await checkValues(Number(threshold));
+    assert.equal(await histogram(), initialHistogram);
+    assert.equal(
+      Number(await page.locator("#lower-tail").getAttribute("width")),
+      360 * Number(threshold),
+    );
+    assert.equal(
+      Number(await page.locator("#upper-tail").getAttribute("x")),
+      400 - 360 * Number(threshold),
+    );
   }
+  assert.equal(await table(), initial);
+  await page.locator("#threshold").fill("0.005");
+  await page.locator("#selection").focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await page.locator("#selection").inputValue(), "3.1");
+  await checkValues(0.005, 3.1);
+  for (const selection of ["0", "5", "3"]) {
+    await page.locator("#selection").fill(selection);
+    await checkValues(0.005, Number(selection));
+    assert.equal(await page.locator("#threshold").inputValue(), "0.005");
+    assert.equal(await page.locator("#sample").innerText(), seed);
+    if (selection !== "3") assert.notEqual(await histogram(), initialHistogram);
+  }
+  assert.equal(await histogram(), initialHistogram);
+  await page.locator("#threshold").fill("0");
   assert.equal(await table(), initial);
   await page.locator("#weights summary").tap();
   assert.equal(await table(), initial);
@@ -64,7 +102,12 @@ try {
   assert.notEqual(await table(), initial);
   await page.getByRole("button", { name: "Restart", exact: true }).click();
   assert.equal(await table(), initial);
-  assert.equal(await page.locator("#threshold").inputValue(), "0.02");
+  assert.equal(await page.locator("#threshold").inputValue(), "0");
+  assert.equal(await page.locator("#selection").inputValue(), "3");
+  assert.equal(await histogram(), initialHistogram);
+  // Capture the modest-clipping comparison, with visible bounds and diagnostics.
+  await page.locator("#threshold").fill("0.005");
+  const screenshotTable = await table();
   await mkdir("test-results", { recursive: true });
   for (const theme of ["light", "dark"]) {
     await page.getByLabel("Color theme").selectOption(theme);
@@ -75,7 +118,7 @@ try {
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       );
-      assert.equal(await table(), initial);
+      assert.equal(await table(), screenshotTable);
       await page.screenshot({
         path: `test-results/clipping-preview-${width}-${theme}.png`,
         fullPage: true,
@@ -84,7 +127,7 @@ try {
   }
   assert.deepEqual(errors, []);
   console.log(
-    "Clipping preview: arithmetic, keyboard/touch, fixed sample, redraw/restart, themes, and 320px/desktop layout passed.",
+    "Clipping preview: both sliders, histogram accounting/invariance, arithmetic, keyboard/touch, redraw/restart, themes, and 320px/desktop layout passed.",
   );
 } finally {
   await browser.close();

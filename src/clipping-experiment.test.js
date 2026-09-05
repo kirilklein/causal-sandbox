@@ -182,6 +182,38 @@ test("repeated lesson studies expose the IPW bias/spread tradeoff with fixed fit
   for (const { aipw } of summaries) assert.ok(Math.abs(aipw - 2) < 0.1);
 });
 
+test("the smaller preview study shows both benefit and cost across independent samples", () => {
+  const summaries = [0, 0.01, 0.1].map((threshold) => ({
+    threshold,
+    squaredError: 0,
+    improved: 0,
+  }));
+  for (let seed = 1000; seed < 1200; seed++) {
+    const rows = fitClippingSample(
+      simulateLesson({ ...lessonBaseline(10), n: 400, selection: 3, seed }),
+    );
+    const originalError = clippingResult(rows, 0).ipw - 2;
+    for (const summary of summaries) {
+      const result = clippingResult(rows, summary.threshold);
+      assert.equal(result.available, true);
+      const error = result.ipw - 2;
+      summary.squaredError += error ** 2;
+      summary.improved += +(Math.abs(error) < Math.abs(originalError) - 1e-12);
+    }
+  }
+  assert.ok(summaries[1].squaredError < summaries[0].squaredError * 0.85);
+  assert.ok(summaries[2].squaredError > summaries[0].squaredError * 2);
+  assert.ok(summaries[1].improved > 0 && summaries[1].improved < 200);
+
+  // Retain the existing seed; expose the smaller thresholds the old slider skipped.
+  const rows = fitClippingSample(
+    simulateLesson({ ...lessonBaseline(10), n: 400, selection: 3 }),
+  );
+  const originalError = Math.abs(clippingResult(rows, 0).ipw - 2);
+  assert.ok(Math.abs(clippingResult(rows, 0.005).ipw - 2) < originalError);
+  assert.ok(Math.abs(clippingResult(rows, 0.1).ipw - 2) > originalError);
+});
+
 test("unavailable data and calculations never masquerade as finite estimates", () => {
   assert.deepEqual(fitClippingSample([]), []);
   const cases = [
