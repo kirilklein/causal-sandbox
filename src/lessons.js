@@ -70,7 +70,29 @@ const lessons = [
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
       "Augmented inverse probability weighting (AIPW) combines the outcome predictions with a propensity-weighted correction based on their errors. Under the causal assumptions and with adequate overlap, it is consistent if either model is correctly specified: across increasingly large samples, it approaches the true effect. This does not promise exact recovery or the best estimate in every sample. When both models are wrong, that protection is lost. Model choices do not fix missing confounders or invalid adjustment.",
-    next: "Lessons 7–9 about causal roles are being developed separately. Continue to level 10 to explore another limitation: too little overlap.",
+    next: "A flexible model can describe a relationship, but should we adjust for every measured variable? Next, consider something treatment itself changes.",
+  },
+  {
+    title: "A mediator",
+    question: "Should we adjust for something treatment changes?",
+    transition:
+      "We return to simple relationships and correct baseline-health adjustment. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
+    instruction:
+      "First compare outcome regression with the total effect. Then include the intermediate response. Does accounting for more information help answer the same question?",
+    explanation:
+      "A mediator carries part of treatment’s effect to the outcome. Here treatment raises M by 1, and each unit of M raises the outcome by 1. The direct contribution is 2 and the mediated contribution is 1, giving a total effect of 3. Including M holds it fixed in our outcome predictions, blocking the pathway we wanted to count. Across samples, the estimate then misses part of the total effect. We still account for baseline health in both comparisons.",
+    next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
+  },
+  {
+    title: "A collider",
+    question: "Can adjustment create a misleading relationship?",
+    transition:
+      "We remove the mediator and return to the simple baseline: the true total effect is 2 again. We now measure a follow-up score (K) after the outcome. Both treatment and outcome raise this score; it causes neither.",
+    instruction:
+      "Start with baseline-health adjustment alone. Then include the follow-up score in the outcome model. The world stays fixed; only the comparison changes.",
+    explanation:
+      "The score is a collider: two arrows meet at it, treatment → score ← outcome. Among people with the same score, having treatment leaves less of the score to be explained by the outcome. Holding the score fixed creates a misleading relationship and can distort the treatment estimate, even while we correctly account for baseline health. Measured variables are not automatically valid adjustment variables.",
+    next: "Level 9 about hidden common causes is being developed separately. Continue to level 10 to explore another limitation: too little overlap.",
   },
 ];
 lessons[9] = {
@@ -117,6 +139,8 @@ function controls(level) {
       .join(
         "",
       )}</fieldset><p id="world-description" aria-live="polite"></p><figure class="model-preview" aria-labelledby="model-preview-title"><figcaption id="model-preview-title"></figcaption><div id="model-preview"></div><div class="model-legend"><span>━━ True relationship</span><span>┄┄ Our fitted model</span></div></figure><p id="model-description" aria-live="polite"></p>`;
+  if (level === 7 || level === 8)
+    return `<p>Outcome regression always accounts for baseline health. The target remains the <strong>total treatment effect</strong>.</p><label class="lesson-switch"><input id="post-adjustment" type="checkbox"> Also account for ${level === 7 ? "the intermediate response (M)" : "the follow-up score (K)"}</label>`;
   return `<p>AIPW combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from level 5. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
 }
 
@@ -131,7 +155,7 @@ function enter(level, focus = true) {
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./">causal<span class="brand-dot">.</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
     <main class="learning">
-      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${level} of 11 · ${level === 10 ? "Causal limitations" : level < 4 ? "Foundations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${lessons.map((l, i) => `<li value="${i + 1}"><a href="?level=${i + 1}" ${level === i + 1 ? 'aria-current="step"' : ""}>${l.title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
+      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${level} of 11 · ${level >= 7 ? "Causal limitations" : level < 4 ? "Foundations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${lessons.map((l, i) => `<li value="${i + 1}"><a href="?level=${i + 1}" ${level === i + 1 ? 'aria-current="step"' : ""}>${l.title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
       <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
       <p class="lesson-transition">${lesson.transition}</p>
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
@@ -139,15 +163,18 @@ function enter(level, focus = true) {
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
         <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 3 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
+        ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
         ${level === 4 ? '<details class="familiar-result"><summary>Recall the unadjusted difference</summary><p>Without accounting for baseline health: <strong id="unadjusted"></strong></p></details>' : ""}
-        ${level >= 4 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
+        ${(level >= 4 && level <= 6) || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
         ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
       </section>
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>With baseline health unchecked, the treatment model uses one overall probability for everyone, so IPW equals the unadjusted difference. With it checked, we fit logistic treatment probabilities using C. We normalize weights within each group. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
-      ${level >= 4 && level !== 10 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
+      ${level >= 4 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
+      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. Holding M fixed recovers the direct contribution here because of these specific assumptions. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       <nav class="lesson-actions" aria-label="Continue learning">${previous ? '<button id="back">← Back</button>' : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       <p class="lesson-credit">Guided prompts inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>.</p>
@@ -203,6 +230,12 @@ function enter(level, focus = true) {
         update();
       });
   }
+  document
+    .querySelector("#post-adjustment")
+    ?.addEventListener("change", (e) => {
+      state.postAdjusted = e.target.checked;
+      update();
+    });
   document.querySelector("#redraw").addEventListener("click", () => {
     noise = makeNoise(state.n, ++state.seed);
     update();
@@ -251,16 +284,20 @@ function renderModelPreview(points) {
 
 function update() {
   const result = lessonResult(state, noise);
-  document.querySelector("#known-effect").textContent = state.effect.toFixed(2);
+  document.querySelector("#known-effect").textContent =
+    result.totalEffect.toFixed(2);
   const unadjusted = document.querySelector("#unadjusted");
   if (unadjusted) unadjusted.textContent = result.unadjusted.toFixed(2);
   document.querySelector("#ipw").textContent = result.ipw.toFixed(2);
-  document.querySelector("#ipw-result").hidden = state.level < 4 && !revealed;
+  document.querySelector("#ipw-result").hidden =
+    state.level === 7 || state.level === 8 || (state.level < 4 && !revealed);
   if (state.level >= 4) {
     document.querySelector("#regression").textContent =
       result.regression.toFixed(2);
     document.querySelector("#regression-result").hidden =
       state.level === 4 && !revealed;
+  }
+  if ((state.level >= 4 && state.level <= 6) || state.level === 10) {
     document.querySelector("#model-weight-note").textContent = result.clipped
       ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${state.level === 6 || state.level === 10 ? "IPW and AIPW" : "IPW"}.`
       : "No treatment probabilities were clipped in this sample.";
@@ -308,6 +345,15 @@ function update() {
   }
   document.querySelector("#sample-label").textContent =
     `2,400 people · Sample seed ${state.seed}`;
+  if (state.level === 7 || state.level === 8) {
+    document.querySelector("#adjustment-note").textContent = state.postAdjusted
+      ? state.level === 7
+        ? "We now hold the intermediate response fixed. This blocks the mediated pathway, although our target still includes it."
+        : "We now hold the follow-up score fixed. Conditioning on this shared consequence can distort the treatment comparison."
+      : "We account for baseline health only, leaving the total treatment effect intact. Try including the new variable.";
+    renderRoleGraph();
+    return;
+  }
   const commonCause = state.level > 1;
   const treatmentDescription =
     state.effect === 0
@@ -370,4 +416,53 @@ function renderOverlap(arms) {
     state.selection > 1.2
       ? "Strong selection makes the opposite treatment rare for many baseline profiles. Compare both arms’ effective sample sizes and weight shares, then redraw. A close estimate in this sample does not establish adequate support."
       : "Start with moderate selection, then strengthen it using the same underlying sample draws. The true effect and both model specifications stay fixed.";
+}
+
+function renderRoleGraph() {
+  const mediator = state.level === 7;
+  const role = mediator ? "Intermediate response" : "Follow-up score";
+  const symbol = mediator ? "M" : "K";
+  const description = `Baseline health causes treatment and outcome. Treatment causes outcome. ${mediator ? "Treatment causes the intermediate response, which causes outcome." : "Treatment and outcome cause the follow-up score; the score causes neither."} We adjust for baseline health${state.postAdjusted ? ` and ${role.toLowerCase()}` : " only"}.`;
+  const nodes = mediator
+    ? [
+        ["C", 170, 16, 200, 48, "Baseline health", "#e7eee6"],
+        ["A", 10, 158, 130, 48, "Treatment", "#e6efe9"],
+        ["Y", 400, 158, 130, 48, "Outcome", "#e5ebf4"],
+        ["M", 195, 150, 150, 64, "Intermediate|response", "#f4e9db"],
+      ]
+    : [
+        ["C", 70, 16, 200, 48, "Baseline health", "#e7eee6"],
+        ["A", 10, 158, 130, 48, "Treatment", "#e6efe9"],
+        ["Y", 205, 158, 130, 48, "Outcome", "#e5ebf4"],
+        ["K", 390, 150, 140, 64, "Follow-up|score", "#f4e9db"],
+      ];
+  const paths = mediator
+    ? [
+        "M220 64C220 100 75 100 75 136V150",
+        "M320 64C320 100 465 100 465 136V150",
+        "M140 182H187",
+        "M345 182H392",
+        "M75 206V228C75 282 465 282 465 228V214",
+      ]
+    : [
+        "M120 64C120 100 75 100 75 136V150",
+        "M220 64C220 100 270 100 270 136V150",
+        "M140 182H197",
+        "M335 182H382",
+        "M75 206V228C75 282 460 282 460 236V222",
+      ];
+  document.querySelector("#lesson-graph").innerHTML =
+    `<svg class="role-graph" viewBox="0 0 540 290" role="img" aria-label="${description}">
+      <defs><marker id="lesson-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1 1L9 5L1 9Z" fill="#537565"/></marker></defs>
+      <g fill="none" stroke="#537565" stroke-width="1.8" stroke-linecap="butt" marker-end="url(#lesson-arrow)">
+        ${paths.map((d) => `<path d="${d}"/>`).join("")}
+      </g>
+      ${nodes
+        .map(([id, x, y, width, height, label, fill]) => {
+          const lines = label.split("|");
+          return `<rect class="role-node ${id === "C" || (id === symbol && state.postAdjusted) ? "adjusted" : ""}" x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="${fill}"/>
+          <text x="${x + width / 2}" y="${y + height / 2 + (lines.length === 1 ? 6 : -6)}">${lines[0]}${lines.length > 1 ? `<tspan x="${x + width / 2}" dy="24">${lines[1]}<tspan class="graph-symbol"> (${id})</tspan></tspan>` : `<tspan class="graph-symbol"> (${id})</tspan>`}</text>`;
+        })
+        .join("")}
+    </svg><p class="sample-note">Outlined variables are included in our outcome model. Arrows describe the world and stay fixed.</p>`;
 }

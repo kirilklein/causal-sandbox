@@ -260,6 +260,11 @@
   font-size: 13px;
 }
 
+.role-graph .role-node.adjusted {
+  stroke: #315e48;
+  stroke-width: 2;
+}
+
 #propensity-histogram {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
