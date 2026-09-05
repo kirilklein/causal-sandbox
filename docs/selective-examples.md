@@ -56,7 +56,8 @@ is never the only way to distinguish a role. The palette remains to be chosen.
 across weighting, outcome prediction, and AIPW without a curriculum-wide story.
 Keep actual simulated values distinct from explicitly illustrative arithmetic.
 
-This decision completes the example-policy step. Adding and checking the short
-lesson examples remains part of the explanation copy pass; no app copy changes
-are included here. Check scientific meaning, visible text volume, and learner
-comprehension before adding more examples.
+The mediator and collider lessons include short fictional examples at the start
+of “Explain what is happening.” They illustrate practice time carrying a training
+program's effect and later care use as a shared consequence of treatment and an
+earlier outcome. Graph labels and simulations retain their general form. Check
+learner comprehension before adding more examples.
