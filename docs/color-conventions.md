@@ -2,14 +2,42 @@
 
 Implemented for #20 in the existing lesson and sandbox graphs, treatment-arm
 charts, and sandbox estimate markers. Lesson result cards now add continuous
-error feedback for #16. Future equation work follows the variable conventions. Keep the cream page
-background, pale node fills, dark text, and restrained green interface accents.
+error feedback for #16. Future equation work follows the variable conventions. Light mode keeps the cream
+page background and pale node fills; dark mode uses neutral charcoal surfaces, lighter
+text and chart strokes, and muted versions of the same variable hues.
 
 Open the [visual examples](color-examples.html) in a browser to compare the palette,
 adjustment captions, and an illustrative estimate plot. The examples use inline SVG
 and work offline; their numbers are not simulation results.
 
+## Themes and shared palette
+
+`src/theme.css` defines both palettes. Use its semantic CSS properties for page
+and panel surfaces, text, borders, accents, warnings, and chart colors. Avoid new
+color literals in component styles or JavaScript. The standalone favicon keeps
+light fallback colors; when embedded in the app, it inherits the shared palette.
+The offline visual examples below illustrate the light palette.
+
+The header offers System, Light, and Dark. System follows the device preference;
+an explicit choice persists across lessons, the sandbox, and reloads. The initial
+HTML resolves the preference before the app paints. Theme changes update SVG and
+CSS directly and redraw the sandbox canvas without resimulating the population.
+If browser storage is unavailable, the choice still works for the current page.
+
+Use `--error-surface` for the theme's strongest error color and `--error-tint` for
+the existing per-result percentage. The fixed error scale is identical in both
+themes. Dark mode applies the same percentage across the full card, mixing a charcoal
+surface toward muted burgundy. Truth uses a constant slate-blue background
+(`--truth-surface`). Labels and signed differences retain readable contrast at
+both ends of the scale. Light-mode cards retain their existing background tints.
+
+`tests/theme-browser.mjs` checks theme persistence, system changes, simulation
+state preservation, canvas redraw, mobile overflow, and key palette contrast
+pairs. These checks do not establish accessibility of every rendered state.
+
 ## Variables
+
+The values below show the light palette; use `--node-A` through `--node-U` in code.
 
 | Variable    | Fill                 | Purpose                                                                   |
 | ----------- | -------------------- | ------------------------------------------------------------------------- |
@@ -20,7 +48,7 @@ and work offline; their numbers are not simulation results.
 | Collider K  | Soft clay `#f2e3dc`  | Distinguish K from M without making either a warning.                     |
 | Hidden U    | Off-white `#f5f4ef`  | Pair with a dashed outline and an explicit unmeasured label.              |
 
-Use `#273d33` for node text. Preserve existing variable names and symbols; do not
+Use `--text` for node text. Preserve existing variable names and symbols; do not
 add a second example label inside nodes. C's color applies to the sandbox's
 observed covariates too, without implying that the lesson's single C and the
 sandbox's pair are interchangeable.
@@ -32,8 +60,8 @@ when an analyst includes or excludes it.
 
 ## Graph states
 
-- Use the existing `#537565` for causal arrows and their arrowheads. Ordinary
-  measured nodes need no border; essential paths and state indicators remain dark.
+- Use `--causal-path` for causal arrows and their arrowheads. Ordinary
+  measured nodes need no border; essential paths and state indicators retain contrast.
 - Do not outline, enlarge, or recolor nodes to indicate adjustment or lesson
   focus. Graph geometry and node appearance stay fixed when adjustment changes.
 - Show adjustment in the controls and a short caption naming the model and its
@@ -57,20 +85,20 @@ presentation changes.
 
 ## Equations, methods, and truth
 
-- Keep mathematical text dark. Optional variable highlights reuse the pale node
+- Use `--text` for mathematical text. Optional variable highlights reuse the pale node
   backgrounds. Distinguish treatment probabilities, weights, observed outcomes,
   and fitted predictions with notation and nearby labels; do not introduce a hue
   for each quantity. A prediction of Y may share Y's background, but must retain
   prediction notation and a label.
-- For the planned estimate plot, use dark neutral `#273d33` markers, separate
+- For the planned estimate plot, use neutral `--estimate` markers, separate
   named method rows, and readable numeric estimates. Do not allocate a hue to
   every estimator or change marker color with its distance from truth.
-- Use `#315e48` for truth with an explicit “Truth” label. In estimate plots, use a
+- Use `--truth` for truth with an explicit “Truth” label. In estimate plots, use a
   dashed vertical reference line; in model comparisons, preserve the existing
-  solid truth curve versus dashed fitted curve (`#ad562e`), with a local legend.
+  solid truth curve versus dashed fitted curve (`--fitted`), with a local legend.
   Line patterns distinguish references from estimates within each plot type.
-- Treatment-arm charts use green untreated A=0 (`#286648`) and blue treated A=1
-  (`#315d8c`), retaining the sandbox's existing group convention. Label the groups
+- Treatment-arm charts use green untreated A=0 (`--arm-0`) and blue treated A=1
+  (`--arm-1`), retaining the sandbox's existing group convention. Label the groups
   directly or in a legend; use circles for untreated and triangles for treated
   where points share a plot. These colors identify arm membership, not graph
   variables. Do not recolor a Y-axis label blue to imply it belongs to A=1.
@@ -82,13 +110,13 @@ presentation changes.
 ## Lesson result cards
 
 The true total effect uses the constant Outcome Y fill (`--node-Y`). Estimates
-blend from neutral `#f5f4ef` at zero absolute error to muted red `#df8b85` at an
+blend from neutral `--page` at zero absolute error to muted red `--error-surface` at an
 absolute error of 2 outcome units, saturating beyond 2. This fixed scale applies
 across lessons, estimators, slider changes, and redraws. It is a display scale,
 not a statistical threshold; it never divides by truth or rescales to other
 estimates. Equal errors above and below truth receive equal tint.
 
-Dark text preserves contrast. Each estimate retains its numeric value and a
+Each theme pairs its result backgrounds with contrasting text. Each estimate retains its numeric value and a
 signed difference from the lesson's total-effect target. Differences use the
 unrounded results, displayed to two decimals without negative zero. Stronger red
 means farther from truth in this sample; it does not establish bias, significance,
@@ -123,5 +151,5 @@ They must reuse these conventions without
 changing estimator calculations or adding unsupported intervals.
 
 No dependencies, public APIs, or calculations change. Shared CSS custom
-properties in `src/style.css` supply the existing SVG renderers and canvas arm
+properties in `src/theme.css` supply the existing SVG renderers and canvas arm
 colors; future consumers should reuse them.
