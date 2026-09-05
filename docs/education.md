@@ -1,7 +1,7 @@
 # Progressive education delivery
 
-The default experience is a sequence of small experiments. Levels 1–9 implement randomization → one common cause → inverse probability
-weighting → outcome regression → model failure → double robustness → mediator → collider → hidden confounding.
+The default experience is a sequence of small experiments. Levels 1–10 implement randomization → one common cause → inverse probability
+weighting → outcome regression → model failure → double robustness → mediator → collider → hidden confounding → poor overlap.
 The existing advanced sandbox is available through `?sandbox`.
 
 ## Review boundaries
@@ -16,14 +16,14 @@ The existing advanced sandbox is available through `?sandbox`.
    assessed; automated checks do not substitute for a new-learner walkthrough.
 3. **Causal limitations (remaining #8) and overlap (#9):** levels 7–9 implement
    separate mediator, collider, and hidden-confounding experiments. Level 10
-   will introduce overlap. Each returns
+   implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 10.
 4. **Final sandbox integration:** level 11, a clean baseline and exact experiment
    transfer. The current two-covariate sandbox is an early escape route, not a
    representation of a beginner lesson. Its link starts a separate experiment.
 
-Only implemented lessons appear in contents. Levels 1–9 now form a continuous
+Only implemented lessons appear in contents. Levels 1–10 now form a continuous
 sequence; “Level N of 11” refers to the planned full journey. No scores, completion gates, accounts or stored
 progress. Later chapters and uncertainty are separate changes.
 
@@ -204,3 +204,40 @@ Browser checks cover the slider by keyboard and touch, fixed graph and result
 positions, explanation invariance, redraw, restart, direct/contents entry,
 history, sandbox isolation, and phone layout. Learner comprehension remains
 untested. The full sandbox link continues to start a separate experiment.
+
+## Poor-overlap contract
+
+Level 10 resets to the level-4 simple observed-confounding baseline: n=2400,
+seed=4217, effect=2, selection=1.2, outcomeInfluence=1.5, adjustment for C,
+no curvature, and correct additive outcome/logistic treatment models.
+Two radio choices switch selection between 1.2 and 5 using the same exogenous
+draws. IPW, outcome regression, AIPW, and the true population total effect remain
+visible. Redraw changes the seed; entry, restart, and back navigation reset fully.
+
+The propensity histogram uses the actual fitted probabilities before clipping,
+ten equal-width bins (the last includes 1), and percentages within each arm on
+identical axes. Weight diagnostics use the exact [0.02, 0.98]-clipped estimator
+weights. For each arm, ESS is `(sum w)^2 / sum(w^2)`; concentration is the share
+of total arm weight carried by the highest-weight `ceil(0.01 * arm size)` people.
+These are descriptive diagnostics, not uncertainty intervals or causal-validity
+thresholds. ESS does not measure the precise information of outcome regression
+or AIPW. Clipping is reported and its possible bias explained; it does not restore
+support. The generating probabilities remain nonzero under strong selection.
+
+Across 40 independent seeds (100–139), moderate versus strong selection gives
+mean untreated/treated ESS of 1291/460 versus 281/215. The top 1% weight shares
+rise from 2.9%/6.2% to 17.6%/18.6%. Mean clipping counts rise from zero to 1337.
+The across-sample standard deviations of IPW, regression, and AIPW increase from
+0.051/0.048/0.052 to 0.144/0.070/0.097. Strong-selection IPW has mean bias about
+1.14 with clipping; regression and AIPW retain small mean biases of -0.020 and
+-0.026. These checks support the teaching contrast, not guaranteed failure in an
+individual sample or protection from extrapolation. The correct outcome model is
+intentionally retained.
+
+Tests reconcile diagnostics with estimator weights, check equal weights, bin
+edges and empty arms, and validate the repeated-sample contrast. Browser checks
+cover direct entry, contents, restart, history, return from a modified sandbox,
+help invariance, keyboard and touch controls, and desktop/mobile layout.
+New-learner comprehension testing remains pending.
+
+Reference: [Austin (2021), weighting and effective sample size](https://pmc.ncbi.nlm.nih.gov/articles/PMC9293235/).
