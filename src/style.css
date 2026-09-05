@@ -1353,3 +1353,8 @@ button:hover {
     max-width: none;
   }
 }
+
+.lessons-link {
+  color: #395b49;
+  font-size: 12px;
+}

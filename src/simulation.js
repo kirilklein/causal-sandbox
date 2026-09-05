@@ -127,13 +127,17 @@ export function simulate(p, noise, world = worlds[0]) {
     };
   });
 }
-// The C control always includes both observed covariates. Interaction features
-// can only be constructed when C is available AND in the adjustment set.
+// C is a single variable in lessons and a covariate pair in the full sandbox.
+// Interaction features require the covariate pair in the adjustment set.
 function features(d, adjustment, interaction) {
   return [
     1,
-    ...adjustment.flatMap((k) => (k === "C" ? [d.C1, d.C2] : [d[k]])),
-    ...(interaction && adjustment.includes("C") ? [d.C1 * d.C2] : []),
+    ...adjustment.flatMap((k) =>
+      k === "C" && !("C" in d) ? [d.C1, d.C2] : [d[k]],
+    ),
+    ...(interaction && adjustment.includes("C") && !("C" in d)
+      ? [d.C1 * d.C2]
+      : []),
   ];
 }
 const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
@@ -194,6 +198,7 @@ export function estimate(data, adjustment, models = {}) {
     xs.map((x, i) => [...x, a[i]]),
     y,
   );
+  const weights = [];
   let s1 = 0,
     s0 = 0,
     w1 = 0,
@@ -211,6 +216,7 @@ export function estimate(data, adjustment, models = {}) {
     s0 += c * y[i];
     w1 += t;
     w0 += c;
+    weights.push(t + c);
     sumw2 += (t + c) ** 2;
     regression += m1 - m0;
     aipw += m1 - m0 + t * (y[i] - m1) - c * (y[i] - m0);
@@ -228,5 +234,6 @@ export function estimate(data, adjustment, models = {}) {
     count,
     clipped,
     ess: (w1 + w0) ** 2 / sumw2,
+    weights,
   };
 }

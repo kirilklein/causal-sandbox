@@ -7,8 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test src/simulation.test.js",
-    "test:browser": "node tests/browser.mjs",
+    "test": "node --test src/*.test.js",
+    "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs",
     "format": "prettier --write src tests index.html package.json README.md"
   },
   "devDependencies": {
