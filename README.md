@@ -15,6 +15,7 @@ An interactive causal inference playground that runs entirely in your browser. T
 - **Compare five estimators against the truth.** Raw association, naive regression, regression adjustment, IPW, and AIPW, each animated against a truth marker.
 - **Switch worlds** to add interactions to the outcome, the treatment, or both — and see which estimators break when the model is misspecified.
 - **Start from a preset:** Randomized · Observed confounding · Hidden confounding · Collider bias · Mediator adjustment.
+- **Look up terms as you explore.** Pause over an underlined term, or tap or click it, for a short definition, or open the collapsed glossary in “How this world works.” Help supports keyboard navigation and Escape to close, without changing the simulation.
 
 The true effect is always known, so every estimate can be judged honestly. No backend, no data collection — it is a static page.
 
@@ -73,6 +74,10 @@ Things to keep in mind when reading the estimates:
 - Estimates are finite-sample point estimates on one fixed draw — no confidence intervals. The 0.15 "close" threshold is a visual aid, not a test.
 - Propensities are clipped to [0.02, 0.98]; the UI shows when clipping bites and the effective sample size.
 - Double robustness protects against misspecifying _one_ of the two models. It does nothing about hidden confounding (U) or poor overlap.
+
+## Acknowledgments
+
+The contextual glossary and planned guided experiments take inspiration from Carlos Mendez’s [Treatment Effects in Stata — Interactive Lab](https://carlos-mendez.org/post/stata_matching/web_app/). The explanations here are original and describe this sandbox’s causal world and estimators.
 
 ## License
 
