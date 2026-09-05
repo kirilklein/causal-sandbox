@@ -56,8 +56,9 @@ test("baseline, adjustment, and redraw do not leak state or alter the world", ()
     treatmentCurve: 0,
     outcomeQuadratic: false,
     treatmentQuadratic: false,
+    postAdjusted: false,
   });
-  assert.throws(() => lessonBaseline(7), /Unknown lesson/);
+  assert.throws(() => lessonBaseline(9), /Unknown lesson/);
 });
 
 test("randomization, confounding, and weighting contrasts hold across 40 samples", () => {
@@ -238,4 +239,83 @@ test("model preview uses the fitted models and the same generating relationships
     result.preview.map((p) => p.fitted),
     redraw.preview.map((p) => p.fitted),
   );
+});
+
+test("causal-role worlds isolate each mechanism and preserve the total-effect target", () => {
+  for (const level of [7, 8]) {
+    const state = lessonBaseline(level);
+    assert.equal(state.selection, 1.2);
+    assert.equal(state.adjusted, true);
+    assert.equal(state.postAdjusted, false);
+    assert.equal(state.outcomeCurve + state.treatmentCurve, 0);
+    assert.equal(state.outcomeQuadratic || state.treatmentQuadratic, false);
+    const noise = makeNoise(state.n, state.seed);
+    const data = simulateLesson(state, noise);
+    assert.deepEqual(
+      Object.keys(data[0]).sort(),
+      level === 7 ? ["A", "C", "M", "Y"] : ["A", "C", "K", "Y"],
+    );
+    assert.deepEqual(
+      data,
+      simulateLesson({ ...state, postAdjusted: true }, noise),
+    );
+    const alteredUnused = noise.map((e) => ({
+      ...e,
+      U: 1e6,
+      C2: 1e6,
+      [level === 7 ? "eK" : "eM"]: 1e6,
+    }));
+    assert.deepEqual(data, simulateLesson(state, alteredUnused));
+    const untreated = simulateLesson(
+      state,
+      noise.map((e) => ({ ...e, a: 1 })),
+    );
+    const treated = simulateLesson(
+      state,
+      noise.map((e) => ({ ...e, a: 0 })),
+    );
+    const truth = lessonResult(state).totalEffect;
+    treated.forEach((d, i) =>
+      assert.ok(Math.abs(d.Y - untreated[i].Y - truth) < 1e-12),
+    );
+    const off = lessonResult(state, noise);
+    assert.notEqual(
+      off.regression,
+      lessonResult({ ...state, seed: 4218 }).regression,
+    );
+    const on = lessonResult({ ...state, postAdjusted: true }, noise);
+    assert.equal(off.totalEffect, on.totalEffect);
+    assert.equal(off.unadjusted, on.unadjusted);
+    assert.equal(
+      on.regression,
+      estimate(data, ["C", level === 7 ? "M" : "K"]).values[2],
+    );
+  }
+});
+
+test("mediator and collider adjustment distort total-effect estimation across 40 samples", () => {
+  for (const level of [7, 8]) {
+    let offMean = 0,
+      onMean = 0;
+    for (let seed = 100; seed < 140; seed++) {
+      const state = { ...lessonBaseline(level), seed };
+      offMean += lessonResult(state).regression / 40;
+      onMean += lessonResult({ ...state, postAdjusted: true }).regression / 40;
+    }
+    const truth = level === 7 ? 3 : 2;
+    // In these additive worlds, conditioning on M leaves 2; conditioning on
+    // K = A + Y + independent unit-variance noise leaves (2 - 1) / 2.
+    const conditioned = level === 7 ? 2 : 0.5;
+    assert.ok(
+      Math.abs(offMean - truth) < 0.06,
+      `${level}: baseline ${offMean}`,
+    );
+    assert.ok(
+      Math.abs(onMean - conditioned) < 0.06,
+      `${level}: adjusted ${onMean}`,
+    );
+    console.log(
+      `Level ${level}: baseline mean ${offMean.toFixed(3)}, post-adjusted mean ${onMean.toFixed(3)}, truth ${truth}`,
+    );
+  }
 });
