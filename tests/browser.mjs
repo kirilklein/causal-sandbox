@@ -346,6 +346,22 @@ try {
   const colliderHelp = page.locator(
     '.help-button[popovertarget="help-collider"]',
   );
+  // Opening must place the panel on screen before the next animation frame.
+  await colliderHelp.scrollIntoViewIfNeeded();
+  const initialBounds = await colliderHelp.evaluate((trigger) => {
+    trigger.click();
+    const panel = trigger.popoverTargetElement;
+    const { left, right, top, bottom } = panel.getBoundingClientRect();
+    panel.querySelector(".close-help").click();
+    return { left, right, top, bottom };
+  });
+  assert.ok(
+    initialBounds.left >= 0 &&
+      initialBounds.right <= 390 &&
+      initialBounds.top >= 0 &&
+      initialBounds.bottom <= 844,
+    `Initial mobile help bounds: ${JSON.stringify(initialBounds)}`,
+  );
   await colliderHelp.tap();
   assert.equal(await page.locator("#help-collider").isVisible(), true);
   assert.deepEqual(await simulationView(), mobileBeforeHelp);

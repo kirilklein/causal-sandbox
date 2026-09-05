@@ -33,11 +33,14 @@ export function setupHelp() {
   }
 
   document.querySelectorAll(".help-button").forEach((trigger) => {
-    trigger.addEventListener("click", () => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
       clearTimeout(openTimer);
       clearTimeout(closeTimer);
       activeTrigger = trigger;
-      requestAnimationFrame(positionHelp);
+      // Open and position together, retaining the native keyboard invoker.
+      trigger.popoverTargetElement.togglePopover({ source: trigger });
+      positionHelp();
     });
     trigger.addEventListener("pointerenter", (event) => {
       if (event.pointerType !== "mouse") return;
