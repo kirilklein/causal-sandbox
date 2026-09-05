@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --check src tests index.html package.json README.md
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Browser test against built site
+        run: |
+          npx vite preview --port 5173 --host 127.0.0.1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          npm run test:browser
