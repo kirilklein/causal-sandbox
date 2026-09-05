@@ -240,6 +240,7 @@ export function estimate(data, adjustment, models = {}) {
     clipped,
     ess: (w1 + w0) ** 2 / sumw2,
     weights,
+    propensities: ps,
     ...(models.predictionPoints
       ? {
           predictions: models.predictionPoints.map((d) => ({

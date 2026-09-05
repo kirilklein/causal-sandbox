@@ -367,6 +367,92 @@ try {
     await page.goto(`${url}?level=${level}`);
     assert.equal(await result(), expected);
   }
+  // Level 10 follows the implemented causal-role lessons, skipping unavailable 9.
+  await page.goto(`${url}?level=8`);
+  await page.locator("#continue").click();
+  assert.match(await page.locator("h1").innerText(), /Too little overlap/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 11/);
+  const tenth = await result();
+  const diagnostics = () => page.locator("#overlap-summary").innerText();
+  const moderateDiagnostics = await diagnostics();
+  assert.equal(await page.locator(".lesson-result:visible").count(), 4);
+  assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
+  assert.equal(await page.locator("input").count(), 2);
+  assert.match(
+    await page.locator("#model-weight-note").innerText(),
+    /No treatment/,
+  );
+  await page
+    .getByRole("radio", { name: "Moderate selection", exact: true })
+    .focus();
+  await page.keyboard.press("ArrowDown");
+  assert.equal(
+    await page
+      .getByRole("radio", { name: "Strong selection", exact: true })
+      .isChecked(),
+    true,
+  );
+  assert.notEqual(await diagnostics(), moderateDiagnostics);
+  assert.match(await page.locator("#sample-label").innerText(), /4217/);
+  assert.equal(await page.locator("#known-effect").innerText(), "2.00");
+  assert.match(
+    await page.locator("#model-weight-note").innerText(),
+    /clipped.*IPW and AIPW/,
+  );
+  const strong = await result();
+  const strongDiagnostics = await diagnostics();
+  await page.locator(".overlap-details summary").focus();
+  await page.keyboard.press("Enter");
+  await page.locator(".lesson-explanation summary").click();
+  assert.equal(await result(), strong);
+  assert.equal(await diagnostics(), strongDiagnostics);
+  await page.screenshot({
+    path: "/tmp/causal-overlap-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .getByRole("radio", { name: "Moderate selection", exact: true })
+    .tap();
+  assert.equal(await result(), tenth);
+  assert.equal(await diagnostics(), moderateDiagnostics);
+  await page
+    .getByRole("radio", { name: "Strong selection", exact: true })
+    .tap();
+  assert.equal(await result(), strong);
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-overlap-mobile.png",
+    fullPage: true,
+  });
+  await page.locator("#redraw").tap();
+  assert.notEqual(await result(), strong);
+  assert.notEqual(await diagnostics(), strongDiagnostics);
+  await page.locator("#restart").tap();
+  assert.equal(await result(), tenth);
+  assert.equal(await diagnostics(), moderateDiagnostics);
+  await page.locator("#back").tap();
+  assert.equal(await result(), roleBaselines[1][1]);
+  assert.equal(await page.locator("#propensity-histogram").count(), 0);
+  await page.goBack();
+  assert.equal(await result(), tenth);
+  await page.goForward();
+  assert.equal(await result(), roleBaselines[1][1]);
+  await page.locator(".lesson-nav summary").tap();
+  await page
+    .getByRole("link", { name: "Too little overlap", exact: true })
+    .tap();
+  assert.equal(await result(), tenth);
+  await page.getByRole("link", { name: "Explore the full sandbox" }).tap();
+  await page.locator("#world-select").selectOption("both");
+  await page.locator('input[value="K"]').check();
+  await page.goto(`${url}?level=10`);
+  assert.equal(await result(), tenth);
+  assert.equal(await diagnostics(), moderateDiagnostics);
   assert.deepEqual(errors, []);
   console.log(
     "Lesson navigation, baseline resets, help, keyboard and mobile checks passed.",
