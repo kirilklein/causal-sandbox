@@ -8,7 +8,9 @@ try {
   });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("http://127.0.0.1:5173/");
+  await page.goto(
+    process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/",
+  );
   await page.locator(".effect-row").last().waitFor();
   const values = async () =>
     page
@@ -81,7 +83,85 @@ try {
   assert.equal(await page.locator("#about").isVisible(), false);
   await page.locator("#reset").click();
   await page.locator(".path-controls summary").click();
-  await page.screenshot({ path: "/tmp/causal-desktop.png", fullPage: true });
+  // Worlds and analyst models are independent controls.
+  await page.locator('input[value="C"]').check();
+  const baseline = await values();
+  const populationLabel = await page
+    .locator("#population")
+    .getAttribute("aria-label");
+  await page.locator("#world-select").selectOption("both");
+  assert.equal(await page.locator('input[value="C"]').isChecked(), true);
+  assert.equal(await page.locator("#truth-value").innerText(), "2.00");
+  const bothSimple = await values();
+  assert.ok(bothSimple.slice(2).every((v) => v > 3));
+  await page.locator("#outcome-model").selectOption("interaction");
+  const outcomeOnly = await values();
+  assert.ok(Math.abs(outcomeOnly[2] - 2) < 0.2);
+  assert.ok(Math.abs(outcomeOnly[4] - 2) < 0.2);
+  assert.equal(outcomeOnly[3], bothSimple[3]);
+  await page.locator("#outcome-model").selectOption("main");
+  await page.locator("#treatment-model").selectOption("interaction");
+  const treatmentOnly = await values();
+  assert.equal(treatmentOnly[2], bothSimple[2]);
+  assert.ok(Math.abs(treatmentOnly[3] - 2) < 0.2);
+  assert.ok(Math.abs(treatmentOnly[4] - 2) < 0.2);
+  await page.locator("#outcome-model").selectOption("interaction");
+  assert.ok((await values()).slice(2).every((v) => Math.abs(v - 2) < 0.2));
+  await page.locator('[data-visible="C"]').click();
+  for (const model of ["outcome", "treatment"])
+    assert.equal(await page.locator(`#${model}-model`).isDisabled(), true);
+  assert.ok((await values()).slice(2).every((v) => v > 4));
+  await page.locator('[data-visible="C"]').click();
+  assert.equal(await page.locator("#outcome-model").isDisabled(), true);
+  await page.locator('input[value="C"]').check();
+  assert.equal(
+    await page.locator("#outcome-model").inputValue(),
+    "interaction",
+  );
+  assert.ok(Math.abs((await values())[4] - 2) < 0.2);
+  for (const world of ["additive", "outcome", "treatment", "both"]) {
+    await page.locator("#world-select").selectOption(world);
+    for (let i = 0; i < 5; i++) {
+      await page.locator(`[data-preset="${i}"]`).click();
+      assert.equal(await page.locator("#world-select").inputValue(), world);
+      assert.equal(
+        await page.locator("#outcome-model").inputValue(),
+        "interaction",
+      );
+      const v = await values();
+      assert.ok(v.every(Number.isFinite));
+      if (i === 0) assert.ok(v.every((x) => Math.abs(x - 2) < 0.1));
+      if (i === 2) assert.ok(v.slice(2).every((x) => x > 3));
+      if (i === 3) assert.ok(v.slice(2).every((x) => Math.abs(x - 2) > 0.8));
+      if (i === 4) assert.ok(Math.abs(v[2] - 1) < 0.15);
+    }
+  }
+  await page.locator("#reset").click();
+  await page.locator('input[value="C"]').check();
+  assert.deepEqual(await values(), baseline);
+  assert.equal(
+    await page.locator("#population").getAttribute("aria-label"),
+    populationLabel,
+  );
+  assert.equal(await page.locator("#outcome-model").inputValue(), "main");
+  await page.locator("#world-select").selectOption("outcome");
+  assert.ok((await values())[2] > 2.5);
+  assert.match(
+    await page.locator("#lesson").innerText(),
+    /outcome model misses/,
+  );
+  await page.locator("#world-select").selectOption("treatment");
+  assert.ok((await values())[3] < 1.7);
+  assert.match(
+    await page.locator("#lesson").innerText(),
+    /treatment model misses/,
+  );
+  await page.locator("#world-select").selectOption("both");
+  assert.match(await page.locator("#lesson").innerText(), /Both models omit/);
+  await page.screenshot({
+    path: "/tmp/causal-worlds-desktop.png",
+    fullPage: true,
+  });
   console.log(
     "Desktop dimensions",
     await page.evaluate(() => ({
@@ -91,14 +171,39 @@ try {
     })),
   );
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.screenshot({ path: "/tmp/causal-laptop.png", fullPage: true });
+  await page.screenshot({
+    path: "/tmp/causal-worlds-laptop.png",
+    fullPage: true,
+  });
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("#outcome-model").selectOption("interaction");
+  assert.ok(Math.abs((await values())[4] - 2) < 0.2);
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   );
-  await page.screenshot({ path: "/tmp/causal-mobile.png", fullPage: true });
+  await page.screenshot({
+    path: "/tmp/causal-worlds-mobile.png",
+    fullPage: true,
+  });
+  // Time the complete synchronous slider update, including estimation and rendering.
+  const timings = await page.evaluate(() => {
+    const control = document.querySelector('[data-param="direct"]');
+    const original = control.value;
+    const times = [];
+    for (let i = 0; i < 35; i++) {
+      const start = performance.now();
+      control.value = i % 2 ? "2" : "2.1";
+      control.dispatchEvent(new Event("input", { bubbles: true }));
+      if (i >= 5) times.push(performance.now() - start);
+    }
+    control.value = original;
+    control.dispatchEvent(new Event("input", { bubbles: true }));
+    times.sort((a, b) => a - b);
+    return { median_ms: times[15], p95_ms: times[28] };
+  });
+  console.log("Browser slider recomputation", timings);
   assert.deepEqual(errors, []);
   console.log("All browser interactions passed; no runtime errors.");
 } finally {

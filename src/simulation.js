@@ -1,6 +1,12 @@
 // Structural causal model. All exogenous noises are mutually independent.
-// C,U ~ N(0,1); A = 1[uniform < sigmoid(ca*C + ua*U)].
-// M = am*A + eM; Y = direct*A + cy*C + uy*U + my*M + eY.
+// C1,C2 ~ Uniform(-sqrt(3),sqrt(3)); U and errors ~ N(0,1).
+// Bounded, unit-variance covariates keep overlap healthy at default settings.
+// C is the observed block {C1,C2}.
+// S = 0.8*C1 + 0.6*C2; I = C1*C2.
+// A = 1[uniform < sigmoid(-0.8 + ca*(S + ta*I) + ua*U)].
+// M = am*A + eM; Y = direct*A + cy*(S + oy*I) + uy*U + my*M + eY.
+// ta and oy belong to the selected world, not the analyst's model.
+// The nonzero treatment intercept avoids symmetry masking omitted-term bias.
 // K = 0.9*A + 0.9*Y + eK. K is a post-outcome collider A -> K <- Y.
 // Total ATE = direct + am*my. Fixed exogenous draws define paired potential
 // outcomes and keep slider movement free of Monte Carlo regeneration noise.
@@ -13,6 +19,17 @@ export const defaults = {
   am: 0,
   my: 0.8,
 };
+export const worlds = [
+  { id: "additive", name: "Additive relationships", treatment: 0, outcome: 0 },
+  { id: "outcome", name: "Outcome interaction", treatment: 0, outcome: 1.5 },
+  {
+    id: "treatment",
+    name: "Treatment interaction",
+    treatment: 0.7,
+    outcome: 0,
+  },
+  { id: "both", name: "Interactions in both", treatment: 0.7, outcome: 1.5 },
+];
 export const presets = [
   {
     name: "Clean randomized treatment",
@@ -61,11 +78,13 @@ function random(seed) {
 }
 export function makeNoise(n = 2400, seed = 4217) {
   const r = random(seed),
+    r2 = random(seed ^ 0x51f15e),
     normal = () =>
       Math.sqrt(-2 * Math.log(Math.max(r(), 1e-12))) *
       Math.cos(2 * Math.PI * r());
   return Array.from({ length: n }, () => ({
-    C: normal(),
+    C1: Math.sqrt(3) * (2 * r() - 1),
+    C2: Math.sqrt(3) * (2 * r2() - 1),
     U: normal(),
     eM: normal(),
     eY: normal(),
@@ -75,13 +94,30 @@ export function makeNoise(n = 2400, seed = 4217) {
   }));
 }
 const sigmoid = (x) => 1 / (1 + Math.exp(-Math.max(-30, Math.min(30, x))));
-export function simulate(p, noise) {
+// Shared outcome equation is also used by interventions: no duplicated truth model.
+export function outcome(p, e, A, world = worlds[0]) {
+  const M = p.am * A + e.eM;
+  return (
+    p.direct * A +
+    p.cy * (0.8 * e.C1 + 0.6 * e.C2 + world.outcome * e.C1 * e.C2) +
+    p.uy * e.U +
+    p.my * M +
+    e.eY
+  );
+}
+export function simulate(p, noise, world = worlds[0]) {
   return noise.map((e) => {
-    const A = +(e.a < sigmoid(p.ca * e.C + p.ua * e.U));
+    const ps = sigmoid(
+      -0.8 +
+        p.ca * (0.8 * e.C1 + 0.6 * e.C2 + world.treatment * e.C1 * e.C2) +
+        p.ua * e.U,
+    );
+    const A = +(e.a < ps);
     const M = p.am * A + e.eM;
-    const Y = p.direct * A + p.cy * e.C + p.uy * e.U + p.my * M + e.eY;
+    const Y = outcome(p, e, A, world);
     return {
-      C: e.C,
+      C1: e.C1,
+      C2: e.C2,
       U: e.U,
       A,
       M,
@@ -90,6 +126,15 @@ export function simulate(p, noise) {
       jitter: e.jitter,
     };
   });
+}
+// The C control always includes both observed covariates. Interaction features
+// can only be constructed when C is available AND in the adjustment set.
+function features(d, adjustment, interaction) {
+  return [
+    1,
+    ...adjustment.flatMap((k) => (k === "C" ? [d.C1, d.C2] : [d[k]])),
+    ...(interaction && adjustment.includes("C") ? [d.C1 * d.C2] : []),
+  ];
 }
 const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
 function solve(a, b) {
@@ -133,52 +178,48 @@ function fit(X, y, logistic = false) {
   }
   return beta;
 }
-export function estimate(data, adjustment) {
+export function estimate(data, adjustment, models = {}) {
   const n = data.length,
-    xs = data.map((d) => [1, ...adjustment.map((k) => d[k])]),
+    xs = data.map((d) => features(d, adjustment, models.outcome)),
+    gs = data.map((d) => features(d, adjustment, models.treatment)),
     a = data.map((d) => d.A),
     y = data.map((d) => d.Y);
   const count = a.reduce((s, v) => s + v, 0),
     mean1 = data.reduce((s, d) => s + d.A * d.Y, 0) / count,
     mean0 = data.reduce((s, d) => s + (1 - d.A) * d.Y, 0) / (n - count);
-  const reg = fit(
-      xs.map((x, i) => [...x, a[i]]),
-      y,
-    ),
-    propensity = fit(xs, a, true);
-  const ps = xs.map((x) => sigmoid(dot(x, propensity))),
+  const propensity = fit(gs, a, true);
+  const ps = gs.map((x) => sigmoid(dot(x, propensity))),
     clipped = ps.filter((p) => p < 0.02 || p > 0.98).length;
-  const b = [0, 1].map((arm) => {
-    const indices = a.flatMap((v, i) => (v === arm ? [i] : []));
-    return fit(
-      indices.map((i) => xs[i]),
-      indices.map((i) => y[i]),
-    );
-  });
+  const beta = fit(
+    xs.map((x, i) => [...x, a[i]]),
+    y,
+  );
   let s1 = 0,
     s0 = 0,
     w1 = 0,
     w0 = 0,
     aipw = 0,
+    regression = 0,
     sumw2 = 0;
   xs.forEach((x, i) => {
     const p = Math.max(0.02, Math.min(0.98, ps[i])),
       t = a[i] / p,
       c = (1 - a[i]) / (1 - p),
-      m0 = dot(x, b[0]),
-      m1 = dot(x, b[1]);
+      m0 = dot([...x, 0], beta),
+      m1 = dot([...x, 1], beta);
     s1 += t * y[i];
     s0 += c * y[i];
     w1 += t;
     w0 += c;
     sumw2 += (t + c) ** 2;
+    regression += m1 - m0;
     aipw += m1 - m0 + t * (y[i] - m1) - c * (y[i] - m0);
   });
   return {
     values: [
       mean1 - mean0,
       mean1 - mean0,
-      reg.at(-1),
+      regression / n,
       s1 / w1 - s0 / w0,
       aipw / n,
     ],

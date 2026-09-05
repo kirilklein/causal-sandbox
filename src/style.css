@@ -1060,3 +1060,124 @@ button:hover {
     padding: 10px 0;
   }
 }
+.world-picker {
+  display: grid;
+  gap: 6px;
+  min-width: 235px;
+  margin-left: 22px;
+}
+.world-picker label {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #84917b;
+}
+.world-picker select {
+  background: #fcfcf8;
+  color: #365240;
+  border: 1px solid #d6dece;
+  border-radius: 7px;
+  padding: 9px 30px 9px 11px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.world-picker > span {
+  font-size: 9px;
+  color: #8a9280;
+}
+.node-members {
+  font-size: 8px;
+  fill: #7c9175;
+}
+.model-controls {
+  background: #f4f6ee;
+  border: 1px solid #e5e9dc;
+  border-radius: 7px;
+  padding: 9px 10px;
+  margin: 0 0 12px;
+}
+.model-intro {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.model-intro > span {
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #7c8a71;
+  white-space: nowrap;
+}
+.model-intro small {
+  font-size: 8px;
+  color: #88937e;
+}
+.model-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.model-pair label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.model-pair label > span {
+  font-size: 9px;
+  color: #62765a;
+}
+.model-pair select {
+  width: 100%;
+  border: 1px solid #dbe3d2;
+  background: #fcfcf8;
+  border-radius: 4px;
+  color: #46613e;
+  font: inherit;
+  font-size: 10px;
+  padding: 5px 3px;
+  cursor: pointer;
+}
+.model-pair select:disabled {
+  color: #9a9e92;
+  background: #f0f1e9;
+  cursor: default;
+}
+.model-pair small {
+  color: #7e8c72;
+  font-size: 8px;
+  min-height: 10px;
+}
+.model-pair .missing-term {
+  color: #a06d50;
+}
+@media (max-width: 1100px) and (min-width: 761px) {
+  .world-picker {
+    min-width: 205px;
+  }
+  .intro h1 {
+    font-size: 26px;
+  }
+  .model-intro {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 760px) {
+  .intro {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 17px;
+  }
+  .world-picker {
+    margin-left: 0;
+  }
+  .model-intro {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .model-pair {
+    gap: 8px;
+  }
+  .model-pair select {
+    font-size: 9px;
+  }
+}
