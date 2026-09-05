@@ -149,6 +149,23 @@ let state,
   revealed = false,
   revisiting = false;
 const app = document.querySelector("#app");
+app.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest(".lesson-nav")) {
+    document
+      .querySelector("#lesson-menu-toggle")
+      .setAttribute("aria-expanded", "false");
+  }
+});
+app.addEventListener("keydown", (event) => {
+  const toggle = document.querySelector("#lesson-menu-toggle");
+  if (
+    event.key === "Escape" &&
+    toggle.getAttribute("aria-expanded") === "true"
+  ) {
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.focus();
+  }
+});
 enterFromUrl(false);
 
 function enterFromUrl(focus = true) {
@@ -201,6 +218,30 @@ function controls(level) {
   return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
 }
 
+function lessonNavigation(position) {
+  const groups = [
+    { title: "Foundations", start: 0, end: 4 },
+    { title: "Causal roles", start: 4, end: 7 },
+    { title: "Models and limitations", start: 7, end: 10 },
+  ];
+  return `<nav class="lesson-nav" aria-label="Lesson navigation">
+    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span>Contents</span></button><span>Level ${position + 1} of 11${revisiting ? " · Optional revisit" : ""}</span></div>
+    <div id="lesson-menu">${groups
+      .map(
+        ({ title, start, end }) =>
+          `<section class="lesson-group" aria-label="${title}"><h2>${title}</h2><ol start="${start + 1}">${availableLevels
+            .slice(start, end)
+            .map(
+              (id, offset) =>
+                `<li><a href="${lessonUrl(id)}" data-level="${id}" aria-label="${lessons[id - 1].title}" data-number="${start + offset + 1}" ${position === start + offset ? 'aria-current="step"' : ""}>${lessons[id - 1].title}</a></li>`,
+            )
+            .join("")}</ol></section>`,
+      )
+      .join("")}
+    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
+  </nav>`;
+}
+
 function enter(level, focus = true, callback = false) {
   revisiting = callback;
   state = lessonBaseline(level);
@@ -213,7 +254,7 @@ function enter(level, focus = true, callback = false) {
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./">causal<span class="brand-dot">.</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
     <main class="learning">
-      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${position + 1} of 11${revisiting ? " · Optional revisit" : ""} · ${position < 4 ? "Foundations" : position < 7 || position === 9 ? "Causal limitations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${availableLevels.map((id, i) => `<li value="${i + 1}"><a href="${lessonUrl(id)}" ${position === i ? 'aria-current="step"' : ""}>${lessons[id - 1].title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
+      ${lessonNavigation(position)}
       <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
       <p class="lesson-transition">${lesson.transition}</p>
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
@@ -237,6 +278,27 @@ function enter(level, focus = true, callback = false) {
       <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       <p class="lesson-credit">Guided prompts inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>.</p>
     </main>`;
+  const menuToggle = document.querySelector("#lesson-menu-toggle");
+  menuToggle.addEventListener("click", () => {
+    menuToggle.setAttribute(
+      "aria-expanded",
+      String(menuToggle.getAttribute("aria-expanded") !== "true"),
+    );
+  });
+  document.querySelector("#lesson-menu").addEventListener("click", (event) => {
+    const link = event.target.closest("a[data-level]");
+    if (
+      !link ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    navigate(Number(link.dataset.level));
+  });
   document.querySelector("#hidden-strength")?.addEventListener("input", (e) => {
     state.hiddenStrength = +e.target.value;
     document.querySelector("#hidden-strength-output").textContent =

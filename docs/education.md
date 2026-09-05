@@ -10,6 +10,18 @@ mediator, collider, and hidden confounding, at their new displayed positions.
 Numeric simulator IDs retain these original identities too. The optional revisit
 uses `?lesson=double-robustness&revisit=hidden-confounding`.
 
+Linear progression through Continue is the default. A quiet Contents toggle stays
+closed on every screen size. When opened, it groups lesson links into Foundations
+(1–4), Causal roles (5–7), and Models and limitations (8–10), followed by the
+sandbox. The Contents control sits in the left margin, aligned with its panel, and uses
+a panel icon whose chevron indicates opening/closing. The panel opens without
+moving the lesson, and
+scrolls independently on smaller screens. The current lesson is marked for
+orientation; the menu supports deliberate skipping and reference.
+Selecting a lesson resets its baseline and focuses its heading. Opening Contents
+preserves the experiment. Clicking outside closes it; Escape closes it and
+returns focus to the toggle.
+
 The core target remains the population total effect. The mediator lesson asks
 which effect we want: its adjusted estimate can recover the direct contribution
 under the toy world's assumptions while missing the total-effect target. Moving

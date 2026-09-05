@@ -26,19 +26,112 @@
   font-size: 17px;
 }
 .lesson-nav {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 32px;
-  font-size: 14px;
+  margin-bottom: 28px;
+  font-size: 13px;
 }
-.lesson-nav details {
-  text-align: right;
+.lesson-nav-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 44px;
+  gap: 16px;
+  color: #657365;
+}
+.learning #lesson-menu-toggle {
+  position: fixed;
+  top: 88px;
+  left: 16px;
+  z-index: 21;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  padding: 10px 12px;
+  background: #f5f4ef;
+  color: #657365;
+  font-size: 13px;
+}
+#lesson-menu-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#lesson-menu-toggle[aria-expanded="true"] .contents-direction {
+  transform: rotate(180deg);
+  transform-origin: 12px 10px;
+}
+.learning #lesson-menu-toggle:hover,
+.learning #lesson-menu-toggle[aria-expanded="true"] {
+  color: #315e48;
+  background: #e6efe9;
+}
+.lesson-nav:has([aria-expanded="false"]) #lesson-menu {
+  display: none;
+}
+#lesson-menu {
+  position: fixed;
+  z-index: 20;
+  top: 140px;
+  left: 16px;
+  width: min(280px, calc(100vw - 32px));
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px;
+  border: 1px solid #dedfd6;
+  border-radius: 8px;
+  background: #fafaf6;
+  box-shadow: 0 8px 28px #273d3314;
+}
+.lesson-group + .lesson-group {
+  margin-top: 20px;
+}
+.lesson-group h2 {
+  font-size: 12px;
+  margin: 0 0 10px;
+  color: #657365;
 }
 .lesson-nav ol {
-  text-align: left;
-  padding-left: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.lesson-nav ol a {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  padding: 8px 6px;
+  min-height: 44px;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  color: #526054;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.lesson-nav ol a::before {
+  content: attr(data-number);
+  font-size: 11px;
+}
+.lesson-nav a:hover {
+  background: #edf1eb;
+}
+.lesson-nav a[aria-current="step"] {
+  border-left-color: #315e48;
+  background: #e6efe9;
+  color: #315e48;
+  font-weight: 650;
+}
+.lesson-nav .sandbox-nav-link {
+  display: block;
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #dedfd6;
+  color: #526054;
 }
 .learning summary {
   cursor: pointer;
