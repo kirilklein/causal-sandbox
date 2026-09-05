@@ -771,6 +771,13 @@ footer button {
   font-size: 9px;
   margin-left: 12px;
 }
+.site-footer {
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  padding: 16px 24px 24px;
+  font-size: 11px;
+}
 .mobile-break {
   display: none;
 }
