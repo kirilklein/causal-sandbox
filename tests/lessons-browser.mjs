@@ -333,7 +333,7 @@ try {
   assert.equal(await result(), eighth);
   await page.goForward();
   assert.equal(await result(), ninth);
-  await page.locator(".lesson-nav summary").tap();
+  await page.locator("#lesson-menu-toggle").tap();
   await page
     .getByRole("link", { name: "A hidden common cause", exact: true })
     .tap();
@@ -611,7 +611,7 @@ try {
   assert.equal(await result(), tenth);
   await page.goForward();
   assert.equal(await result(), sixth);
-  await page.locator(".lesson-nav summary").tap();
+  await page.locator("#lesson-menu-toggle").tap();
   await page
     .getByRole("link", { name: "Too little overlap", exact: true })
     .tap();
@@ -672,6 +672,145 @@ try {
       );
     if (i < titles.length - 1) await page.locator("#continue").click();
   }
+  // Contents stays secondary and closed by default on every screen size.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`${url}?lesson=randomization`);
+  assert.equal(await page.locator("#lesson-menu-toggle").isVisible(), true);
+  assert.equal(await page.locator("#lesson-menu").isVisible(), false);
+  const beforeContents = await result();
+  const headingBeforeMenu = await page.locator("h1").boundingBox();
+  const experimentBeforeMenu = await page.locator(".experiment").boundingBox();
+  await page.locator("#lesson-menu-toggle").click();
+  assert.equal(await result(), beforeContents);
+  assert.deepEqual(await page.locator("h1").boundingBox(), headingBeforeMenu);
+  assert.deepEqual(
+    await page.locator(".experiment").boundingBox(),
+    experimentBeforeMenu,
+  );
+  assert.equal(await page.locator("#lesson-menu").isVisible(), true);
+  assert.equal(await page.locator(".lesson-nav details").count(), 0);
+  assert.deepEqual(await page.locator(".lesson-group h2").allTextContents(), [
+    "Foundations",
+    "Causal roles",
+    "Models and limitations",
+  ]);
+  const currentLesson = () => page.locator('.lesson-nav [aria-current="step"]');
+  assert.equal(await currentLesson().innerText(), titles[0]);
+  await page.getByRole("link", { name: "A mediator", exact: true }).click();
+  assert.match(page.url(), /lesson=mediator/);
+  assert.equal(await currentLesson().innerText(), "A mediator");
+  assert.equal(await page.locator("#post-adjustment").isChecked(), false);
+  assert.equal(
+    await page.locator("h1").evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.locator("#post-adjustment").check();
+  await page.locator("#lesson-menu-toggle").click();
+  await page
+    .getByRole("link", { name: "Double robustness", exact: true })
+    .click();
+  await page.goBack();
+  assert.equal(await currentLesson().innerText(), "A mediator");
+  assert.equal(await page.locator("#post-adjustment").isChecked(), false);
+  await page.goForward();
+  await page.locator("#revisit-hidden").click();
+  assert.equal(await currentLesson().innerText(), "Double robustness");
+  await page.locator("#lesson-menu-toggle").click();
+  await page
+    .getByRole("link", { name: "A hidden common cause", exact: true })
+    .click();
+  assert.equal(await currentLesson().innerText(), "A hidden common cause");
+  assert.equal(await page.locator("#aipw-result").count(), 0);
+  assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
+  await page.screenshot({
+    path: "/tmp/causal-contents-desktop-closed.png",
+    fullPage: true,
+  });
+
+  await page.locator("#lesson-menu-toggle").click();
+  await page.screenshot({
+    path: "/tmp/causal-contents-desktop-open.png",
+    fullPage: true,
+  });
+  await page.locator("#lesson-menu-toggle").click();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const navResult = await result();
+  const navSeed = await page.locator("#sample-label").innerText();
+  assert.equal(await page.locator("#lesson-menu").isVisible(), false);
+  await page.locator("#lesson-menu-toggle").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#lesson-menu").isVisible(), true);
+  assert.equal(await result(), navResult);
+  assert.equal(await page.locator("#sample-label").innerText(), navSeed);
+  await page.keyboard.press("Escape");
+  assert.equal(await page.locator("#lesson-menu").isVisible(), false);
+  assert.equal(
+    await page
+      .locator("#lesson-menu-toggle")
+      .evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.locator("#lesson-menu-toggle").tap();
+  await page.screenshot({
+    path: "/tmp/causal-contents-mobile-menu.png",
+    fullPage: true,
+  });
+  await page
+    .getByRole("link", {
+      name: "Adjustment with an outcome model",
+      exact: true,
+    })
+    .tap();
+  assert.equal(await page.locator("#lesson-menu").isVisible(), false);
+  assert.equal(
+    await page.locator("h1").evaluate((el) => el === document.activeElement),
+    true,
+  );
+  assert.match(page.url(), /lesson=outcome-regression/);
+  assert.equal(await result(), fourth);
+  for (const width of [320, 768, 1050, 1051, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.equal(await page.locator("#lesson-menu-toggle").isVisible(), true);
+    assert.equal(await page.locator("#lesson-menu").isVisible(), false);
+    await page.locator("#lesson-menu-toggle").scrollIntoViewIfNeeded();
+    const headingPosition = await page.locator("h1").boundingBox();
+    const experimentPosition = await page.locator(".experiment").boundingBox();
+    await page.locator("#lesson-menu-toggle").click();
+    assert.equal(await page.locator("#lesson-menu").isVisible(), true);
+    const panelBounds = await page.locator("#lesson-menu").boundingBox();
+    assert.equal(panelBounds.x, 16);
+    const toggleBounds = await page
+      .locator("#lesson-menu-toggle")
+      .boundingBox();
+    assert.equal(toggleBounds.x, panelBounds.x);
+    assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
+    if (width >= 1050)
+      assert.ok(toggleBounds.x + toggleBounds.width < headingPosition.x);
+
+    assert.ok(panelBounds.x + panelBounds.width <= width);
+    assert.ok(panelBounds.y + panelBounds.height <= 900);
+
+    assert.deepEqual(await page.locator("h1").boundingBox(), headingPosition);
+    assert.deepEqual(
+      await page.locator(".experiment").boundingBox(),
+      experimentPosition,
+    );
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    await page.locator("#lesson-menu-toggle").click();
+  }
+  await page.locator("#lesson-menu-toggle").click();
+  await page.locator(".lesson-header").click({ position: { x: 10, y: 10 } });
+  assert.equal(await page.locator("#lesson-menu").isVisible(), false);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: "/tmp/causal-contents-mobile.png",
+    fullPage: true,
+  });
   assert.deepEqual(errors, []);
   console.log(
     "Lesson navigation, baseline resets, help, keyboard and mobile checks passed.",
