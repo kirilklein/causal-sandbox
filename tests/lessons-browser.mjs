@@ -284,8 +284,8 @@ try {
     assert.equal(
       await intuition.locator("summary").innerText(),
       level === 7
-        ? "What changes when we adjust for fitness?"
-        : "Why does adjusting create bias?",
+        ? "Example: exercise and fitness"
+        : "Example: follow-up care in healthcare",
     );
     await intuition.locator("summary").focus();
     await page.keyboard.press("Enter");

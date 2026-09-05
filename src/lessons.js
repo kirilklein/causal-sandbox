@@ -84,7 +84,7 @@ const lessons = [
     slug: "mediator",
     title: "A mediator",
     intuition: {
-      title: "What changes when we adjust for fitness?",
+      title: "Example: exercise and fitness",
       paragraphs: [
         "Exercise can improve fitness, and improved fitness can help people live longer. Fitness carries part of exercise’s effect.",
         "To understand the total effect, we let fitness change with exercise. To understand the direct effect, imagine changing how much someone exercises while keeping their fitness the same. What difference would exercise still make to longevity?",
@@ -104,9 +104,9 @@ const lessons = [
     slug: "collider",
     title: "A collider",
     intuition: {
-      title: "Why does adjusting create bias?",
+      title: "Example: follow-up care in healthcare",
       paragraphs: [
-        "After symptoms have been measured, people receiving treatment have routine follow-up visits. People with worse symptoms also need more follow-up care. This later care cannot change the symptoms already recorded.",
+        "Consider a healthcare example. Patients receiving treatment have scheduled follow-up visits. Patients with worse symptoms also need more follow-up care. Here, symptoms are measured before those visits, so the later care cannot change the outcome already recorded.",
         "Now compare only people with the same amount of follow-up care. A treated person may have needed those visits simply because of the treatment schedule. An untreated person may have needed them because their symptoms were worse.",
         "Matching on follow-up care therefore tends to select treated people with fewer symptoms and untreated people with more symptoms. That can make treatment look better, even if treatment was originally assigned at random.",
         "There are two reasons for ending up with the same amount of care: treatment and worse symptoms. Once we hold care use fixed, more of one reason tends to mean less of the other. That creates a relationship between treatment and symptoms that can distort our estimate.",
