@@ -8,6 +8,7 @@ try {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1000 },
     deviceScaleFactor: 1,
+    hasTouch: true,
   });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -20,6 +21,168 @@ try {
       .locator(".effect-row strong")
       .allTextContents()
       .then((a) => a.map(Number));
+  const simulationView = () =>
+    page.evaluate(() => ({
+      estimates: document.querySelector("#effects").textContent,
+      truth: document.querySelector("#truth-value").textContent,
+      population: document
+        .querySelector("#population")
+        .getAttribute("aria-label"),
+      controls: [...document.querySelectorAll("input, select")].map((el) => [
+        el.value,
+        el.checked,
+        el.disabled,
+      ]),
+      visibility: [...document.querySelectorAll("[data-visible]")].map((el) =>
+        el.getAttribute("aria-pressed"),
+      ),
+    }));
+  const beforeHelp = await simulationView();
+  const hoverTerm = page.locator('.help-button[popovertarget="help-ipw"]');
+  const hoverPanel = page.locator("#help-ipw");
+  assert.equal(await hoverTerm.innerText(), "IPW");
+  // Passing over a term does not flash a definition; dwelling opens it nearby.
+  await hoverTerm.hover();
+  await page.waitForTimeout(150);
+  assert.equal(await hoverPanel.isVisible(), false);
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(550);
+  assert.equal(await hoverPanel.isVisible(), false);
+  await hoverTerm.hover();
+  await hoverPanel.waitFor({ state: "visible" });
+  const termBounds = await hoverTerm.boundingBox();
+  const panelBounds = await hoverPanel.boundingBox();
+  assert.ok(
+    Math.min(
+      Math.abs(panelBounds.y - termBounds.y - termBounds.height),
+      Math.abs(termBounds.y - panelBounds.y - panelBounds.height),
+    ) < 12,
+  );
+  await hoverPanel.hover();
+  await page.waitForTimeout(300);
+  assert.equal(await hoverPanel.isVisible(), true);
+  assert.deepEqual(await simulationView(), beforeHelp);
+  await page.screenshot({ path: "/tmp/causal-term-hover.png", fullPage: true });
+  await page.mouse.move(0, 0);
+  await hoverPanel.waitFor({ state: "hidden" });
+  await hoverTerm.hover();
+  await hoverPanel.waitFor({ state: "visible" });
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(550);
+  assert.equal(await hoverPanel.isVisible(), false);
+  await page.mouse.move(0, 0);
+  await hoverTerm.hover();
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(550);
+  assert.equal(await hoverPanel.isVisible(), false);
+  await page.mouse.move(0, 0);
+  const definitions = new Map();
+  // Every contextual trigger is independent of labels and supports the keyboard.
+  for (const trigger of await page.locator(".help-button").all()) {
+    assert.equal(await trigger.evaluate((el) => el.closest("label")), null);
+    assert.match(await trigger.getAttribute("aria-label"), /^Explain .+/);
+    const target = await trigger.getAttribute("popovertarget");
+    const panel = page.locator(`#${target}`);
+    await trigger.focus();
+    assert.equal(
+      await trigger.evaluate((el) => getComputedStyle(el).outlineStyle),
+      "solid",
+    );
+    await page.keyboard.press("Enter");
+    assert.equal(await panel.isVisible(), true);
+    definitions.set(
+      target.replace("help-", ""),
+      await panel.locator("p").innerText(),
+    );
+    assert.deepEqual(await simulationView(), beforeHelp);
+    await page.keyboard.press("Escape");
+    assert.equal(await panel.isVisible(), false);
+    assert.equal(
+      await trigger.evaluate((el) => el === document.activeElement),
+      true,
+    );
+  }
+  // Updating the simulation must not replace an estimator's focused help button.
+  const aipwHelp = page.locator('.help-button[popovertarget="help-aipw"]');
+  await aipwHelp.focus();
+  await page.keyboard.press("Space");
+  const definition = await page.locator("#help-aipw p").innerText();
+  await page.locator('[data-param="direct"]').evaluate((el) => {
+    el.value = "2.1";
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  assert.equal(
+    await aipwHelp.evaluate((el) => el === document.activeElement),
+    true,
+  );
+  assert.equal(await page.locator("#help-aipw").isVisible(), true);
+  assert.equal(await page.locator("#help-aipw p").innerText(), definition);
+  assert.equal(await page.locator("#truth-value").innerText(), "2.10");
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await page
+      .locator("#help-aipw .close-help")
+      .evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#help-aipw").isVisible(), false);
+  assert.equal(
+    await aipwHelp.evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.locator("#reset").click();
+  assert.deepEqual(await simulationView(), beforeHelp);
+
+  // Warning text changes independently of its focused help and open definition.
+  await page.locator('input[value="C"]').check();
+  const essHelp = page.locator('.help-button[popovertarget="help-ess"]');
+  await essHelp.focus();
+  await page.keyboard.press("Enter");
+  const essDefinition = await page.locator("#help-ess p").innerText();
+  for (const strength of ["3", "0"]) {
+    await page.locator('[data-param="ca"]').evaluate((el, value) => {
+      el.value = value;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }, strength);
+    assert.equal(await page.locator("#help-ess").isVisible(), true);
+    assert.equal(
+      await essHelp.evaluate((el) => el === document.activeElement),
+      true,
+    );
+    assert.equal(await page.locator("#help-ess p").innerText(), essDefinition);
+    assert.equal(
+      (await page.locator("#overlap-warning").innerText()).length > 0,
+      strength === "3",
+    );
+  }
+  await page.keyboard.press("Escape");
+  await page.locator("#reset").click();
+  assert.deepEqual(await simulationView(), beforeHelp);
+
+  await page.locator("#methods").click();
+  assert.equal(await page.locator(".glossary").getAttribute("open"), null);
+  await page.locator(".glossary summary").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator(".glossary dd").count(), definitions.size);
+  for (const [key, text] of definitions) {
+    assert.equal(
+      await page.locator(`[data-glossary="${key}"]`).innerText(),
+      text,
+    );
+  }
+  assert.equal(
+    await page.locator(".help-credit a").getAttribute("href"),
+    "https://carlos-mendez.org/post/stata_matching/web_app/",
+  );
+  assert.deepEqual(await simulationView(), beforeHelp);
+  await page.keyboard.press("Escape");
+  assert.equal(
+    await page
+      .locator("#methods")
+      .evaluate((el) => el === document.activeElement),
+    true,
+  );
   assert.ok((await values())[0] > 3);
   await page.locator('input[value="C"]').check();
   assert.ok(Math.abs((await values())[4] - 2) < 0.15);
@@ -179,6 +342,31 @@ try {
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
+  const mobileBeforeHelp = await simulationView();
+  const colliderHelp = page.locator(
+    '.help-button[popovertarget="help-collider"]',
+  );
+  await colliderHelp.tap();
+  assert.equal(await page.locator("#help-collider").isVisible(), true);
+  assert.deepEqual(await simulationView(), mobileBeforeHelp);
+  const helpBounds = await page.locator("#help-collider").boundingBox();
+  assert.ok(helpBounds.x >= 0 && helpBounds.x + helpBounds.width <= 390);
+  assert.ok(helpBounds.y >= 0 && helpBounds.y + helpBounds.height <= 844);
+  await page.screenshot({
+    path: "/tmp/causal-help-mobile.png",
+    fullPage: true,
+  });
+  await page.locator("#help-collider .close-help").tap();
+  assert.equal(await page.locator("#help-collider").isVisible(), false);
+  assert.deepEqual(await simulationView(), mobileBeforeHelp);
+  await page.locator("#methods").tap();
+  assert.ok(await page.locator(".glossary dd").first().isVisible());
+  assert.ok(
+    await page
+      .locator("#about")
+      .evaluate((el) => el.scrollWidth <= el.clientWidth),
+  );
+  await page.locator("#close-about").tap();
   await page.locator("#outcome-model").selectOption("interaction");
   assert.ok(Math.abs((await values())[4] - 2) < 0.2);
   assert.ok(
