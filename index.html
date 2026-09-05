@@ -3,7 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#f5f4ef" />
+    <meta name="theme-color" />
+    <script>
+      // Resolve the saved theme before the app paints.
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
     <meta
       name="description"
       content="Learn causal inference by changing the world. Change a setting and compare your estimate with the known causal effect."

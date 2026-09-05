@@ -1,4 +1,5 @@
 import { arrowStrength } from "./arrow-strength.js";
+import { themeControl } from "./theme.js";
 import icon from "./brand.svg?raw";
 import "./style.css";
 import { glossary } from "./glossary.js";
@@ -22,7 +23,7 @@ const state = {
   models: { outcome: false, treatment: false },
 };
 document.querySelector("#app").innerHTML = `
-<header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a class="lessons-link" href="./">Start the lessons</a><button id="methods" class="text-button">How this world works <span>↗</span></button></header>
+<header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a class="lessons-link" href="./">Start the lessons</a><button id="methods" class="text-button">How this world works <span>↗</span></button>${themeControl()}</header>
 <main><section class="intro"><div><div class="eyebrow">LEVEL 11 OF 11 · FULL SANDBOX</div><h1>Change the world.<br class="mobile-break"> Question the evidence.</h1><p>This starts a separate experiment. C now groups two measured baseline variables, C₁ and C₂. An interaction lets the influence of one depend on the other. Combine the causal pathways and model choices below.</p></div><div class="world-picker"><label for="world-select">THE WORLD’S RELATIONSHIPS</label><small id="world-help">Choose how C₁ and C₂ shape the simulated population.</small><select id="world-select" aria-describedby="world-help world-description">${worlds.map((w) => `<option value="${w.id}">${w.name}</option>`).join("")}</select><span id="world-description"></span></div></section>
 <nav class="presets" aria-label="Scenarios"><span class="preset-label">TRY A SCENARIO</span>${presets.map((p, i) => `<button data-preset="${i}" title="${p.name}" class="${i === 1 ? "active" : ""}"><span class="preset-icon">${p.icon}</span>${p.short}</button>`).join("")}</nav>
 <div class="workspace"><section class="world panel"><div class="panel-heading"><div><span class="step">01</span><h2>The causal world</h2></div><button id="truth" class="text-button">◉ Hide causal truth</button></div><p class="panel-description">Adjustable arrows darken as strength increases within each slider’s range. Faint arrows at zero are inactive; shading shows magnitude, not sign.</p>
@@ -116,18 +117,18 @@ function drawPopulation() {
   // Fixed outcome domain preserves the visual meaning of shifts across scenarios.
   const rowY = (a) => (h - 24) * (a ? 0.79 : 0.27);
   const x = (v) => 44 + ((v + 14) / 32) * (w - 64);
+  const colors = getComputedStyle(canvas);
   ctx.font = "10px system-ui";
   ctx.textAlign = "center";
   for (let tick = -12; tick <= 16; tick += 4) {
-    ctx.strokeStyle = "#e6e7e0";
+    ctx.strokeStyle = colors.getPropertyValue("--grid").trim();
     ctx.beginPath();
     ctx.moveTo(x(tick), 6);
     ctx.lineTo(x(tick), h - 22);
     ctx.stroke();
-    ctx.fillStyle = "#8a908a";
+    ctx.fillStyle = colors.getPropertyValue("--text-muted").trim();
     ctx.fillText(tick, x(tick), h - 5);
   }
-  const colors = getComputedStyle(canvas);
   const arms = [0, 1].map((a) => colors.getPropertyValue(`--arm-${a}`).trim());
   latestData.forEach((d) => {
     ctx.fillStyle = arms[d.A];
@@ -385,3 +386,5 @@ new ResizeObserver(() => {
 update();
 
 setupHelp();
+
+window.addEventListener("themechange", drawPopulation);

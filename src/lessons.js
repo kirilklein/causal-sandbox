@@ -1,4 +1,5 @@
 import { arrowStrength } from "./arrow-strength.js";
+import { themeControl } from "./theme.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import { effectComparison } from "./effect-comparison.js";
@@ -271,7 +272,7 @@ function enter(level, focus = true, callback = false) {
   const previous = revisiting ? 6 : availableLevels[position - 1];
   const next = availableLevels[position + 1];
   app.innerHTML = `
-    <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
+    <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
     <main class="learning">
       ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
       ${lessonNavigation(position)}
@@ -437,7 +438,7 @@ function renderModelPreview(points) {
       .join(" ");
   document.querySelector("#model-preview-title").textContent = title;
   document.querySelector("#model-preview").innerHTML =
-    `<svg viewBox="0 0 360 165" role="img" aria-label="${title} by baseline health: solid line is the true relationship; dashed line is the fitted model.">${[lo, (lo + hi) / 2, hi].map((v) => `<path d="M42 ${y(v)}H342" stroke="#dde3db"/><text x="34" y="${y(v) + 4}" text-anchor="end">${treatment ? `${v * 100}%` : v}</text>`).join("")}<path data-curve="truth" d="${path(false)}" fill="none" stroke="#315e48" stroke-width="2.5"/><path data-curve="fitted" d="${path(true)}" fill="none" stroke="#ad562e" stroke-width="2.5" stroke-dasharray="6 4"/><text x="42" y="143">−1.7</text><text x="192" y="143" text-anchor="middle">0</text><text x="342" y="143" text-anchor="end">1.7</text><text x="192" y="161" text-anchor="middle">Baseline health (C)</text></svg>`;
+    `<svg viewBox="0 0 360 165" role="img" aria-label="${title} by baseline health: solid line is the true relationship; dashed line is the fitted model.">${[lo, (lo + hi) / 2, hi].map((v) => `<path d="M42 ${y(v)}H342" stroke="var(--grid)"/><text x="34" y="${y(v) + 4}" text-anchor="end">${treatment ? `${v * 100}%` : v}</text>`).join("")}<path data-curve="truth" d="${path(false)}" fill="none" stroke="var(--truth)" stroke-width="2.5"/><path data-curve="fitted" d="${path(true)}" fill="none" stroke="var(--fitted)" stroke-width="2.5" stroke-dasharray="6 4"/><text x="42" y="143">−1.7</text><text x="192" y="143" text-anchor="middle">0</text><text x="342" y="143" text-anchor="end">1.7</text><text x="192" y="161" text-anchor="middle">Baseline health (C)</text></svg>`;
 }
 
 function updateEstimate(id, estimate, truth) {
@@ -582,7 +583,7 @@ function renderOverlap(arms) {
           return `<rect x="${40 + i * 27}" y="${135 - height}" width="24" height="${height}" fill="${a ? "var(--arm-1)" : "var(--arm-0)"}"><title>${i * 10}–${(i + 1) * 10}% probability: ${count} people (${percent.toFixed(1)}%)</title></rect>`;
         })
         .join("");
-      return `<figure class="overlap-histogram"><figcaption>${labels[a]}</figcaption><svg viewBox="0 0 320 185" role="img" aria-label="${labels[a]}: distribution of fitted treatment probability. ${arm.bins.map((count, i) => `${i * 10} to ${(i + 1) * 10} percent probability: ${count} people`).join("; ")}"><text x="40" y="16">People in this arm (%)</text>${[0, 50, 100].map((v) => `<path d="M40 ${135 - v * 1.1}H310" stroke="#dde3db"/><text x="34" y="${139 - v * 1.1}" text-anchor="end">${v}</text>`).join("")}${bars}<text x="40" y="153">0</text><text x="175" y="153" text-anchor="middle">0.5</text><text x="310" y="153" text-anchor="end">1</text><text x="175" y="176" text-anchor="middle">Fitted treatment probability</text></svg></figure>`;
+      return `<figure class="overlap-histogram"><figcaption>${labels[a]}</figcaption><svg viewBox="0 0 320 185" role="img" aria-label="${labels[a]}: distribution of fitted treatment probability. ${arm.bins.map((count, i) => `${i * 10} to ${(i + 1) * 10} percent probability: ${count} people`).join("; ")}"><text x="40" y="16">People in this arm (%)</text>${[0, 50, 100].map((v) => `<path d="M40 ${135 - v * 1.1}H310" stroke="var(--grid)"/><text x="34" y="${139 - v * 1.1}" text-anchor="end">${v}</text>`).join("")}${bars}<text x="40" y="153">0</text><text x="175" y="153" text-anchor="middle">0.5</text><text x="310" y="153" text-anchor="end">1</text><text x="175" y="176" text-anchor="middle">Fitted treatment probability</text></svg></figure>`;
     })
     .join("");
   const rows = [

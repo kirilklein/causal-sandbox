@@ -2,8 +2,8 @@
   max-width: 1000px;
   justify-content: space-between;
 }
-.lesson-header > a:last-child {
-  color: #395b49;
+.lesson-header > a:not(.brand) {
+  color: var(--text-secondary);
 }
 .learning {
   max-width: 800px;
@@ -14,7 +14,7 @@
 }
 .brand-tagline {
   margin: 0 0 20px;
-  color: #395b49;
+  color: var(--text-secondary);
 }
 .learning h1 {
   font-size: clamp(28px, 5vw, 40px);
@@ -39,7 +39,7 @@
   justify-content: flex-end;
   min-height: 44px;
   gap: 16px;
-  color: #657365;
+  color: var(--text-secondary);
 }
 .learning #lesson-menu-toggle {
   position: fixed;
@@ -51,8 +51,8 @@
   gap: 8px;
   border: 0;
   padding: 10px 12px;
-  background: #f5f4ef;
-  color: #657365;
+  background: var(--page);
+  color: var(--text-secondary);
   font-size: 13px;
 }
 #lesson-menu-toggle svg {
@@ -70,8 +70,8 @@
 }
 .learning #lesson-menu-toggle:hover,
 .learning #lesson-menu-toggle[aria-expanded="true"] {
-  color: #315e48;
-  background: #e6efe9;
+  color: var(--accent);
+  background: var(--accent-surface);
 }
 .lesson-nav:has([aria-expanded="false"]) #lesson-menu {
   display: none;
@@ -86,10 +86,10 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 18px;
-  border: 1px solid #dedfd6;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fafaf6;
-  box-shadow: 0 8px 28px #273d3314;
+  background: var(--surface);
+  box-shadow: 0 8px 28px var(--shadow-soft);
 }
 .lesson-group + .lesson-group {
   margin-top: 20px;
@@ -97,7 +97,7 @@
 .lesson-group h2 {
   font-size: 12px;
   margin: 0 0 10px;
-  color: #657365;
+  color: var(--text-secondary);
 }
 .lesson-nav ol {
   list-style: none;
@@ -113,7 +113,7 @@
   min-height: 44px;
   border-left: 2px solid transparent;
   border-radius: 0 4px 4px 0;
-  color: #526054;
+  color: var(--text-secondary);
   text-decoration: none;
   line-height: 1.4;
 }
@@ -122,30 +122,30 @@
   font-size: 11px;
 }
 .lesson-nav a:hover {
-  background: #edf1eb;
+  background: var(--surface-hover);
 }
 .lesson-nav a[aria-current="step"] {
-  border-left-color: #315e48;
-  background: #e6efe9;
-  color: #315e48;
+  border-left-color: var(--accent);
+  background: var(--accent-surface);
+  color: var(--accent);
   font-weight: 650;
 }
 .lesson-nav .sandbox-nav-link {
   display: block;
   margin-top: 20px;
   padding-top: 12px;
-  border-top: 1px solid #dedfd6;
-  color: #526054;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
 }
 .learning summary {
   cursor: pointer;
   padding: 10px 0;
 }
 .learning a {
-  color: #315e48;
+  color: var(--accent);
 }
 .lesson-transition {
-  color: #657365;
+  color: var(--text-secondary);
 }
 .experiment {
   padding: 24px;
@@ -161,7 +161,7 @@
 }
 #lesson-graph text {
   text-anchor: middle;
-  fill: #273d33;
+  fill: var(--text);
   font-size: 16px;
 }
 .lesson-controls {
@@ -175,8 +175,9 @@
   display: block;
   width: 100%;
   min-height: 44px;
-  accent-color: #315e48;
-  background: linear-gradient(#bac7bd, #bac7bd) center / 100% 4px no-repeat;
+  accent-color: var(--accent);
+  background: linear-gradient(var(--border-strong), var(--border-strong))
+    center / 100% 4px no-repeat;
 }
 .learning .lesson-switch {
   display: flex;
@@ -190,7 +191,7 @@
   width: 22px;
   height: 22px;
   flex-shrink: 0;
-  accent-color: #315e48;
+  accent-color: var(--accent);
 }
 .lesson-results {
   display: grid;
@@ -198,7 +199,11 @@
   gap: 12px;
 }
 .lesson-result {
-  background: color-mix(in srgb, #df8b85 var(--error-tint, 0%), #f5f4ef);
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--page)
+  );
   border-radius: 10px;
   padding: 14px;
 }
@@ -230,7 +235,7 @@
 }
 .learning button,
 .learning .primary {
-  border: 1px solid #bac7bd;
+  border: 1px solid var(--border-strong);
   background: transparent;
   border-radius: 8px;
   padding: 10px 14px;
@@ -239,17 +244,17 @@
   text-decoration: none;
 }
 .learning .primary {
-  background: #315e48;
-  color: white;
-  border-color: #315e48;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
 }
 .sample-actions span,
 .lesson-credit {
-  color: #657365;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 .lesson-explanation {
-  border-bottom: 1px solid #dedfd6;
+  border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
 .learning table {
@@ -261,7 +266,7 @@
 .learning td {
   text-align: right;
   padding: 8px;
-  border-bottom: 1px solid #dedfd6;
+  border-bottom: 1px solid var(--border);
 }
 .learning th:first-child {
   text-align: left;
@@ -347,7 +352,7 @@
 }
 .model-preview svg text {
   font-size: 12px;
-  fill: #526054;
+  fill: var(--text-secondary);
 }
 .model-legend {
   display: flex;
@@ -356,19 +361,19 @@
   font-size: 12px;
 }
 .model-legend span:first-child {
-  color: #315e48;
+  color: var(--accent);
 }
 .model-legend span:last-child {
-  color: #ad562e;
+  color: var(--fitted);
 }
 .sample-note {
-  color: #657365;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
 .sampling-variation {
   margin-top: 16px;
-  border-top: 1px solid #dedfd6;
+  border-top: 1px solid var(--border);
 }
 #sampling-plot {
   max-width: 520px;
@@ -378,24 +383,24 @@
   width: 100%;
 }
 #sampling-plot text {
-  fill: #526054;
+  fill: var(--text-secondary);
   font-size: 11px;
 }
 .sampling-truth {
-  stroke: #4e6381;
+  stroke: var(--sampling-truth);
   stroke-width: 2;
   stroke-dasharray: 5 4;
 }
 .sampling-axis {
-  stroke: #657365;
+  stroke: var(--text-muted);
 }
 .sampling-dot {
-  fill: #fafaf6;
-  stroke: #526054;
+  fill: var(--surface);
+  stroke: var(--text-secondary);
   stroke-width: 1.5;
 }
 .sampling-current {
-  fill: #526054;
+  fill: var(--text-secondary);
 }
 .sampling-table {
   overflow-x: auto;
@@ -423,7 +428,7 @@
 }
 .overlap-histogram text {
   font-size: 12px;
-  fill: #526054;
+  fill: var(--text-secondary);
 }
 @media (max-width: 500px) {
   #propensity-histogram {
@@ -433,4 +438,18 @@
   .overlap-diagnostics td {
     padding: 8px 4px;
   }
+}
+
+:root[data-theme="dark"] .lesson-result {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+:root[data-theme="dark"] .truth-result {
+  background: var(--truth-surface);
+}
+:root[data-theme="dark"] .lesson-result > span {
+  color: var(--text-secondary);
 }
