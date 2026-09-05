@@ -91,20 +91,45 @@ try {
     path: "/tmp/causal-lesson-mobile.png",
     fullPage: true,
   });
-  // The model chapter keeps familiar results and reveals only the next method.
+  // Level 4 compares the familiar estimates with outcome regression immediately.
   await page.locator("#continue").tap();
   const fourth = await result();
-  assert.equal(await page.locator(".lesson-result:visible").count(), 2);
-  assert.equal(await page.locator("#unadjusted").isVisible(), false);
-  await page.locator("#reveal-regression").tap();
-  assert.equal(await page.locator(".lesson-result:visible").count(), 3);
-  await page.locator(".familiar-result summary").tap();
+  assert.deepEqual(
+    await page.locator(".lesson-result:visible span").allTextContents(),
+    [
+      "True total effect",
+      "Unadjusted difference",
+      "IPW estimate",
+      "Outcome regression",
+    ],
+  );
+  assert.equal(
+    await page.locator("#reveal-regression, .familiar-result").count(),
+    0,
+  );
+  assert.equal(await page.locator("#unadjusted").isVisible(), true);
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#regression-explanation").isVisible(), true);
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
-  const fourthRevealed = await result();
   await page.locator(".lesson-details summary").tap();
-  assert.equal(await result(), fourthRevealed);
+  assert.equal(await result(), fourth);
+  await page.locator(".lesson-explanation summary").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await result(), fourth);
+  await page.locator("#redraw").tap();
+  assert.notEqual(await result(), fourth);
+  await page.locator("#restart").tap();
+  assert.equal(await result(), fourth);
+  assert.equal(await page.locator(".lesson-result:visible").count(), 4);
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: "/tmp/causal-level-4-comparison-mobile.png",
+    fullPage: true,
+  });
   await page.locator("#continue").tap();
   const fifth = await result();
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
