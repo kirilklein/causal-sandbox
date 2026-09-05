@@ -32,9 +32,6 @@ robustness to the earlier missing-information limitation.
 
 ## Review boundaries
 
-[Selective examples](selective-examples.md) records where concrete illustrations
-can help while preserving the existing graph labels (#27).
-
 [Color conventions](color-conventions.md) defines the agreed variable palette,
 adjustment captions, and method/truth styling (#20), applied to the existing
 lessons and sandbox. Equation highlights and the new lesson estimate plot remain

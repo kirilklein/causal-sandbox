@@ -16,6 +16,7 @@ try {
   await page.locator("#unadjusted").waitFor();
   const result = () => page.locator(".lesson-results").innerText();
   const first = await result();
+  assert.equal(await page.locator(".lesson-intuition").count(), 0);
   const estimateTint = () =>
     page
       .locator("#unadjusted")
@@ -278,6 +279,22 @@ try {
       paths,
     );
     const adjusted = await result();
+    const intuition = page.locator(".lesson-intuition");
+    assert.equal(await intuition.getAttribute("open"), null);
+    assert.equal(
+      await intuition.locator("summary").innerText(),
+      level === 7
+        ? "Example: exercise and fitness"
+        : "Example: follow-up care in healthcare",
+    );
+    await intuition.locator("summary").focus();
+    await page.keyboard.press("Enter");
+    assert.equal(await intuition.locator("p").first().isVisible(), true);
+    assert.equal(await result(), adjusted);
+    assert.equal(
+      await page.locator(".lesson-explanation").getAttribute("open"),
+      null,
+    );
     await page.locator(".lesson-explanation summary").click();
     await page.locator(".lesson-details summary").click();
     assert.equal(await result(), adjusted);
@@ -286,6 +303,12 @@ try {
       fullPage: true,
     });
     await page.setViewportSize({ width: 390, height: 844 });
+    await intuition.locator("summary").tap();
+    assert.equal(await intuition.getAttribute("open"), null);
+    assert.equal(await result(), adjusted);
+    await intuition.locator("summary").tap();
+    assert.equal(await intuition.locator("p").first().isVisible(), true);
+    assert.equal(await result(), adjusted);
     await page.locator("#post-adjustment").tap();
     assert.equal(await result(), baseline);
     assert.ok(
@@ -303,6 +326,7 @@ try {
     await page.locator("#restart").tap();
     assert.equal(await result(), baseline);
     assert.equal(await page.locator("#post-adjustment").isChecked(), false);
+    assert.equal(await intuition.getAttribute("open"), null);
     await page.setViewportSize({ width: 1280, height: 900 });
   }
   // One slider, a fixed graph, and constant adjustment for measured C.
@@ -310,6 +334,7 @@ try {
   await page.locator("#post-adjustment").check();
   await page.locator("#continue").click();
   assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
+  assert.equal(await page.locator(".lesson-intuition").count(), 0);
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 7 of 11/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
