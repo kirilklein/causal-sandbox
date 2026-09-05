@@ -1,5 +1,6 @@
 import { makeNoise, estimate } from "./simulation.js";
 
+// Numeric lesson IDs are stable identities, not display positions (see lessons.js).
 // Complete lesson state; no advanced sandbox setting is shared with this world.
 export function lessonBaseline(level) {
   if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(level))

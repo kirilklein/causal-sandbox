@@ -4,6 +4,7 @@ import { lessonBaseline, lessonResult } from "./lesson-simulation.js";
 
 const lessons = [
   {
+    slug: "randomization",
     title: "A randomized experiment",
     question:
       "If treatment is assigned at random, will the outcome difference equal the true effect?",
@@ -16,6 +17,7 @@ const lessons = [
     next: "In practice, people often receive treatment because of their baseline health. What changes then?",
   },
   {
+    slug: "confounding",
     title: "A common cause",
     question:
       "What happens if baseline health also influences who receives treatment?",
@@ -28,6 +30,7 @@ const lessons = [
     next: "How can we compare the groups while accounting for their different baseline health?",
   },
   {
+    slug: "ipw",
     title: "Adjustment with IPW",
     question:
       "Can accounting for baseline health make the groups more comparable?",
@@ -40,6 +43,7 @@ const lessons = [
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
+    slug: "outcome-regression",
     title: "Adjustment with an outcome model",
     question: "Can we predict outcomes under each treatment?",
     transition:
@@ -48,13 +52,14 @@ const lessons = [
       "Compare outcome regression and IPW with the unadjusted difference and truth. Redraw to see how the estimates vary.",
     explanation:
       "We fit an outcome model using treatment and baseline health. For every person, we predict an outcome with treatment and an outcome without treatment, keeping their baseline health fixed. Averaging those differences gives the standardized outcome-regression estimate. Both models correctly describe this simple world, so both methods can estimate the effect, although neither must equal the truth in a sample.",
-    next: "Both approaches rely on a model. What happens when a model is too simple?",
+    next: "Both methods account for baseline health. Should we also account for variables that treatment changes?",
   },
   {
+    slug: "misspecification",
     title: "When a model is too simple",
     question: "Which relationship does each method need to model?",
     transition:
-      "We reset to simple relationships, with slightly gentler treatment selection. Both models account for baseline health using a simple relationship.",
+      "We remove the hidden cause and return to baseline health (C) alone: no mediator or follow-up score. The true total effect is 2. Treatment selection is slightly gentler, and both models start with the correct simple relationship.",
     instruction:
       "Make the outcome relationship more complex, then try treatment assignment. Can the same simple models still describe the world?",
     explanation:
@@ -62,28 +67,31 @@ const lessons = [
     next: "We may not know which model is adequate. Can we combine the two approaches?",
   },
   {
+    slug: "double-robustness",
     title: "Double robustness",
     question: "Can combining the models help when one is too simple?",
     transition:
-      "Both relationships now contain the extra patterns from level 5. We start with models that capture both. The world stays fixed while you change the models.",
+      "Both relationships now contain the extra patterns from the preceding model experiment. We start with models that capture both. The world stays fixed while you change the models.",
     instruction:
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
-      "Augmented inverse probability weighting (AIPW) combines the outcome predictions with a propensity-weighted correction based on their errors. Under the causal assumptions and with adequate overlap, it is consistent if either model is correctly specified: across increasingly large samples, it approaches the true effect. This does not promise exact recovery or the best estimate in every sample. When both models are wrong, that protection is lost. Model choices do not fix missing confounders or invalid adjustment.",
-    next: "A flexible model can describe a relationship, but should we adjust for every measured variable? Next, consider something treatment itself changes.",
+      "Augmented inverse probability weighting (AIPW) combines the outcome predictions with a propensity-weighted correction based on their errors. When adjustment controls confounding and comparable people can receive either treatment (overlap), it is consistent if either model is correctly specified: across increasingly large samples, it approaches the true effect. This does not promise exact recovery or the best estimate in every sample. When both models are wrong, that protection is lost. Model choices do not fix missing confounders or invalid adjustment.",
+    next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to scarce treatment comparisons.",
   },
   {
+    slug: "mediator",
     title: "A mediator",
-    question: "Should we adjust for something treatment changes?",
+    question: "Which effect do we want to estimate?",
     transition:
-      "We return to simple relationships and correct baseline-health adjustment. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
+      "We keep the simple relationships and correct baseline-health adjustment from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
     instruction:
       "First compare outcome regression with the total effect. Then include the intermediate response. Does accounting for more information help answer the same question?",
     explanation:
-      "A mediator carries part of treatment’s effect to the outcome. Here treatment raises M by 1, and each unit of M raises the outcome by 1. The direct contribution is 2 and the mediated contribution is 1, giving a total effect of 3. Including M holds it fixed in our outcome predictions, blocking the pathway we wanted to count. Across samples, the estimate then misses part of the total effect. We still account for baseline health in both comparisons.",
+      "A mediator carries part of treatment’s effect to the outcome. Here treatment raises M by 1, and each unit of M raises the outcome by 1. The direct contribution is 2 and the mediated contribution is 1, giving a total effect of 3. Including M holds it fixed in our outcome predictions, blocking the pathway we wanted to count. An estimate near 2 misses our total-effect target of 3, but recovers the direct contribution under this simulation’s assumptions. We still account for baseline health in both comparisons.",
     next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
   },
   {
+    slug: "collider",
     title: "A collider",
     question: "Can adjustment create a misleading relationship?",
     transition:
@@ -95,18 +103,20 @@ const lessons = [
     next: "We can account for measured baseline health. What if another common cause is missing from our data?",
   },
   {
+    slug: "hidden-confounding",
     title: "A hidden common cause",
     question: "What if an important confounder is unavailable?",
     transition:
-      "Baseline health (C) is still measured and adjusted for. Now add smoking status (U), which is missing from our data. We show it in the graph so you can see what the models cannot use.",
+      "We remove the follow-up score and keep baseline health (C) measured and adjusted for. The true total effect remains 2. Now add smoking status (U), which is missing from our data. We show it in the graph so you can see what the models cannot use.",
     instruction:
       "Turn up smoking’s influence on treatment and outcome. Do the estimates still track the true effect?",
     explanation:
-      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for baseline health. The estimates mix this difference with the treatment effect. IPW, outcome regression, and AIPW cannot adjust for information they do not have. Double robustness does not protect against hidden confounding. Sample variation means estimates need not move steadily away from truth at every slider step.",
-    next: "Even measured confounders do not guarantee useful comparisons. Next, remove the hidden cause and explore too little overlap.",
+      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for baseline health. The estimates mix this difference with the treatment effect. IPW and outcome regression cannot adjust for information they do not have. Sample variation means estimates need not move steadily away from truth at every slider step.",
+    next: "Missing information is one problem; describing measured information incorrectly is another. Next, remove the hidden cause and test models that are too simple.",
   },
 ];
 lessons[9] = {
+  slug: "overlap",
   title: "Too little overlap",
   question:
     "What if almost everyone with the same baseline health receives the same treatment?",
@@ -116,15 +126,45 @@ lessons[9] = {
     "Strengthen treatment selection, then compare the treatment probabilities and weights. Redraw to explore how the estimates vary.",
   explanation:
     "Overlap means people with similar baseline health can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models. An estimate can still be close to truth in a particular sample.",
-  next: "You can now explore how these limitations combine in the full sandbox. That link starts a separate advanced experiment.",
+  next: "You can now explore how these limitations combine in the full sandbox. That link starts a separate experiment with two measured baseline variables. C groups C₁ and C₂ there; an interaction lets the influence of one depend on the other.",
 };
-const availableLevels = lessons.flatMap((lesson, i) => (lesson ? [i + 1] : []));
+// Numeric IDs retain the original simulation and ?level= link identities.
+// Only this order determines the displayed positions and navigation.
+const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 10];
+const hiddenCallback = {
+  ...lessons[8],
+  title: "Revisit hidden confounding with AIPW",
+  transition:
+    "We return to the hidden-confounding experiment from level 7, with simple relationships and smoking’s influence reset to zero. Both models use baseline health; neither can use smoking status. AIPW is now included in the comparison.",
+  explanation:
+    "AIPW combines the same predictions and weights as before. A correct model for one part of an identified causal problem can protect against the other model being wrong; it cannot supply missing confounding information. As smoking’s influence grows, all three estimates can miss the true effect. Agreement between methods does not establish that confounding has been controlled.",
+  next: "Return to the fixed model experiment, or continue to overlap: do we have enough comparable people receiving each treatment?",
+};
 let state,
   noise,
-  revealed = false;
+  revealed = false,
+  revisiting = false;
 const app = document.querySelector("#app");
-const requested = Number(new URLSearchParams(location.search).get("level"));
-enter(availableLevels.includes(requested) ? requested : 1, false);
+enterFromUrl(false);
+
+function enterFromUrl(focus = true) {
+  const params = new URLSearchParams(location.search);
+  const named =
+    lessons.findIndex((lesson) => lesson.slug === params.get("lesson")) + 1;
+  const requested = params.has("lesson") ? named : Number(params.get("level"));
+  const level = availableLevels.includes(requested) ? requested : 1;
+  const callback =
+    level === 6 && params.get("revisit") === "hidden-confounding";
+  enter(callback ? 9 : level, focus, callback);
+}
+
+function lessonUrl(level) {
+  return `?lesson=${lessons[level - 1].slug}`;
+}
+
+function showsAipw(level) {
+  return level === 6 || level === 10 || revisiting;
+}
 
 function controls(level) {
   if (level === 10)
@@ -154,28 +194,29 @@ function controls(level) {
       )}</fieldset><p id="world-description" aria-live="polite"></p><figure class="model-preview" aria-labelledby="model-preview-title"><figcaption id="model-preview-title"></figcaption><div id="model-preview"></div><div class="model-legend"><span>━━ True relationship</span><span>┄┄ Our fitted model</span></div></figure><p id="model-description" aria-live="polite"></p>`;
   if (level === 7 || level === 8)
     return `<p>Outcome regression always accounts for baseline health. The target remains the <strong>total treatment effect</strong>.</p><label class="lesson-switch"><input id="post-adjustment" type="checkbox"> Also account for ${level === 7 ? "the intermediate response (M)" : "the follow-up score (K)"}</label>`;
-  return `<p>AIPW combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from level 5. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
+  return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
 }
 
-function enter(level, focus = true) {
+function enter(level, focus = true, callback = false) {
+  revisiting = callback;
   state = lessonBaseline(level);
   noise = makeNoise(state.n, state.seed);
   revealed = false;
-  const lesson = lessons[level - 1];
-  const position = availableLevels.indexOf(level);
-  const previous = availableLevels[position - 1];
+  const lesson = revisiting ? hiddenCallback : lessons[level - 1];
+  const position = availableLevels.indexOf(revisiting ? 6 : level);
+  const previous = revisiting ? 6 : availableLevels[position - 1];
   const next = availableLevels[position + 1];
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./">causal<span class="brand-dot">.</span></a><a href="?sandbox">Open full sandbox ↗</a></header>
     <main class="learning">
-      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${level} of 11 · ${level >= 7 ? "Causal limitations" : level < 4 ? "Foundations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${lessons.map((l, i) => `<li value="${i + 1}"><a href="?level=${i + 1}" ${level === i + 1 ? 'aria-current="step"' : ""}>${l.title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
+      <nav class="lesson-nav" aria-label="Lesson navigation"><span>Level ${position + 1} of 11${revisiting ? " · Optional revisit" : ""} · ${position < 4 ? "Foundations" : position < 7 || position === 9 ? "Causal limitations" : "Model reasoning"}</span><details><summary>Contents</summary><ol>${availableLevels.map((id, i) => `<li value="${i + 1}"><a href="${lessonUrl(id)}" ${position === i ? 'aria-current="step"' : ""}>${lessons[id - 1].title}</a></li>`).join("")}</ol><a href="?sandbox">Full sandbox</a></details></nav>
       <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
       <p class="lesson-transition">${lesson.transition}</p>
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
         <div class="lesson-controls">${controls(level)}</div>
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${level === 6 || level === 9 || level === 10 ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
@@ -186,9 +227,10 @@ function enter(level, focus = true) {
       </section>
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>With baseline health unchecked, the treatment model uses one overall probability for everyone, so IPW equals the unadjusted difference. With it checked, we fit logistic treatment probabilities using C. We normalize weights within each group. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
       ${level >= 4 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
-      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. Holding M fixed recovers the direct contribution here because of these specific assumptions. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
+      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. A controlled direct effect compares treatment choices while fixing M at a specified value. Holding M fixed recovers that effect here because the additive simulation has no treatment–mediator interaction or unmeasured mediator–outcome confounding. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? '<button id="back">← Back</button>' : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       <p class="lesson-credit">Guided prompts inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>.</p>
     </main>`;
   document.querySelector("#hidden-strength")?.addEventListener("input", (e) => {
@@ -251,7 +293,10 @@ function enter(level, focus = true) {
   });
   document
     .querySelector("#restart")
-    .addEventListener("click", () => enter(level));
+    .addEventListener("click", () => enter(level, true, revisiting));
+  document
+    .querySelector("#revisit-hidden")
+    ?.addEventListener("click", () => navigate(6, true));
   document
     .querySelector("#back")
     ?.addEventListener("click", () => navigate(previous));
@@ -261,14 +306,15 @@ function enter(level, focus = true) {
   update();
   if (focus) document.querySelector("h1").focus();
 }
-function navigate(level) {
-  history.pushState(null, "", `?level=${level}`);
-  enter(level);
+function navigate(level, callback = false) {
+  history.pushState(
+    null,
+    "",
+    lessonUrl(level) + (callback ? "&revisit=hidden-confounding" : ""),
+  );
+  enter(callback ? 9 : level, true, callback);
 }
-window.addEventListener("popstate", () => {
-  const level = Number(new URLSearchParams(location.search).get("level"));
-  enter(availableLevels.includes(level) ? level : 1);
-});
+window.addEventListener("popstate", () => enterFromUrl());
 function renderModelPreview(points) {
   const treatment = state.treatmentCurve !== 0;
   const model = treatment ? "treatment" : "outcome";
@@ -312,10 +358,10 @@ function update() {
     state.level === 10
   ) {
     document.querySelector("#model-weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${state.level === 6 || state.level === 9 || state.level === 10 ? "IPW and AIPW" : "IPW"}.`
+      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}.`
       : "No treatment probabilities were clipped in this sample.";
   }
-  if (state.level === 6 || state.level === 9 || state.level === 10) {
+  if (showsAipw(state.level)) {
     document.querySelector("#aipw").textContent = result.aipw.toFixed(2);
     document.querySelector("#aipw-result").hidden = false;
   }
@@ -358,7 +404,7 @@ function update() {
   if (state.level === 7 || state.level === 8) {
     document.querySelector("#adjustment-note").textContent = state.postAdjusted
       ? state.level === 7
-        ? "We now hold the intermediate response fixed. This blocks the mediated pathway, although our target still includes it."
+        ? "We now hold the intermediate response fixed. An estimate near 2 captures the direct contribution under this simulation’s assumptions, but misses our total-effect target of 3."
         : "We now hold the follow-up score fixed. Conditioning on this shared consequence can distort the treatment comparison."
       : "We account for baseline health only, leaving the total treatment effect intact. Try including the new variable.";
     renderRoleGraph();

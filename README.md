@@ -2,7 +2,7 @@
 
 **Change the world. Question the evidence.**
 
-An interactive causal inference playground that runs entirely in your browser. Start with eight progressive lessons: randomized treatment, a common cause, IPW, outcome regression, model failure, double robustness, a mediator, and a collider. Each introduces one question, a small graph, and estimates beside the known effect.
+An interactive causal inference playground that runs entirely in your browser. Start with ten progressive lessons: randomized treatment, a common cause, IPW, outcome regression, a mediator, a collider, hidden confounding, model failure, double robustness, and overlap. An optional revisit after double robustness tests AIPW against hidden confounding. Each introduces one question, a small graph, and estimates beside the known effect.
 
 Open the full sandbox at any time to explore additional variables, model choices, and causal structures. The lessons use one actual baseline-health variable; the advanced sandbox uses the two-covariate world described below.
 
@@ -14,7 +14,7 @@ Open the full sandbox at any time to explore additional variables, model choices
 
 Predict, try a change, compare the result, and open an explanation when needed. Redraw to explore sample variation. Back, contents, and restart establish the complete lesson baseline, including the sample seed. No completion gate or saved progress.
 
-[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 1–10 are implemented; level 11 is still to come; the full sandbox remains a separate advanced experiment.
+[Delivery stages and learner walkthrough](docs/education.md) describe the remaining curriculum. Levels 1–10 lead to the full sandbox at level 11, which starts a separate advanced experiment. Topic links use `?lesson=mediator` and similar names; old numeric `?level=` links retain their original topics.
 
 ## In the full sandbox
 

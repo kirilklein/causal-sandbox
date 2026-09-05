@@ -1,8 +1,22 @@
 # Progressive education delivery
 
 The default experience is a sequence of small experiments. Levels 1–10 implement randomization → one common cause → inverse probability
-weighting → outcome regression → model failure → double robustness → mediator → collider → hidden confounding → poor overlap.
-The existing advanced sandbox is available through `?sandbox`.
+weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → poor overlap.
+The existing advanced sandbox is available through `?sandbox` as level 11.
+
+Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
+`?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,
+mediator, collider, and hidden confounding, at their new displayed positions.
+Numeric simulator IDs retain these original identities too. The optional revisit
+uses `?lesson=double-robustness&revisit=hidden-confounding`.
+
+The core target remains the population total effect. The mediator lesson asks
+which effect we want: its adjusted estimate can recover the direct contribution
+under the toy world's assumptions while missing the total-effect target. Moving
+from hidden confounding to misspecification explicitly removes U and restores
+observed C alone; the two nonlinear experiments reset each other. AIPW first
+appears after those experiments. The optional revisit then connects model
+robustness to the earlier missing-information limitation.
 
 ## Review boundaries
 
@@ -10,21 +24,21 @@ The existing advanced sandbox is available through `?sandbox`.
    complete baselines, levels 1–3, one actual baseline variable, paired draws,
    independent redraw, IPW disclosure and a before/after balance comparison.
    Supersedes the optional dashboard guide proposed in those issues.
-2. **Model reasoning (implemented, related to #10):** levels 4–6 add curvature in
-   the same C and independent model choices. Repeated simulations check separate
+2. **Model reasoning (implemented, related to #10):** level 4 introduces outcome
+   regression; levels 8–9 add curvature in the same C and independent model choices. Repeated simulations check separate
    failures and all four model combinations. Learner comprehension remains to be
    assessed; automated checks do not substitute for a new-learner walkthrough.
-3. **Causal limitations (remaining #8) and overlap (#9):** levels 7–9 implement
+3. **Causal limitations (remaining #8) and overlap (#9):** levels 5–7 implement
    separate mediator, collider, and hidden-confounding experiments. Level 10
    implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 10.
-4. **Final sandbox integration:** level 11, a clean baseline and exact experiment
-   transfer. The current two-covariate sandbox is an early escape route, not a
-   representation of a beginner lesson. Its link starts a separate experiment.
+4. **Full sandbox (level 11):** available at any time and after overlap. Entry
+   starts a separate experiment and introduces its two measured covariates and
+   their interaction. Lesson settings are not transferred into this world.
 
 Only implemented lessons appear in contents. Levels 1–10 now form a continuous
-sequence; “Level N of 11” refers to the planned full journey. No scores, completion gates, accounts or stored
+sequence; “Level N of 11” includes the final sandbox. No scores, completion gates, accounts or stored
 progress. Later chapters and uncertainty are separate changes.
 
 ## Statistical audit and first-chapter contract
@@ -48,10 +62,10 @@ when adjustment is enabled. Without C, IPW uses an intercept-only model and equa
 the unadjusted difference. Weighted balance uses the exact weights from the
 estimator, including its [0.02, 0.98] clipping policy.
 
-In levels 1–6, no C2, interaction, mediator, collider or hidden cause enters lesson
+In levels 1–4, 8, and 9, no C2, interaction, mediator, collider or hidden cause enters lesson
 records or outcomes. Every entry/restart sets n=2400, seed=4217, effect=2, the level's selection
-and outcome influence. Levels 1–3 start with adjustment off; levels 4–8 have
-baseline adjustment on. Levels 7–8 reset post-treatment adjustment to off. All model choices and curvature strengths reset too. Navigation resets disclosure too.
+and outcome influence. Levels 1–3 start with adjustment off; levels 4–10 have
+baseline adjustment on. Levels 5–6 reset post-treatment adjustment to off. All model choices and curvature strengths reset too. Navigation resets disclosure too.
 Redraw increments the seed; all other experiment changes reuse the same draws.
 Reading explanations changes neither state nor estimates.
 
@@ -66,7 +80,7 @@ keyboard and touch, mobile width, and explanation invariance.
 Level 4 reuses the level-3 confounded world with both models correctly specified.
 It shows standardized outcome regression, IPW, and the familiar unadjusted
 comparison beside truth immediately, with a short explanation of the predictions.
-Level 5 starts with simple relationships and reduces selection to 0.8.
+Level 8 starts with simple relationships and reduces selection to 0.8.
 Its radio choices change the world, keeping both analyst models simple. A compact
 plot compares the true relationship with predictions from the fitted model for
 the selected experiment: untreated outcome or treatment probability. Solid and
@@ -82,7 +96,7 @@ The outcome experiment sets outcomeCurve=2, treatmentCurve=0. The treatment
 experiment restores outcomeCurve=0 and sets treatmentCurve=0.9. Both retain the
 same C, independent noises, and true population total effect of 2.
 
-Level 6 fixes both relationships at their more complex settings and starts with
+Level 9 fixes both relationships at their more complex settings and starts with
 both models correctly specified. Two always-visible checkboxes independently
 include or omit C² in the outcome and treatment models. AIPW is visible immediately;
 the learner simplifies either model and then both, with a short explanation of
@@ -126,29 +140,29 @@ whether to shorten, split or clarify the interaction in either chapter.
 Automated browser checks do not establish learner comprehension.
 
 For the model chapter, ask the learner to explain how outcome regression averages
-predictions, which relationship each method models, why the two level-5
+predictions, which relationship each method models, why the two level-8
 experiments reset one relationship, and what double robustness does and does not
 protect against. This comprehension walkthrough is still pending.
 
 ## Causal-role contract
 
-Levels 7–8 explicitly return to the level-4 baseline (selection=1.2, simple
+Levels 5–6 explicitly return to the level-4 baseline (selection=1.2, simple
 relationships and models, baseline health always included). They show only the
 true total effect and familiar standardized outcome regression, with one switch
 for the new variable. Graph outlines show adjustment; arrows never change with
-the switch. The world and draws stay fixed. Level 7 introduces the true breakdown;
-level 8 removes the mediator before adding the collider.
+the switch. The world and draws stay fixed. Level 5 introduces the true breakdown;
+level 6 removes the mediator before adding the collider.
 
 ```
-Level 7: M = A + eM; Y = 2A + 1.5C + M + eY
+Level 5: M = A + eM; Y = 2A + 1.5C + M + eY
          Total ATE = 3 = 2 direct + 1 mediated
-Level 8: Y = 2A + 1.5C + eY; K = A + Y + eK
+Level 6: Y = 2A + 1.5C + eY; K = A + Y + eK
          Total ATE = 2; K is a score measured after the outcome
 ```
 
 All errors are independent standard normals. C and treatment assignment retain
-the baseline definition above. Only M enters level-7 records; only K enters
-level-8 records. There is no hidden confounder. The outcome model optionally
+the baseline definition above. Only M enters level-5 records; only K enters
+level-6 records. There is no hidden confounder. The outcome model optionally
 includes M or K and holds it fixed in both treatment predictions. For this
 specific additive mediator world this leaves the direct contribution of 2;
 the lesson explicitly says this is not a general direct-effect identification
@@ -157,20 +171,20 @@ is (2 − 1) / 2 = 0.5: residualizing on C, conditioning on K explains half the
 outcome noise and also absorbs treatment's contribution to the score.
 
 Over 40 independent samples (seeds 100–139, n=2400), mean outcome-regression
-estimates without/with the new variable are 2.985/1.993 for level 7 and
-1.988/0.496 for level 8. Tests also check treatment interventions against the
+estimates without/with the new variable are 2.985/1.993 for level 5 and
+1.988/0.496 for level 6. Tests also check treatment interventions against the
 known total effect, absence of unused mechanisms, fixed samples under analyst
 changes, and agreement with the existing estimator's adjustment set.
 
-Browser checks cover the transition from both models wrong in level 6, direct
+Browser checks cover the transition from outcome regression in level 4, direct
 entry, restart, back/forward, keyboard/touch, help invariance, fixed graph arrows,
 and desktop/mobile rendering. Learner comprehension is still untested: ask why
 M carries an effect, why K does not, and why including each changes the comparison
 without changing the total effect we are trying to estimate.
 
-## Hidden common cause (level 9)
+## Hidden common cause (level 7)
 
-Level 9 keeps measured baseline health C and adds binary, unmeasured smoking
+Level 7 keeps measured baseline health C and adds binary, unmeasured smoking
 status U. This is a fictional teaching example, not a model of smoking's actual
 prevalence or effects. U is 1 for half the population and independent of C.
 One strength slider s runs from 0 to 2 and controls both pathways:
@@ -184,8 +198,12 @@ Total population ATE = 2
 The slider changes the world, keeping the same people, smoking status, and
 underlying random draws. Treatment and outcome can change as the pathways grow.
 Both fitted models always include C and never receive U. At zero strength,
-the generating process reduces to the familiar level-4 baseline. IPW, outcome
-regression, and AIPW remain visible beside truth throughout.
+the generating process reduces to the familiar level-4 baseline. Only IPW and
+outcome regression appear beside truth on this first visit. AIPW and double
+robustness are introduced at level 9. Its optional hidden-confounding revisit
+reuses this simulator with all three methods visible; entry and restart restore
+zero hidden strength and seed 4217. Returning restores the fixed complex world
+with both models correct. Continuing restores the simple overlap baseline.
 
 The graph always shows C and U in fixed positions. Dashed styling identifies U
 as unmeasured; its pathways fade at zero, with text explaining that they are
