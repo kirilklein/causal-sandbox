@@ -55,16 +55,15 @@ header {
   gap: 8px;
   text-decoration: none;
   color: #294b3b;
-  font-size: 29px;
+  font-size: 23px;
   font-weight: 750;
-  letter-spacing: -1.6px;
+  letter-spacing: -0.8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .brand svg {
   width: 29px;
   height: 29px;
-}
-.brand-dot {
-  color: #92a581;
 }
 .header-note {
   font-size: 9px;
@@ -835,9 +834,15 @@ button:hover {
   }
 }
 @media (max-width: 760px) {
+  .brand {
+    font-size: 20px;
+  }
   header {
-    height: 66px;
-    padding: 0 20px;
+    min-height: 66px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    padding: 14px 20px;
   }
   main {
     padding: 25px 17px 0;
