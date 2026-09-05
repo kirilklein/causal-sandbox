@@ -20,6 +20,9 @@ robustness to the earlier missing-information limitation.
 
 ## Review boundaries
 
+[Selective examples](selective-examples.md) records where concrete illustrations
+can help while preserving the existing graph labels (#27).
+
 1. **First chapter (implemented, part of #8 and #11):** isolated lesson view,
    complete baselines, levels 1–3, one actual baseline variable, paired draws,
    independent redraw, IPW disclosure and a before/after balance comparison.
