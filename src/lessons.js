@@ -83,6 +83,14 @@ const lessons = [
   {
     slug: "mediator",
     title: "A mediator",
+    intuition: {
+      title: "What changes when we adjust for fitness?",
+      paragraphs: [
+        "Exercise can improve fitness, and improved fitness can help people live longer. Fitness carries part of exercise’s effect.",
+        "To understand the total effect, we let fitness change with exercise. To understand the direct effect, imagine changing how much someone exercises while keeping their fitness the same. What difference would exercise still make to longevity?",
+        "Adjusting for a mediator changes the question: instead of asking about the total effect, we ask what remains when we hold that intermediate step fixed.",
+      ],
+    },
     question: "Which effect do we want to estimate?",
     transition:
       "We keep the simple relationships and correct baseline-health adjustment from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
@@ -95,6 +103,15 @@ const lessons = [
   {
     slug: "collider",
     title: "A collider",
+    intuition: {
+      title: "Why does adjusting create bias?",
+      paragraphs: [
+        "After symptoms have been measured, people receiving treatment have routine follow-up visits. People with worse symptoms also need more follow-up care. This later care cannot change the symptoms already recorded.",
+        "Now compare only people with the same amount of follow-up care. A treated person may have needed those visits simply because of the treatment schedule. An untreated person may have needed them because their symptoms were worse.",
+        "Matching on follow-up care therefore tends to select treated people with fewer symptoms and untreated people with more symptoms. That can make treatment look better, even if treatment was originally assigned at random.",
+        "There are two reasons for ending up with the same amount of care: treatment and worse symptoms. Once we hold care use fixed, more of one reason tends to mean less of the other. That creates a relationship between treatment and symptoms that can distort our estimate.",
+      ],
+    },
     question: "Can adjustment create a misleading relationship?",
     transition:
       "We remove the mediator and return to the simple baseline: the true total effect is 2 again. We now measure a follow-up score (K) after the outcome. Both treatment and outcome raise this score; it causes neither.",
@@ -271,6 +288,7 @@ function enter(level, focus = true, callback = false) {
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
       </section>
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 3 ? "<p>With baseline health unchecked, the treatment model uses one overall probability for everyone, so IPW equals the unadjusted difference. With it checked, we fit logistic treatment probabilities using C. We normalize weights within each group. For numerical stability, probabilities outside [0.02, 0.98] are clipped; this can introduce bias.</p>" : ""}</details>
+      ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level >= 4 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}${level === 6 ? "<p>AIPW averages m₁(C) − m₀(C) + A(Y − m₁(C))/p(C) − (1 − A)(Y − m₀(C))/(1 − p(C)), where m predicts outcomes and p predicts treatment probability. Both models are fitted to the same sample.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. A controlled direct effect compares treatment choices while fixing M at a specified value. Holding M fixed recovers that effect here because the additive simulation has no treatment–mediator interaction or unmeasured mediator–outcome confounding. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
