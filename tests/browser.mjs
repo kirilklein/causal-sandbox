@@ -65,7 +65,7 @@ try {
       .getAttribute("aria-label")
       .startsWith("Outcome clouds"),
   );
-  for (const name of ["direct", "ca", "cy", "ua", "uy", "am", "my"]) {
+  for (const name of ["direct", "ca", "cy", "za", "ua", "uy", "am", "my"]) {
     const slider = page.locator(`[data-param="${name}"]`);
     const descriptionId = await slider.getAttribute("aria-describedby");
     assert.equal(descriptionId, `help-${name}`);
@@ -78,7 +78,10 @@ try {
     /world-description/,
   );
   assert.equal(await page.locator(".analyst .adjust-option").count(), 0);
-  assert.equal(await page.locator(".estimates .adjust-option").count(), 3);
+  assert.equal(
+    await page.locator(".estimates .adjust-option:visible").count(),
+    3,
+  );
   const adjustmentBounds = await page.locator(".adjust-row").boundingBox();
   const chartBounds = await page.locator("#effects").boundingBox();
   assert.ok(adjustmentBounds.y + adjustmentBounds.height <= chartBounds.y);
@@ -360,18 +363,30 @@ try {
         await page.locator(`#${model}-model`).inputValue(),
         expected.models[model] ? "interaction" : "main",
       );
-    for (const variable of ["C", "M", "K"])
+    for (const variable of ["C", "Z", "M", "K"])
       assert.equal(
         await page.locator(`input[value="${variable}"]`).isChecked(),
         expected.adjust.has(variable),
       );
+    assert.equal(
+      await page.locator(".instrument-controls").evaluate((el) => !el.hidden),
+      scenario.id === "instrument",
+    );
+    assert.equal(
+      await page.locator(".instrument-adjustment").isVisible(),
+      scenario.id === "instrument",
+    );
+    assert.equal(
+      await page.locator('[data-node="Z"]').count(),
+      scenario.id === "instrument" ? 1 : 0,
+    );
     assert.equal(
       await page.locator(".path-controls").evaluate((el) => el.open),
       scenario.id === "mediator",
     );
     assert.equal(
       await page.locator(".hidden-controls").evaluate((el) => el.open),
-      scenario.id === "hidden",
+      ["hidden", "instrument"].includes(scenario.id),
     );
     const baseline = await values();
     await setArrow("direct", -1);
@@ -383,6 +398,22 @@ try {
     );
     assert.equal(new URL(page.url()).searchParams.get("scenario"), scenario.id);
   }
+
+  // The instrument scenario isolates the new Z adjustment choice.
+  await selectScenario("instrument");
+  const instrumentStart = await values();
+  const instrumentMarks = await startingMarks();
+  await page.locator('input[value="Z"]').check();
+  const adjustedForInstrument = await values();
+  for (let i = 1; i < adjustedForInstrument.length; i++)
+    assert.ok(
+      Math.abs(adjustedForInstrument[i] - 2) > Math.abs(instrumentStart[i] - 2),
+    );
+  assert.match(await page.locator("#lesson").innerText(), /amplified/i);
+  assert.deepEqual(await startingMarks(), instrumentMarks);
+  await page.locator("#reset").click();
+  assert.deepEqual(await values(), instrumentStart);
+  assert.equal(await page.locator('input[value="Z"]').isChecked(), false);
 
   // Model form stays fixed when the world changes; adequacy is derived.
   await selectScenario("both-models");

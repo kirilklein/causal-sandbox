@@ -3,7 +3,8 @@
 // Bounded, unit-variance covariates keep overlap healthy at default settings.
 // C is the observed block {C1,C2}.
 // S = 0.8*C1 + 0.6*C2; I = C1*C2.
-// A = 1[uniform < sigmoid(-0.8 + ca*(S + ta*I) + ua*U)].
+// Z ~ Bernoulli(0.5), independent of the other background draws.
+// A = 1[uniform < sigmoid(-0.8 + ca*(S + ta*I) + ua*U + za*Z)].
 // M = am*A + eM; Y = direct*A + cy*(S + oy*I) + uy*U + my*M + eY.
 // ta and oy belong to the selected world, not the analyst's model.
 // The nonzero treatment intercept avoids symmetry masking omitted-term bias.
@@ -16,6 +17,7 @@ export const defaults = {
   cy: 1.5,
   ua: 0,
   uy: 0,
+  za: 0,
   am: 0,
   my: 0.8,
 };
@@ -89,12 +91,14 @@ export function random(seed) {
 export function makeNoise(n = 2400, seed = 4217) {
   const r = random(seed),
     r2 = random(seed ^ 0x51f15e),
+    rZ = random(seed ^ 0x9e3779b9),
     normal = () =>
       Math.sqrt(-2 * Math.log(Math.max(r(), 1e-12))) *
       Math.cos(2 * Math.PI * r());
   return Array.from({ length: n }, () => ({
     C1: Math.sqrt(3) * (2 * r() - 1),
     C2: Math.sqrt(3) * (2 * r2() - 1),
+    Z: +(rZ() < 0.5),
     U: normal(),
     eM: normal(),
     eY: normal(),
@@ -120,7 +124,8 @@ export function simulate(p, noise, world = worlds[0]) {
     const ps = sigmoid(
       -0.8 +
         p.ca * (0.8 * e.C1 + 0.6 * e.C2 + world.treatment * e.C1 * e.C2) +
-        p.ua * e.U,
+        p.ua * e.U +
+        p.za * e.Z,
     );
     const A = +(e.a < ps);
     const M = p.am * A + e.eM;
@@ -128,6 +133,7 @@ export function simulate(p, noise, world = worlds[0]) {
     return {
       C1: e.C1,
       C2: e.C2,
+      Z: e.Z,
       U: e.U,
       A,
       M,
