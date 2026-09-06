@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en" data-theme-preference="system">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" />
+    <title>Who remains after trimming? · Causal Sandbox</title>
+    <link rel="stylesheet" href="../src/theme.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 1060px;
+        margin: auto;
+        padding: 28px 24px 48px;
+      }
+      header,
+      .actions,
+      .legend {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      header {
+        justify-content: space-between;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+      }
+      a {
+        color: inherit;
+      }
+      button,
+      select {
+        font: inherit;
+        color: var(--text);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 10px 12px;
+        min-height: 44px;
+      }
+      button,
+      summary {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
+      }
+      .eyebrow {
+        color: var(--text-muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-top: 28px;
+      }
+      h1 {
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.15;
+        letter-spacing: -0.04em;
+        margin: 10px 0 14px;
+      }
+      h2 {
+        font-size: 19px;
+        margin: 0;
+      }
+      p {
+        margin: 12px 0;
+      }
+      .lede {
+        max-width: 700px;
+        color: var(--text-secondary);
+      }
+      .experiment {
+        margin-top: 26px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+      }
+      .controls,
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-top: 22px;
+      }
+      .control {
+        padding: 16px;
+        background: var(--surface-subtle);
+        border-radius: 10px;
+      }
+      label,
+      output {
+        display: block;
+      }
+      output {
+        margin-top: 4px;
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+      }
+      input {
+        display: block;
+        width: 100%;
+        height: 44px;
+        margin: 8px 0 0;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .ends {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .help,
+      small,
+      .sample {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      figure {
+        min-width: 0;
+        margin: 0;
+      }
+      figcaption {
+        font-size: 15px;
+        font-weight: 650;
+      }
+      .legend {
+        gap: 12px;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: var(--arm-0);
+      }
+      .treated {
+        background: var(--arm-1);
+      }
+      .excluded {
+        background: repeating-linear-gradient(
+          135deg,
+          var(--text) 0 1px,
+          var(--surface) 1px 4px
+        );
+        border: 1px solid var(--text);
+      }
+      #histogram {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+      }
+      #histogram text {
+        fill: var(--text-secondary);
+        font-size: 12px;
+      }
+      .retained-result {
+        align-self: start;
+        border: 1px solid var(--border-strong);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      #retained-size {
+        color: var(--text-secondary);
+        margin: 4px 0 16px;
+      }
+      .values {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .value {
+        border-radius: 8px;
+        padding: 12px;
+        min-width: 0;
+      }
+      .estimate {
+        background: color-mix(
+          in srgb,
+          var(--error-surface) var(--error-tint, 0%),
+          var(--page)
+        );
+      }
+      .truth {
+        background: var(--node-Y);
+      }
+      .value span,
+      .value strong,
+      .value small {
+        display: block;
+      }
+      .value span {
+        font-size: 13px;
+      }
+      .value strong {
+        font-size: clamp(21px, 3vw, 30px);
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+      #retained-status:empty {
+        display: none;
+      }
+      .group-summary {
+        margin-top: 26px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      caption {
+        text-align: left;
+        font-weight: 650;
+        margin-bottom: 10px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 12px 8px;
+        border-bottom: 1px solid var(--border);
+        font-variant-numeric: tabular-nums;
+      }
+      th:first-child {
+        text-align: left;
+      }
+      thead th {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      td small,
+      th small {
+        display: block;
+        font-weight: normal;
+      }
+      tr[data-group="retained"] {
+        background: var(--accent-surface);
+      }
+      .actions {
+        margin-top: 24px;
+      }
+      details {
+        margin-top: 24px;
+      }
+      summary {
+        padding: 8px 0;
+        font-weight: 600;
+      }
+      .note {
+        max-width: 800px;
+        color: var(--text-secondary);
+      }
+      @media (max-width: 700px) {
+        main {
+          padding: 18px 14px 32px;
+        }
+        .experiment {
+          padding: 16px;
+        }
+        .controls,
+        .comparison {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .retained-result {
+          padding: 16px;
+        }
+      }
+      @media (max-width: 420px) {
+        th,
+        td {
+          padding: 10px 3px;
+          font-size: 12px;
+        }
+        td small,
+        th small {
+          font-size: 11px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a href="./clipping-preview.html">← Probability clipping</a>
+        <div id="theme-control"></div>
+      </header>
+      <div class="eyebrow">Overlap · Trimming</div>
+      <h1>Who remains after trimming?</h1>
+      <p class="lede">
+        Clipping changes weights while keeping everyone. Trimming removes people
+        with extreme fitted treatment probabilities. Move the threshold and
+        compare the people who remain.
+      </p>
+      <section class="experiment" aria-labelledby="experiment-title">
+        <h2 id="experiment-title">Change overlap, then trim the sample</h2>
+        <div class="controls">
+          <div class="control">
+            <label for="selection"><b>Treatment selection strength</b></label>
+            <output id="selection-value" for="selection">3.0</output>
+            <input
+              id="selection"
+              type="range"
+              min="0"
+              max="5"
+              step="0.1"
+              value="3"
+              aria-describedby="selection-help"
+            />
+            <div class="ends">
+              <span>0 · more overlap</span><span>5 · poorer overlap</span>
+            </div>
+            <p class="help" id="selection-help">
+              Stronger selection makes the opposite treatment rarer for some
+              baseline profiles.
+            </p>
+          </div>
+          <div class="control">
+            <label for="threshold"><b>Trimming threshold</b></label>
+            <output id="threshold-value" for="threshold"
+              >0.000 · keep everyone</output
+            >
+            <input
+              id="threshold"
+              type="range"
+              min="0"
+              max="0.5"
+              step="0.001"
+              value="0"
+              aria-describedby="threshold-help"
+            />
+            <div class="ends">
+              <span>0 · keep everyone</span><span>0.50 · only score 0.50</span>
+            </div>
+            <p class="help" id="threshold-help">
+              Keep scores inside the displayed range, including its endpoints.
+              The fitted scores and remaining weights stay fixed.
+            </p>
+          </div>
+        </div>
+        <div class="comparison">
+          <figure aria-labelledby="histogram-title">
+            <figcaption id="histogram-title">
+              Who falls outside the range?
+            </figcaption>
+            <div class="legend">
+              <span><i class="swatch"></i>Untreated</span
+              ><span><i class="swatch treated"></i>Treated</span
+              ><span><i class="swatch excluded"></i>Hatched = excluded</span>
+            </div>
+            <svg
+              id="histogram"
+              viewBox="0 0 420 230"
+              role="img"
+              aria-label="Raw fitted propensity scores by treatment arm"
+            >
+              <defs>
+                <pattern
+                  id="excluded-0"
+                  width="5"
+                  height="5"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <rect width="5" height="5" fill="var(--surface)" />
+                  <path d="M-1 1L1 -1M0 5L5 0M4 6L6 4" stroke="var(--arm-0)" />
+                </pattern>
+                <pattern
+                  id="excluded-1"
+                  width="5"
+                  height="5"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <rect width="5" height="5" fill="var(--surface)" />
+                  <path d="M-1 1L1 -1M0 5L5 0M4 6L6 4" stroke="var(--arm-1)" />
+                </pattern>
+              </defs>
+              <text x="40" y="17">People in each original arm (%)</text>
+              <g stroke="var(--grid)">
+                <path d="M40 30H400 M40 105H400 M40 180H400" />
+              </g>
+              <g text-anchor="end">
+                <text x="34" y="34">100</text>
+                <text x="34" y="109">50</text>
+                <text x="34" y="184">0</text>
+              </g>
+              <g id="histogram-bars"></g>
+              <g
+                id="trim-guides"
+                stroke="var(--warning)"
+                stroke-dasharray="4 3"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path id="lower-guide" d="M40 30V180" />
+                <path id="upper-guide" d="M400 30V180" />
+              </g>
+              <text x="40" y="199">0</text>
+              <text x="220" y="199" text-anchor="middle">0.5</text>
+              <text x="400" y="199" text-anchor="end">1</text>
+              <text x="220" y="223" text-anchor="middle">
+                Fitted chance of treatment
+              </text>
+            </svg>
+            <p class="help">
+              Solid bars are retained; hatched portions are excluded. Dashed
+              lines mark the bounds. Total bar heights stay fixed as you trim.
+            </p>
+          </figure>
+          <div class="retained-result" aria-live="polite" aria-atomic="true">
+            <h2>Effect among retained people</h2>
+            <p id="retained-size"></p>
+            <div class="values">
+              <div class="value estimate" id="retained-estimate">
+                <span>IPW estimate</span><strong id="retained-ipw"></strong
+                ><small id="retained-error"></small>
+              </div>
+              <div class="value truth">
+                <span>Retained-group truth</span
+                ><strong id="retained-truth"></strong>
+              </div>
+            </div>
+            <p class="help" id="retained-status"></p>
+            <p class="help">
+              The true effect stays at 2 because treatment adds 2 to every
+              person’s outcome (a homogeneous effect).
+            </p>
+            <p class="help">
+              Redder estimates are farther from this group’s truth in this
+              sample.
+            </p>
+          </div>
+        </div>
+        <div class="group-summary">
+          <table aria-label="Everyone, retained and excluded groups">
+            <caption>
+              Compare each estimate with its own group’s truth
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">People</th>
+                <th scope="col">Count</th>
+                <th scope="col">IPW</th>
+                <th scope="col">Group truth</th>
+              </tr>
+            </thead>
+            <tbody id="groups"></tbody>
+          </table>
+          <p class="help">
+            Counts show untreated / treated. Removing people does not improve
+            information about those excluded, even when their estimate is
+            calculable.
+          </p>
+          <p id="group-status" class="help"></p>
+        </div>
+        <div class="actions">
+          <button id="redraw">Draw another sample</button
+          ><button id="restart">Restart</button
+          ><span class="sample" id="sample"></span>
+        </div>
+      </section>
+      <p class="note">
+        Trimming trades fewer extreme weights for fewer people. It can help or
+        hurt accuracy; one sample cannot establish a better threshold.
+      </p>
+      <details>
+        <summary>What is being estimated?</summary>
+        <p class="note">
+          Each target is the average treatment effect among the people in that
+          row. Everyone’s effect is 2 in this world, so all nonempty groups have
+          the same truth. With varying treatment effects, retaining different
+          people can change the target’s value.
+        </p>
+        <p class="note">
+          For each group, IPW subtracts the weighted untreated mean from the
+          weighted treated mean, dividing each arm by its own weight sum. No
+          probability clipping is applied. Both arms and finite weights are
+          needed for an estimate.
+        </p>
+        <p class="note">
+          There are 400 people and one measured common cause, baseline health C.
+          The treatment model correctly adjusts for C. Moving the threshold
+          reuses the full-sample fit. Changing selection or redrawing refits;
+          redraw keeps the threshold, while restart restores the original sample
+          and controls.
+        </p>
+        <p class="note">
+          Simulation truth uses each person’s two potential outcomes. Those
+          values are unavailable in real data and never enter the fitted model
+          or trimming rule.
+          <a href="./trimming-experiment.md">Calculation and validation notes</a
+          >.
+        </p>
+      </details>
+    </main>
+    <script type="module" src="../src/trimming-preview.js"></script>
+  </body>
+</html>

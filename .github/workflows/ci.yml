@@ -4,13 +4,11 @@ on:
   pull_request:
     paths-ignore:
       - "**/*.md"
-      - "docs/**"
       - "LICENSE"
   push:
     branches-ignore: [main]
     paths-ignore:
       - "**/*.md"
-      - "docs/**"
       - "LICENSE"
 
 jobs:
@@ -32,3 +30,8 @@ jobs:
           npx vite preview --port 5173 --host 127.0.0.1 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
           npm run test:browser
+      - name: Trimming preview and repeated-sample checks
+        run: |
+          npx vite --host 127.0.0.1 --port 5187 --strictPort &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5187/causal-sandbox/docs/trimming-preview.html >/dev/null && break; sleep 1; done
+          npm run test:trimming
