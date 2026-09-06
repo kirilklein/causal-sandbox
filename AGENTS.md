@@ -24,6 +24,6 @@
 
 ## Validation
 
-- Use the existing npm commands and [browser setup](README.md#browser-checks). Browser tests need a separately running server from the worktree being tested.
+- Use the existing npm commands and [browser setup](CONTRIBUTING.md#browser-checks). Browser tests need a separately running server from the worktree being tested.
 - For statistical changes, check the estimand and identification assumptions separately from model specification. Reuse repeated-sample tests for claims about estimator behavior; one seeded example cannot establish a general ranking.
 - For UI changes, inspect the affected lesson or sandbox on desktop and a narrow screen, including keyboard interaction. Automated smoke tests do not establish that the teaching flow is clear.
