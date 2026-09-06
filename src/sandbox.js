@@ -69,6 +69,7 @@ document.querySelector("#app").innerHTML = `
         <div class="controls">
           <div class="control-group"><div class="group-heading">Direct treatment effect</div>${slider("direct", "A → Y", "Direct change in outcome Y from treatment A.", -1, 4, 0.1)}</div>
           <details class="control-group observed-controls" open><summary>Observed confounding <span>C = C₁, C₂</span></summary><div class="slider-pair">${slider("ca", "C → A", "Influence on treatment assignment. Zero removes this path.", 0, 3, 0.1)}${slider("cy", "C → Y", "Influence on outcome Y. Zero removes this path.", 0, 3, 0.1)}</div></details>
+          <details class="control-group instrument-controls" hidden><summary>Instrument <span>Z → A only</span></summary>${slider("za", "Z → A", "Randomized influence on treatment assignment. Z has no other path to outcome Y.", 0, 3, 0.1)}</details>
           <details class="control-group hidden-controls"><summary>Hidden confounding <span>U · unmeasured</span></summary><div class="slider-pair">${slider("ua", "U → A", "Hidden influence on treatment assignment.", 0, 3, 0.1)}${slider("uy", "U → Y", "Hidden influence on outcome Y.", 0, 3, 0.1)}</div></details>
           <details class="path-controls control-group"><summary>Mediator pathway <span>A → M → Y</span></summary><div class="slider-pair">${slider("am", "A → M", "Change in mediator M from treatment A.", 0, 2, 0.1)}${slider("my", "M → Y", "Change in outcome Y per unit of mediator M.", 0, 2, 0.1)}</div></details>
         </div>
@@ -81,7 +82,7 @@ document.querySelector("#app").innerHTML = `
     <section id="results-panel" class="estimates panel" aria-labelledby="results-title" tabindex="-1">
       <div class="panel-heading"><h2 id="results-title">Can we recover the effect?</h2><span class="small-tag">Results</span></div>
       <div class="truth-card"><div><span>${helpButton("ate", "Total effect (ATE)")}</span><small id="truth-formula"></small></div><strong id="truth-value">2.00</strong></div>
-        <div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b></span>${["C", "M", "K"].map((k) => `<div class="adjust-choice"><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div>
+        <div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b></span>${["C", "Z", "M", "K"].map((k) => `<div class="adjust-choice${k === "Z" ? " instrument-adjustment" : ""}"${k === "Z" ? " hidden" : ""}><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", Z: "Instrument", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${k === "Z" ? "" : helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div>
       <div class="effect-chart" id="effects"></div>
       <div class="estimate-key"><span>${helpButton("error", "Distance from truth")}</span><span>Redder = farther from truth</span></div>
       <p class="comparison-key"><i class="start-key" aria-hidden="true"></i>Starting error <i class="now-key" aria-hidden="true"></i>Current error <span id="offscale-note" hidden>Arrows mark errors beyond ±4.</span></p>
@@ -101,10 +102,10 @@ document.querySelector("#app").innerHTML = `
   )
   .join(
     "",
-  )}</dl><a class="glossary-more" href="glossary/">Open the full glossary →</a></details><p>Each person has fixed, independent background noise. Treatment is assigned by a logistic probability; outcomes follow these structural equations.</p><p><b>Arrow controls:</b> A → Y sets the direct contribution to Y, while A → M and M → Y together form the mediated contribution. C → A and U → A change treatment log odds, not a fixed percentage of people treated. Setting an arrow to zero removes only that pathway; treatment is randomized only when both C → A and U → A are zero.</p><pre>C₁, C₂ ~ independent Uniform(-√3, √3)
-U, εM, εY, εK ~ independent Normal(0,1)
+  )}</dl><a class="glossary-more" href="glossary/">Open the full glossary →</a></details><p>Each person has fixed, independent background noise. Treatment is assigned by a logistic probability; outcomes follow these structural equations.</p><p><b>Arrow controls:</b> A → Y sets the direct contribution to Y, while A → M and M → Y together form the mediated contribution. C → A, Z → A, and U → A change treatment log odds, not a fixed percentage of people treated. Setting an arrow to zero removes only that pathway; treatment is randomized only when all three treatment-assignment arrows are zero.</p><pre>C₁, C₂ ~ independent Uniform(-√3, √3)
+Z ~ Bernoulli(0.5); U, εM, εY, εK ~ independent Normal(0,1)
 S = 0.8·C₁ + 0.6·C₂; I = C₁·C₂
-P(A=1) = sigmoid(-0.8 + ca·(S + ta·I) + ua·U)
+P(A=1) = sigmoid(-0.8 + ca·(S + ta·I) + za·Z + ua·U)
 M = am·A + εM
 Y = direct·A + cy·(S + oy·I) + uy·U + my·M + εY
 K = 0.9·A + 0.9·Y + εK
@@ -124,6 +125,7 @@ function slider(key, edge, description, min, max, step) {
   return `<label class="slider-control"><span><b>${edge}</b><output id="out-${key}"></output></span><input aria-label="${edge}" aria-describedby="help-${key}" type="range" data-param="${key}" min="${min}" max="${max}" step="${step}" value="${state.p[key]}"><small id="help-${key}">${description}</small></label>`;
 }
 const coords = {
+  Z: [65, 55],
   C: [190, 55],
   U: [410, 55],
   A: [90, 160],
@@ -132,6 +134,7 @@ const coords = {
   K: [300, 252],
 };
 const edges = [
+  ["Z", "A", "za", "M72 80L83 135"],
   ["C", "A", "ca", "M170 74L111 139"],
   ["C", "Y", "cy", "M214 62Q356 77 487 145"],
   ["U", "A", "ua", "M386 62Q242 77 113 145"],
@@ -143,19 +146,28 @@ const edges = [
   ["Y", "K", null, "M490 179L323 243"],
 ];
 function renderGraph() {
+  const showInstrument = selectedScenario.id === "instrument";
+  document
+    .querySelector("#dag")
+    .setAttribute(
+      "aria-label",
+      `Causal graph: C (the pair C1 and C2) and unmeasured U cause treatment A and outcome Y.${showInstrument ? " Instrument Z causes A only." : ""} A causes mediator M and Y. A and Y cause collider K.`,
+    );
   document.querySelector("#edges").innerHTML = edges
+    .filter(([a, b]) => showInstrument || (a !== "Z" && b !== "Z"))
     .map(([a, b, key, d]) => {
       const strength = key ? state.p[key] : 0.9;
       return `<path d="${d}" fill="none" stroke="var(--causal-path)" ${key ? arrowStrength(strength, key === "direct" ? 4 : ["am", "my"].includes(key) ? 2 : 3) : 'stroke-width="2"'} stroke-dasharray="${a === "U" ? "5 5" : ""}" marker-end="url(#arrow)"/>`;
     })
     .join("");
   document.querySelector("#nodes").innerHTML = Object.entries(coords)
+    .filter(([k]) => showInstrument || k !== "Z")
     .map(([k, [x, y]]) => {
-      return `<g data-node="${k}" transform="translate(${x} ${y})"><circle r="25" fill="var(--node-${k})" stroke="${k === "U" ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${k === "U" ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
+      return `<g data-node="${k}" transform="translate(${x} ${y})"><circle r="25" fill="${k === "Z" ? "var(--surface-subtle)" : "var(--node-" + k + ")"}" stroke="${k === "U" ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${k === "U" ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", Z: "INSTRUMENT", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
     })
     .join("");
   document.querySelector("#graph-hint").textContent = state.adjust.size
-    ? `Adjusted methods: adjusting for ${["C", "M", "K"].filter((k) => state.adjust.has(k)).join(", ")}`
+    ? `Adjusted methods: adjusting for ${["C", "Z", "M", "K"].filter((k) => state.adjust.has(k)).join(", ")}`
     : "Adjusted methods: no adjustment";
 }
 let latestData, latestResult;
@@ -339,6 +351,9 @@ function update() {
   else if (state.adjust.has("M"))
     lesson =
       "<b>You’re blocking part of the effect.</b> M is a mediator. With a correctly specified outcome model, regression targets the direct effect instead of the total effect.";
+  else if (state.adjust.has("Z"))
+    lesson =
+      "<b>The hidden bias can be amplified.</b> Z supplies treatment variation unrelated to U. Adjusting for Z removes that variation without closing A ← U → Y, so hidden confounding can have more influence over the remaining comparison. This sample illustrates the pattern; the guided instrument lesson examines it across repeated samples.";
   else if (state.p.ua * state.p.uy > 0)
     lesson =
       "<b>Better estimators can’t see the unseen.</b> U affects treatment and outcome. Adjusting for C cannot remove this hidden confounding.";
@@ -471,7 +486,14 @@ function enterScenario(scenario) {
   );
   document.querySelector(".observed-controls").open =
     state.p.ca !== 0 || state.p.cy !== 0;
-  document.querySelector(".hidden-controls").open = scenario.id === "hidden";
+  const isInstrument = scenario.id === "instrument";
+  document.querySelector(".instrument-controls").hidden = !isInstrument;
+  document.querySelector(".instrument-controls").open = isInstrument;
+  document.querySelector(".instrument-adjustment").hidden = !isInstrument;
+  document.querySelector(".hidden-controls").open = [
+    "hidden",
+    "instrument",
+  ].includes(scenario.id);
   document.querySelector(".path-controls").open = scenario.id === "mediator";
   showControls(
     ["randomized", "hidden"].includes(scenario.id) ? "world" : "analyst",

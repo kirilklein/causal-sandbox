@@ -1,8 +1,8 @@
 # Full sandbox: scenarios and comparisons
 
-The sandbox offers ten reproducible scenarios: randomization, observed or hidden
-confounding, collider or mediator adjustment, four model-specification comparisons,
-and poor overlap. Each has one question and a suggested action. Scenario selection
+The sandbox offers multiple reproducible scenarios: randomization, observed or hidden
+confounding, collider, mediator, or instrument adjustment, four model-specification
+comparisons, and poor overlap. Each has one question and a suggested action. Scenario selection
 and Restart scenario restore all generating parameters, adjustment, and model
 choices. Analytical changes mark the setup as Modified; reverting them clears that
 status.
@@ -15,8 +15,8 @@ is unnecessary when the interaction is absent or its arrow strength is zero.
 This feedback concerns C terms only, not hidden confounding, adjustment validity,
 or overlap. Model details explain the interaction and specification terminology.
 
-A scenario opens the tab containing its suggested action. Hidden-confounding and
-mediator scenarios expand their relevant pathway controls. The relationship
+A scenario opens the tab containing its suggested action. Hidden-confounding,
+instrument, and mediator scenarios expand their relevant pathway controls. The relationship
 selector explains active interactions and identifies the specific zero-strength
 path when an interaction is inactive. Further explanations remain in optional
 details. The diagram starts collapsed on tablet and phone screens.
@@ -37,7 +37,8 @@ the current total effect and its direct/mediated decomposition.
 
 The sandbox uses fixed background draws for 2,400 people (seed 4217). C represents
 both measured baseline variables C₁ and C₂. C, M, and K are available for
-adjustment. U is unmeasured and never available for adjustment. Observed outcome
+adjustment; the instrument scenario also makes Z available. U is unmeasured and
+never available for adjustment. Observed outcome
 clouds remain available in the results disclosure.
 
 Links of the form `?sandbox&scenario=both-models` open a scenario's starting setup.
