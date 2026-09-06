@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Live demo
+    url: https://kirilklein.github.io/causal-sandbox/
+    about: Try the sandbox before filing. Sharing a scenario link makes any issue much easier to reproduce.

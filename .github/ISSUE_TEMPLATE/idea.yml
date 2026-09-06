@@ -1,0 +1,29 @@
+name: Idea
+description: A new lesson, scenario, estimator, or improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Half-formed ideas are fine. If you want to build it yourself, say so and we can agree on scope first.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What would a learner understand better?
+      description: The sandbox teaches one concept at a time. What is the concept, and what would the learner change and observe?
+    validations:
+      required: true
+  - type: dropdown
+    id: build
+    attributes:
+      label: Would you like to work on it?
+      options:
+        - "No, just suggesting"
+        - "Yes, with some guidance"
+        - "Yes, I have a draft"

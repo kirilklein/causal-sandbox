@@ -1,0 +1,33 @@
+name: Correction
+description: An explanation, formula, or glossary entry is wrong or misleading
+labels: [documentation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks. The explanations aim for intuition over rigor, but they should never be wrong. Corrections of any size are welcome.
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Lesson or sandbox section, and a link if you have one
+      placeholder: e.g. IPW lesson, "Why weighting works" paragraph
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: What it says now
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or misleading
+    validations:
+      required: true
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested wording or reference
+      description: Optional. A reference is helpful if the point is subtle.
