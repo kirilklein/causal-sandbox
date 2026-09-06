@@ -6,6 +6,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "index.html",
+        confounding: "confounding/index.html",
+        colliderBias: "collider-bias/index.html",
+        positivity: "positivity/index.html",
         tmleRobustness: "docs/tmle-robustness-preview.html",
       },
     },
