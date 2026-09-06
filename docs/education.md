@@ -10,6 +10,12 @@ retaining the sample and fitted models. An optional comparison caps weights
 directly, with clipping and capping mutually exclusive. It is linked from Contents and after
 overlap, with a new 400-person sample and an unclipped starting point.
 
+[Trimming](trimming-experiment.md) follows clipping at `?lesson=trimming`, also
+linked from Contents. It separates everyone, retained, and excluded people and
+compares each IPW estimate with its own group’s truth. The optional varying-effect
+world shows how trimming can change that truth. Each chapter restores its own
+baseline on entry; samples and controls are not transferred between chapters.
+
 An optional [instruments and adjustment chapter](instruments.md) follows the
 core journey at `?lesson=instrument`. It introduces Z, its precision cost when
 included in adjustment, and a separate hidden-confounding comparison. The
