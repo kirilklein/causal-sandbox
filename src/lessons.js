@@ -287,6 +287,7 @@ function lessonNavigation(position) {
     <a class="sandbox-nav-link" href="?lesson=trimming">Trimming and the target population ↗</a>
     <a class="sandbox-nav-link" href="?lesson=instrument">Instruments and adjustment ↗</a>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
+      <a href="glossary/">Glossary</a>
       <a href="confounding/">Confounding</a>
       <a href="collider-bias/">Collider bias</a>
       <a href="positivity/">Positivity and overlap</a>

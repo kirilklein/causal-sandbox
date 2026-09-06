@@ -1,5 +1,6 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
+import { glossary } from "../src/glossary.js";
 
 const browser = await chromium.launch({
   headless: true,
@@ -96,6 +97,12 @@ try {
   assert.equal(structuredData.author.name, "Kiril Klein");
 
   await page.locator("#lesson-menu-toggle").click();
+  assert.equal(
+    await page
+      .locator('.concept-menu a[href="glossary/"]')
+      .getAttribute("href"),
+    "glossary/",
+  );
   for (const concept of pages) {
     assert.equal(
       await page
@@ -103,6 +110,52 @@ try {
         .getAttribute("href"),
       concept.path,
     );
+  }
+
+  const glossaryUrl = new URL("glossary/", root).href;
+  const glossaryResponse = await page.goto(glossaryUrl);
+  assert.equal(glossaryResponse.status(), 200);
+  assert.equal(
+    await page.title(),
+    "Causal Inference Glossary | Causal Sandbox",
+  );
+  assert.equal(
+    await page.locator('link[rel="canonical"]').getAttribute("href"),
+    "https://kirilklein.github.io/causal-sandbox/glossary/",
+  );
+  assert.equal(
+    await page.locator("h1").innerText(),
+    "Causal inference glossary",
+  );
+  assert.equal(
+    await page.locator(".glossary-entry").count(),
+    Object.keys(glossary).length,
+  );
+  assert.match(
+    await page.locator("#aipw").innerText(),
+    /either the outcome model/i,
+  );
+  assert.equal(
+    await page
+      .locator('#glossary-contents-list a[href="#confounder"]')
+      .innerText(),
+    "Confounder",
+  );
+  await page.getByLabel("Color theme").selectOption("light");
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+      `glossary/ overflows at ${width}px`,
+    );
+    if (width !== 320) {
+      await page.screenshot({
+        path: `/tmp/causal-glossary-${width}.png`,
+        fullPage: true,
+      });
+    }
   }
 
   const methodologyUrl = new URL("methodology/", root).href;
