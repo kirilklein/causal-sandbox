@@ -11,6 +11,21 @@ import { glossary } from "./glossary.js";
 import { setupHelp } from "./help.js";
 import { worlds, makeNoise, simulate, estimate } from "./simulation.js";
 const noise = makeNoise();
+const resumeKey = "causal-sandbox-graph-lab-return";
+const returnState = history.state?.graphLabReturn || readLabReturn();
+
+function readLabReturn() {
+  if (new URLSearchParams(location.search).get("resume") !== "graph-lab")
+    return null;
+  try {
+    const saved = sessionStorage.getItem(resumeKey);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    if (!(error instanceof SyntaxError) && error.name !== "SecurityError")
+      throw error;
+    return null;
+  }
+}
 let selectedScenario =
   scenarios.find(
     (s) => s.id === new URLSearchParams(location.search).get("scenario"),
@@ -22,7 +37,7 @@ const estimatorIndices = [0, 2, 3, 4];
 document.querySelector("#app").innerHTML = `
 <header class="sandbox-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a class="lessons-link" href="./">Guided lessons</a><button id="methods" class="text-button">How this world works</button>${themeControl()}</header>
 <main class="sandbox">
-  <section class="intro"><div><div class="eyebrow">FULL SANDBOX</div><h1>Explore what makes an estimate credible.</h1><p>Start with a scenario. Change the world or the analysis, and compare with the known effect.</p></div></section>
+  <section class="intro"><div><div class="eyebrow">FULL SANDBOX</div><h1>Explore what makes an estimate credible.</h1><p>Start with a scenario. Change the world or the analysis, and compare with the known effect.</p><a id="open-graph-lab" href="?sandbox=graph-lab">Build a graph in the optional Graph lab →</a></div></section>
   <section class="scenario-bar" aria-label="Scenario">
     <div class="scenario-picker"><label for="scenario-select">Choose a scenario</label><select id="scenario-select" aria-describedby="scenario-question scenario-action">${[
       ...new Set(scenarios.map((s) => s.group)),
@@ -500,6 +515,74 @@ document.querySelector(".graph-details").open = !matchMedia(
 const initialScenario = selectedScenario;
 if (initialScenario.id === "overlap") enterScenario(scenarios[1]);
 enterScenario(initialScenario);
+
+document.querySelector("#open-graph-lab").addEventListener("click", () => {
+  const snapshot = {
+    scenario: selectedScenario.id,
+    p: state.p,
+    world: state.world.id,
+    models: state.models,
+    adjust: [...state.adjust],
+    panel:
+      document.querySelector("#world-tab").getAttribute("aria-selected") ===
+      "true"
+        ? "world"
+        : "analyst",
+    details: [...document.querySelectorAll(".sandbox details")].map(
+      (el) => el.open,
+    ),
+    overlap: document.querySelector("#overlap-strength").value,
+  };
+  history.replaceState({ graphLabReturn: snapshot }, "");
+  try {
+    sessionStorage.setItem(resumeKey, JSON.stringify(snapshot));
+  } catch (error) {
+    if (!["SecurityError", "QuotaExceededError"].includes(error.name))
+      throw error;
+    // Browser Back still restores the history snapshot if storage is blocked.
+  }
+});
+
+if (returnState) {
+  const saved = returnState;
+  const scenario = scenarios.find((s) => s.id === saved.scenario);
+  const world = worlds.find((w) => w.id === saved.world);
+  const valid =
+    scenario &&
+    world &&
+    saved.p &&
+    Object.keys(state.p).every((key) => Number.isFinite(saved.p[key])) &&
+    saved.models &&
+    ["outcome", "treatment"].every(
+      (key) => typeof saved.models[key] === "boolean",
+    ) &&
+    Array.isArray(saved.adjust) &&
+    saved.adjust.every((id) => ["C", "M", "K"].includes(id)) &&
+    Array.isArray(saved.details) &&
+    ["world", "analyst"].includes(saved.panel);
+  if (valid) {
+    enterScenario(scenario);
+    state = {
+      p: saved.p,
+      world,
+      models: saved.models,
+      adjust: new Set(saved.adjust),
+    };
+    update();
+    showControls(saved.panel);
+    document.querySelectorAll(".sandbox details").forEach((el, i) => {
+      el.open = saved.details[i] === true;
+    });
+    if (scenario.id === "overlap") {
+      const slider = document.querySelector("#overlap-strength");
+      slider.value = saved.overlap;
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+  const url = new URL(location.href);
+  url.searchParams.delete("resume");
+  history.replaceState(null, "", url);
+}
 
 setupHelp();
 
