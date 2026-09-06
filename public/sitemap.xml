@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://kirilklein.github.io/causal-sandbox/</loc></url>
+  <url><loc>https://kirilklein.github.io/causal-sandbox/confounding/</loc></url>
+  <url><loc>https://kirilklein.github.io/causal-sandbox/collider-bias/</loc></url>
+  <url><loc>https://kirilklein.github.io/causal-sandbox/positivity/</loc></url>
 </urlset>

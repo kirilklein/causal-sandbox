@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Condition on a collider and watch a causal estimate move away from truth. See why adjusting for more variables can create bias in an interactive example."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/collider-bias/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/collider-bias/"
+    />
+    <meta
+      property="og:title"
+      content="Collider Bias: An Interactive Adjustment Example"
+    />
+    <meta
+      property="og:description"
+      content="Adjust for a common effect of treatment and outcome, then watch a misleading relationship appear."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Collider Bias: An Interactive Adjustment Example"
+    />
+    <meta
+      name="twitter:description"
+      content="Adjust for a common effect of treatment and outcome, then watch a misleading relationship appear."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <title>Collider Bias: An Interactive Adjustment Example</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-lesson="collider">
+    <div id="app">
+      <main>
+        <h1>Collider bias</h1>
+        <p>
+          Adjust for a variable caused by both treatment and outcome, then
+          compare the estimate with the known true effect.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="collider-heading">
+      <h2 id="collider-heading">
+        Why can adjusting for more variables create bias?
+      </h2>
+      <p class="concept-answer">
+        A collider is a common effect of two variables. Conditioning on it can
+        make its causes associated within the adjusted comparison, opening a
+        noncausal path that was previously closed.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Start with adjustment for baseline health only.</li>
+        <li>Also account for the follow-up score.</li>
+        <li>
+          Watch the estimate move even though the data-generating world stays
+          fixed.
+        </li>
+      </ol>
+      <p class="concept-note">
+        In this example, treatment and outcome both cause the later follow-up
+        score. The score does not cause the outcome. Its availability in the
+        data does not make it a valid adjustment variable.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li>
+            <a href="confounding/">Compare collider bias with confounding</a>
+          </li>
+          <li><a href="?lesson=timing">Use timing to classify variables</a></li>
+          <li><a href="positivity/">Explore positivity and overlap</a></li>
+        </ul>
+      </nav>
+    </article>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

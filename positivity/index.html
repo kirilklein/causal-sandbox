@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Break the positivity assumption in an interactive causal inference example. Separate propensity scores, inspect extreme weights, and compare estimates with truth."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/positivity/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/positivity/"
+    />
+    <meta
+      property="og:title"
+      content="Positivity and Overlap: Interactive Propensity Score Example"
+    />
+    <meta
+      property="og:description"
+      content="Separate the treatment groups’ propensity scores and see why models and weights cannot create missing comparisons."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Positivity and Overlap: Interactive Propensity Score Example"
+    />
+    <meta
+      name="twitter:description"
+      content="Separate the treatment groups’ propensity scores and see why models and weights cannot create missing comparisons."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <title>Positivity and Overlap: Interactive Propensity Score Example</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-lesson="overlap">
+    <div id="app">
+      <main>
+        <h1>Positivity and overlap</h1>
+        <p>
+          Strengthen treatment selection, separate the propensity score
+          distributions, and inspect what happens to weights and estimates.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="positivity-heading">
+      <h2 id="positivity-heading">What is the positivity assumption?</h2>
+      <p class="concept-answer">
+        Positivity requires a nonzero probability of each treatment for every
+        covariate pattern in the target population. In finite data, poor overlap
+        is the practical warning: comparable treated and untreated people become
+        rare.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Compare the groups under moderate treatment selection.</li>
+        <li>Switch to strong selection.</li>
+        <li>
+          Inspect the propensity distributions, clipped probabilities, and
+          effective sample sizes.
+        </li>
+      </ol>
+      <p class="concept-note">
+        Extreme weights concentrate information in a few observations, while
+        outcome models rely more heavily on extrapolation. AIPW combines the two
+        approaches; it does not manufacture comparisons that the data do not
+        contain.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li><a href="confounding/">See how confounding starts</a></li>
+          <li><a href="?lesson=ipw">Learn inverse probability weighting</a></li>
+          <li><a href="?lesson=clipping">Explore probability clipping</a></li>
+        </ul>
+      </nav>
+    </article>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

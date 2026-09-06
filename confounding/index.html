@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="See how confounding creates a biased treatment effect. Change a common cause, compare the estimate with truth, and test whether larger samples fix bias."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/confounding/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/confounding/"
+    />
+    <meta
+      property="og:title"
+      content="Confounding Explained: Interactive Causal Inference Example"
+    />
+    <meta
+      property="og:description"
+      content="Change the strength of a common cause and watch the estimated treatment effect move relative to the known truth."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Confounding Explained: Interactive Causal Inference Example"
+    />
+    <meta
+      name="twitter:description"
+      content="Change the strength of a common cause and watch the estimated treatment effect move relative to the known truth."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <title>Confounding Explained: Interactive Causal Inference Example</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-lesson="confounding">
+    <div id="app">
+      <main>
+        <h1>Confounding from a common cause</h1>
+        <p>
+          Change how strongly baseline health influences treatment and compare
+          the estimated effect with the known true effect.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="sample-size-heading">
+      <h2 id="sample-size-heading">Does a larger sample remove confounding?</h2>
+      <p class="concept-answer">
+        <strong>No.</strong> A larger sample reduces sampling variation, but it
+        does not repair systematic differences between treated and untreated
+        people. If a common cause still influences both treatment and outcome,
+        an unadjusted estimate can converge precisely to the wrong value.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Increase baseline health’s influence on treatment.</li>
+        <li>Compare the unadjusted estimate with the true effect.</li>
+        <li>
+          Open “Compare repeated studies.” The estimates become a stable
+          pattern, but the pattern remains displaced from truth.
+        </li>
+      </ol>
+      <p class="concept-note">
+        Valid design or adjustment can address measured common causes. Merely
+        collecting more observations cannot recover information that the
+        analysis ignores.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li><a href="?lesson=ipw">Adjust confounding with IPW</a></li>
+          <li>
+            <a href="collider-bias/">See how adjustment can create bias</a>
+          </li>
+          <li><a href="positivity/">Explore positivity and overlap</a></li>
+        </ul>
+      </nav>
+    </article>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
