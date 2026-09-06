@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Compare propensity-score clipping and trimming in an interactive IPW example. See how clipping changes weights while trimming changes the analyzed population."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/propensity-score-clipping-trimming/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/propensity-score-clipping-trimming/"
+    />
+    <meta
+      property="og:title"
+      content="Propensity Score Clipping vs Trimming: Interactive Guide"
+    />
+    <meta
+      property="og:description"
+      content="Change overlap, constrain extreme weights, and distinguish keeping every person from changing the target population."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Propensity Score Clipping vs Trimming: Interactive Guide"
+    />
+    <meta
+      name="twitter:description"
+      content="Change overlap, constrain extreme weights, and distinguish keeping every person from changing the target population."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <title>Propensity Score Clipping vs Trimming: Interactive Guide</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-lesson="clipping">
+    <div id="app">
+      <main>
+        <h1>Propensity-score clipping and trimming</h1>
+        <p>
+          Create extreme inverse-probability weights, constrain them, and
+          compare that operation with excluding people outside common support.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="clipping-heading">
+      <h2 id="clipping-heading">How are clipping and trimming different?</h2>
+      <p class="concept-answer">
+        Clipping moves fitted propensity scores away from zero and one when
+        weights are calculated, retaining every person but modifying the
+        estimator. Trimming excludes observations under a stated support rule,
+        so the result targets the retained population rather than the original
+        full population.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Increase treatment selection to create poorer overlap.</li>
+        <li>
+          Raise the clipping threshold and compare weights, precision, and bias.
+        </li>
+        <li>Open the trimming experiment and inspect who is excluded.</li>
+      </ol>
+      <p class="concept-note">
+        Neither operation repairs a structural positivity violation. Clipping
+        trades sensitivity to extreme weights for bias; trimming changes both
+        the sample and the population described by the estimate. Report the rule
+        and examine sensitivity rather than presenting either as automatic.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li><a href="?lesson=trimming">Run the trimming experiment</a></li>
+          <li><a href="positivity/">Review positivity and overlap</a></li>
+          <li>
+            <a href="inverse-probability-weighting/"
+              >See where the weights come from</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </article>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -23,24 +23,24 @@
     </script>
     <meta
       name="description"
-      content="Break the positivity assumption in an interactive causal inference example. Separate propensity scores, inspect extreme weights, and compare estimates with truth."
+      content="Learn targeted minimum loss-based estimation interactively. Apply TMLE targeting, watch outcome predictions change, and inspect the weighted correction."
     />
     <link
       rel="canonical"
-      href="https://kirilklein.github.io/causal-sandbox/positivity/"
+      href="https://kirilklein.github.io/causal-sandbox/tmle/"
     />
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
-      content="https://kirilklein.github.io/causal-sandbox/positivity/"
+      content="https://kirilklein.github.io/causal-sandbox/tmle/"
     />
     <meta
       property="og:title"
-      content="Positivity and Overlap: Interactive Propensity Score Example"
+      content="TMLE Explained: Interactive Targeting Example"
     />
     <meta
       property="og:description"
-      content="Separate the treatment groups’ propensity scores and see why models and weights cannot create missing comparisons."
+      content="Move from initial outcome predictions to targeted predictions and see which empirical correction TMLE solves."
     />
     <meta
       property="og:image"
@@ -49,70 +49,69 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="Positivity and Overlap: Interactive Propensity Score Example"
+      content="TMLE Explained: Interactive Targeting Example"
     />
     <meta
       name="twitter:description"
-      content="Separate the treatment groups’ propensity scores and see why models and weights cannot create missing comparisons."
+      content="Move from initial outcome predictions to targeted predictions and see which empirical correction TMLE solves."
     />
     <meta
       name="twitter:image"
       content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
     />
     <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
-    <title>Positivity and Overlap: Interactive Propensity Score Example</title>
+    <title>TMLE Explained: Interactive Targeting Example</title>
     <script
       data-goatcounter="https://ckirkle.goatcounter.com/count"
       async
       src="https://gc.zgo.at/count.js"
     ></script>
   </head>
-  <body data-lesson="overlap">
+  <body data-lesson="tmle">
     <div id="app">
       <main>
-        <h1>Positivity and overlap</h1>
+        <h1>Targeted minimum loss-based estimation</h1>
         <p>
-          Strengthen treatment selection, separate the propensity score
-          distributions, and inspect what happens to weights and estimates.
+          Update initial outcome predictions in a direction determined by
+          treatment probabilities, then average the targeted contrasts.
         </p>
       </main>
     </div>
-    <article class="concept-content" aria-labelledby="positivity-heading">
-      <h2 id="positivity-heading">What is the positivity assumption?</h2>
+    <article class="concept-content" aria-labelledby="tmle-heading">
+      <h2 id="tmle-heading">What does the TMLE targeting step do?</h2>
       <p class="concept-answer">
-        Positivity requires a nonzero probability of each treatment for every
-        covariate pattern in the target population. In finite data, poor overlap
-        is the practical warning: comparable treated and untreated people become
-        rare.
+        TMLE starts with outcome predictions and fits a targeted update using
+        observed outcomes and propensity scores. For the average treatment
+        effect here, the update removes the sample’s average signed,
+        propensity-weighted prediction error.
       </p>
       <h3>Try it in the experiment</h3>
       <ol>
-        <li>Compare the groups under moderate treatment selection.</li>
-        <li>Switch to strong selection.</li>
+        <li>Inspect the initial predictions and correction left to make.</li>
         <li>
-          Inspect the propensity distributions, clipped probabilities, and
-          effective sample sizes.
+          Move the targeting slider and watch both prediction curves change.
         </li>
+        <li>Apply the full update and inspect the remaining correction.</li>
       </ol>
       <p class="concept-note">
-        Extreme weights concentrate information in a few observations, while
-        outcome models rely more heavily on extrapolation. AIPW combines the two
-        approaches; it does not manufacture comparisons that the data do not
-        contain.
+        A solved targeting equation is an estimation property, not proof of a
+        valid causal estimate. TMLE still needs confounding control,
+        consistency, overlap, and adequate nuisance estimation under the
+        required regularity conditions.
       </p>
       <nav class="concept-links" aria-label="Related causal inference concepts">
         <h3>Continue exploring</h3>
         <ul>
-          <li><a href="confounding/">See how confounding starts</a></li>
+          <li>
+            <a href="aipw-double-robustness/">Compare targeting with AIPW</a>
+          </li>
           <li>
             <a href="inverse-probability-weighting/"
-              >Learn inverse probability weighting</a
+              >Review the propensity component</a
             >
           </li>
           <li>
-            <a href="propensity-score-clipping-trimming/"
-              >Explore probability clipping</a
-            >
+            <a href="positivity/">See why targeting still needs overlap</a>
           </li>
         </ul>
       </nav>

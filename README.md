@@ -23,6 +23,11 @@ Start with randomization and introduce one concept at a time: confounding, adjus
 - [Confounding and sample size](https://kirilklein.github.io/causal-sandbox/confounding/)
 - [Collider bias](https://kirilklein.github.io/causal-sandbox/collider-bias/)
 - [Positivity and overlap](https://kirilklein.github.io/causal-sandbox/positivity/)
+- [Inverse probability weighting](https://kirilklein.github.io/causal-sandbox/inverse-probability-weighting/)
+- [AIPW and double robustness](https://kirilklein.github.io/causal-sandbox/aipw-double-robustness/)
+- [Mediator adjustment](https://kirilklein.github.io/causal-sandbox/mediator-adjustment/)
+- [Targeted minimum loss-based estimation](https://kirilklein.github.io/causal-sandbox/tmle/)
+- [Propensity-score clipping and trimming](https://kirilklein.github.io/causal-sandbox/propensity-score-clipping-trimming/)
 
 Each guide opens a preconfigured experiment, gives specific actions to try, and explains the result against the known true effect.
 

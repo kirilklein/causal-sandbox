@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="See why adjusting for a mediator changes the causal effect being estimated. Compare total and direct pathways in an interactive causal diagram and simulation."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/mediator-adjustment/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/mediator-adjustment/"
+    />
+    <meta
+      property="og:title"
+      content="Mediator Adjustment and Total Effects: Interactive Guide"
+    />
+    <meta
+      property="og:description"
+      content="Adjust for a post-treatment mediator and watch the estimated contrast exclude the pathway that runs through it."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Mediator Adjustment and Total Effects: Interactive Guide"
+    />
+    <meta
+      name="twitter:description"
+      content="Adjust for a post-treatment mediator and watch the estimated contrast exclude the pathway that runs through it."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <title>Mediator Adjustment and Total Effects: Interactive Guide</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-lesson="mediator">
+    <div id="app">
+      <main>
+        <h1>Mediator adjustment</h1>
+        <p>
+          Compare the total treatment effect with a model that holds a
+          post-treatment intermediate response fixed.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="mediator-heading">
+      <h2 id="mediator-heading">Should you adjust for a mediator?</h2>
+      <p class="concept-answer">
+        Not when the target is the total effect. A mediator lies on a pathway
+        from treatment to outcome, so adjusting for it blocks part of the effect
+        the total-effect estimate is meant to include.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>
+          Start with baseline-health adjustment and a true total effect of 3.
+        </li>
+        <li>Include the intermediate response in the outcome model.</li>
+        <li>
+          Remove it and compare both estimates with the total-effect target.
+        </li>
+      </ol>
+      <p class="concept-note">
+        A direct effect is a different estimand, not a repaired total effect.
+        Simply adding a mediator to a regression does not generally identify a
+        direct effect; mediator–outcome confounding and treatment–mediator
+        interactions require additional care.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li>
+            <a href="collider-bias/">Contrast a mediator with a collider</a>
+          </li>
+          <li><a href="?lesson=timing">Classify variables by timing</a></li>
+          <li><a href="confounding/">Review valid baseline adjustment</a></li>
+        </ul>
+      </nav>
+    </article>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

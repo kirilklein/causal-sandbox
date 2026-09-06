@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Learn inverse probability weighting in an interactive example. Apply IPW, inspect propensity-score weights, and see whether measured confounding and imbalance decrease."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/inverse-probability-weighting/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/inverse-probability-weighting/"
+    />
+    <meta
+      property="og:title"
+      content="Inverse Probability Weighting (IPW): Interactive Guide"
+    />
+    <meta
+      property="og:description"
+      content="Give more influence to uncommon treatment choices and watch weighting change covariate balance and the estimated effect."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Inverse Probability Weighting (IPW): Interactive Guide"
+    />
+    <meta
+      name="twitter:description"
+      content="Give more influence to uncommon treatment choices and watch weighting change covariate balance and the estimated effect."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <title>Inverse Probability Weighting (IPW): Interactive Guide</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-lesson="ipw">
+    <div id="app">
+      <main>
+        <h1>Inverse probability weighting</h1>
+        <p>
+          Reweight treated and untreated people using their fitted chances of
+          receiving the treatment they actually received.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="ipw-heading">
+      <h2 id="ipw-heading">How does inverse probability weighting work?</h2>
+      <p class="concept-answer">
+        IPW gives the most influence to treatment choices that were unlikely for
+        a person’s measured baseline characteristics. The weighted treated and
+        untreated groups can then represent the same target population.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Compare baseline health before weighting.</li>
+        <li>Select “Try IPW” to apply the fitted propensity-score weights.</li>
+        <li>Compare balance and the weighted outcome difference with truth.</li>
+      </ol>
+      <p class="concept-note">
+        This experiment normalizes weights within each treatment arm. A useful
+        IPW estimate still requires measured confounding control, positivity,
+        consistency, and an adequate treatment model. Weighting cannot recover
+        an unmeasured common cause.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li>
+            <a href="confounding/">See why confounding needs adjustment</a>
+          </li>
+          <li>
+            <a href="aipw-double-robustness/">Add an outcome model with AIPW</a>
+          </li>
+          <li><a href="positivity/">See why IPW needs overlap</a></li>
+        </ul>
+      </nav>
+    </article>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

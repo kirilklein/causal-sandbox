@@ -1001,7 +1001,7 @@ try {
   const currentLesson = () => page.locator('.lesson-nav [aria-current="step"]');
   assert.equal(await currentLesson().innerText(), titles[0]);
   await page.getByRole("link", { name: "A mediator", exact: true }).click();
-  assert.match(page.url(), /lesson=mediator/);
+  assert.match(page.url(), /mediator-adjustment\/$/);
   assert.equal(await currentLesson().innerText(), "A mediator");
   assert.equal(await page.locator("#post-adjustment").isChecked(), false);
   assert.equal(
