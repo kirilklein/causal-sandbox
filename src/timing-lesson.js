@@ -123,7 +123,7 @@ const colliderTexts = {
   before:
     "P and R independently influence a referral score V before treatment. P also causes A; R causes Y. V is a collider on A ← P → V ← R → Y, even though it is before A.",
   between:
-    "A and an unmeasured cause U both affect V; U also affects Y. V is a collider on A → V ← U → Y. A variable between treatment and outcome need not be a mediator.",
+    "V sits between A and Y in time, yet it carries none of A’s effect: A and an unmeasured U both shape V, and U also drives Y. Adjusting for V would link A to U, and through U to Y, introducing collider bias.",
   after:
     "A and Y both affect V. It is a collider on A → V ← Y. Conditioning on their common consequence can introduce a noncausal association.",
 };
