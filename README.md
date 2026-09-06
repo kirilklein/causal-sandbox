@@ -12,6 +12,14 @@ Start with randomization and introduce one concept at a time: confounding, adjus
 
 [![First lesson: treatment and outcome, an effect slider, and estimates beside the truth](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=randomization)
 
+## Interactive concept guides
+
+- [Confounding and sample size](https://kirilklein.github.io/causal-sandbox/confounding/)
+- [Collider bias](https://kirilklein.github.io/causal-sandbox/collider-bias/)
+- [Positivity and overlap](https://kirilklein.github.io/causal-sandbox/positivity/)
+
+Each guide opens a preconfigured experiment, gives specific actions to try, and explains the result against the known true effect.
+
 ## Full sandbox
 
 **[Explore the full sandbox →](https://kirilklein.github.io/causal-sandbox/?sandbox)**

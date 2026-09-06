@@ -137,6 +137,23 @@
   border-top: 1px solid var(--border);
   color: var(--text-secondary);
 }
+.concept-menu {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.concept-menu h2 {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.concept-menu a {
+  display: block;
+  min-height: 40px;
+  padding: 8px 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
 .learning summary {
   cursor: pointer;
   padding: 10px 0;
@@ -629,4 +646,45 @@
 }
 .ipw-weight-table math {
   margin-top: 8px;
+}
+
+.concept-content {
+  max-width: 800px;
+  margin: 8px auto 72px;
+  padding: 30px 24px 0;
+  border-top: 1px solid var(--border);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.concept-content h2 {
+  margin: 0 0 12px;
+  font-family: Manrope, sans-serif;
+  font-size: clamp(23px, 4vw, 30px);
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+}
+.concept-content h3 {
+  margin-top: 28px;
+  font-size: 18px;
+}
+.concept-answer {
+  font-size: 18px;
+}
+.concept-note {
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-surface);
+}
+.concept-links {
+  margin-top: 32px;
+}
+.concept-links ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 0;
+  list-style: none;
+}
+.concept-links a {
+  color: var(--accent);
 }

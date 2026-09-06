@@ -203,9 +203,11 @@ enterFromUrl(false);
 
 function enterFromUrl(focus = true) {
   const params = new URLSearchParams(location.search);
-  const named =
-    lessons.findIndex((lesson) => lesson.slug === params.get("lesson")) + 1;
-  const requested = params.has("lesson") ? named : Number(params.get("level"));
+  const topic = params.has("lesson")
+    ? params.get("lesson")
+    : document.body.dataset.lesson;
+  const named = lessons.findIndex((lesson) => lesson.slug === topic) + 1;
+  const requested = topic ? named : Number(params.get("level"));
   const level = availableLevels.includes(requested) ? requested : 1;
   const callback =
     level === 6 && params.get("revisit") === "hidden-confounding";
@@ -275,6 +277,11 @@ function lessonNavigation(position) {
     <a class="sandbox-nav-link" href="?lesson=clipping">Clipping and extreme weights ↗</a>
     <a class="sandbox-nav-link" href="?lesson=trimming">Trimming and the target population ↗</a>
     <a class="sandbox-nav-link" href="?lesson=instrument">Instruments and adjustment ↗</a>
+    <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
+      <a href="confounding/">Confounding</a>
+      <a href="collider-bias/">Collider bias</a>
+      <a href="positivity/">Positivity and overlap</a>
+    </section>
     <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
   </nav>`;
 }
