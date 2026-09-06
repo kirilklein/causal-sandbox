@@ -41,6 +41,16 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
 
   await page.goto(root);
+  const structuredData = JSON.parse(
+    await page.locator('script[type="application/ld+json"]').textContent(),
+  );
+  assert.deepEqual(structuredData["@type"], [
+    "WebApplication",
+    "LearningResource",
+  ]);
+  assert.equal(structuredData.isAccessibleForFree, true);
+  assert.equal(structuredData.author.name, "Kiril Klein");
+
   await page.locator("#lesson-menu-toggle").click();
   for (const concept of pages) {
     assert.equal(
