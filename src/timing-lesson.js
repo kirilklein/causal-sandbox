@@ -38,7 +38,7 @@ const examples = {
   instrument: {
     label: "Instrument",
     edges: ["VA"],
-    text: "V affects Y only through A and shares no common cause with Y in this stipulated world. Timing alone cannot establish these instrument conditions.",
+    text: "V affects Y only through A and shares no cause with Y. Timing alone cannot establish these instrument conditions. Adjusting for an instrument adds no bias here but inflates variance, and can amplify bias from any confounding left unadjusted.",
   },
   predictor: {
     label: "Outcome predictor",
