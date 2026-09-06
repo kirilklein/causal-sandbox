@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { defaults, makeNoise, simulate, estimate } from "../src/simulation.js";
 import { scenarios, scenarioState } from "../src/sandbox-scenarios.js";
 import { sandboxOverlap } from "../src/sandbox-overlap.js";
+import { glossary } from "../src/glossary.js";
 const browser = await chromium.launch({
   headless: true,
   channel: process.env.CI ? undefined : "chrome",
@@ -19,6 +20,13 @@ try {
     `${process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/"}?sandbox`,
   );
   await page.locator(".effect-row").last().waitFor();
+  const contextualGlossary = Object.values(glossary).filter(
+    (term) => term.contextual,
+  );
+  assert.equal(
+    await page.locator(".term-help").count(),
+    contextualGlossary.length,
+  );
   const sourceFooter = page.locator(".site-footer");
   assert.match(await sourceFooter.innerText(), /Created by Kiril Klein, PhD/);
   assert.equal(
@@ -191,6 +199,10 @@ try {
       target.replace("help-", ""),
       await panel.locator("p").innerText(),
     );
+    assert.equal(
+      await panel.locator(".term-help-more").getAttribute("href"),
+      `glossary/#${target.replace("help-", "")}`,
+    );
     assert.deepEqual(await simulationView(), beforeHelp);
     await page.keyboard.press("Escape");
     assert.equal(await panel.isVisible(), false);
@@ -261,7 +273,14 @@ try {
   assert.equal(await page.locator(".glossary").getAttribute("open"), null);
   await page.locator(".glossary summary").focus();
   await page.keyboard.press("Enter");
-  assert.ok((await page.locator(".glossary dd").count()) >= definitions.size);
+  assert.equal(
+    await page.locator(".glossary dd").count(),
+    contextualGlossary.length,
+  );
+  assert.equal(
+    await page.locator('.glossary-more[href="glossary/"]').count(),
+    1,
+  );
   for (const [key, text] of definitions) {
     assert.equal(
       await page.locator(`[data-glossary="${key}"]`).innerText(),
