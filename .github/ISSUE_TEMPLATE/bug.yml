@@ -1,0 +1,27 @@
+name: Bug
+description: Something in the app misbehaves, or an estimate looks wrong
+labels: [bug]
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Scenario link
+      description: Use "Share" in the app, or paste the URL. This reproduces your exact setup.
+      placeholder: https://kirilklein.github.io/causal-sandbox/?...
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Browser and device
+      placeholder: e.g. Firefox 130 on macOS, Safari on iPhone
