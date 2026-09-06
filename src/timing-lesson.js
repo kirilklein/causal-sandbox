@@ -53,7 +53,7 @@ const examples = {
   treatment: {
     label: "Affected by A only",
     edges: ["AV"],
-    text: "A changes V, but V does not affect Y.",
+    text: "A changes V, but V does not affect Y. Adjusting for V would add no bias here, only lose precision by absorbing part of A’s variation.",
   },
   outcome: {
     label: "Affected by Y only",
