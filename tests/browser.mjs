@@ -267,8 +267,12 @@ try {
     );
   }
   assert.equal(
-    await page.locator(".help-credit a").getAttribute("href"),
-    "https://carlos-mendez.org/post/stata_matching/web_app/",
+    await page
+      .locator(
+        'a[href="https://carlos-mendez.org/post/stata_matching/web_app/"]',
+      )
+      .count(),
+    0,
   );
   assert.deepEqual(await simulationView(), beforeHelp);
   await page.keyboard.press("Escape");
