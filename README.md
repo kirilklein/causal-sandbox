@@ -1,8 +1,8 @@
-# Causal Sandbox
+# Causal Sandbox: Interactive Causal Inference Simulator
 
 **Learn causal inference by changing the world.**
 
-Change a setting and compare your estimate with the known causal effect. Start with guided lessons, then explore the full sandbox. Runs entirely in your browser.
+A free, browser-based causal inference simulator and teaching tool. Increase confounding, hide a confounder, condition on a collider, or break positivity, and watch regression adjustment, propensity score IPW, AIPW, and TMLE estimates succeed or fail against the known true effect. Start with guided lessons, then explore the full sandbox. Nothing to install.
 
 ## Guided lessons
 
