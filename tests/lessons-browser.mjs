@@ -547,7 +547,9 @@ try {
     .tap();
   assert.equal(await result(), ninth);
   await page.getByRole("link", { name: "Open full sandbox" }).click();
+  await page.getByRole("tab", { name: "World" }).click();
   await page.locator("#world-select").selectOption("both");
+  await page.getByRole("tab", { name: "Analysis" }).click();
   await page.locator('input[value="K"]').check();
   await page.goto(`${url}?level=9`);
   assert.equal(await result(), ninth);
@@ -825,7 +827,9 @@ try {
     .tap();
   assert.equal(await result(), tenth);
   await page.getByRole("link", { name: "Explore the full sandbox" }).tap();
+  await page.getByRole("tab", { name: "World" }).click();
   await page.locator("#world-select").selectOption("both");
+  await page.getByRole("tab", { name: "Analysis" }).click();
   await page.locator('input[value="K"]').check();
   await page.goto(`${url}?level=10`);
   assert.equal(await result(), tenth);
@@ -847,9 +851,11 @@ try {
   }
   // Contents and the forward journey agree, including after a sandbox visit.
   await page.getByRole("link", { name: "Open full sandbox" }).click();
+  await page.getByRole("tab", { name: "World" }).click();
   await page.locator("#world-select").selectOption("both");
+  await page.getByRole("tab", { name: "Analysis" }).click();
   await page.locator('input[value="K"]').check();
-  await page.getByRole("link", { name: "Start the lessons" }).click();
+  await page.getByRole("link", { name: "Guided lessons", exact: true }).click();
   assert.equal(await result(), first);
   const titles = [
     "A randomized experiment",

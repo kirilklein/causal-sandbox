@@ -1,0 +1,634 @@
+/* Sandbox layout is scoped because lessons share the base controls and theme. */
+.sandbox {
+  max-width: 1440px;
+  padding: 28px 32px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sandbox [hidden] {
+  display: none !important;
+}
+.sandbox .intro {
+  margin-bottom: 24px;
+}
+.sandbox .intro h1 {
+  font-size: clamp(26px, 2.5vw, 34px);
+  letter-spacing: -1px;
+  margin: 8px 0;
+}
+.sandbox .intro p {
+  font-size: 14px;
+  max-width: none;
+}
+.sandbox h2 {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+.sandbox h3 {
+  font-size: 15px;
+  margin: 0;
+}
+.sandbox :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.sandbox select {
+  min-width: 0;
+  width: 100%;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.sandbox .scenario-bar {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.5fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+.sandbox .scenario-picker label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.sandbox .scenario-context h2 {
+  font-size: 17px;
+}
+.sandbox .scenario-context p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+}
+.sandbox .scenario-actions {
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  font-size: 12px;
+}
+.sandbox #scenario-status {
+  color: var(--text-secondary);
+}
+.sandbox a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+.sandbox .restart-button {
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+.sandbox .workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: none;
+  gap: 24px;
+}
+.sandbox .controls-column {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.sandbox .panel {
+  padding: 24px;
+  grid-area: auto;
+  min-width: 0;
+  box-shadow: 0 2px 8px var(--shadow-soft);
+  scroll-margin-top: 72px;
+}
+.sandbox .panel-heading {
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  gap: 6px 12px;
+}
+.sandbox .small-tag {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.sandbox .world-picker {
+  margin: 0;
+  min-width: 0;
+  gap: 8px;
+}
+.sandbox .world-picker label {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text);
+}
+.sandbox #world-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.sandbox summary {
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+}
+.sandbox summary span {
+  float: none;
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.sandbox .relationship-help summary {
+  font-size: 12px;
+  padding: 2px 0;
+}
+.sandbox .relationship-help p {
+  margin: 8px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.sandbox .graph-details {
+  margin-top: 16px;
+}
+.sandbox #dag {
+  height: auto;
+  max-height: 230px;
+}
+.sandbox .graph-wrap {
+  margin: 12px 0 0;
+}
+.sandbox .graph-key {
+  gap: 8px 16px;
+  padding: 8px 0;
+  font-size: 11px;
+}
+.sandbox #graph-hint {
+  display: block;
+  margin-left: 0;
+  font-size: 11px;
+}
+.sandbox .graph-toggle {
+  font-size: 13px;
+  min-height: 36px;
+}
+.sandbox .graph-toggle-help,
+.sandbox .panel-description {
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+.sandbox .controls {
+  margin-top: 16px;
+}
+.sandbox .control-group {
+  padding: 12px 0;
+}
+.sandbox .control-group:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.sandbox .group-heading,
+.sandbox .control-group summary {
+  font-size: 14px;
+  letter-spacing: 0;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+.sandbox .group-heading {
+  margin-bottom: 12px;
+}
+.sandbox .slider-pair {
+  gap: 20px;
+  margin: 12px 0 4px;
+}
+.sandbox .slider-control > span,
+.sandbox .slider-control output {
+  font-size: 14px;
+}
+.sandbox .slider-control small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.sandbox input[type="range"] {
+  margin: 18px 0;
+  height: 6px;
+}
+.sandbox input[type="range"]::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+}
+.sandbox input[type="range"]::-moz-range-thumb {
+  width: 17px;
+  height: 17px;
+}
+.sandbox .adjust-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 12px 0;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.sandbox .choice-explanation b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.sandbox .adjust-choice {
+  gap: 8px;
+}
+.sandbox .adjust-option {
+  min-height: 36px;
+  gap: 6px;
+}
+.sandbox .adjust-option input {
+  width: 18px;
+  height: 18px;
+}
+.sandbox .adjust-choice > .help-button {
+  font-size: 13px;
+}
+.sandbox .graph-view {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.sandbox .graph-variable {
+  min-width: 36px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-muted);
+}
+.sandbox .graph-variable[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+  color: var(--text);
+}
+.sandbox .graph-variable[aria-pressed="false"] {
+  border-style: dashed;
+}
+.sandbox .model-controls {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.sandbox .model-intro {
+  display: block;
+  margin-bottom: 16px;
+}
+.sandbox .model-intro small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.sandbox .model-pair {
+  gap: 16px;
+}
+.sandbox .model-control {
+  grid-template-rows: auto auto auto auto;
+  align-content: start;
+  gap: 6px;
+}
+.sandbox .model-control .term-label {
+  display: flex;
+  min-height: 24px;
+  font-size: 12px;
+}
+.sandbox .model-control .term-label .help-button {
+  text-align: center;
+  min-width: 24px;
+  margin-left: 4px;
+}
+.sandbox .model-control label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.sandbox .model-pair small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.sandbox .truth-card {
+  margin: 0 0 24px;
+  padding: 16px;
+}
+.sandbox .truth-card span {
+  font-size: 14px;
+}
+.sandbox .truth-card small {
+  font-size: 12px;
+}
+.sandbox .truth-card strong {
+  margin-left: auto;
+  font-size: 30px;
+}
+.sandbox .chart-axis,
+.sandbox .effect-row {
+  grid-template-columns: 155px minmax(0, 1fr) 60px;
+  gap: 12px;
+}
+.sandbox .chart-axis,
+.sandbox .chart-axis b {
+  font-size: 10px;
+}
+.sandbox .effect-row {
+  min-height: 54px;
+  height: auto;
+}
+.sandbox .effect-row > .estimator-label {
+  font-size: 13px;
+}
+.sandbox .effect-value strong {
+  font-size: 16px;
+}
+.sandbox .effect-row .effect-value small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.sandbox .effect-track {
+  height: 40px;
+  margin-inline: 7px;
+}
+.sandbox .starting-dot,
+.sandbox .start-key {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--text-muted);
+  background: var(--surface);
+  border-radius: 50%;
+}
+.sandbox .starting-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.sandbox .estimate-dot {
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+}
+.sandbox .off-scale {
+  width: 18px;
+  height: 24px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 30px;
+  font-style: normal;
+  line-height: 20px;
+  text-align: center;
+  color: var(--text);
+}
+.sandbox .estimate-key {
+  margin: 16px 0 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.sandbox .estimate-key > span:last-child {
+  display: inline;
+  font-size: 12px;
+}
+.sandbox .comparison-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 8px 0 16px;
+}
+.sandbox .comparison-key span {
+  flex-basis: 100%;
+}
+.sandbox .now-key {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  margin-left: 10px;
+}
+.sandbox .lesson {
+  margin: 20px 0 12px;
+  padding: 14px;
+}
+.sandbox .lesson p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.sandbox .lesson-icon {
+  display: none;
+}
+.sandbox .overlap-help {
+  gap: 20px;
+  font-size: 12px;
+}
+.sandbox #overlap-warning {
+  font-size: 13px;
+}
+.sandbox .data {
+  padding: 16px 0 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.sandbox .population-meta {
+  font-size: 12px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.sandbox .population-meta b {
+  font-size: 12px;
+}
+.sandbox .canvas-wrap,
+.sandbox canvas {
+  height: 180px;
+}
+.sandbox .sample-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 16px 0 0;
+}
+.sandbox .overlap-experiment {
+  margin: 0;
+  font-size: 14px;
+}
+.sandbox .overlap-experiment .panel-heading {
+  margin-bottom: 12px;
+}
+.sandbox .overlap-estimates {
+  gap: 16px;
+}
+.sandbox .overlap-estimates > div {
+  padding: 16px;
+}
+.sandbox footer {
+  font-size: 12px;
+  padding: 24px 0;
+  gap: 16px;
+}
+.sandbox .workspace-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.sandbox [role="tablist"] {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-subtle);
+}
+.sandbox [role="tab"] {
+  min-height: 40px;
+  padding: 8px 24px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.sandbox [role="tab"][aria-selected="true"] {
+  border-color: var(--border-strong);
+  color: var(--text);
+  background: var(--surface);
+}
+.sandbox .results-jump {
+  display: none;
+}
+@media (min-width: 1001px) and (min-height: 700px) {
+  .sandbox .estimates {
+    position: sticky;
+    top: 20px;
+  }
+}
+@media (max-width: 1200px) {
+  .sandbox .scenario-bar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  }
+  .sandbox .scenario-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .sandbox .model-pair {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1000px) {
+  .sandbox .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sandbox .workspace-nav {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    gap: 8px;
+    padding: 10px 0;
+    margin-bottom: 16px;
+    background: var(--page);
+    border-bottom: 1px solid var(--border);
+  }
+  .sandbox .workspace-nav a {
+    display: block;
+    text-align: center;
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    background: var(--surface);
+  }
+}
+@media (max-width: 600px) {
+  .sandbox {
+    padding: 20px 16px 0;
+  }
+  .sandbox-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .sandbox-header .brand {
+    font-size: 21px;
+    flex-basis: auto;
+    flex-grow: 1;
+  }
+  .sandbox-header .theme-control {
+    margin-left: 0;
+  }
+  .sandbox .scenario-bar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .sandbox .scenario-actions {
+    gap: 10px;
+  }
+  .sandbox .scenario-actions a {
+    flex-basis: 100%;
+  }
+  .sandbox .panel {
+    padding: 20px;
+  }
+  .sandbox .slider-pair {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .sandbox .effect-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "name value" "track track";
+    gap: 0 8px;
+    padding: 8px 0;
+  }
+  .sandbox .estimator-label {
+    grid-area: name;
+  }
+  .sandbox .effect-value {
+    grid-area: value;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .sandbox .effect-track {
+    grid-area: track;
+  }
+  .sandbox .chart-axis {
+    display: block;
+    margin-inline: 7px;
+  }
+  .sandbox .chart-axis > span {
+    display: none;
+  }
+  .sandbox .overlap-experiment-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sandbox .overlap-estimates {
+    gap: 10px;
+  }
+  .sandbox .overlap-estimates > div {
+    padding: 12px;
+  }
+  .sandbox footer,
+  .sandbox footer > span {
+    flex-wrap: wrap;
+  }
+}

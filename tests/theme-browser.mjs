@@ -117,6 +117,13 @@ try {
   await page.goto(`${url}?sandbox`);
   await page.locator(".effect-row").last().waitFor();
   assert.equal(await theme(), "dark");
+  await page.locator(".data summary").click();
+  await page.waitForFunction(() =>
+    document
+      .querySelector("#population")
+      .getAttribute("aria-label")
+      .startsWith("Outcome clouds"),
+  );
   const sandbox = await snapshot();
   const canvas = () => page.locator("canvas").evaluate((el) => el.toDataURL());
   const darkCanvas = await canvas();

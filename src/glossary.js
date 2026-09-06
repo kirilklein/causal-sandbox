@@ -17,7 +17,7 @@ export const glossary = {
   },
   adjustment: {
     title: "Adjustment",
-    text: "Adjustment uses selected variables to account for differences between treatment groups. Here the selection feeds regression adjustment, IPW, and AIPW; raw association and naive regression ignore it. Only visible variables can be selected, and including a mediator or collider can make the comparison misleading.",
+    text: "Adjustment uses selected variables to account for differences between treatment groups. Here the selection feeds regression adjustment, IPW, and AIPW; the unadjusted comparison ignores it. Diagram display settings do not affect adjustment. Including a mediator or collider can make the comparison misleading.",
   },
   ate: {
     title: "Total effect / average treatment effect (ATE)",
@@ -45,7 +45,7 @@ export const glossary = {
   },
   ess: {
     title: "Effective sample size",
-    text: "Effective sample size summarizes how concentrated the weights are: a few large weights make the weighted sample act smaller. Here the warning reports one pooled value across both arms using the clipped inverse propensity weights, not the number of people removed. It is a weight-concentration diagnostic, not a confidence interval or a guarantee of a valid causal estimate.",
+    text: "Effective sample size summarizes how concentrated the weights are: a few large weights make the weighted sample act smaller. Here the warning reports it separately for treated and untreated people using the clipped inverse propensity weights, not the number of people removed. It is a weight-concentration diagnostic, not a confidence interval or a guarantee of a valid causal estimate.",
   },
   error: {
     title: "Sample error and bias",

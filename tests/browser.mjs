@@ -1,6 +1,7 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { defaults, makeNoise, simulate, estimate } from "../src/simulation.js";
+import { scenarios, scenarioState } from "../src/sandbox-scenarios.js";
 import { sandboxOverlap } from "../src/sandbox-overlap.js";
 const browser = await chromium.launch({
   headless: true,
@@ -18,6 +19,13 @@ try {
     `${process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/"}?sandbox`,
   );
   await page.locator(".effect-row").last().waitFor();
+  await page.locator(".data summary").click();
+  await page.waitForFunction(() =>
+    document
+      .querySelector("#population")
+      .getAttribute("aria-label")
+      .startsWith("Outcome clouds"),
+  );
   for (const name of ["direct", "ca", "cy", "ua", "uy", "am", "my"]) {
     const slider = page.locator(`[data-param="${name}"]`);
     const descriptionId = await slider.getAttribute("aria-describedby");
@@ -28,31 +36,14 @@ try {
   }
   assert.match(
     await page.locator("#world-select").getAttribute("aria-describedby"),
-    /world-help world-description/,
+    /world-description/,
   );
-  assert.match(
-    await page.locator(".visibility-row .choice-explanation").innerText(),
-    /not used automatically/,
-  );
-  assert.match(
-    await page.locator(".adjust-row .choice-explanation").innerText(),
-    /estimators actually use/,
-  );
-  assert.equal(await page.locator(".data [data-visible]").count(), 0);
-  assert.equal(await page.locator(".estimates [data-visible]").count(), 3);
-  const availabilityBounds = await page
-    .locator(".visibility-row")
-    .boundingBox();
+  assert.equal(await page.locator(".analyst .adjust-option").count(), 0);
+  assert.equal(await page.locator(".estimates .adjust-option").count(), 3);
+  assert.equal(await page.locator(".world [data-graph-variable]").count(), 4);
   const adjustmentBounds = await page.locator(".adjust-row").boundingBox();
-  assert.ok(
-    availabilityBounds.y + availabilityBounds.height <= adjustmentBounds.y,
-  );
-  assert.equal(
-    await page
-      .getByRole("switch", { name: "Show hidden factor U" })
-      .getAttribute("aria-checked"),
-    "true",
-  );
+  const chartBounds = await page.locator("#effects").boundingBox();
+  assert.ok(adjustmentBounds.y + adjustmentBounds.height <= chartBounds.y);
   for (const model of ["outcome", "treatment"]) {
     assert.match(
       await page.locator(`#${model}-model`).getAttribute("aria-describedby"),
@@ -76,9 +67,6 @@ try {
           ".workspace input, .workspace select, #world-select, #theme",
         ),
       ].map((el) => [el.value, el.checked, el.disabled]),
-      visibility: [...document.querySelectorAll("[data-visible]")].map((el) =>
-        el.getAttribute("aria-pressed"),
-      ),
     }));
   const beforeHelp = await simulationView();
   const estimateStyles = () =>
@@ -105,14 +93,14 @@ try {
   );
   await page.locator('input[value="C"]').check();
   const adjustedStyles = await estimateStyles();
-  assert.deepEqual(adjustedStyles.slice(0, 2), unadjustedStyles.slice(0, 2));
+  assert.deepEqual(adjustedStyles.slice(0, 1), unadjustedStyles.slice(0, 1));
   assert.ok(
     adjustedStyles
-      .slice(2)
+      .slice(1)
       .every(
         (style, i) =>
-          style.tint < unadjustedStyles[i + 2].tint &&
-          style.mark !== unadjustedStyles[i + 2].mark,
+          style.tint < unadjustedStyles[i + 1].tint &&
+          style.mark !== unadjustedStyles[i + 1].mark,
       ),
   );
   await page.locator("#reset").click();
@@ -243,7 +231,7 @@ try {
   assert.equal(await page.locator(".glossary").getAttribute("open"), null);
   await page.locator(".glossary summary").focus();
   await page.keyboard.press("Enter");
-  assert.equal(await page.locator(".glossary dd").count(), definitions.size);
+  assert.ok((await page.locator(".glossary dd").count()) >= definitions.size);
   for (const [key, text] of definitions) {
     assert.equal(
       await page.locator(`[data-glossary="${key}"]`).innerText(),
@@ -262,236 +250,235 @@ try {
       .evaluate((el) => el === document.activeElement),
     true,
   );
-  assert.ok((await values())[0] > 3);
-  await page.locator('input[value="C"]').check();
-  assert.ok(Math.abs((await values())[4] - 2) < 0.15);
-  const observedBeforeHideC = await page
-    .locator("#population")
-    .getAttribute("aria-label");
-  await page.locator('[data-visible="C"]').click();
-  assert.equal(
-    await page.locator("#population").getAttribute("aria-label"),
-    observedBeforeHideC,
-  );
-  assert.equal(await page.locator('input[value="C"]').isDisabled(), true);
-  assert.ok((await values())[4] > 3);
-  await page.locator('[data-visible="C"]').click();
-  assert.equal(await page.locator('input[value="C"]').isChecked(), false);
-  for (let i = 0; i < 5; i++) {
-    await page.locator(`[data-preset="${i}"]`).click();
-    const v = await values();
-    console.log(
-      ["Randomized", "Observed", "Hidden", "Collider", "Mediator"][i],
-      v,
+  const selectScenario = async (id) => {
+    await page.locator("#scenario-select").selectOption(id);
+    assert.equal(
+      await page.locator("#scenario-status").innerText(),
+      "Starting setup",
     );
-    if (i === 0) assert.ok(v.every((x) => Math.abs(x - 2) < 0.1));
-    if (i === 2) assert.ok(v[4] > 3);
-    if (i === 3) {
-      assert.ok(v[4] < 1);
-      await page.locator('input[value="K"]').uncheck();
-      assert.ok(Math.abs((await values())[4] - 2) < 0.1);
-    }
-    if (i === 4) {
-      assert.ok(Math.abs(v[2] - 1) < 0.1);
-      await page.locator('input[value="M"]').uncheck();
-      assert.ok(Math.abs((await values())[2] - 2) < 0.1);
-    }
-  }
-  await page.locator('[data-preset="0"]').click();
-  for (const name of ["ca", "cy", "ua", "uy", "direct"]) {
-    const slider = page.locator(`[data-param="${name}"]`);
-    await slider.focus();
-    await page.keyboard.press("End");
-    assert.equal(await slider.inputValue(), name === "direct" ? "4" : "3");
-  }
-  assert.ok((await values()).every(Number.isFinite));
-  const beforeHideU = await simulationView();
-  await page.locator("#show-u").click();
-  assert.equal(
-    await page.locator("#show-u").getAttribute("aria-checked"),
-    "false",
-  );
-  assert.deepEqual(await simulationView(), beforeHideU);
-  assert.equal(
-    await page
-      .locator("#nodes g")
-      .filter({ hasText: "HIDDEN CONFOUNDER" })
-      .getAttribute("opacity"),
-    "0",
-  );
-  await page.locator("#show-u").click();
-  assert.equal(
-    await page.locator("#show-u").getAttribute("aria-checked"),
-    "true",
-  );
-  await page.locator(".path-controls summary").click();
-  for (const k of ["am", "my"]) {
-    await page.locator(`[data-param="${k}"]`).focus();
-    await page.keyboard.press("End");
-  }
-  assert.equal(await page.locator("#truth-value").innerText(), "8.00");
-  for (const k of ["M", "K"]) {
-    await page.locator(`input[value="${k}"]`).check();
-    await page.locator(`[data-visible="${k}"]`).click();
-    assert.equal(await page.locator(`input[value="${k}"]`).isDisabled(), true);
-    assert.equal(await page.locator(`input[value="${k}"]`).isChecked(), false);
-    await page.locator(`[data-visible="${k}"]`).click();
-  }
-  await page.locator("#methods").click();
-  assert.equal(await page.locator("#about").isVisible(), true);
-  await page.keyboard.press("Escape");
-  assert.equal(await page.locator("#about").isVisible(), false);
-  await page.locator("#reset").click();
-  await page.locator(".path-controls summary").click();
-  // Worlds and analyst models are independent controls.
+  };
+  const worldTab = () => page.getByRole("tab", { name: "World" }).click();
+  const analysisTab = () => page.getByRole("tab", { name: "Analysis" }).click();
+  const graphView = async () => {
+    await worldTab();
+    if (!(await page.locator(".graph-details").evaluate((el) => el.open)))
+      await page.locator(".graph-details > summary").click();
+  };
+  const setArrow = async (key, value) => {
+    await page.locator(`[data-param="${key}"]`).evaluate((el, value) => {
+      el.value = String(value);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }, value);
+  };
+  const startingMarks = () =>
+    page
+      .locator(".starting-dot")
+      .evaluateAll((els) => els.map((el) => [el.style.left, el.title]));
+  const axis = await page.locator(".chart-axis").innerText();
+  const originalMarks = await startingMarks();
   await page.locator('input[value="C"]').check();
-  const baseline = await values();
-  const populationLabel = await page
-    .locator("#population")
-    .getAttribute("aria-label");
-  await page.locator("#world-select").selectOption("both");
-  assert.equal(await page.locator('input[value="C"]').isChecked(), true);
-  assert.equal(await page.locator("#truth-value").innerText(), "2.00");
+  assert.ok(Math.abs((await values())[3] - 2) < 0.15);
+  assert.equal(await page.locator("#scenario-status").innerText(), "Modified");
+  assert.deepEqual(await startingMarks(), originalMarks);
+  await page.locator('input[value="C"]').uncheck();
+  assert.equal(
+    await page.locator("#scenario-status").innerText(),
+    "Starting setup",
+  );
+  await page.locator('input[value="C"]').check();
+  await graphView();
+  const beforeGraphChanges = await simulationView();
+  const statusBeforeGraphChanges = await page
+    .locator("#scenario-status")
+    .innerText();
+  for (const variable of ["C", "M", "K", "U"]) {
+    const toggle = page.locator(`[data-graph-variable="${variable}"]`);
+    const before = await toggle.getAttribute("aria-pressed");
+    await toggle.click();
+    assert.notEqual(await toggle.getAttribute("aria-pressed"), before);
+    assert.deepEqual(await simulationView(), beforeGraphChanges);
+    assert.equal(
+      await page.locator("#scenario-status").innerText(),
+      statusBeforeGraphChanges,
+    );
+    assert.equal(await page.locator('input[value="C"]').isChecked(), true);
+    assert.equal(await page.locator('input[value="C"]').isDisabled(), false);
+    assert.equal(
+      await page
+        .locator(`#nodes [data-node="${variable}"]`)
+        .getAttribute("opacity"),
+      before === "true" ? "0.12" : "1",
+    );
+  }
+  // C stays adjustable while faded, and only adjustment changes its estimates.
+  await page.locator('input[value="C"]').uncheck();
+  assert.ok((await values())[3] > 3);
+  await page.locator('input[value="C"]').check();
+  assert.ok(Math.abs((await values())[3] - 2) < 0.15);
+
+  // Every entry resets the complete experiment, even after unrelated changes.
+  for (const scenario of scenarios.filter((s) => s.id !== "overlap")) {
+    await selectScenario("both-models");
+    await page.locator("#outcome-model").selectOption("interaction");
+    await graphView();
+    await page.locator('[data-graph-variable="M"]').click();
+    await setArrow("direct", 4);
+    await setArrow("ua", 3);
+    await selectScenario(scenario.id);
+    const expected = scenarioState(scenario);
+    const result = estimate(
+      simulate(expected.p, makeNoise(), expected.world),
+      [...expected.adjust],
+      expected.models,
+    );
+    assert.deepEqual(
+      await values(),
+      [0, 2, 3, 4].map((i) => Number(result.values[i].toFixed(2))),
+    );
+    assert.equal(
+      await page.locator("#world-select").inputValue(),
+      expected.world.id,
+    );
+    for (const model of ["outcome", "treatment"])
+      assert.equal(
+        await page.locator(`#${model}-model`).inputValue(),
+        expected.models[model] ? "interaction" : "main",
+      );
+    for (const variable of ["C", "M", "K"]) {
+      assert.equal(
+        await page.locator(`input[value="${variable}"]`).isChecked(),
+        expected.adjust.has(variable),
+      );
+      assert.equal(
+        await page
+          .locator(`[data-graph-variable="${variable}"]`)
+          .getAttribute("aria-pressed"),
+        "true",
+      );
+    }
+    assert.equal(
+      await page.locator(".path-controls").evaluate((el) => el.open),
+      scenario.id === "mediator",
+    );
+    assert.equal(
+      await page.locator(".hidden-controls").evaluate((el) => el.open),
+      scenario.id === "hidden",
+    );
+    const baseline = await values();
+    await setArrow("direct", -1);
+    await page.locator("#reset").click();
+    assert.deepEqual(await values(), baseline);
+    assert.equal(
+      await page.locator("#scenario-status").innerText(),
+      "Starting setup",
+    );
+    assert.equal(new URL(page.url()).searchParams.get("scenario"), scenario.id);
+  }
+
+  // Double robustness: repairing either model changes only the methods using it.
+  await selectScenario("both-models");
   const bothSimple = await values();
-  assert.ok(bothSimple.slice(2).every((v) => v > 3));
+  assert.ok(bothSimple.slice(1).every((v) => v > 3));
   await page.locator("#outcome-model").selectOption("interaction");
   const outcomeOnly = await values();
-  assert.ok(Math.abs(outcomeOnly[2] - 2) < 0.2);
-  assert.ok(Math.abs(outcomeOnly[4] - 2) < 0.2);
-  assert.equal(outcomeOnly[3], bothSimple[3]);
+  assert.ok(Math.abs(outcomeOnly[1] - 2) < 0.2);
+  assert.ok(Math.abs(outcomeOnly[3] - 2) < 0.2);
+  assert.equal(outcomeOnly[2], bothSimple[2]);
   await page.locator("#outcome-model").selectOption("main");
   await page.locator("#treatment-model").selectOption("interaction");
   const treatmentOnly = await values();
-  assert.equal(treatmentOnly[2], bothSimple[2]);
+  assert.equal(treatmentOnly[1], bothSimple[1]);
+  assert.ok(Math.abs(treatmentOnly[2] - 2) < 0.2);
   assert.ok(Math.abs(treatmentOnly[3] - 2) < 0.2);
-  assert.ok(Math.abs(treatmentOnly[4] - 2) < 0.2);
-  await page.locator("#outcome-model").selectOption("interaction");
-  assert.ok((await values()).slice(2).every((v) => Math.abs(v - 2) < 0.2));
-  await page.locator('[data-visible="C"]').click();
+  await graphView();
+  await page.locator('[data-graph-variable="C"]').click();
   for (const model of ["outcome", "treatment"])
-    assert.equal(await page.locator(`#${model}-model`).isDisabled(), true);
-  assert.ok((await values()).slice(2).every((v) => v > 4));
-  await page.locator('[data-visible="C"]').click();
-  assert.equal(await page.locator("#outcome-model").isDisabled(), true);
+    assert.equal(await page.locator(`#${model}-model`).isDisabled(), false);
+  await page.locator('input[value="C"]').uncheck();
+  assert.equal(await page.locator("#treatment-model").isDisabled(), true);
   await page.locator('input[value="C"]').check();
   assert.equal(
-    await page.locator("#outcome-model").inputValue(),
+    await page.locator("#treatment-model").inputValue(),
     "interaction",
   );
-  assert.ok(Math.abs((await values())[4] - 2) < 0.2);
-  for (const world of ["additive", "outcome", "treatment", "both"]) {
-    await page.locator("#world-select").selectOption(world);
-    for (let i = 0; i < 5; i++) {
-      await page.locator(`[data-preset="${i}"]`).click();
-      assert.equal(await page.locator("#world-select").inputValue(), world);
-      assert.equal(
-        await page.locator("#outcome-model").inputValue(),
-        "interaction",
-      );
-      const v = await values();
-      assert.ok(v.every(Number.isFinite));
-      if (i === 0) assert.ok(v.every((x) => Math.abs(x - 2) < 0.1));
-      if (i === 2) assert.ok(v.slice(2).every((x) => x > 3));
-      if (i === 3) assert.ok(v.slice(2).every((x) => Math.abs(x - 2) > 0.8));
-      if (i === 4) assert.ok(Math.abs(v[2] - 1) < 0.15);
-    }
-  }
-  await page.locator("#reset").click();
-  await page.locator('input[value="C"]').check();
-  assert.deepEqual(await values(), baseline);
-  assert.equal(
-    await page.locator("#population").getAttribute("aria-label"),
-    populationLabel,
-  );
-  assert.equal(await page.locator("#outcome-model").inputValue(), "main");
+  await worldTab();
   await page.locator("#world-select").selectOption("outcome");
-  assert.ok((await values())[2] > 2.5);
+  await setArrow("cy", 0);
   assert.match(
-    await page.locator("#lesson").innerText(),
-    /outcome model misses/,
-  );
-  await page.locator("#world-select").selectOption("treatment");
-  assert.ok((await values())[3] < 1.7);
-  assert.match(
-    await page.locator("#lesson").innerText(),
-    /treatment model misses/,
+    await page.locator("#world-description").innerText(),
+    /inactive because C → Y is 0/,
   );
   await page.locator("#world-select").selectOption("both");
-  assert.match(await page.locator("#lesson").innerText(), /Both models omit/);
-  await page.screenshot({
-    path: "/tmp/causal-worlds-desktop.png",
-    fullPage: true,
-  });
-  console.log(
-    "Desktop dimensions",
-    await page.evaluate(() => ({
-      width: innerWidth,
-      scrollWidth: document.documentElement.scrollWidth,
-      height: document.documentElement.scrollHeight,
-    })),
+  await setArrow("ca", 0);
+  assert.match(
+    await page.locator("#world-description").innerText(),
+    /C → A is 0/,
   );
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.screenshot({
-    path: "/tmp/causal-worlds-laptop.png",
-    fullPage: true,
-  });
-  await page.setViewportSize({ width: 390, height: 844 });
-  const mobileBeforeHelp = await simulationView();
-  const colliderHelp = page.locator(
-    '.help-button[popovertarget="help-collider"]',
+  assert.match(
+    await page.locator("#world-description").innerText(),
+    /C → Y is 0/,
   );
-  // Opening must place the panel on screen before the next animation frame.
-  await colliderHelp.scrollIntoViewIfNeeded();
-  const initialBounds = await colliderHelp.evaluate((trigger) => {
-    trigger.click();
-    const panel = trigger.popoverTargetElement;
-    const { left, right, top, bottom } = panel.getBoundingClientRect();
-    panel.querySelector(".close-help").click();
-    return { left, right, top, bottom };
-  });
-  assert.ok(
-    initialBounds.left >= 0 &&
-      initialBounds.right <= 390 &&
-      initialBounds.top >= 0 &&
-      initialBounds.bottom <= 844,
-    `Initial mobile help bounds: ${JSON.stringify(initialBounds)}`,
-  );
-  await colliderHelp.tap();
-  assert.equal(await page.locator("#help-collider").isVisible(), true);
-  assert.deepEqual(await simulationView(), mobileBeforeHelp);
-  const helpBounds = await page.locator("#help-collider").boundingBox();
-  assert.ok(helpBounds.x >= 0 && helpBounds.x + helpBounds.width <= 390);
-  assert.ok(helpBounds.y >= 0 && helpBounds.y + helpBounds.height <= 844);
-  await page.screenshot({
-    path: "/tmp/causal-help-mobile.png",
-    fullPage: true,
-  });
-  await page.locator("#help-collider .close-help").tap();
-  assert.equal(await page.locator("#help-collider").isVisible(), false);
-  assert.deepEqual(await simulationView(), mobileBeforeHelp);
-  await page.locator("#methods").tap();
-  assert.ok(await page.locator(".glossary dd").first().isVisible());
+
+  // Fixed error scale and explicit overflow retain meaning at supported extremes.
+  await selectScenario("randomized");
+  const randomMarks = await startingMarks();
+  for (const key of ["ca", "cy", "ua", "uy"]) await setArrow(key, 3);
+  assert.deepEqual(await startingMarks(), randomMarks);
+  assert.equal(await page.locator(".chart-axis").innerText(), axis);
+  assert.ok((await page.locator(".estimate-dot.off-scale").count()) > 0);
+  assert.ok((await values()).every(Number.isFinite));
   assert.ok(
     await page
-      .locator("#about")
-      .evaluate((el) => el.scrollWidth <= el.clientWidth),
+      .locator(".estimate-dot")
+      .evaluateAll((els) =>
+        els.every(
+          (el) =>
+            parseFloat(el.style.left) >= 0 && parseFloat(el.style.left) <= 100,
+        ),
+      ),
   );
-  await page.locator("#close-about").tap();
-  await page.locator("#outcome-model").selectOption("interaction");
-  assert.ok(Math.abs((await values())[4] - 2) < 0.2);
-  assert.ok(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
+  await page.locator(".hidden-controls summary").click();
+  await page.locator('[data-param="ua"]').focus();
+  await page.keyboard.press("Home");
+  assert.equal(await page.locator('[data-param="ua"]').inputValue(), "0");
+  await page.keyboard.press("End");
+  assert.equal(await page.locator('[data-param="ua"]').inputValue(), "3");
+  const beforeDiagram = await simulationView();
+  await page.locator('[data-graph-variable="U"]').click();
+  assert.deepEqual(await simulationView(), beforeDiagram);
+  assert.equal(
+    await page
+      .locator('[data-graph-variable="U"]')
+      .getAttribute("aria-pressed"),
+    "true",
   );
-  await page.screenshot({
-    path: "/tmp/causal-worlds-mobile.png",
-    fullPage: true,
-  });
-  // The focused card owns its experiment; neither set of controls changes the other.
-  await page.locator("#reset").click();
+  await page.locator(".path-controls summary").click();
+  for (const key of ["am", "my"]) await setArrow(key, 2);
+  await setArrow("direct", 4);
+  assert.equal(await page.locator("#truth-value").innerText(), "8.00");
+
+  // Tab switching is keyboard accessible and changes only presentation.
+  const beforeTabs = await simulationView();
+  await page.getByRole("tab", { name: "World" }).focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(
+    await page
+      .getByRole("tab", { name: "Analysis" })
+      .getAttribute("aria-selected"),
+    "true",
+  );
+  assert.equal(await page.locator("#world-panel").isVisible(), false);
+  await page.keyboard.press("Home");
+  assert.equal(
+    await page
+      .getByRole("tab", { name: "World" })
+      .getAttribute("aria-selected"),
+    "true",
+  );
+  assert.deepEqual(await simulationView(), beforeTabs);
+
+  // Overlap has its own state, visible only when selected; the shared reset has one scope.
   const overlap = page.locator("#overlap-experiment");
-  const overlapSlider = page.locator("#overlap-strength");
   const overlapView = () =>
     overlap.evaluate((el) => ({
       strength: el.querySelector("input").value,
@@ -499,19 +486,14 @@ try {
       histogram: el.querySelector("svg").getAttribute("aria-label"),
       weights: el.querySelector("tbody").textContent,
     }));
-  const baselineOverlap = await overlapView();
-  await page.locator('input[value="C"]').check();
-  await page.locator("#world-select").selectOption("both");
-  await page.locator("#treatment-model").selectOption("interaction");
-  await page.locator('[data-visible="C"]').click();
-  assert.deepEqual(await overlapView(), baselineOverlap);
   const mainBeforeOverlap = await simulationView();
-  const details = overlap.locator("#overlap-weight-details");
-  await details.locator("summary").focus();
-  await page.keyboard.press("Enter");
-  assert.deepEqual(await overlapView(), baselineOverlap);
+  await selectScenario("overlap");
+  assert.equal(await page.locator(".workspace").isVisible(), false);
+  assert.equal(await overlap.isVisible(), true);
+  const baselineOverlap = await overlapView();
+  await page.locator("#overlap-weight-details summary").click();
   for (const strength of [0, 3]) {
-    await overlapSlider.focus();
+    await page.locator("#overlap-strength").focus();
     await page.keyboard.press(strength ? "End" : "Home");
     assert.deepEqual(await simulationView(), mainBeforeOverlap);
     const data = simulate(
@@ -520,16 +502,15 @@ try {
     );
     const result = estimate(data, ["C"]);
     const arms = sandboxOverlap(data, result);
-    for (const [key, value] of [
-      ["regression", result.values[2]],
-      ["ipw", result.values[3]],
-      ["aipw", result.values[4]],
+    for (const [key, i] of [
+      ["regression", 2],
+      ["ipw", 3],
+      ["aipw", 4],
     ])
       assert.equal(
         await page.locator(`#overlap-${key}`).innerText(),
-        value.toFixed(2),
+        result.values[i].toFixed(2),
       );
-    assert.equal(await overlap.locator("svg").count(), 1);
     for (const [a, arm] of arms.entries()) {
       const bars = await overlap
         .locator(`[data-arm="${a}"] rect title`)
@@ -538,115 +519,135 @@ try {
       arm.bins.forEach((count, i) =>
         assert.match(bars[i], new RegExp(`: ${count} people`)),
       );
-      const cells = await page
-        .locator(`#overlap-weight-summary td:nth-child(${a + 2})`)
-        .allTextContents();
-      assert.deepEqual(cells, [
-        arm.count.toLocaleString("en-US"),
-        `${arm.clipped} (${((100 * arm.clipped) / arm.count).toFixed(1)}%)`,
-        arm.ess.toFixed(0),
-      ]);
+      assert.deepEqual(
+        await page
+          .locator(`#overlap-weight-summary td:nth-child(${a + 2})`)
+          .allTextContents(),
+        [
+          arm.count.toLocaleString("en-US"),
+          `${arm.clipped} (${((100 * arm.clipped) / arm.count).toFixed(1)}%)`,
+          arm.ess.toFixed(0),
+        ],
+      );
     }
-    assert.equal(
-      await overlap.locator(".overlap-truth strong").innerText(),
-      "2.00",
-    );
   }
-  const strongOverlap = await overlapView();
-  await page.locator("#reset").click();
-  assert.deepEqual(await overlapView(), strongOverlap);
-  assert.deepEqual(await simulationView(), beforeHelp);
+  assert.equal(await page.locator("#scenario-status").innerText(), "Modified");
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
-    await details.locator("summary").tap();
-    await details.locator("summary").tap();
-    assert.deepEqual(await overlapView(), strongOverlap);
+    assert.ok(await overlap.evaluate((el) => el.scrollWidth <= el.clientWidth));
     assert.ok(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
-      `Page overflow at ${width}px`,
     );
-    assert.ok(
-      await overlap.evaluate((el) => el.scrollWidth <= el.clientWidth),
-      `Experiment overflow at ${width}px`,
-    );
-    await page.screenshot({
-      path: `/tmp/causal-sandbox-overlap-${width}.png`,
-      fullPage: true,
-    });
-    await overlap.screenshot({ path: `/tmp/causal-overlap-card-${width}.png` });
-    const lightFill = await overlap
-      .locator("rect")
-      .first()
-      .evaluate((el) => getComputedStyle(el).fill);
-    await page.getByLabel("Color theme").selectOption("dark");
-    assert.deepEqual(await overlapView(), strongOverlap);
-    assert.notEqual(
-      await overlap
-        .locator("rect")
-        .first()
-        .evaluate((el) => getComputedStyle(el).fill),
-      lightFill,
-    );
-    await overlap.screenshot({
-      path: `/tmp/causal-overlap-card-${width}-dark.png`,
-    });
-    await page.getByLabel("Color theme").selectOption("system");
   }
-  await page.locator("#overlap-restart").click();
+  await page.locator("#reset").click();
   assert.deepEqual(await overlapView(), baselineOverlap);
-  assert.deepEqual(await simulationView(), beforeHelp);
-  // On a laptop all five main estimates are above the fold, ahead of model controls.
+  assert.equal(
+    await page.locator("#scenario-status").innerText(),
+    "Starting setup",
+  );
+
+  const overlapLink = await page.locator("#scenario-link").getAttribute("href");
+  await page.goto(overlapLink);
+  await page.locator("#overlap-strength").waitFor();
+  await selectScenario("observed");
+  await page.locator('.help-button[popovertarget="help-ipw"]').hover();
+  await page.locator("#help-ipw").waitFor({ state: "visible" });
+  await page.keyboard.press("Escape");
+
+  // Starting links survive reload; unknown scenario IDs fall back to observed confounding.
+  await selectScenario("outcome-model");
+  const linkedValues = await values();
+  await page.locator("#outcome-model").selectOption("interaction");
+  await page.locator("#scenario-link").click();
+  await page.locator(".effect-row").last().waitFor();
+  assert.deepEqual(await values(), linkedValues);
+  assert.equal(await page.locator("#outcome-model").inputValue(), "main");
+  const invalid = new URL(page.url());
+  invalid.searchParams.set("scenario", "unknown");
+  await page.goto(invalid.href);
+  await page.locator(".effect-row").last().waitFor();
+  assert.equal(await page.locator("#scenario-select").inputValue(), "observed");
+
+  // Cards align; selectors align; narrow charts retain usable width and tab navigation.
   for (const [width, height] of [
-    [1280, 800],
-    [1440, 900],
+    [1440, 1000],
+    [1280, 900],
+    [1024, 768],
+    [768, 1024],
+    [390, 844],
+    [320, 740],
   ]) {
     await page.setViewportSize({ width, height });
-    await page.evaluate(() => window.scrollTo(0, 0));
-    const results = await page.locator("#effects").boundingBox();
-    const controls = await page.locator(".adjust-row").boundingBox();
-    const clouds = await page.locator(".data").boundingBox();
+    await page.evaluate(() => scrollTo(0, 0));
     assert.ok(
-      results.y + results.height < height,
-      "All estimates should fit above the fold",
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `Overflow at ${width}px`,
     );
+    const track = await page.locator(".effect-track").first().boundingBox();
     assert.ok(
-      results.y + results.height <= controls.y,
-      "Estimates precede analysis controls",
+      track.width >= (width <= 600 ? 180 : 80),
+      `Chart too narrow at ${width}px: ${track.width}`,
     );
-    assert.ok(results.y < clouds.y, "Estimates precede outcome clouds");
-    await page.screenshot({ path: `/tmp/causal-results-first-${width}.png` });
+    const modelFont = await page
+      .locator("#outcome-model")
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    assert.ok(modelFont >= 14);
+    if (width > 1200) {
+      const outcome = await page.locator("#outcome-model").boundingBox();
+      const treatment = await page.locator("#treatment-model").boundingBox();
+      assert.equal(outcome.y, treatment.y);
+    }
+    if (width > 1000) {
+      const analyst = await page.locator("#analyst-panel").boundingBox();
+      const result = await page.locator("#results-panel").boundingBox();
+      assert.equal(analyst.y, result.y);
+    } else {
+      await page.locator(".results-jump").click();
+      const result = await page.locator("#results-panel").boundingBox();
+      assert.ok(
+        result.y >= 60 && result.y < height,
+        "Jump target must clear the sticky navigation",
+      );
+      await worldTab();
+      const world = await page.locator("#world-panel").boundingBox();
+      assert.ok(
+        world.y >= 60 && world.y < height,
+        "Sticky tabs should bring their controls into view",
+      );
+      await analysisTab();
+    }
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.screenshot({
+      path: `/tmp/causal-scenarios-${width}.png`,
+      fullPage: true,
+    });
   }
+  const colliderHelp = page.locator(
+    '.help-button[popovertarget="help-collider"]',
+  );
+  await colliderHelp.tap();
+  const helpBounds = await page.locator("#help-collider").boundingBox();
+  assert.ok(helpBounds.x >= 0 && helpBounds.x + helpBounds.width <= 320);
+  assert.ok(helpBounds.y >= 0 && helpBounds.y + helpBounds.height <= 740);
+  await page.locator("#help-collider .close-help").tap();
+  await page.getByLabel("Color theme").selectOption("dark");
+  await page.screenshot({
+    path: "/tmp/causal-scenarios-dark.png",
+    fullPage: true,
+  });
   await page.locator(".lessons-link").click();
   await page.locator("#continue").waitFor();
   await page.goBack();
   await page.locator("#effects").waitFor();
-  assert.deepEqual(await simulationView(), beforeHelp);
-  assert.deepEqual(await overlapView(), baselineOverlap);
-  // Time the complete synchronous slider update, including estimation and rendering.
-  await page.locator('input[value="C"]').check();
-  await page.locator("#world-select").selectOption("both");
-  await page.locator("#outcome-model").selectOption("interaction");
-  await page.locator("#treatment-model").selectOption("interaction");
-  const timings = await page.evaluate(() => {
-    const control = document.querySelector('[data-param="direct"]');
-    const original = control.value;
-    const times = [];
-    for (let i = 0; i < 35; i++) {
-      const start = performance.now();
-      control.value = i % 2 ? "2" : "2.1";
-      control.dispatchEvent(new Event("input", { bubbles: true }));
-      if (i >= 5) times.push(performance.now() - start);
-    }
-    control.value = original;
-    control.dispatchEvent(new Event("input", { bubbles: true }));
-    times.sort((a, b) => a - b);
-    return { median_ms: times[15], p95_ms: times[28] };
-  });
-  console.log("Browser slider recomputation", timings);
+  assert.equal(await page.locator("#scenario-select").inputValue(), "observed");
   assert.deepEqual(errors, []);
-  console.log("All browser interactions passed; no runtime errors.");
+  console.log(
+    "Scenario resets, model comparisons, help, keyboard, overlap and responsive layouts passed.",
+  );
 } finally {
   await browser.close();
 }

@@ -5,8 +5,8 @@ import { effectComparison } from "./effect-comparison.js";
 export function setupOverlapExperiment(card) {
   const noise = makeNoise();
   card.innerHTML = `
-    <div class="panel-heading"><div><h2 id="overlap-experiment-title">What happens when overlap gets worse?</h2></div><button id="overlap-restart" class="text-button">Restart experiment ↺</button></div>
-    <p>This is a separate experiment. Both models adjust for C₁ and C₂, with no hidden confounding or post-treatment adjustment. The true effect stays at 2.</p>
+    <div class="panel-heading"><h2 id="overlap-experiment-title">Treatment selection and overlap</h2><span class="small-tag">Isolated experiment</span></div>
+    <p>Both models adjust for C₁ and C₂. No hidden confounding or post-treatment adjustment; the true effect stays at 2.</p>
     <div class="overlap-experiment-grid">
       <div><label class="slider-control"><span><b>Treatment selection strength</b><output id="overlap-strength-value">0.0</output></span><input id="overlap-strength" type="range" min="0" max="3" step="0.1" value="0" aria-describedby="overlap-strength-help"><small id="overlap-strength-help">Increase selection to make the opposite treatment rarer for some baseline profiles.</small></label>
       <div id="overlap-histogram"></div><p class="overlap-caption">Each pair of bars shows the percentage of its treatment arm in that probability range. Scores are fitted before clipping.</p></div>
@@ -86,9 +86,9 @@ export function setupOverlapExperiment(card) {
       .join("");
   }
   slider.addEventListener("input", update);
-  card.querySelector("#overlap-restart").addEventListener("click", () => {
+  update();
+  return () => {
     slider.value = "0";
     update();
-  });
-  update();
+  };
 }
