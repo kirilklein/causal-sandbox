@@ -3,9 +3,9 @@
 The sandbox offers ten reproducible scenarios: randomization, observed or hidden
 confounding, collider or mediator adjustment, four model-specification comparisons,
 and poor overlap. Each has one question and a suggested action. Scenario selection
-and Restart scenario restore all generating parameters, graph display,
-adjustment, and model choices. Analytical changes mark the setup as Modified;
-reverting them clears that status. Diagram visibility does not change the experiment.
+and Restart scenario restore all generating parameters, adjustment, and model
+choices. Analytical changes mark the setup as Modified; reverting them clears that
+status.
 
 World and Analysis tabs separate generating mechanisms from fitted models. A
 model choice selects a simple or more flexible form independently of the world.
@@ -18,9 +18,8 @@ or overlap. Model details explain the interaction and specification terminology.
 A scenario opens the tab containing its suggested action. Hidden-confounding and
 mediator scenarios expand their relevant pathway controls. The relationship
 selector explains active interactions and identifies the specific zero-strength
-path when an interaction is inactive. Compact graph controls fade C, M, K, or U
-and their connected arrows without changing the experiment. Further explanations remain
-in optional details. The diagram starts collapsed on tablet and phone screens.
+path when an interaction is inactive. Further explanations remain in optional
+details. The diagram starts collapsed on tablet and phone screens.
 
 Adjustment choices sit directly above the estimate chart and remain available
 in either tab. Results appear alongside the active controls on desktop. On smaller screens, the
@@ -37,9 +36,9 @@ retains the fixed 0–2 outcome-unit scale used by the lessons. The truth card s
 the current total effect and its direct/mediated decomposition.
 
 The sandbox uses fixed background draws for 2,400 people (seed 4217). C represents
-both measured baseline variables C₁ and C₂. C, M, and K remain adjustable even
-when faded in the graph. U is unmeasured and never available for adjustment.
-Observed outcome clouds remain available in the results disclosure.
+both measured baseline variables C₁ and C₂. C, M, and K are available for
+adjustment. U is unmeasured and never available for adjustment. Observed outcome
+clouds remain available in the results disclosure.
 
 Links of the form `?sandbox&scenario=both-models` open a scenario's starting setup.
 They do not serialize custom slider/model changes. Unknown scenario IDs fall back

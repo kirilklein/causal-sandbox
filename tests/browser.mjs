@@ -71,7 +71,6 @@ try {
   );
   assert.equal(await page.locator(".analyst .adjust-option").count(), 0);
   assert.equal(await page.locator(".estimates .adjust-option").count(), 3);
-  assert.equal(await page.locator(".world [data-graph-variable]").count(), 4);
   const adjustmentBounds = await page.locator(".adjust-row").boundingBox();
   const chartBounds = await page.locator("#effects").boundingBox();
   assert.ok(adjustmentBounds.y + adjustmentBounds.height <= chartBounds.y);
@@ -294,11 +293,6 @@ try {
   };
   const worldTab = () => page.getByRole("tab", { name: "World" }).click();
   const analysisTab = () => page.getByRole("tab", { name: "Analysis" }).click();
-  const graphView = async () => {
-    await worldTab();
-    if (!(await page.locator(".graph-details").evaluate((el) => el.open)))
-      await page.locator(".graph-details > summary").click();
-  };
   const setArrow = async (key, value) => {
     await page.locator(`[data-param="${key}"]`).evaluate((el, value) => {
       el.value = String(value);
@@ -320,43 +314,11 @@ try {
     await page.locator("#scenario-status").innerText(),
     "Starting setup",
   );
-  await page.locator('input[value="C"]').check();
-  await graphView();
-  const beforeGraphChanges = await simulationView();
-  const statusBeforeGraphChanges = await page
-    .locator("#scenario-status")
-    .innerText();
-  for (const variable of ["C", "M", "K", "U"]) {
-    const toggle = page.locator(`[data-graph-variable="${variable}"]`);
-    const before = await toggle.getAttribute("aria-pressed");
-    await toggle.click();
-    assert.notEqual(await toggle.getAttribute("aria-pressed"), before);
-    assert.deepEqual(await simulationView(), beforeGraphChanges);
-    assert.equal(
-      await page.locator("#scenario-status").innerText(),
-      statusBeforeGraphChanges,
-    );
-    assert.equal(await page.locator('input[value="C"]').isChecked(), true);
-    assert.equal(await page.locator('input[value="C"]').isDisabled(), false);
-    assert.equal(
-      await page
-        .locator(`#nodes [data-node="${variable}"]`)
-        .getAttribute("opacity"),
-      before === "true" ? "0.12" : "1",
-    );
-  }
-  // C stays adjustable while faded, and only adjustment changes its estimates.
-  await page.locator('input[value="C"]').uncheck();
-  assert.ok((await values())[3] > 3);
-  await page.locator('input[value="C"]').check();
-  assert.ok(Math.abs((await values())[3] - 2) < 0.15);
 
   // Every entry resets the complete experiment, even after unrelated changes.
   for (const scenario of scenarios.filter((s) => s.id !== "overlap")) {
     await selectScenario("both-models");
     await page.locator("#outcome-model").selectOption("interaction");
-    await graphView();
-    await page.locator('[data-graph-variable="M"]').click();
     await setArrow("direct", 4);
     await setArrow("ua", 3);
     await selectScenario(scenario.id);
@@ -379,18 +341,11 @@ try {
         await page.locator(`#${model}-model`).inputValue(),
         expected.models[model] ? "interaction" : "main",
       );
-    for (const variable of ["C", "M", "K"]) {
+    for (const variable of ["C", "M", "K"])
       assert.equal(
         await page.locator(`input[value="${variable}"]`).isChecked(),
         expected.adjust.has(variable),
       );
-      assert.equal(
-        await page
-          .locator(`[data-graph-variable="${variable}"]`)
-          .getAttribute("aria-pressed"),
-        "true",
-      );
-    }
     assert.equal(
       await page.locator(".path-controls").evaluate((el) => el.open),
       scenario.id === "mediator",
@@ -484,8 +439,6 @@ try {
   assert.equal(treatmentOnly[1], bothSimple[1]);
   assert.ok(Math.abs(treatmentOnly[2] - 2) < 0.2);
   assert.ok(Math.abs(treatmentOnly[3] - 2) < 0.2);
-  await graphView();
-  await page.locator('[data-graph-variable="C"]').click();
   for (const model of ["outcome", "treatment"])
     assert.equal(await page.locator(`#${model}-model`).isDisabled(), false);
   await page.locator('input[value="C"]').uncheck();
@@ -537,15 +490,6 @@ try {
   assert.equal(await page.locator('[data-param="ua"]').inputValue(), "0");
   await page.keyboard.press("End");
   assert.equal(await page.locator('[data-param="ua"]').inputValue(), "3");
-  const beforeDiagram = await simulationView();
-  await page.locator('[data-graph-variable="U"]').click();
-  assert.deepEqual(await simulationView(), beforeDiagram);
-  assert.equal(
-    await page
-      .locator('[data-graph-variable="U"]')
-      .getAttribute("aria-pressed"),
-    "true",
-  );
   await page.locator(".path-controls summary").click();
   for (const key of ["am", "my"]) await setArrow(key, 2);
   await setArrow("direct", 4);
