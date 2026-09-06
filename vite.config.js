@@ -6,6 +6,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "index.html",
+        glossary: "glossary/index.html",
         methodology: "methodology/index.html",
         confounding: "confounding/index.html",
         colliderBias: "collider-bias/index.html",

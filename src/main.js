@@ -6,10 +6,14 @@ setupTheme();
 const params = new URLSearchParams(location.search);
 const lesson = params.get("lesson") || document.body.dataset.lesson;
 const page = document.body.dataset.page;
-const methodologyTheme = document.querySelector("#methodology-theme");
-if (methodologyTheme) methodologyTheme.outerHTML = themeControl();
+const staticPageTheme = document.querySelector(
+  "#methodology-theme, #glossary-theme",
+);
+if (staticPageTheme) staticPageTheme.outerHTML = themeControl();
 
-if (page !== "methodology") {
+if (page === "glossary") {
+  await import("./glossary-page.js");
+} else if (page !== "methodology") {
   if (params.has("sandbox")) {
     await import("./sandbox.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Detailed definitions of causal inference terms used in Causal Sandbox, including confounding, adjustment, propensity scores, IPW, AIPW, and overlap."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/glossary/"
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/glossary/"
+    />
+    <meta
+      property="og:title"
+      content="Causal Inference Glossary | Causal Sandbox"
+    />
+    <meta
+      property="og:description"
+      content="Detailed definitions of the causal structures, estimators, and diagnostics used throughout Causal Sandbox."
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
+    <link rel="stylesheet" href="/src/glossary.css" />
+    <title>Causal Inference Glossary | Causal Sandbox</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+  <body data-page="glossary">
+    <header class="methodology-header">
+      <a class="brand" href="./">
+        <img src="/src/brand.svg" width="29" height="29" alt="" />
+        <span>Causal Sandbox</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="./?lesson=randomization">Guided lessons</a>
+        <a href="./?sandbox">Full sandbox</a>
+      </nav>
+      <span id="glossary-theme"></span>
+    </header>
+
+    <main class="methodology-page glossary-page">
+      <section
+        class="methodology-hero glossary-hero"
+        aria-labelledby="glossary-title"
+      >
+        <p class="eyebrow">REFERENCE</p>
+        <h1 id="glossary-title">Causal inference glossary</h1>
+        <p>
+          Detailed definitions for the terms used in the lessons and full
+          sandbox. Each definition describes how the concept works here; the
+          <a href="methodology/">methodology notes</a> give the equations and
+          assumptions behind the simulations.
+        </p>
+      </section>
+
+      <div class="methodology-layout glossary-layout">
+        <nav class="methodology-contents" aria-label="Glossary terms">
+          <strong>Terms A–Z</strong>
+          <div id="glossary-contents-list"></div>
+        </nav>
+
+        <article id="glossary-entries" class="methodology-article"></article>
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
