@@ -16,18 +16,18 @@ Start with randomization and introduce one concept at a time: confounding, adjus
 
 **[Explore the full sandbox →](https://kirilklein.github.io/causal-sandbox/?sandbox)**
 
-Choose the causal structure, available variables, and statistical models. This starts a separate experiment with two baseline covariates. “Start the lessons” in the header returns to the tutorial.
+Choose a scenario, then customize its world and analysis in separate tabs. Each scenario restores a complete starting setup with two baseline covariates. “Guided lessons” in the header returns to the tutorial.
 
-[![Full sandbox: causal graph, population outcomes, adjustment controls, and estimated effects](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox)
+[![Full sandbox: scenario selection, analysis controls, and estimates compared with truth](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox)
 
 - **Edit the causal world.** Sliders set every arrow strength in a DAG with treatment A, outcome Y, observed covariates C (C₁, C₂), hidden confounder U, mediator M, and collider K.
-- **Play analyst.** Choose which variables the analyst can see, which to adjust for, and whether the outcome and propensity models include the C₁ × C₂ interaction.
-- **Compare five estimators against the truth.** Raw association, naive regression, regression adjustment, IPW, and AIPW, each animated against a truth marker.
+- **Play analyst.** Choose adjustment variables beside the estimates and configure the outcome and propensity models in the Analysis tab. Graph display controls only fade nodes and arrows; they never change adjustment or estimates.
+- **Compare estimates against the truth.** Unadjusted, regression adjustment, IPW, and AIPW use a fixed error scale with starting markers. The unadjusted row combines raw association and the equivalent naive regression.
 - **Switch worlds** to add interactions to the outcome, the treatment, or both — and see which estimators break when the model is misspecified.
-- **Start from a preset:** Randomized · Observed confounding · Hidden confounding · Collider bias · Mediator adjustment.
+- **Explore ten scenarios:** randomization, observed or hidden confounding, collider or mediator adjustment, four model-specification comparisons, and an isolated poor-overlap experiment. Restart the selected scenario or share its starting setup through its link.
 - **Look up terms as you explore.** Pause over an underlined term, or tap or click it, for a short definition, or open the collapsed glossary in “How this world works.” Help supports keyboard navigation and Escape to close, without changing the simulation.
 
-The true effect is always known, so every estimate can be judged honestly. No backend, no data collection — it is a static page.
+The true effect is always known, so every estimate can be compared with it. All simulations run in the browser; the static site uses GoatCounter for visit analytics.
 
 [Curriculum and learner walkthrough](docs/education.md).
 

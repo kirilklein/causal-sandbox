@@ -1,29 +1,46 @@
-# Full sandbox: results and overlap
+# Full sandbox: scenarios and comparisons
 
-The main comparison appears at the top right on desktop and first on mobile:
-truth and all five estimates precede adjustment/model controls and outcome
-clouds. Laptop browser checks require all five estimates above the fold. Bars
-and markers use the same fixed 0–2 outcome-unit error scale as the lessons,
-blending from neutral to red with increasing absolute error. Signed errors stay
-visible below the estimates. Truth uses the constant outcome-blue background.
-The independent overlap card uses the lesson background tints for its estimates.
+The sandbox offers ten reproducible scenarios: randomization, observed or hidden
+confounding, collider or mediator adjustment, four model-specification comparisons,
+and poor overlap. Each has one question and a suggested action. Scenario selection
+and Restart scenario restore all generating parameters, graph display,
+adjustment, and model choices. Analytical changes mark the setup as Modified;
+reverting them clears that status. Diagram visibility does not change the experiment.
 
-The sandbox starts a separate experiment with fixed background draws (2,400
-people, seed 4217). C represents both measured baseline variables C₁ and C₂;
-the lesson's single C is not transferred. Entry and Reset world use the existing
-additive, observed-confounding baseline with no adjustment. Reset also restores
-variable visibility, display of U, and both main-effects models. Start the lessons
-returns to the first lesson.
+World and Analysis tabs separate generating mechanisms from fitted models. A
+scenario opens the tab containing its suggested action. Hidden-confounding and
+mediator scenarios expand their relevant pathway controls. The relationship
+selector explains active interactions and identifies the specific zero-strength
+path when an interaction is inactive. Compact graph controls fade C, M, K, or U
+and their connected arrows without changing the experiment. Further explanations remain
+in optional details. The diagram starts collapsed on tablet and phone screens.
 
-Variable availability controls sit directly above adjustment, in the estimates
-card. They change which variables can enter the analysis, not the simulated
-population. The “Show hidden factor U” switch changes only U and its arrows in
-the diagram. Its label is stable and its on/off state is visible; U remains
-unavailable to the analyst, and neither the total effect nor estimates change.
+Adjustment choices sit directly above the estimate chart and remain available
+in either tab. Results appear alongside the active controls on desktop. On smaller screens, the
+controls precede results and sticky navigation provides a Results link. Model
+selectors stack before they become cramped; phone chart labels sit above the
+tracks. Tab navigation supports arrows, Home, and End without changing data.
+
+The four displayed rows are unadjusted, regression adjustment, IPW, and AIPW.
+Raw association and naive regression Y ~ A coincide for binary treatment and share
+one row. The error axis stays at ±4 outcome units around truth. Hollow marks retain
+each scenario's starting errors; solid marks show current errors. Off-scale errors
+use arrows, while numeric estimates and signed errors remain visible. Error color
+retains the fixed 0–2 outcome-unit scale used by the lessons. The truth card shows
+the current total effect and its direct/mediated decomposition.
+
+The sandbox uses fixed background draws for 2,400 people (seed 4217). C represents
+both measured baseline variables C₁ and C₂. C, M, and K remain adjustable even
+when faded in the graph. U is unmeasured and never available for adjustment.
+Observed outcome clouds remain available in the results disclosure.
+
+Links of the form `?sandbox&scenario=both-models` open a scenario's starting setup.
+They do not serialize custom slider/model changes. Unknown scenario IDs fall back
+to observed confounding. Guided lessons remain a separate experiment.
 
 ## Independent overlap experiment
 
-A separate card asks what happens when overlap gets worse. Its only experiment
+Selecting Poor overlap opens an isolated experiment in place of the world/analysis workspace. Its only experiment
 control is treatment selection strength, from 0 to 3. The additive world has a
 true effect of 2 and C → Y strength 1.5, with both U and mediator paths off.
 Both models always adjust for C₁/C₂ and are correctly specified. The card uses
@@ -36,10 +53,10 @@ concentrate weights, but an individual estimate need not move farther from truth
 at each step. Treatment/outcome can change; baseline variables, background draws,
 and the total effect stay fixed.
 
-Main sandbox controls and Reset world leave the card unchanged. Its slider and
-Restart experiment leave the main sandbox unchanged. Restart restores selection
-strength zero. Entering the page resets both experiments. Opening details and
-changing theme preserve both experiments.
+Only the selected experiment is visible. Restart scenario resets overlap selection
+strength to zero when Poor overlap is selected. Its slider leaves the main world
+unchanged. Selecting another scenario starts that scenario from its defined
+baseline. Opening details and changing theme preserve the active experiment.
 
 ## Diagnostics
 
@@ -74,7 +91,8 @@ server (`APP_URL` selects a non-default port). Focused tests cover clipping
 boundaries, hand-computed per-arm ESS, empty arms, histogram accounting, and
 non-mutation of estimator outputs. Browser checks reconcile the card's values
 with the estimator and check independence, reset/navigation, keyboard/touch,
-light/dark themes, phone layout and visibility of the main comparison on laptops.
+light/dark themes, phone chart width, model-selector alignment, complete scenario resets, starting
+links, fixed error scales, and independent experiment state.
 
 Automated checks and screenshots do not establish screen-reader usability or
 learner comprehension; those walkthroughs remain pending.
