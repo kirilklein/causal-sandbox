@@ -40,40 +40,56 @@ The compact desktop layout puts a small example graph beside its explanation;
 phones stack them. The optional overview summarizes the three windows. Timestamp
 and assumption explanations remain separate disclosures.
 
-## Baseline-collider simulation
+## Adjustment experiments
 
-Selecting the before-A collider reveals the P → K ← R example and a small
-experiment. V is the referral score K. All P, R, and K exist before treatment.
+Every selected world shows the same true-total-effect and estimate cards, an
+“Adjust for V” checkbox, and a redraw button. The two outcome-regression fits
+use the same 2,400 people with A alone or A plus V. Truth never enters either
+fit. Adjustment changes neither the sample nor the graph; the card retains the
+existing fixed error scale and signed difference from truth.
 
-```
-P, R ~ independent Uniform(-sqrt(3), sqrt(3))
-K = P + R + 0.5 * score_noise
-Pr(A=1 | P) = sigmoid(1.5 * P)
-Y = 2*A + 1.5*R + outcome_noise
-```
+The total effect is 2 in every world. In the mediator world, the direct and
+mediated contributions are each 1. Adjusting does not change the displayed target
+to the direct effect. The interpretation below the card distinguishes the causal
+path from the numerical error in one sample.
 
-The noises are independent standard normal variables. The constant total effect
-is 2. P predicts treatment but is independent of potential outcomes, so the
-unadjusted comparison is unconfounded. Conditioning on K connects P and R,
-opening the noncausal path A ← P → K ← R → Y.
+`timing-simulation.js` reuses `makeNoise` and `estimate`. P and R are independent
+standardized uniform variables; U and every noise term are independent standard
+normal variables. A is randomized with probability 0.5 except where stated:
 
-`timing-simulation.js` reuses `makeNoise` and the existing outcome-regression fit
-in `estimate`. It compares fits with A alone and A plus K on the same 2,400
-people. Truth never enters either fit. The checkbox changes the displayed fit;
-it changes neither data nor graph. The estimate card uses the existing fixed
-error color scale and reports the numerical difference from truth.
+| World                    | Equations                                        | Adjusted regression limit |
+| ------------------------ | ------------------------------------------------ | ------------------------- |
+| Confounder               | V=P; Pr(A=1)=sigmoid(1.5V); Y=2A+1.5V+eY         | 2                         |
+| Instrument               | V=P; Pr(A=1)=sigmoid(1.5V); Y=2A+eY              | 2, with less precision    |
+| Outcome predictor        | V=P; Y=2A+1.5V+eY                                | 2, with more precision    |
+| Mediator                 | V=A+eM; Y=A+V+eY                                 | 1                         |
+| Affected by A only       | V=2A+eM; Y=2A+eY                                 | 2, with less precision    |
+| Affected by Y only       | Y=2A+eY; V=Y+eK                                  | 1                         |
+| Collider before A        | V=P+R+0.5eK; Pr(A=1)=sigmoid(1.5P); Y=2A+1.5R+eY | About 1.097               |
+| Collider between A and Y | V=A+U+0.5eK; Y=2A+1.5U+eY                        | 0.8                       |
+| Collider after Y         | Y=2A+eY; V=A+Y+eK                                | 0.5                       |
 
-The default seed 4217 gives 2.009 without K and 1.105 with K. Across 40 independent
-seeds 100–139, means are 1.992 and 1.088. Independent population covariance
-calculations predict an adjusted regression limit of about 1.097. These checks
-support the simulated bias; the page does not promise that every redraw worsens
-the estimate. It describes the observed direction for the current sample.
+All unadjusted limits are 2 except the confounder world. These limits describe
+these particular additive worlds, not every distribution compatible with a DAG.
+The baseline collider retains its original simulation: seed 4217 gives 2.009
+without V and 1.105 with V. Repeated estimates and independent covariance
+calculations validate the limits; a single redraw need not follow the bias ranking.
 
-Redraw increments the sample seed and retains the checkbox choice. Moving to a
-new time window clears the role and checkbox but retains the current simulated
-sample. Returning to a baseline-collider example reuses that sample. Changing
-examples within a window preserves the checkbox. Restart and fresh entry restore
-before-A, no example, seed 4217, no K adjustment, and closed disclosures.
+“Compare across repeated samples” runs 60 paired studies with seeds 100–159.
+It reports each fit's mean and empirical standard deviation (SD), reusing
+`studySummary` from the instrument chapter. Smaller SD means more precision;
+it does not imply less bias. Nonfinite fits are counted and excluded explicitly.
+The batch yields between studies and is cancelled when the role or window changes
+or the chapter restarts. It does not replace the current sample. Redrawing,
+toggling adjustment, and opening disclosures preserve the batch summary.
+
+Redraw increments the sample seed and retains adjustment. Selecting a different
+example resets adjustment and closes the example-specific disclosures and batch
+view, while retaining the seed. Moving to another time window clears the selected
+role and batch; selecting the current window preserves them. Worlds with identical
+arrows (the predictor and treatment-only consequence) use identical equations
+across their compatible windows. Restart and fresh entry restore before-A, no
+example, seed 4217, no adjustment, and closed disclosures.
 
 ## Boundaries and validation
 
@@ -90,8 +106,9 @@ References: [DAGitty causal roles](https://dagitty.net/learn/graphs/roles.html) 
 Hernán and Robins, [Causal Inference: What If](https://miguelhernan.org/whatifbook).
 
 Unit tests independently reconstruct both OLS estimates from centered covariances
-and compare repeated samples against the population formula. Browser checks
-cover all example edge sets, fixed A/Y locations, mouse and touch dragging,
+and compare repeated samples against analytic limits for all worlds, including
+precision gains and losses. Browser checks also cover repeated-study summaries
+and cancellation when changing examples, all example edge sets, fixed A/Y locations, mouse and touch dragging,
 cancellation, keyboard controls, simulation values, unchanged graph on adjustment,
 redraw/restart, disclosure invariance, navigation/history, and 320px light/dark
 layouts. Use `npm test`, `npm run build`, and `npm run test:browser` with `APP_URL`
@@ -99,5 +116,5 @@ pointing to this worktree's server.
 
 Learner comprehension and screen-reader listening remain untested. Ask whether
 placing V before A proves confounding, whether a baseline collider is possible,
-and whether a late diagnosis proves late onset. Ask why adjusting for K changes
+and whether a late diagnosis proves late onset. Ask why adjusting for V changes
 the estimate without changing the true effect.

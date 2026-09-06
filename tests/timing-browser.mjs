@@ -1,7 +1,7 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
-import { baselineCollider } from "../src/timing-simulation.js";
+import { timingSample } from "../src/timing-simulation.js";
 
 const browser = await chromium.launch({
   headless: true,
@@ -44,7 +44,7 @@ try {
     page.locator(".time-landmark strong").evaluateAll((els) =>
       els.map((el) => {
         const r = el.getBoundingClientRect();
-        return [r.x, r.y, r.width, r.height];
+        return [r.x + scrollX, r.y + scrollY, r.width, r.height];
       }),
     );
   const positions = await landmarkPositions();
@@ -77,6 +77,31 @@ try {
     for (const [example, expected] of Object.entries(examples)) {
       await chooseExample(example);
       assert.deepEqual(await edges(), expected.sort());
+      const study = timingSample({ example, window: time });
+      const sampleLabel = await page.locator("#timing-sample").innerText();
+      assert.equal(await page.locator("#condition-V").isChecked(), false);
+      assert.equal(await page.locator("#timing-truth").innerText(), "2.00");
+      assert.equal(
+        await page.locator("#timing-estimate").innerText(),
+        study.unadjusted.toFixed(2),
+      );
+      await page.locator("#condition-V").focus();
+      await page.keyboard.press("Space");
+      assert.equal(
+        await page.locator("#timing-estimate").innerText(),
+        study.adjusted.toFixed(2),
+      );
+      assert.equal(await page.locator("#timing-truth").innerText(), "2.00");
+      assert.equal(
+        await page.locator("#timing-sample").innerText(),
+        sampleLabel,
+      );
+      assert.deepEqual(await edges(), expected.sort());
+      await page.locator("#condition-V").uncheck();
+      assert.equal(
+        await page.locator("#timing-estimate").innerText(),
+        study.unadjusted.toFixed(2),
+      );
       assert.match(
         await page.locator("#example-caption").innerText(),
         /One possible world/,
@@ -84,6 +109,35 @@ try {
     }
     assert.deepEqual(await landmarkPositions(), positions);
   }
+  await chooseWindow("before");
+  await chooseExample("predictor");
+  const beforeStudies = await page.locator("#timing-estimate").innerText();
+  await page.locator("#repeated-studies summary").click();
+  await page.locator("#timing-repeat").click();
+  await page.locator("#studies-table").waitFor();
+  const cells = await page.locator("#studies-rows td").allTextContents();
+  assert.equal(cells.length, 4);
+  assert.ok(Number(cells[3]) < Number(cells[1]) * 0.7);
+  assert.equal(
+    await page.locator("#timing-estimate").innerText(),
+    beforeStudies,
+  );
+  const summary = await page.locator("#studies-rows").innerText();
+  await page.locator("#condition-V").check();
+  await page.locator("#timing-redraw").click();
+  assert.equal(await page.locator("#studies-rows").innerText(), summary);
+  await page.locator("#timing-repeat").click();
+  await chooseExample("instrument");
+  assert.equal(await page.locator("#studies-table").isVisible(), false);
+  await page.locator("#repeated-studies summary").click();
+  await page.locator("#timing-repeat").click();
+  await page.locator("#studies-table").waitFor();
+  const instrumentCells = await page
+    .locator("#studies-rows td")
+    .allTextContents();
+  assert.ok(Number(instrumentCells[3]) > Number(instrumentCells[1]));
+  await page.locator("#timing-restart").click();
+  await chooseWindow("after");
   await handle.focus();
   await page.keyboard.press("ArrowLeft");
   assert.equal(await selectedWindow(), "between");
@@ -125,35 +179,35 @@ try {
   assert.deepEqual(await landmarkPositions(), positions);
 
   await chooseExample("collider");
-  const initial = baselineCollider();
+  const initial = timingSample();
   assert.equal(
-    await page.locator("#collider-estimate").innerText(),
-    initial.withoutK.toFixed(2),
+    await page.locator("#timing-estimate").innerText(),
+    initial.unadjusted.toFixed(2),
   );
   const graph = await page.locator("#example-graph").innerHTML();
-  await page.locator("#condition-K").check();
+  await page.locator("#condition-V").check();
   assert.equal(
-    await page.locator("#collider-estimate").innerText(),
-    initial.withK.toFixed(2),
+    await page.locator("#timing-estimate").innerText(),
+    initial.adjusted.toFixed(2),
   );
   assert.match(
-    await page.locator("#collider-comparison").innerText(),
-    /farther from truth/,
+    await page.locator("#timing-comparison").innerText(),
+    /Without V: .*With V:/,
   );
   assert.equal(await page.locator("#example-graph").innerHTML(), graph);
-  await page.locator("#collider-redraw").click();
+  await page.locator("#timing-redraw").click();
   assert.equal(
-    await page.locator("#collider-estimate").innerText(),
-    baselineCollider({ seed: 4218 }).withK.toFixed(2),
+    await page.locator("#timing-estimate").innerText(),
+    timingSample({ seed: 4218 }).adjusted.toFixed(2),
   );
   await page
     .getByText("Why does adjusting for the score connect P and R?", {
       exact: true,
     })
     .click();
-  const result = await page.locator("#collider-estimate").innerText();
+  const result = await page.locator("#timing-estimate").innerText();
   await page.locator("#timing-overview summary").click();
-  assert.equal(await page.locator("#collider-estimate").innerText(), result);
+  assert.equal(await page.locator("#timing-estimate").innerText(), result);
   await chooseWindow("before");
   assert.equal(
     await page.locator('[name="causal-example"]:checked').inputValue(),
@@ -180,6 +234,10 @@ try {
       await page.locator(`[name="time-window"][value="${time}"]`).tap();
       assert.equal(await selectedWindow(), time);
       await chooseExample(time === "between" ? "mediator" : "collider");
+      await page.locator("#condition-V").check();
+      await page.locator("#repeated-studies summary").click();
+      await page.locator("#timing-repeat").click();
+      await page.locator("#studies-table").waitFor();
       assert.equal(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
@@ -229,8 +287,8 @@ try {
   await page.locator("#timing-restart").click();
   await chooseExample("collider");
   assert.equal(
-    await page.locator("#collider-estimate").innerText(),
-    initial.withoutK.toFixed(2),
+    await page.locator("#timing-estimate").innerText(),
+    initial.unadjusted.toFixed(2),
   );
   await page.getByRole("link", { name: "Continue the core lessons →" }).click();
   assert.match(page.url(), /lesson=hidden-confounding/);
@@ -251,7 +309,7 @@ try {
   await handle.waitFor();
   assert.deepEqual(errors, []);
   console.log(
-    "Timing explorer: examples, mouse/touch dragging, cancellation, keyboard, collider estimates, reset, navigation, and mobile themes passed.",
+    "Timing explorer: examples, mouse/touch dragging, cancellation, keyboard, all-world estimates, paired study summaries, reset, navigation, and mobile themes passed.",
   );
 } finally {
   await browser.close();

@@ -26,8 +26,9 @@ An optional [What timing tells us chapter](timing.md) is available at
 `?lesson=timing`, linked from Contents and the collider lesson. It follows the
 mediator/collider material without interrupting Continue through the core lessons.
 A movable V explores three time windows with fixed A/Y and selectable example
-graphs. The baseline-collider example adds a simulation comparing outcome
-regression before and after adjusting for the referral score K.
+graphs. Every example compares outcome regression with and without V against
+the true total effect. An optional repeated-sample comparison shows the mean
+and spread of both estimates.
 Repeated treatment is deferred to [#79](https://github.com/kirilklein/causal-sandbox/issues/79).
 
 Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
