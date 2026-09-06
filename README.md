@@ -1,10 +1,14 @@
-<a href="https://kirilklein.github.io/causal-sandbox/">
-  <img src="src/brand.svg" alt="Causal Sandbox" width="72">
-</a>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand-mark-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/brand-mark-light.svg">
+  <img src="docs/brand-mark-light.svg" alt="" width="100" height="84" align="left">
+</picture>
 
-# Causal Sandbox: Interactive Causal Inference Simulator
+# Causal Sandbox
 
-**Learn causal inference by changing the world.**
+**An Interactive Causal Inference Simulator**
+
+<br clear="left">
 
 A free, browser-based causal inference simulator and teaching tool. Increase confounding, hide a confounder, condition on a collider, or break positivity, and watch regression adjustment, propensity score IPW, AIPW, and TMLE estimates succeed or fail against the known true effect. Start with guided lessons, then explore the full sandbox. Nothing to install.
 
