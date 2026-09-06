@@ -67,6 +67,13 @@ try {
       concept.article,
     );
     assert.ok((await page.locator(".concept-links a").count()) >= 3);
+    assert.match(
+      await page.locator(".site-footer").innerText(),
+      /Created by Kiril Klein, PhD/,
+    );
+    const references = page.locator(".site-references");
+    assert.equal(await references.locator("li").count(), 10);
+    await references.locator("summary").click();
 
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 900 });
@@ -77,6 +84,7 @@ try {
         `${concept.path} overflows at ${width}px`,
       );
     }
+    await references.locator("summary").click();
   }
 
   await page.goto(new URL("confounding/", root).href);

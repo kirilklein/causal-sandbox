@@ -19,6 +19,34 @@ try {
     `${process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/"}?sandbox`,
   );
   await page.locator(".effect-row").last().waitFor();
+  const sourceFooter = page.locator(".site-footer");
+  assert.match(await sourceFooter.innerText(), /Created by Kiril Klein, PhD/);
+  assert.equal(
+    await sourceFooter
+      .getByRole("link", { name: "GitHub source" })
+      .getAttribute("href"),
+    "https://github.com/kirilklein/causal-sandbox",
+  );
+  assert.equal(
+    await sourceFooter
+      .getByRole("link", { name: "Methodology notes" })
+      .getAttribute("href"),
+    "https://github.com/kirilklein/causal-sandbox#the-causal-world",
+  );
+  const references = sourceFooter.locator(".site-references");
+  assert.equal(await references.getAttribute("open"), null);
+  assert.equal(await references.locator("li").count(), 10);
+  assert.ok(
+    await references
+      .locator("li")
+      .evaluateAll((items) =>
+        items.every(
+          (item) =>
+            item.querySelectorAll("a").length === 1 &&
+            item.querySelector("a").href.startsWith("http"),
+        ),
+      ),
+  );
   await page.locator(".data summary").click();
   await page.waitForFunction(() =>
     document
