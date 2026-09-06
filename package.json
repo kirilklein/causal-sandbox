@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test src/*.test.js",
-    "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs && node tests/theme-browser.mjs && node tests/instruments-browser.mjs",
+    "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs && node tests/theme-browser.mjs && node tests/instruments-browser.mjs && node tests/clipping-browser.mjs",
     "format": "prettier --write src tests index.html package.json README.md"
   },
   "devDependencies": {

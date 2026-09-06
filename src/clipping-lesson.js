@@ -1,0 +1,373 @@
+import "./clipping-lesson.css";
+import icon from "./brand.svg?raw";
+import { lessonBaseline, simulateLesson } from "./lesson-simulation.js";
+import {
+  fitClippingSample,
+  clippingResult,
+  cappedResult,
+} from "./clipping-experiment.js";
+import { effectComparison } from "./effect-comparison.js";
+import { themeControl } from "./theme.js";
+
+document.title = "What changes when we clip? · Causal Sandbox";
+document.querySelector("#app").innerHTML = `<div class="clipping-page">
+<main>
+  <header>
+    <a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}
+  </header>
+  <p class="eyebrow">Overlap · optional chapter</p>
+  <h1 tabindex="-1">What changes when we clip?</h1>
+  <p class="lede">
+    Make treatment choice more predictable to create extreme weights. Then
+    try modest clipping and see what happens if you push it further.
+  </p>
+  <p class="help">Start a new 400-person study, with clipping off. Earlier lessons use 2,400 people and clip probabilities to [0.02, 0.98].</p>
+  <section class="experiment" aria-labelledby="experiment-title">
+    <div class="heading">
+      <h2 id="experiment-title">Change overlap, then try clipping</h2>
+      <span class="truth">True effect <b>2.00</b></span>
+    </div>
+    <div class="controls">
+      <div class="control">
+        <label class="control-label" for="selection"
+          ><b>Treatment selection strength</b
+          ><output id="selection-value" for="selection">3.0</output></label
+        >
+        <input
+          id="selection"
+          type="range"
+          min="0"
+          max="5"
+          step="0.1"
+          value="3"
+          aria-describedby="selection-help"
+        />
+        <div class="ends">
+          <span>0 · more overlap</span><span>5 · poorer overlap</span>
+        </div>
+        <p class="help" id="selection-help">
+          Stronger selection makes the opposite treatment rarer for some
+          baseline profiles. Rare treatment choices can receive large
+          weights.
+        </p>
+      </div>
+      <div class="control">
+        <label class="control-label" for="threshold"
+          ><b>Probability-clipping threshold</b
+          ><output id="threshold-value" for="threshold"
+            >0.000 · no clipping</output
+          ></label
+        >
+        <input
+          id="threshold"
+          type="range"
+          min="0"
+          max="0.1"
+          step="0.001"
+          value="0"
+          aria-describedby="threshold-help"
+        />
+        <div class="ends">
+          <span>0 · no clipping</span><span>0.10</span>
+        </div>
+        <p class="help" id="threshold-help">
+          Move probabilities to these bounds without changing people or
+          fitted models. Start with a small threshold such as 0.005.
+        </p>
+      </div>
+    </div>
+    <details id="cap-options">
+      <summary>Try capping weights instead</summary>
+      <p class="help">Capping limits only large weights. Probability clipping can also increase small weights. Both retain everyone.</p>
+      <label class="cap-switch"><input type="checkbox" id="cap-enabled"> Use a weight cap instead of probability clipping</label>
+      <label for="weight-cap">Maximum weight <output id="cap-value" for="weight-cap">50</output></label>
+      <input id="weight-cap" type="range" min="1" max="300" step="1" value="50" disabled aria-describedby="cap-help">
+      <p id="cap-help" class="help">Weights above this limit become the limit; smaller weights stay unchanged. IPW and the AIPW residual correction use these capped weights.</p>
+    </details>
+    <p id="active-operation" class="help" aria-live="polite"></p>
+    <div class="comparisons">
+      <figure aria-labelledby="histogram-title">
+        <figcaption id="histogram-title">
+          Raw propensity scores
+        </figcaption>
+        <div class="legend"><span>Untreated</span><span>Treated</span></div>
+        <svg
+          id="histogram"
+          viewBox="0 0 420 230"
+          role="img"
+          aria-label="Fitted treatment probabilities by treatment arm"
+        >
+          <text x="40" y="17">People in each arm (%)</text>
+          <rect
+            id="lower-tail"
+            x="40"
+            y="30"
+            width="0"
+            height="150"
+            fill="var(--note-surface)"
+          />
+          <rect
+            id="upper-tail"
+            x="400"
+            y="30"
+            width="0"
+            height="150"
+            fill="var(--note-surface)"
+          />
+          <g stroke="var(--grid)">
+            <path d="M40 30H400 M40 105H400 M40 180H400" />
+          </g>
+          <g text-anchor="end">
+            <text x="34" y="34">100</text>
+            <text x="34" y="109">50</text>
+            <text x="34" y="184">0</text>
+          </g>
+          <g id="histogram-bars"></g>
+          <g
+            id="clip-guides"
+            stroke="var(--warning)"
+            stroke-dasharray="4 3"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path id="lower-guide" d="M40 30V180" />
+            <path id="upper-guide" d="M400 30V180" />
+          </g>
+          <text x="40" y="199">0</text>
+          <text x="220" y="199" text-anchor="middle">0.5</text>
+          <text x="400" y="199" text-anchor="end">1</text>
+          <text x="220" y="223" text-anchor="middle">
+            Fitted chance of treatment
+          </text>
+        </svg>
+        <p class="help">
+          Dashed lines mark active probability-clipping bounds. Bars stay fixed when you clip probabilities or cap weights.
+        </p>
+      </figure>
+      <div class="results" aria-live="polite" aria-atomic="true">
+        <p id="unavailable" hidden></p>
+        <table aria-label="Estimates with and without clipping">
+          <thead>
+            <tr>
+              <th scope="col">Method</th>
+              <th scope="col">Original</th>
+              <th scope="col" id="selected-label">Selected threshold</th>
+            </tr>
+          </thead>
+          <tbody id="estimates"></tbody>
+        </table>
+        <p class="help">
+          Stronger red means farther from truth in this sample, not
+          statistical significance.
+        </p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="redraw">Draw another sample</button
+      ><button id="restart">Restart</button
+      ><span class="sample" id="sample"></span>
+    </div>
+    <details id="weights">
+      <summary>What happened to the weights?</summary>
+      <table>
+        <caption>
+          Original → selected operation
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Diagnostic</th>
+            <th scope="col">Untreated</th>
+            <th scope="col">Treated</th>
+          </tr>
+        </thead>
+        <tbody id="diagnostics"></tbody>
+      </table>
+      <p class="help">
+        Effective sample size describes weight concentration, not retained
+        people or a guarantee of precision. Clipping does not change the
+        underlying treatment overlap.
+      </p>
+    </details>
+  </section>
+  <p class="note">
+    Limiting weights can reduce variation across studies while introducing
+    bias. A single sample cannot show that tradeoff; moving closer to truth
+    here does not establish a better threshold.
+  </p>
+  <details>
+    <summary>What stays fixed in this experiment?</summary>
+    <p class="note">
+      There are 400 people and one measured baseline variable C. Both models
+      correctly adjust for C. The total effect is 2, with no hidden
+      confounding or post-treatment adjustment.
+    </p>
+    <p class="note">
+      Selection strength changes treatment assignment and outcomes, keeping
+      baseline health and background random draws fixed. Both models are
+      refitted for that world.
+    </p>
+    <p class="note">
+      Moving the threshold reuses the same fitted probabilities and outcome
+      predictions. Outcome regression is unchanged. AIPW may respond less
+      because its outcome model is correct here. Clipping is no guarantee
+      against model misspecification and cannot supply missing comparisons.
+    </p>
+    <p class="note">
+      IPW normalizes weights separately in each treatment group. AIPW
+      averages predicted contrasts plus signed weighted errors over
+      everyone.
+      <a href="https://github.com/kirilklein/causal-sandbox/blob/main/docs/clipping-experiment.md">Calculation and validation notes</a
+      >.
+    </p>
+  </details>
+<nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=overlap">← Poor overlap</a><a href="?lesson=instrument">Instruments and adjustment →</a><a href="?sandbox">Full sandbox ↗</a></nav>
+</main>
+</div>`;
+
+const slider = document.querySelector("#threshold");
+const selectionSlider = document.querySelector("#selection");
+const capEnabled = document.querySelector("#cap-enabled");
+const capSlider = document.querySelector("#weight-cap");
+const n = 400;
+let seed = 4217;
+let rows;
+let baseline;
+const methods = [
+  ["regression", "Outcome regression"],
+  ["ipw", "IPW"],
+  ["aipw", "AIPW"],
+];
+function update() {
+  const capping = capEnabled.checked;
+  const threshold = capping ? 0 : Number(slider.value);
+  const maxWeight = Number(capSlider.value);
+  slider.disabled = capping;
+  capSlider.disabled = !capping;
+  document.querySelector("#cap-value").textContent = maxWeight;
+  document.querySelector("#selected-label").textContent = capping
+    ? "Capped weights"
+    : "Selected threshold";
+  document.querySelector("#active-operation").textContent = capping
+    ? `Weight cap: ${maxWeight}. Probability clipping is off; everyone stays in the study.`
+    : "Probability clipping keeps everyone in the study.";
+  for (const input of [slider, selectionSlider, capSlider]) {
+    input.style.setProperty(
+      "--fill",
+      `${(100 * (Number(input.value) - Number(input.min))) / (Number(input.max) - Number(input.min))}%`,
+    );
+  }
+  document.querySelector("#threshold-value").textContent = capping
+    ? "Inactive while capping weights"
+    : threshold === 0
+      ? "0.000 · no clipping"
+      : `${threshold.toFixed(3)} → [${threshold.toFixed(3)}, ${(1 - threshold).toFixed(3)}]`;
+  document.querySelector("#lower-tail").setAttribute("width", 360 * threshold);
+  document
+    .querySelector("#upper-tail")
+    .setAttribute("x", 400 - 360 * threshold);
+  document.querySelector("#upper-tail").setAttribute("width", 360 * threshold);
+  document
+    .querySelector("#lower-guide")
+    .setAttribute("d", `M${40 + 360 * threshold} 30V180`);
+  document
+    .querySelector("#upper-guide")
+    .setAttribute("d", `M${400 - 360 * threshold} 30V180`);
+  document.querySelector("#clip-guides").style.display =
+    threshold === 0 ? "none" : "";
+  const result = capping
+    ? cappedResult(rows, maxWeight)
+    : clippingResult(rows, threshold);
+  const error = document.querySelector("#unavailable");
+  error.hidden = result.available && baseline.available;
+  error.textContent = [baseline, result]
+    .filter((r) => !r.available)
+    .map((r) => r.reason)
+    .join(" ");
+  const cell = (r, key, selected) => {
+    const comparison = effectComparison(r.available ? r[key] : NaN, 2);
+    return `<td${selected ? ` class="selected" style="--error-tint:${comparison.tint}%"` : ""}><strong>${comparison.value}</strong><small>${comparison.difference}</small></td>`;
+  };
+  document.querySelector("#estimates").innerHTML = methods
+    .map(
+      ([key, label]) =>
+        `<tr data-method="${key}"><th scope="row">${label}</th>${cell(baseline, key, false)}${cell(result, key, true)}</tr>`,
+    )
+    .join("");
+  const diagnostics = [
+    ["People", "count", 0],
+    [
+      capping ? "Capped weights" : "Clipped probabilities",
+      capping ? "capped" : "clipped",
+      0,
+    ],
+    ["Largest weight", "maxWeight", 1],
+    ["Effective sample size", "ess", 0],
+  ];
+  document.querySelector("#diagnostics").innerHTML = diagnostics
+    .map(
+      ([label, key, digits]) =>
+        `<tr><th scope="row">${label}</th>${[0, 1].map((arm) => `<td>${baseline.available ? baseline.overlap[arm][key].toFixed(digits) : "Unavailable"} → ${result.available ? result.overlap[arm][key].toFixed(digits) : "Unavailable"}</td>`).join("")}</tr>`,
+    )
+    .join("");
+  document.querySelector("#sample").textContent =
+    `${n} people · sample seed ${seed}`;
+}
+function draw() {
+  const selection = Number(selectionSlider.value);
+  document.querySelector("#selection-value").textContent = selection.toFixed(1);
+  rows = fitClippingSample(
+    simulateLesson({ ...lessonBaseline(10), n, selection, seed }),
+  );
+  baseline = clippingResult(rows, 0);
+  const arms = [0, 1].map((A) => ({
+    count: rows.filter((row) => row.A === A).length,
+    bins: Array(10).fill(0),
+  }));
+  rows.forEach(({ A, p }) => arms[A].bins[Math.min(9, Math.floor(p * 10))]++);
+  const labels = ["Untreated", "Treated"];
+  const description = arms
+    .map(
+      (arm, A) =>
+        `${labels[A]}: ${arm.count} people; ${arm.bins.map((count, i) => `${i / 10} to ${(i + 1) / 10}${i === 9 ? " inclusive" : " exclusive"}: ${count}`).join("; ")}`,
+    )
+    .join(". ");
+  document
+    .querySelector("#histogram")
+    .setAttribute("aria-label", `Raw fitted propensity scores. ${description}`);
+  document.querySelector("#histogram-bars").innerHTML = arms
+    .map((arm, A) =>
+      arm.bins
+        .map((count, i) => {
+          const percent = arm.count ? (100 * count) / arm.count : 0;
+          return `<rect data-arm="${A}" data-bin="${i}" data-count="${count}" x="${42 + i * 36 + A * 16}" y="${180 - 1.5 * percent}" width="14" height="${1.5 * percent}" fill="var(--arm-${A})" ${A === 0 ? 'fill-opacity="0.18" stroke="var(--arm-0)"' : ""}><title>${labels[A]}, ${i / 10}–${(i + 1) / 10}: ${count} people (${percent.toFixed(1)}% of this arm)</title></rect>`;
+        })
+        .join(""),
+    )
+    .join("");
+  update();
+}
+slider.addEventListener("input", update);
+capEnabled.addEventListener("change", update);
+capSlider.addEventListener("input", update);
+selectionSlider.addEventListener("input", draw);
+document.querySelector("#redraw").addEventListener("click", () => {
+  seed++;
+  draw();
+});
+function restart() {
+  seed = 4217;
+  selectionSlider.value = "3";
+  slider.value = "0";
+  capEnabled.checked = false;
+  capSlider.value = "50";
+  document.querySelectorAll(".clipping-page details").forEach((details) => {
+    details.open = false;
+  });
+  draw();
+}
+document.querySelector("#restart").addEventListener("click", restart);
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) restart();
+});
+draw();
+document.querySelector("h1").focus();

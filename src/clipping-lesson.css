@@ -1,0 +1,314 @@
+.clipping-page {
+  * {
+    box-sizing: border-box;
+  }
+  & {
+    margin: 0;
+    background: var(--page);
+    color: var(--text);
+    font:
+      16px/1.5 system-ui,
+      sans-serif;
+  }
+  main {
+    max-width: 1020px;
+    margin: auto;
+    padding: 28px 24px 48px;
+  }
+  header,
+  .heading,
+  .control-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  header {
+    height: auto;
+    padding: 0 0 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  a {
+    color: inherit;
+  }
+  button,
+  select {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  button,
+  summary {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .eyebrow {
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 28px;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.15;
+    letter-spacing: -0.04em;
+    margin: 10px 0 14px;
+  }
+  h2 {
+    font-size: 19px;
+    margin: 0;
+  }
+  p {
+    margin: 12px 0;
+  }
+  .lede {
+    max-width: 720px;
+    color: var(--text-secondary);
+  }
+  .experiment {
+    margin-top: 26px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .truth {
+    background: var(--node-Y);
+    padding: 8px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .control {
+    padding: 16px;
+    background: var(--surface-subtle);
+    border-radius: 10px;
+  }
+  output,
+  td,
+  .truth {
+    font-variant-numeric: tabular-nums;
+  }
+  output {
+    font-weight: 650;
+  }
+  input[type="range"] {
+    display: block;
+    width: 100%;
+    margin: 18px 0 8px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .ends {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .help,
+  .sample,
+  small {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .results {
+    min-width: 0;
+  }
+  .controls,
+  .comparisons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 22px;
+  }
+  .controls .control-label {
+    display: block;
+  }
+  .controls {
+    border-top: 0;
+  }
+  .cap-switch {
+    display: block;
+    margin-block: 16px;
+  }
+  .cap-switch input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+  }
+  input:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .controls output {
+    display: block;
+    margin-top: 4px;
+  }
+  figure {
+    min-width: 0;
+    margin: 0;
+  }
+  figcaption {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .legend {
+    display: flex;
+    gap: 18px;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+    border: 2px solid var(--arm-0);
+  }
+  .legend span:last-child::before {
+    background: var(--arm-1);
+    border-color: var(--arm-1);
+  }
+  #histogram {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    overflow: visible;
+  }
+  #histogram text {
+    fill: var(--text-secondary);
+    font-size: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  caption {
+    text-align: left;
+    font-weight: 650;
+    padding: 0 0 12px;
+  }
+  th,
+  td {
+    text-align: right;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  th:first-child {
+    text-align: left;
+  }
+  thead th {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 550;
+  }
+  td strong {
+    font-size: 21px;
+    font-weight: 650;
+  }
+  td small {
+    display: block;
+  }
+  td.selected {
+    background: color-mix(
+      in srgb,
+      var(--surface-subtle),
+      var(--error-surface) var(--error-tint)
+    );
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .actions .sample {
+    margin-left: auto;
+  }
+  details {
+    margin-top: 22px;
+  }
+  summary {
+    font-weight: 600;
+  }
+  details table {
+    margin-top: 16px;
+    font-size: 13px;
+  }
+  .note {
+    max-width: 760px;
+    color: var(--text-secondary);
+  }
+  @media (max-width: 800px) {
+    .controls,
+    .comparisons {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 540px) {
+    #histogram text {
+      font-size: 20px;
+    }
+    main {
+      padding: 18px 14px 32px;
+    }
+    header {
+      align-items: start;
+      font-size: 12px;
+    }
+    .experiment {
+      padding: 14px;
+    }
+    .heading {
+      flex-wrap: wrap;
+      align-items: start;
+      gap: 10px;
+    }
+    .truth {
+      font-size: 13px;
+    }
+    .control {
+      padding: 14px;
+    }
+    .control-label {
+      display: block;
+    }
+    output {
+      display: block;
+      margin-top: 4px;
+    }
+    th,
+    td {
+      padding: 10px 5px;
+      font-size: 12px;
+    }
+    td strong {
+      font-size: 18px;
+    }
+    td small {
+      font-size: 10px;
+    }
+    .actions .sample {
+      width: 100%;
+      margin: 0;
+    }
+  }
+
+  .chapter-nav {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+}

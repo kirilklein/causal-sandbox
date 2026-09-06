@@ -18,6 +18,18 @@ export function clippingResult(rows, threshold = 0.02) {
   if (!Number.isFinite(threshold) || threshold < 0 || threshold > 0.5)
     throw new RangeError("Clipping threshold must be between 0 and 0.5.");
 
+  return weightedResult(rows, threshold, Infinity);
+}
+
+export function cappedResult(rows, maxWeight = Infinity) {
+  if (!(Number.isFinite(maxWeight) || maxWeight === Infinity) || maxWeight < 1)
+    throw new RangeError(
+      "Maximum weight must be at least 1, or Infinity for no cap.",
+    );
+  return { ...weightedResult(rows, 0, maxWeight), weightCap: maxWeight };
+}
+
+function weightedResult(rows, threshold, maxWeight) {
   const n = rows.length;
   const unavailable = (reason) => ({ available: false, reason, threshold, n });
   if (!n) return unavailable("No people in this sample.");
@@ -44,8 +56,8 @@ export function clippingResult(rows, threshold = 0.02) {
       "Unclipped probabilities must be strictly between 0 and 1.",
     );
 
-  const weights = rows.map(
-    ({ A }, i) => 1 / (A ? propensities[i] : 1 - propensities[i]),
+  const weights = rows.map(({ A }, i) =>
+    Math.min(maxWeight, 1 / (A ? propensities[i] : 1 - propensities[i])),
   );
   const weightedOutcomes = [0, 0];
   const totalWeights = [0, 0];
@@ -63,10 +75,10 @@ export function clippingResult(rows, threshold = 0.02) {
     weightedOutcomes[0] / totalWeights[0];
   if (![regression, ipw, aipw, ...totalWeights].every(Number.isFinite))
     return unavailable(
-      "Clipping calculations exceeded the finite numeric range.",
+      "Weight calculations exceeded the finite numeric range.",
     );
 
-  // Bins describe the unchanged raw fit; diagnostics use the newly clipped weights.
+  // Bins describe the raw fit; diagnostics use the weights used in estimation.
   const overlap = overlapDiagnostics(
     rows,
     rows.map(({ p }) => p),
@@ -74,10 +86,12 @@ export function clippingResult(rows, threshold = 0.02) {
   );
   for (const arm of overlap) {
     arm.clipped = 0;
+    arm.capped = 0;
     arm.maxWeight = 0;
   }
   rows.forEach(({ A, p }, i) => {
     if (p !== propensities[i]) overlap[A].clipped++;
+    if (1 / (A ? p : 1 - p) > maxWeight) overlap[A].capped++;
     overlap[A].maxWeight = Math.max(overlap[A].maxWeight, weights[i]);
   });
   if (
