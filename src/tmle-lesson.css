@@ -1,0 +1,191 @@
+.tmle-learning #lesson-graph {
+  max-width: 360px;
+}
+.tmle-control-row,
+.tmle-correction-readout,
+.tmle-legend,
+.tmle-legend span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tmle-control-row {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.tmle-diagnostics {
+  margin-top: 24px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.tmle-correction-readout {
+  gap: 24px;
+  padding: 12px 16px;
+  background: var(--surface-subtle);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.tmle-correction-readout strong {
+  display: block;
+  font-size: 25px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+#tmle-status {
+  min-height: 3.2em;
+  font-size: 14px;
+}
+.tmle-legend {
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.tmle-legend i {
+  width: 24px;
+  border-top: 2px solid var(--accent);
+}
+.tmle-legend .tmle-key-before {
+  border-color: var(--text-secondary);
+  border-top-style: dashed;
+}
+.tmle-predictions,
+.tmle-definitions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 16px 0;
+}
+.tmle-predictions figure {
+  margin: 0;
+}
+.tmle-predictions figcaption {
+  font-weight: 600;
+  font-size: 14px;
+}
+.tmle-predictions svg {
+  display: block;
+  width: 100%;
+}
+.tmle-predictions svg text {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+.tmle-formula-details {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+.tmle-formula-details math {
+  font-family: "STIX Two Math", "Cambria Math", math;
+  margin: 0;
+}
+.tmle-formula,
+.tmle-formula-start,
+.tmle-formula-parts,
+.tmle-update > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.tmle-formula {
+  margin: 24px 0;
+  padding: 28px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  flex-wrap: wrap;
+  row-gap: 24px;
+}
+.tmle-formula math,
+.tmle-operator {
+  font-size: 28px;
+}
+.tmle-formula .tmle-initial,
+.tmle-formula .tmle-targeted,
+.tmle-update {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.tmle-formula div > span:not(.tmle-operator) {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.tmle-update {
+  border-inline: 2px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 12px;
+}
+.tmle-definitions section {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 10px;
+}
+.tmle-definitions h3 {
+  margin: 0 0 12px;
+}
+.tmle-definitions p {
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+.tmle-definitions math {
+  font-size: 20px;
+}
+.tmle-definitions .tmle-initial,
+.tmle-formula .tmle-initial {
+  background: var(--node-C);
+}
+.tmle-definitions .tmle-direction,
+.tmle-formula .tmle-direction {
+  background: var(--node-M);
+}
+.tmle-definitions .tmle-amount,
+.tmle-formula .tmle-amount {
+  background: var(--node-K);
+}
+.tmle-definitions .tmle-targeted,
+.tmle-formula .tmle-targeted {
+  background: var(--node-Y);
+}
+.tmle-influence math {
+  font-size: 20px;
+}
+.tmle-influence-formula {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.tmle-formula .tmle-initial,
+.tmle-formula .tmle-targeted,
+.tmle-formula .tmle-amount,
+.tmle-formula .tmle-direction {
+  border-radius: 8px;
+  padding: 8px;
+}
+.tmle-update > div > span[aria-label="times"] {
+  font-size: 24px;
+}
+#tmle-sample-values table {
+  width: 100%;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+#tmle-sample-values th,
+#tmle-sample-values td {
+  padding: 8px 4px;
+}
+@media (max-width: 540px) {
+  .tmle-predictions,
+  .tmle-definitions {
+    grid-template-columns: 1fr;
+  }
+  .tmle-formula,
+  .tmle-formula-parts {
+    flex-direction: column;
+  }
+  .tmle-formula .tmle-operator {
+    align-self: center;
+  }
+}

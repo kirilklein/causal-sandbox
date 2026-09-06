@@ -8,6 +8,8 @@ import { makeNoise } from "./simulation.js";
 import { lessonBaseline, lessonResult } from "./lesson-simulation.js";
 import { samplingView } from "./sampling-variation.js";
 import { aipwCalculation, aipwFormula } from "./aipw-calculation.js";
+import { tmlePanel, tmleFormula, renderTmle } from "./tmle-lesson.js";
+import "./tmle-lesson.css";
 
 const lessons = [
   {
@@ -82,7 +84,7 @@ const lessons = [
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
       "Augmented inverse probability weighting (AIPW) combines the outcome predictions with a propensity-weighted correction based on their errors. When adjustment controls confounding and comparable people can receive either treatment (overlap), it is consistent if either model is correctly specified: across increasingly large samples, it approaches the true effect. This does not promise exact recovery or the best estimate in every sample. When both models are wrong, that protection is lost. Model choices do not fix missing confounders or invalid adjustment.",
-    next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to scarce treatment comparisons.",
+    next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to building the correction into the predictions.",
   },
   {
     slug: "mediator",
@@ -153,7 +155,19 @@ lessons[9] = {
 };
 // Numeric IDs retain the original simulation and ?level= link identities.
 // Only this order determines the displayed positions and navigation.
-const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 10];
+lessons[10] = {
+  slug: "tmle",
+  title: "Targeting with TMLE",
+  question: "Can we build the correction into the predictions?",
+  transition:
+    "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. Baseline health is the only common cause.",
+  instruction:
+    "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
+  explanation:
+    "Targeted minimum loss-based estimation (TMLE) adjusts the outcome predictions in a direction set by the treatment probabilities. It fits the amount of this update using observed outcomes, then averages the updated predicted treatment contrasts. Solving the targeting equation does not guarantee a correct causal answer: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
+  next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
+};
+const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 11, 10];
 const hiddenCallback = {
   ...lessons[8],
   title: "Revisit hidden confounding with AIPW",
@@ -161,7 +175,7 @@ const hiddenCallback = {
     "We return to the hidden-confounding experiment from level 7, with simple relationships and smoking’s influence reset to zero. Both models use baseline health; neither can use smoking status. AIPW is now included in the comparison.",
   explanation:
     "AIPW combines the same predictions and weights as before. A correct model for one part of an identified causal problem can protect against the other model being wrong; it cannot supply missing confounding information. As smoking’s influence grows, all three estimates can miss the true effect. Agreement between methods does not establish that confounding has been controlled.",
-  next: "Return to the fixed model experiment, or continue to overlap: do we have enough comparable people receiving each treatment?",
+  next: "Return to the fixed model experiment, or continue to targeting: can we build the correction into the outcome predictions?",
 };
 let state,
   noise,
@@ -242,10 +256,10 @@ function lessonNavigation(position) {
   const groups = [
     { title: "Foundations", start: 0, end: 4 },
     { title: "Causal roles", start: 4, end: 7 },
-    { title: "Models and limitations", start: 7, end: 10 },
+    { title: "Models and limitations", start: 7, end: availableLevels.length },
   ];
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
-    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span>Contents</span></button><span>Level ${position + 1} of 11${revisiting ? " · Optional revisit" : ""}</span></div>
+    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span>Contents</span></button><span>Level ${position + 1} of ${availableLevels.length + 1}${revisiting ? " · Optional revisit" : ""}</span></div>
     <div id="lesson-menu">${groups
       .map(
         ({ title, start, end }) =>
@@ -274,7 +288,7 @@ function enter(level, focus = true, callback = false) {
   const next = availableLevels[position + 1];
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
-    <main class="learning">
+    <main class="learning${level === 11 ? " tmle-learning" : ""}">
       ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
       ${lessonNavigation(position)}
       <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
@@ -282,14 +296,14 @@ function enter(level, focus = true, callback = false) {
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
-        <div class="lesson-controls">${controls(level)}</div>
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}</div>
+        ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
+        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
         <p class="sample-note">Stronger red means farther from truth in this sample.</p>
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
         ${(level >= 4 && level <= 6) || level === 9 || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
-        ${level === 10 ? overlapPanel() : ""}
+        ${level === 10 ? overlapPanel() : ""}${level === 11 ? tmlePanel() : ""}
         <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         ${level === 3 ? '<details id="weighting" hidden><summary>Why these weights?</summary><div id="weight-examples"></div><details id="ipw-calculation"><summary>How do weights become an effect?</summary><div id="ipw-arithmetic"></div></details></details>' : ""}
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
@@ -310,6 +324,7 @@ function enter(level, focus = true, callback = false) {
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of fitted outcome with treatment minus fitted outcome without treatment"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mi>m</mi><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mi>m</mi><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with baseline health Cᵢ, m₁ and m₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? "<p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>" : ""}</details>
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 6 ? `<details class="aipw-calculation"><summary>How is AIPW calculated?</summary>${aipwFormula()}</details>` : ""}
+      ${level === 11 ? tmleFormula() : ""}
       ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. A controlled direct effect compares treatment choices while fixing M at a specified value. Holding M fixed recovers that effect here because the additive simulation has no treatment–mediator interaction or unmeasured mediator–outcome confounding. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
@@ -337,6 +352,17 @@ function enter(level, focus = true, callback = false) {
       return;
     event.preventDefault();
     navigate(Number(link.dataset.level));
+  });
+  document
+    .querySelector("#targeting-progress")
+    ?.addEventListener("input", (event) => {
+      state.targeting = Number(event.target.value) / 100;
+      update();
+    });
+  document.querySelector("#apply-targeting")?.addEventListener("click", () => {
+    state.targeting = 1;
+    document.querySelector("#targeting-progress").value = "100";
+    update();
   });
   document.querySelector("#hidden-strength")?.addEventListener("input", (e) => {
     state.hiddenStrength = +e.target.value;
@@ -466,6 +492,14 @@ function update() {
     document.querySelector("#aipw-arithmetic").innerHTML = aipwCalculation(
       result.aipwContributions,
     );
+  if (state.level === 11) {
+    const view = renderTmle(result.tmleData, state.targeting, result.clipped);
+    updateEstimate(
+      "tmle",
+      view.status === "ok" ? view.currentEstimate : NaN,
+      result.totalEffect,
+    );
+  }
   if (state.level <= 2) {
     if (studies.at(-1)?.seed !== state.seed)
       studies.push({ seed: state.seed, estimate: result.unadjusted });
@@ -480,7 +514,10 @@ function update() {
     updateEstimate(id, result[id], result.totalEffect);
   }
   document.querySelector("#ipw-result").hidden =
-    state.level === 7 || state.level === 8 || (state.level < 4 && !revealed);
+    state.level === 7 ||
+    state.level === 8 ||
+    state.level === 11 ||
+    (state.level < 4 && !revealed);
   if (state.level >= 4) {
     document.querySelector("#regression-result").hidden = false;
   }
