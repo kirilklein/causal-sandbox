@@ -1,0 +1,314 @@
+.timing-page {
+  main {
+    max-width: 900px;
+  }
+  .timing-defs {
+    position: absolute;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .timeline {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 64px 1fr 64px 1fr;
+    height: 144px;
+    min-width: 0;
+    padding: 0;
+    margin: 16px 0 0;
+    border: 0;
+  }
+  .time-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 88px;
+    border-top: 2px solid var(--border-strong);
+    pointer-events: none;
+  }
+  .time-region {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    gap: 7px;
+    padding: 14px 8px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: var(--surface-subtle);
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    z-index: 1;
+  }
+  .time-region:has(:checked) {
+    border-color: var(--text-secondary);
+  }
+  .time-region.drop-target {
+    outline: 2px solid var(--accent);
+    outline-offset: -3px;
+  }
+  input {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    margin: 1px 0 0;
+  }
+  .time-landmark {
+    position: relative;
+    text-align: center;
+  }
+  .time-landmark strong {
+    position: absolute;
+    top: 64px;
+    left: 8px;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--node-A);
+    font-size: 21px;
+  }
+  #fixed-Y strong {
+    background: var(--node-Y);
+  }
+  .time-landmark span {
+    z-index: 3;
+    position: absolute;
+    top: 116px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  #variable-handle {
+    position: absolute;
+    top: 88px;
+    width: 48px;
+    height: 48px;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--text-secondary);
+    background: var(--node-C);
+    font-size: 21px;
+    font-weight: 650;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+    z-index: 2;
+  }
+  #variable-handle.dragging {
+    cursor: grabbing;
+    box-shadow: 0 4px 12px var(--border);
+  }
+  .time-direction {
+    text-align: right;
+    margin: 6px 0;
+  }
+  .timing-result {
+    background: var(--surface-subtle);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .role-choices {
+    border: 0;
+    padding: 0;
+    margin: 16px 0 8px;
+  }
+  .role-choices legend {
+    font-weight: 650;
+    margin-bottom: 8px;
+  }
+  .role-choices legend span {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  #example-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #example-choices label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #example-choices label:has(:checked) {
+    background: var(--surface-subtle);
+    border-color: var(--text);
+  }
+  #example-panel {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+  .timing-dag {
+    display: block;
+    width: 100%;
+    max-width: 240px;
+    margin: 0 auto;
+  }
+  .example-caption {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 8px;
+  }
+  #instrument-detail,
+  #baseline-detail {
+    grid-column: 1 / -1;
+  }
+  #example-text {
+    margin: 0;
+  }
+  .timing-dag text {
+    fill: var(--text);
+    font:
+      24px system-ui,
+      sans-serif;
+  }
+  .timing-dag .dag-note {
+    font-size: 21px;
+    fill: var(--text-secondary);
+  }
+  figcaption {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .timing-adjust {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .timing-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .timing-overview h3 {
+    font-size: 16px;
+  }
+  @media (max-width: 540px) {
+    #example-panel {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .timing-dag {
+      max-width: 200px;
+    }
+    .timeline {
+      grid-template-columns: 1fr 38px 1fr 38px 1fr;
+      height: 172px;
+    }
+    .time-track {
+      top: 116px;
+    }
+    .time-landmark span {
+      top: 144px;
+    }
+    .time-region {
+      padding: 10px 3px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      font-size: 13px;
+    }
+    .time-landmark strong {
+      width: 36px;
+      height: 36px;
+      left: 1px;
+      top: 98px;
+      font-size: 18px;
+    }
+    .time-landmark span {
+      font-size: 10px;
+    }
+    #variable-handle {
+      width: 44px;
+      height: 44px;
+    }
+    #example-choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    #example-choices label {
+      font-size: 14px;
+      min-height: 44px;
+      padding: 8px;
+    }
+    .timing-overview {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+}
+.timing-page {
+  .time-track {
+    z-index: 2;
+  }
+  .time-landmark strong {
+    z-index: 3;
+  }
+  #variable-handle {
+    z-index: 4;
+  }
+  #baseline-detail {
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+    padding-top: 8px;
+  }
+  .collider-estimates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .collider-estimates > div {
+    padding: 16px;
+    border-radius: 10px;
+    background: color-mix(
+      in srgb,
+      var(--page),
+      var(--error-surface) var(--error-tint, 0%)
+    );
+  }
+  .collider-estimates .collider-truth {
+    background: var(--node-Y);
+  }
+  .collider-estimates span,
+  .collider-estimates small {
+    display: block;
+    font-size: 13px;
+  }
+  .collider-estimates strong {
+    display: block;
+    font-size: 28px;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 540px) {
+    .collider-estimates {
+      grid-template-columns: 1fr;
+    }
+  }
+}

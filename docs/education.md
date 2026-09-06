@@ -22,6 +22,14 @@ included in adjustment, and a separate hidden-confounding comparison. The
 chapter is linked from Contents and after overlap; it does not introduce an IV
 estimator or change the existing lesson sequence.
 
+An optional [What timing tells us chapter](timing.md) is available at
+`?lesson=timing`, linked from Contents and the collider lesson. It follows the
+mediator/collider material without interrupting Continue through the core lessons.
+A movable V explores three time windows with fixed A/Y and selectable example
+graphs. The baseline-collider example adds a simulation comparing outcome
+regression before and after adjusting for the referral score K.
+Repeated treatment is deferred to [#79](https://github.com/kirilklein/causal-sandbox/issues/79).
+
 Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
 `?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,
 mediator, collider, and hidden confounding, at their new displayed positions.

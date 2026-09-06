@@ -14,6 +14,8 @@ if (params.has("sandbox")) {
   await import("./clipping-lesson.js");
 } else if (params.get("lesson") === "trimming") {
   await import("./trimming-lesson.js");
+} else if (params.get("lesson") === "timing") {
+  await import("./timing-lesson.js");
 } else {
   await import("./lessons.js");
 }
