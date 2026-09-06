@@ -233,7 +233,7 @@ function controls(level) {
   if (level === 3)
     return '<p>Imagine people in poorer health receive treatment more often. To balance baseline health across groups, give more weight to healthier people who received treatment and less healthy people who did not.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
-    return '<p id="regression-explanation">Fit an outcome model, predict each person’s outcome with and without treatment at fixed baseline health, and average the differences.</p>';
+    return '<p id="regression-explanation">For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed baseline health, and we average the predicted differences to estimate the average treatment effect.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
       ["simple", "Simple relationships"],

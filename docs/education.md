@@ -423,8 +423,10 @@ migrate the other formulas tracked by #19 or add AIPW/TMLE explanations.
 
 ### Outcome predictions at first introduction
 
-Lesson 4 states the operation once: fit an outcome model, predict each person
-under both treatments at the same baseline health, and average the differences.
+Lesson 4 briefly distinguishes the observed outcome from the counterfactual
+outcome under the alternative treatment. It then states the operation once:
+predict each person under both treatments at the same baseline health, and
+average the predicted differences to estimate the average treatment effect.
 One optional explanation contains the averaging formula, symbol definitions,
 the distinction between predictions and observations, and why both methods work
 in this world. There are no prediction cards, worked arithmetic, or separate
