@@ -126,6 +126,19 @@ or invalidity. Missing/non-finite results are labeled Unavailable. The sandbox's
 plot uses the same error scale for its marks and bars; intervals remain separate
 inference work. The independent overlap card uses the lesson background tints.
 
+### Instrument adjustment pairs
+
+The instrument follow-on section retains the lesson’s fixed 0–2 absolute-error
+background tint and signed differences. A darker strip uses `--error-mark` to
+show only the extra absolute error versus the other estimate in that method’s
+pair. Strip length uses a fixed 0–0.5 outcome-unit scale, saturating above 0.5;
+its exact value remains in the cell tooltip. The closer estimate has no strip.
+This distinguishes the pair even when both backgrounds reach full red. Equal
+absolute errors receive equal tint and no strip, regardless of sign. Unavailable
+comparisons have neither a tint suggesting success nor an extra-error strip.
+Repeated-study mean estimates use the same display, where the error estimates
+bias. Both scales are explained beneath the paired results.
+
 ## Acceptance and application
 
 Require at least 4.5:1 for ordinary text against its background and at least 3:1
