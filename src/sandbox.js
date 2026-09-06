@@ -57,7 +57,7 @@ document.querySelector("#app").innerHTML = `
       </section>
       <section id="analyst-panel" class="analyst panel" role="tabpanel" aria-labelledby="analyst-tab" tabindex="0">
         <div class="panel-heading"><h2 id="analyst-title">Fitted models</h2><span class="small-tag">What the estimators use</span></div>
-        <div class="model-controls" aria-label="Analyst models"><div class="model-intro"><small id="model-purpose">Choose how the analysis uses C₁ and C₂.</small><small id="model-availability"></small></div><div class="model-pair">${["outcome", "treatment"].map((k) => `<div class="model-control"><div class="term-label"><label for="${k}-model">${k === "outcome" ? "Outcome model" : "Treatment model"}</label>${k === "treatment" ? helpButton("propensity", "?") : ""}</div><small id="${k}-purpose">${k === "outcome" ? "Used by regression and AIPW." : "Used by IPW and AIPW."}</small><select id="${k}-model" aria-describedby="model-purpose model-availability ${k}-purpose ${k}-terms"><option value="main">C₁ and C₂ separately</option><option value="interaction">Include C₁ × C₂</option></select><small id="${k}-terms"></small></div>`).join("")}</div></div>
+        <div class="model-controls" aria-label="Analyst models"><div class="model-intro"><small id="model-purpose">Choose how flexibly each model represents C. ${helpButton("modelForm", "Model details")}</small><small id="model-availability"></small></div><div class="model-pair">${["outcome", "treatment"].map((k) => `<div class="model-control"><div class="term-label"><label for="${k}-model">${k === "outcome" ? "Outcome model" : "Treatment model"}</label>${k === "treatment" ? helpButton("propensity", "?") : ""}</div><small id="${k}-purpose">${k === "outcome" ? "Used by regression and AIPW." : "Used by IPW and AIPW."}</small><select id="${k}-model" aria-describedby="model-purpose model-availability ${k}-purpose ${k}-status"><option value="main">Simple model</option><option value="interaction">More flexible model</option></select><small id="${k}-status"></small></div>`).join("")}</div></div>
       </section>
     </div>
     <section id="results-panel" class="estimates panel" aria-labelledby="results-title" tabindex="-1">
@@ -241,7 +241,7 @@ function update() {
   if (state.world.outcome)
     relationships.push(
       state.p.cy
-        ? "C₁’s effect on Y depends on C₂."
+        ? "C₁’s influence on Y depends on C₂."
         : "Outcome interaction inactive because C → Y is 0.",
     );
   document.querySelector("#world-description").textContent =
@@ -250,7 +250,7 @@ function update() {
       : relationships.join(" ");
   const hasC = adjustment.includes("C");
   document.querySelector("#model-availability").textContent = hasC
-    ? "An interaction lets one covariate’s influence depend on the other."
+    ? "These choices address C’s relationship only; hidden confounding and adjustment still matter."
     : "Select C under Adjust for in the results to enable these choices.";
   for (const key of ["outcome", "treatment"]) {
     const control = document.querySelector(`#${key}-model`);
@@ -258,15 +258,17 @@ function update() {
     control.disabled = !hasC;
     const active =
       state.world[key] > 0 && state.p[key === "outcome" ? "cy" : "ca"] > 0;
-    document.querySelector(`#${key}-terms`).textContent = !hasC
+    document.querySelector(`#${key}-status`).textContent = !hasC
       ? ""
       : state.models[key]
-        ? "C₁ + C₂ + C₁ × C₂"
+        ? active
+          ? "Can capture the current C relationship."
+          : "Extra flexibility is not needed for C here."
         : active
-          ? "C₁ + C₂ · world’s interaction omitted"
-          : "C₁ + C₂";
+          ? "Too simple for the current C relationship."
+          : "Can capture the current C relationship.";
     document
-      .querySelector(`#${key}-terms`)
+      .querySelector(`#${key}-status`)
       .classList.toggle("missing-term", hasC && active && !state.models[key]);
   }
   document.querySelectorAll("[data-param]").forEach((el) => {
@@ -354,9 +356,9 @@ function update() {
       state.world.treatment > 0 && !state.models.treatment;
     lesson =
       missingOutcome && missingTreatment
-        ? "<b>Measured does not mean modeled.</b> Both models omit C₁ × C₂. Add it to either model to explore double robustness."
+        ? "<b>Measured does not mean modeled.</b> Both models are too simple for C’s relationships. Make either model more flexible to explore double robustness."
         : missingOutcome
-          ? "<b>The outcome model misses a relationship.</b> Regression omits C₁ × C₂. IPW and AIPW can recover using the treatment model; sampling and overlap still matter."
+          ? "<b>The outcome model misses a relationship.</b> The outcome model is too simple for C’s relationship. IPW and AIPW can recover using the treatment model; sampling and overlap still matter."
           : "<b>The treatment model misses a relationship.</b> IPW uses an incomplete propensity model. Regression and AIPW can recover using the outcome model.";
   } else if (hasC && (state.p.ca === 0 || state.p.cy === 0))
     lesson =

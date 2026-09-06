@@ -1,4 +1,8 @@
 export const glossary = {
+  modelForm: {
+    title: "Model flexibility and specification",
+    text: "The simple model includes C₁ + C₂. The more flexible model also includes C₁ × C₂: an interaction that lets one covariate’s influence depend on the other. For treatment assignment these terms describe log odds, which are converted to probabilities. A model is well specified when it can represent the relevant true relationship; it is misspecified when it cannot. The feedback here checks only whether the model can capture the world’s C terms. Extra flexibility is unnecessary when that interaction is absent or its arrow strength is zero. Neither choice fixes hidden confounding or invalid adjustment, and neither guarantees an estimate equal to truth. These interactions do not change the constant treatment effect.",
+  },
   confounder: {
     title: "Confounder",
     text: "A confounder is a shared cause of treatment and outcome, making the groups differ before treatment. Here C is a block of two measured variables, C₁ and C₂; selecting C adjusts for both. Confounding through C requires both its treatment and outcome pathways to be active.",

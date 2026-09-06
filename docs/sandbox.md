@@ -8,7 +8,14 @@ adjustment, and model choices. Analytical changes mark the setup as Modified;
 reverting them clears that status. Diagram visibility does not change the experiment.
 
 World and Analysis tabs separate generating mechanisms from fitted models. A
-scenario opens the tab containing its suggested action. Hidden-confounding and
+model choice selects a simple or more flexible form independently of the world.
+Feedback beside each choice states whether it can capture the current C
+relationship. Both forms can represent a simple relationship; extra flexibility
+is unnecessary when the interaction is absent or its arrow strength is zero.
+This feedback concerns C terms only, not hidden confounding, adjustment validity,
+or overlap. Model details explain the interaction and specification terminology.
+
+A scenario opens the tab containing its suggested action. Hidden-confounding and
 mediator scenarios expand their relevant pathway controls. The relationship
 selector explains active interactions and identifies the specific zero-strength
 path when an interaction is inactive. Compact graph controls fade C, M, K, or U

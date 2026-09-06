@@ -42,7 +42,7 @@ Choose a scenario, then customize its world and analysis in separate tabs. Each 
 - **Edit the causal world.** Sliders set every arrow strength in a DAG with treatment A, outcome Y, observed covariates C (C₁, C₂), hidden confounder U, mediator M, and collider K.
 - **Play analyst.** Choose adjustment variables beside the estimates and configure the outcome and propensity models in the Analysis tab. Graph display controls only fade nodes and arrows; they never change adjustment or estimates.
 - **Compare estimates against the truth.** Unadjusted, regression adjustment, IPW, and AIPW use a fixed error scale with starting markers. The unadjusted row combines raw association and the equivalent naive regression.
-- **Switch worlds** to add interactions to the outcome, the treatment, or both — and see which estimators break when the model is misspecified.
+- **Switch worlds** between simple and more complex relationships. Choose simple or more flexible models and see whether they can capture each world’s covariate relationships.
 - **Explore ten scenarios:** randomization, observed or hidden confounding, collider or mediator adjustment, four model-specification comparisons, and an isolated poor-overlap experiment. Restart the selected scenario or share its starting setup through its link.
 - **Look up terms as you explore.** Pause over an underlined term, or tap or click it, for a short definition, or open the collapsed glossary in “How this world works.” Help supports keyboard navigation and Escape to close, without changing the simulation.
 
