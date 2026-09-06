@@ -20,15 +20,25 @@ export const defaults = {
   my: 0.8,
 };
 export const worlds = [
-  { id: "additive", name: "Additive relationships", treatment: 0, outcome: 0 },
-  { id: "outcome", name: "Outcome interaction", treatment: 0, outcome: 1.5 },
+  { id: "additive", name: "Simple relationships", treatment: 0, outcome: 0 },
+  {
+    id: "outcome",
+    name: "More complex outcome relationship",
+    treatment: 0,
+    outcome: 1.5,
+  },
   {
     id: "treatment",
-    name: "Treatment interaction",
+    name: "More complex treatment assignment",
     treatment: 0.7,
     outcome: 0,
   },
-  { id: "both", name: "Interactions in both", treatment: 0.7, outcome: 1.5 },
+  {
+    id: "both",
+    name: "Both relationships more complex",
+    treatment: 0.7,
+    outcome: 1.5,
+  },
 ];
 export const presets = [
   {

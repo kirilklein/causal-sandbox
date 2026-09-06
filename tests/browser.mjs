@@ -78,7 +78,7 @@ try {
   for (const model of ["outcome", "treatment"]) {
     assert.match(
       await page.locator(`#${model}-model`).getAttribute("aria-describedby"),
-      new RegExp(`${model}-purpose.*${model}-terms`),
+      new RegExp(`${model}-purpose.*${model}-status`),
     );
   }
   const values = async () =>
@@ -410,6 +410,65 @@ try {
     assert.equal(new URL(page.url()).searchParams.get("scenario"), scenario.id);
   }
 
+  // Model form stays fixed when the world changes; adequacy is derived.
+  await selectScenario("both-models");
+  for (const world of ["additive", "outcome", "treatment", "both"]) {
+    await worldTab();
+    await page.locator("#world-select").selectOption(world);
+    await analysisTab();
+    for (const model of ["outcome", "treatment"]) {
+      const control = page.getByLabel(
+        model === "outcome" ? "Outcome model" : "Treatment model",
+        { exact: true },
+      );
+      const active = world === model || world === "both";
+      for (const form of ["main", "interaction"]) {
+        await control.selectOption(form);
+        assert.equal(
+          await page.locator(`#${model}-status`).innerText(),
+          active && form === "main"
+            ? "Too simple for the current C relationship."
+            : !active && form === "interaction"
+              ? "Extra flexibility is not needed for C here."
+              : "Can capture the current C relationship.",
+        );
+      }
+    }
+  }
+  await worldTab();
+  await setArrow("ca", 0);
+  await analysisTab();
+  assert.equal(
+    await page.locator("#treatment-model").inputValue(),
+    "interaction",
+  );
+  assert.match(
+    await page.locator("#treatment-status").innerText(),
+    /not needed/,
+  );
+  await page.locator("#treatment-model").selectOption("main");
+  assert.match(
+    await page.locator("#treatment-status").innerText(),
+    /Can capture/,
+  );
+  await worldTab();
+  await setArrow("ca", 1.2);
+  await analysisTab();
+  assert.equal(await page.locator("#treatment-model").inputValue(), "main");
+  assert.match(
+    await page.locator("#treatment-status").innerText(),
+    /Too simple/,
+  );
+  const beforeModelHelp = await simulationView();
+  await page
+    .getByRole("button", {
+      name: "Explain Model flexibility and specification",
+    })
+    .click();
+  assert.match(await page.locator("#help-modelForm").innerText(), /C₁ × C₂/);
+  await page.keyboard.press("Escape");
+  assert.deepEqual(await simulationView(), beforeModelHelp);
+
   // Double robustness: repairing either model changes only the methods using it.
   await selectScenario("both-models");
   const bothSimple = await values();
@@ -661,6 +720,38 @@ try {
       fullPage: true,
     });
   }
+  await selectScenario("both-models");
+  await page.locator("#outcome-model").focus();
+  await page.keyboard.press("m");
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await page.locator("#outcome-model").inputValue(),
+    "interaction",
+  );
+  for (const width of [1440, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.screenshot({
+      path: `/tmp/causal-model-feedback-${width}.png`,
+      fullPage: true,
+    });
+  }
+  const beforeMobileModelHelp = await simulationView();
+  await page
+    .getByRole("button", {
+      name: "Explain Model flexibility and specification",
+    })
+    .tap();
+  const modelHelpBounds = await page.locator("#help-modelForm").boundingBox();
+  assert.ok(
+    modelHelpBounds.x >= 0 && modelHelpBounds.x + modelHelpBounds.width <= 320,
+  );
+  assert.ok(
+    modelHelpBounds.y >= 0 && modelHelpBounds.y + modelHelpBounds.height <= 900,
+  );
+  await page.keyboard.press("Escape");
+  assert.deepEqual(await simulationView(), beforeMobileModelHelp);
+  await selectScenario("observed");
+  await page.setViewportSize({ width: 320, height: 740 });
   const colliderHelp = page.locator(
     '.help-button[popovertarget="help-collider"]',
   );
