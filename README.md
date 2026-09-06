@@ -1,3 +1,7 @@
+<a href="https://kirilklein.github.io/causal-sandbox/">
+  <img src="src/brand.svg" alt="Causal Sandbox" width="72">
+</a>
+
 # Causal Sandbox: Interactive Causal Inference Simulator
 
 **Learn causal inference by changing the world.**
