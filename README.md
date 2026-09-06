@@ -31,6 +31,10 @@ The true effect is always known, so every estimate can be compared with it. All 
 
 [Curriculum and learner walkthrough](docs/education.md).
 
+An interactive [TMLE model-error preview](docs/tmle-robustness.md) compares TMLE
+and IPW under shifted and scaled model predictions. It is a standalone experiment
+for the planned follow-up lesson, included in the site build.
+
 ## Run locally
 
 ```sh
