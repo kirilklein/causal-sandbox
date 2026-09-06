@@ -10,7 +10,7 @@ Change a setting and compare your estimate with the known causal effect. Start w
 
 Start with randomization and introduce one concept at a time: confounding, adjustment, causal roles, and model assumptions. Change a setting and compare the estimate with the known effect.
 
-[![First lesson: treatment and outcome, an effect slider, and estimates beside the truth](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=randomization)
+[![Demo: changing the treatment effect, adding a common cause, then applying IPW](docs/demo.gif)](https://kirilklein.github.io/causal-sandbox/?lesson=randomization)
 
 ## Full sandbox
 
@@ -42,12 +42,13 @@ npm install
 npm run dev
 ```
 
-| Command                | What it does                                       |
-| ---------------------- | -------------------------------------------------- |
-| `npm run build`        | Static site in `dist/`                             |
-| `npm run preview`      | Serve the built site                               |
-| `npm test`             | Statistical checks for lessons and sandbox models  |
-| `npm run test:browser` | Playwright smoke test against a running dev server |
+| Command                | What it does                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| `npm run build`        | Static site in `dist/`                                                                                  |
+| `npm run preview`      | Serve the built site                                                                                    |
+| `npm test`             | Statistical checks for lessons and sandbox models                                                       |
+| `npm run test:browser` | Playwright smoke test against a running dev server                                                      |
+| `npm run record:demo`  | Re-record `docs/demo.gif` and `docs/lessons.png` against a running dev server (needs ffmpeg and gifski) |
 
 Pushes to `main` deploy to GitHub Pages.
 

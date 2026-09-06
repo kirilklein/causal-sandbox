@@ -10,7 +10,8 @@
     "test": "node --test src/*.test.js",
     "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs && node tests/theme-browser.mjs && node tests/instruments-browser.mjs && node tests/clipping-browser.mjs && node tests/trimming-browser.mjs && node tests/tmle-robustness-browser.mjs",
     "format": "prettier --write src tests index.html package.json README.md",
-    "test:trimming": "node tests/trimming-study.mjs && node tests/trimming-browser.mjs"
+    "test:trimming": "node tests/trimming-study.mjs && node tests/trimming-browser.mjs",
+    "record:demo": "node tests/record-demo.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
