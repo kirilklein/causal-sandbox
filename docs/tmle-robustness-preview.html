@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>When models are imperfect · Causal Sandbox</title>
+    <link rel="stylesheet" href="../src/tmle-robustness-preview.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <svg viewBox="0 0 30 30" aria-hidden="true">
+          <path d="M6 22 15 7l9 15M6 22h18" />
+          <circle cx="15" cy="7" r="3" />
+          <circle cx="6" cy="22" r="3" />
+          <circle cx="24" cy="22" r="3" /></svg
+        >Causal Sandbox
+      </div>
+      <span class="preview-label">LESSON PREVIEW</span>
+    </header>
+    <main>
+      <div class="eyebrow">
+        <span>MODELS &amp; LIMITATIONS</span><span class="eyebrow-line"></span
+        ><span>AFTER TMLE TARGETING</span>
+      </div>
+      <h1>When both models are imperfect.</h1>
+      <p class="intro">
+        Two imperfect models. One treatment effect. Explore how their errors
+        interact.
+      </p>
+
+      <section class="experiment" aria-label="Model distortion experiment">
+        <div class="experiment-toolbar">
+          <div class="pattern-control">
+            <span class="control-caption">Error pattern</span>
+            <div class="segmented" role="group" aria-label="Error pattern">
+              <button data-pattern="shift" aria-pressed="true">Shift</button
+              ><button data-pattern="scale" aria-pressed="false">Scale</button>
+            </div>
+          </div>
+          <p id="pattern-description">Move predictions up or down.</p>
+          <button class="reset" id="reset">↺ <span>Reset</span></button>
+        </div>
+        <div class="maps">
+          <section class="map-panel">
+            <div class="map-heading">
+              <div>
+                <h2>TMLE</h2>
+                <p>Outcome + treatment model</p>
+              </div>
+              <span class="method-label">TARGETED</span>
+            </div>
+            <div id="tmle-map" class="map"></div>
+          </section>
+          <section class="map-panel">
+            <div class="map-heading">
+              <div>
+                <h2>IPW</h2>
+                <p>Treatment model only</p>
+              </div>
+              <span class="method-label">WEIGHTED</span>
+            </div>
+            <div id="ipw-map" class="map"></div>
+          </section>
+        </div>
+        <div class="legend-section">
+          <div class="legend">
+            <div class="legend-labels">
+              <span>Underestimate</span><span>Zero error</span
+              ><span>Overestimate</span>
+            </div>
+            <div class="legend-gradient"></div>
+            <div class="legend-numbers" id="legend-numbers"></div>
+          </div>
+          <p>
+            Estimate − true effect · outcome units<br /><span
+              >Shared by both maps · range changes with pattern</span
+            >
+          </p>
+        </div>
+        <div class="controls">
+          <div class="slider-control">
+            <label for="treatment"
+              >Treatment-model distortion
+              <output id="treatment-value"></output></label
+            ><input
+              id="treatment"
+              type="range"
+              min="0"
+              max="10"
+              step="1"
+              value="8"
+            />
+            <div class="slider-ticks">
+              <span id="treatment-low">Lower log odds</span><span>Correct</span
+              ><span id="treatment-high">Higher log odds</span>
+            </div>
+          </div>
+          <div class="slider-control">
+            <label for="outcome"
+              >Outcome-model distortion
+              <output id="outcome-value"></output></label
+            ><input
+              id="outcome"
+              type="range"
+              min="0"
+              max="10"
+              step="1"
+              value="7"
+            />
+            <div class="slider-ticks">
+              <span id="outcome-low">Lower predictions</span><span>Correct</span
+              ><span id="outcome-high">Higher predictions</span>
+            </div>
+          </div>
+        </div>
+        <p class="interaction-hint">
+          Select a square in either map, or move the sliders. The population
+          stays fixed.
+        </p>
+      </section>
+
+      <section class="selected-result" aria-labelledby="result-heading">
+        <div class="result-copy">
+          <div class="eyebrow">AT YOUR SELECTED POINT</div>
+          <h2 id="result-heading"></h2>
+          <p id="interpretation"></p>
+        </div>
+        <div class="result-values" aria-live="polite" aria-atomic="true">
+          <div class="truth-value">
+            <span>True effect</span><strong>2.000</strong
+            ><small>Known population</small>
+          </div>
+          <div>
+            <span>TMLE</span><strong id="tmle-value"></strong
+            ><small id="tmle-error"></small>
+          </div>
+          <div>
+            <span>IPW</span><strong id="ipw-value"></strong
+            ><small id="ipw-error"></small>
+          </div>
+        </div>
+      </section>
+
+      <details class="model-details">
+        <summary>
+          What changed in the models?<span aria-hidden="true">+</span>
+        </summary>
+        <p id="model-description"></p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Population group</th>
+                <th>True treatment probability</th>
+                <th>Distorted probability</th>
+                <th>
+                  True outcome means<br /><span>Untreated / treated</span>
+                </th>
+                <th>
+                  Initial distorted means<br /><span>Untreated / treated</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="model-rows"></tbody>
+          </table>
+        </div>
+        <p class="detail-note">
+          Two equally common groups have treatment effects of 1 and 3. Exact
+          treatment proportions remove sampling variation. Outcome means here
+          are continuous values, not probabilities.
+        </p>
+      </details>
+      <details class="model-details">
+        <summary>
+          Why do the errors interact?<span aria-hidden="true">+</span>
+        </summary>
+        <p>
+          TMLE updates the outcome predictions using the treatment model. Its
+          remaining population error involves a weighted product of
+          treatment-model error and outcome-model error after targeting.
+        </p>
+        <p>
+          Here, either correct model gives the correct effect. When both are
+          wrong, the direction and location of their errors matter. A zero
+          fitted residual correction alone does not establish accuracy.
+        </p>
+        <p class="detail-note">
+          This is a controlled population illustration, not a repeated-study
+          estimate of bias or precision. It uses linear continuous-outcome TMLE
+          and normalized (Hájek) IPW, with the same 0.02–0.98 propensity bounds.
+          No probabilities are clipped in these grids. These results do not
+          guarantee that TMLE is better in other populations.
+        </p>
+      </details>
+      <footer>
+        <span class="footer-dot"></span>Known population · fixed true effect ·
+        live estimator calculations<span class="footer-end"
+          >Causal Sandbox / TMLE</span
+        >
+      </footer>
+    </main>
+    <script type="module" src="../src/tmle-robustness-preview.js"></script>
+  </body>
+</html>
