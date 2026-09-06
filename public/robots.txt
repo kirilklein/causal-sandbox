@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kirilklein.github.io/causal-sandbox/sitemap.xml
