@@ -92,18 +92,17 @@ const lessons = [
     intuition: {
       title: "Example: exercise and fitness",
       paragraphs: [
-        "Exercise can improve fitness, and improved fitness can help people live longer. Fitness carries part of exercise’s effect.",
-        "To understand the total effect, we let fitness change with exercise. To understand the direct effect, imagine changing how much someone exercises while keeping their fitness the same. What difference would exercise still make to longevity?",
-        "Adjusting for a mediator changes the question: instead of asking about the total effect, we ask what remains when we hold that intermediate step fixed.",
+        "Exercise can improve fitness, and improved fitness can help people live longer. Therefore, fitness carries part of exercise’s effect on longevity: this part of the effect is mediated by fitness.",
+        "The total effect includes this benefit through improved fitness. Holding fitness fixed by adjusting for it would exclude that pathway. To estimate the total effect, we therefore do not adjust for fitness.",
       ],
     },
-    question: "Which effect do we want to estimate?",
+    question: "Should we adjust for a mediator to estimate the total effect?",
     transition:
       "We keep the simple relationships and correct baseline-health adjustment from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
     instruction:
-      "First compare outcome regression with the total effect. Then include the intermediate response. Does accounting for more information help answer the same question?",
+      "Include the intermediate response and compare the estimate with the total effect. Then remove it to restore the pathway we want to count.",
     explanation:
-      "A mediator carries part of treatment’s effect to the outcome. Here treatment raises M by 1, and each unit of M raises the outcome by 1. The direct contribution is 2 and the mediated contribution is 1, giving a total effect of 3. Including M holds it fixed in our outcome predictions, blocking the pathway we wanted to count. An estimate near 2 misses our total-effect target of 3, but recovers the direct contribution under this simulation’s assumptions. We still account for baseline health in both comparisons.",
+      "To estimate the total effect, leave M out of the adjustment set: its pathway is part of the effect we want to measure. Here treatment raises M by 1, and each unit of M raises the outcome by 1. Together with the contribution of 2 along A → Y, this gives a total effect of 3. Including M holds it fixed in our outcome predictions, excluding the mediated contribution of 1. We still adjust for baseline health in both comparisons.",
     next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
   },
   {
@@ -329,7 +328,7 @@ function enter(level, focus = true, callback = false) {
       ${level === 6 ? `<details class="aipw-calculation"><summary>How is AIPW calculated?</summary>${aipwFormula()}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
       ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
-      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. A controlled direct effect compares treatment choices while fixing M at a specified value. Holding M fixed recovers that effect here because the additive simulation has no treatment–mediator interaction or unmeasured mediator–outcome confounding. Adjusting for a mediator does not generally identify a direct effect." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
+      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, baseline health is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       ${level === 10 ? '<p><a href="?lesson=clipping">Explore clipping and extreme weights →</a></p><p><a href="?lesson=instrument">Explore instruments and adjustment →</a></p>' : ""}
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
@@ -578,7 +577,7 @@ function update() {
   if (state.level === 7 || state.level === 8) {
     document.querySelector("#adjustment-note").textContent = state.postAdjusted
       ? state.level === 7
-        ? "We now hold the intermediate response fixed. An estimate near 2 captures the direct contribution under this simulation’s assumptions, but misses our total-effect target of 3."
+        ? "Including M blocks part of the effect we want to measure. The estimate near 2 misses our total-effect target of 3. Leave M out of the adjustment set to include its pathway."
         : "We now hold the follow-up score fixed. Conditioning on this shared consequence can distort the treatment comparison."
       : "We account for baseline health only, leaving the total treatment effect intact. Try including the new variable.";
     renderRoleGraph();

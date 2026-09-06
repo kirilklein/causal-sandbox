@@ -41,9 +41,10 @@ Selecting a lesson resets its baseline and focuses its heading. Opening Contents
 preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
-The core target remains the population total effect. The mediator lesson asks
-which effect we want: its adjusted estimate can recover the direct contribution
-under the toy world's assumptions while missing the total-effect target. Moving
+The core target remains the population total effect. The mediator lesson teaches
+that M must stay out of the adjustment set to retain its contribution to that
+effect. Optional model details explain the separate controlled-direct-effect
+question and the assumptions needed to identify it. Moving
 from hidden confounding to misspecification explicitly removes U and restores
 observed C alone; the two nonlinear experiments reset each other. AIPW first
 appears after those experiments. The optional revisit then connects model
