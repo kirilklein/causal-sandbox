@@ -34,6 +34,9 @@ let state = scenarioState(scenarios[1]);
 let startingErrors = [];
 let startingState;
 const estimatorIndices = [0, 2, 3, 4];
+const contextualGlossary = Object.entries(glossary).filter(
+  ([, term]) => term.contextual,
+);
 document.querySelector("#app").innerHTML = `
 <header class="sandbox-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a class="lessons-link" href="./">Guided lessons</a><button id="methods" class="text-button">How this world works</button>${themeControl()}</header>
 <main class="sandbox">
@@ -91,16 +94,14 @@ document.querySelector("#app").innerHTML = `
   <section id="overlap-experiment" class="panel overlap-experiment" aria-labelledby="overlap-experiment-title" hidden></section>
   <footer><span>${icon}Same background draws after every change · Seed 4217</span><a href="./">Return to guided lessons</a></footer>
 </main>
-<dialog id="about" aria-labelledby="about-title"><div class="dialog-heading"><span class="eyebrow">UNDER THE SURFACE</span><button id="close-about" aria-label="Close explanation">×</button></div><h2 id="about-title">A world with an answer key.</h2><details class="glossary"><summary>Glossary · causal terms in plain language</summary><dl>${Object.entries(
-  glossary,
-)
+<dialog id="about" aria-labelledby="about-title"><div class="dialog-heading"><span class="eyebrow">UNDER THE SURFACE</span><button id="close-about" aria-label="Close explanation">×</button></div><h2 id="about-title">A world with an answer key.</h2><details class="glossary"><summary>Glossary · causal terms in plain language</summary><dl>${contextualGlossary
   .map(
     ([key, term]) =>
-      `<dt>${term.title}</dt><dd data-glossary="${key}">${term.text}</dd>`,
+      `<dt>${term.title}</dt><dd data-glossary="${key}">${term.summary}</dd>`,
   )
   .join(
     "",
-  )}</dl></details><p>Each person has fixed, independent background noise. Treatment is assigned by a logistic probability; outcomes follow these structural equations.</p><p><b>Arrow controls:</b> A → Y sets the direct contribution to Y, while A → M and M → Y together form the mediated contribution. C → A and U → A change treatment log odds, not a fixed percentage of people treated. Setting an arrow to zero removes only that pathway; treatment is randomized only when both C → A and U → A are zero.</p><pre>C₁, C₂ ~ independent Uniform(-√3, √3)
+  )}</dl><a class="glossary-more" href="glossary/">Open the full glossary →</a></details><p>Each person has fixed, independent background noise. Treatment is assigned by a logistic probability; outcomes follow these structural equations.</p><p><b>Arrow controls:</b> A → Y sets the direct contribution to Y, while A → M and M → Y together form the mediated contribution. C → A and U → A change treatment log odds, not a fixed percentage of people treated. Setting an arrow to zero removes only that pathway; treatment is randomized only when both C → A and U → A are zero.</p><pre>C₁, C₂ ~ independent Uniform(-√3, √3)
 U, εM, εY, εK ~ independent Normal(0,1)
 S = 0.8·C₁ + 0.6·C₂; I = C₁·C₂
 P(A=1) = sigmoid(-0.8 + ca·(S + ta·I) + ua·U)
@@ -110,10 +111,10 @@ K = 0.9·A + 0.9·Y + εK
 
 Total causal effect = direct + am·my
 World interactions: ta ∈ {0, 0.7}; oy ∈ {0, 1.5}</pre><p><b>World versus model:</b> the four worlds switch interaction terms in the generating equations. The analyst independently chooses whether to include C₁ × C₂ in each fitted model. Main effects hold each covariate’s contribution constant across values of the other; C₁ × C₂ allows one covariate’s influence to depend on the other. Both covariates are included whenever C is adjusted for. Unchecking C under “Adjust for” removes both, including their interaction.</p><p><b>Double robustness:</b> with sufficient observed adjustment and overlap, AIPW can remain consistent if either fitted model represents the relevant conditional mean correctly. Including an interaction alone does not solve hidden confounding or post-treatment adjustment. A single sample need not favor AIPW.</p><p><b>Raw / naive:</b> mean difference and ordinary regression Y ~ A are identical for binary treatment. These baselines intentionally ignore the adjustment set.</p><p><b>Regression:</b> average predicted outcomes under A=1 minus A=0, using a pooled OLS model with the selected variables and optional interaction. <b>IPW:</b> normalized inverse propensity weights from logistic regression. <b>AIPW:</b> the same outcome predictions as regression plus inverse-weighted residual correction, using the chosen propensity model.</p><p>Propensities are clipped to [0.02, 0.98]. The app flags clipping and low effective sample size. The same fixed population is reused after every change; finite-sample estimates need not equal the truth.</p><p><b>Post-treatment adjustment:</b> M blocks the mediated path; regression can recover the direct effect when its outcome model is correctly specified. IPW/AIPW with M or K are illustrative invalid total-effect adjustments, not guaranteed direct-effect estimators. K is measured after Y.</p></dialog>
-${Object.entries(glossary)
+${contextualGlossary
   .map(
     ([key, term]) =>
-      `<section id="help-${key}" class="term-help" popover aria-labelledby="help-title-${key}"><div class="dialog-heading"><span class="eyebrow">CAUSAL GLOSSARY</span><button type="button" class="close-help" popovertarget="help-${key}" popovertargetaction="hide" aria-label="Close ${term.title} explanation">×</button></div><h2 id="help-title-${key}">${term.title}</h2><p>${term.text}</p></section>`,
+      `<section id="help-${key}" class="term-help" popover aria-labelledby="help-title-${key}"><div class="dialog-heading"><span class="eyebrow">CAUSAL GLOSSARY</span><button type="button" class="close-help" popovertarget="help-${key}" popovertargetaction="hide" aria-label="Close ${term.title} explanation">×</button></div><h2 id="help-title-${key}">${term.title}</h2><p>${term.summary}</p><a class="term-help-more" href="glossary/#${key}">Read the detailed definition →</a></section>`,
   )
   .join("")}`;
 function helpButton(key, label = glossary[key].title) {
