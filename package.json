@@ -9,7 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test src/*.test.js",
     "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs && node tests/concept-pages-browser.mjs && node tests/theme-browser.mjs && node tests/instruments-browser.mjs && node tests/clipping-browser.mjs && node tests/trimming-browser.mjs && node tests/tmle-robustness-browser.mjs && node tests/timing-browser.mjs",
-    "format": "prettier --write src tests index.html confounding/index.html collider-bias/index.html positivity/index.html package.json README.md",
+    "format": "prettier --write src tests index.html confounding/index.html collider-bias/index.html positivity/index.html inverse-probability-weighting/index.html aipw-double-robustness/index.html mediator-adjustment/index.html tmle/index.html propensity-score-clipping-trimming/index.html package.json README.md",
     "test:trimming": "node tests/trimming-study.mjs && node tests/trimming-browser.mjs"
   },
   "devDependencies": {

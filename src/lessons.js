@@ -167,6 +167,12 @@ lessons[10] = {
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
 const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 11, 10];
+const lessonPaths = {
+  ipw: "inverse-probability-weighting/",
+  mediator: "mediator-adjustment/",
+  "double-robustness": "aipw-double-robustness/",
+  tmle: "tmle/",
+};
 const hiddenCallback = {
   ...lessons[8],
   title: "Revisit hidden confounding with AIPW",
@@ -205,7 +211,9 @@ function enterFromUrl(focus = true) {
   const params = new URLSearchParams(location.search);
   const topic = params.has("lesson")
     ? params.get("lesson")
-    : document.body.dataset.lesson;
+    : Object.entries(lessonPaths).find(([, path]) =>
+        location.pathname.endsWith(`/${path}`),
+      )?.[0] || document.body.dataset.lesson;
   const named = lessons.findIndex((lesson) => lesson.slug === topic) + 1;
   const requested = topic ? named : Number(params.get("level"));
   const level = availableLevels.includes(requested) ? requested : 1;
@@ -215,7 +223,8 @@ function enterFromUrl(focus = true) {
 }
 
 function lessonUrl(level) {
-  return `?lesson=${lessons[level - 1].slug}`;
+  const slug = lessons[level - 1].slug;
+  return `${import.meta.env.BASE_URL}${lessonPaths[slug] || `?lesson=${slug}`}`;
 }
 
 function showsAipw(level) {
@@ -274,13 +283,18 @@ function lessonNavigation(position) {
       )
       .join("")}
     <a class="sandbox-nav-link" href="?lesson=timing">What timing tells us ↗</a>
-    <a class="sandbox-nav-link" href="?lesson=clipping">Clipping and extreme weights ↗</a>
+    <a class="sandbox-nav-link" href="propensity-score-clipping-trimming/">Clipping and extreme weights ↗</a>
     <a class="sandbox-nav-link" href="?lesson=trimming">Trimming and the target population ↗</a>
     <a class="sandbox-nav-link" href="?lesson=instrument">Instruments and adjustment ↗</a>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
       <a href="confounding/">Confounding</a>
       <a href="collider-bias/">Collider bias</a>
       <a href="positivity/">Positivity and overlap</a>
+      <a href="inverse-probability-weighting/">Inverse probability weighting</a>
+      <a href="aipw-double-robustness/">How double robustness works</a>
+      <a href="mediator-adjustment/">Mediator adjustment</a>
+      <a href="tmle/">TMLE</a>
+      <a href="propensity-score-clipping-trimming/">Clipping and trimming</a>
     </section>
     <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
   </nav>`;
@@ -339,7 +353,7 @@ function enter(level, focus = true, callback = false) {
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, baseline health is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       ${level === 8 ? '<p><a href="?lesson=timing">Optional: what timing tells us →</a></p>' : ""}
-      ${level === 10 ? '<p><a href="?lesson=clipping">Explore clipping and extreme weights →</a></p><p><a href="?lesson=instrument">Explore instruments and adjustment →</a></p>' : ""}
+      ${level === 10 ? '<p><a href="propensity-score-clipping-trimming/">Explore clipping and extreme weights →</a></p><p><a href="?lesson=instrument">Explore instruments and adjustment →</a></p>' : ""}
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
       <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
     </main>`;
@@ -452,10 +466,14 @@ function enter(level, focus = true, callback = false) {
   if (focus) document.querySelector("h1").focus();
 }
 function navigate(level, callback = false) {
+  const url = lessonUrl(level);
   history.pushState(
     null,
     "",
-    lessonUrl(level) + (callback ? "&revisit=hidden-confounding" : ""),
+    url +
+      (callback
+        ? `${url.includes("?") ? "&" : "?"}revisit=hidden-confounding`
+        : ""),
   );
   enter(callback ? 9 : level, true, callback);
 }

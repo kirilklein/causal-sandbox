@@ -31,7 +31,10 @@ try {
   await page
     .getByRole("link", { name: "Explore clipping and extreme weights →" })
     .click();
-  assert.equal(new URL(page.url()).searchParams.get("lesson"), "clipping");
+  assert.equal(
+    new URL(page.url()).pathname,
+    new URL("propensity-score-clipping-trimming/", appUrl).pathname,
+  );
   await page.locator('[data-method="ipw"]').waitFor();
   const table = () => page.locator("#estimates").innerText();
   const initial = await table();

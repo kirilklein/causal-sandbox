@@ -221,7 +221,7 @@ document.querySelector("#app").innerHTML =
       >.
     </p>
   </details>
-<nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=clipping">← Probability clipping</a><a href="?lesson=instrument">Instruments and adjustment →</a><a href="?sandbox">Full sandbox ↗</a></nav>
+<nav class="chapter-nav" aria-label="Chapter navigation"><a href="propensity-score-clipping-trimming/">← Probability clipping</a><a href="?lesson=instrument">Instruments and adjustment →</a><a href="?sandbox">Full sandbox ↗</a></nav>
 </main>
 </div>`;
 

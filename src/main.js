@@ -4,17 +4,16 @@ import { setupTheme } from "./theme.js";
 setupTheme();
 
 const params = new URLSearchParams(location.search);
+const lesson = params.get("lesson") || document.body.dataset.lesson;
 if (params.has("sandbox")) {
   await import("./sandbox.js");
-} else if (
-  ["instrument", "instrument-hidden-confounding"].includes(params.get("lesson"))
-) {
+} else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
   await import("./instrument-lesson.js");
-} else if (params.get("lesson") === "clipping") {
+} else if (lesson === "clipping") {
   await import("./clipping-lesson.js");
-} else if (params.get("lesson") === "trimming") {
+} else if (lesson === "trimming") {
   await import("./trimming-lesson.js");
-} else if (params.get("lesson") === "timing") {
+} else if (lesson === "timing") {
   await import("./timing-lesson.js");
 } else {
   await import("./lessons.js");

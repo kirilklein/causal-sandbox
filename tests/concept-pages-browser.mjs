@@ -31,6 +31,50 @@ const pages = [
     control: '#overlap-selection input[value="5"]',
     article: /positivity assumption/i,
   },
+  {
+    path: "inverse-probability-weighting/",
+    title: "Inverse Probability Weighting (IPW): Interactive Guide",
+    canonical:
+      "https://kirilklein.github.io/causal-sandbox/inverse-probability-weighting/",
+    heading: "Adjustment with IPW",
+    control: "#reveal-ipw",
+    article: /inverse probability weighting work/i,
+  },
+  {
+    path: "aipw-double-robustness/",
+    title: "AIPW and Double Robustness: Interactive Guide",
+    canonical:
+      "https://kirilklein.github.io/causal-sandbox/aipw-double-robustness/",
+    heading: "Double robustness",
+    control: "#outcome-quadratic",
+    article: /double robustness guarantee/i,
+  },
+  {
+    path: "mediator-adjustment/",
+    title: "Mediator Adjustment and Total Effects: Interactive Guide",
+    canonical:
+      "https://kirilklein.github.io/causal-sandbox/mediator-adjustment/",
+    heading: "A mediator",
+    control: "#post-adjustment",
+    article: /adjust for a mediator/i,
+  },
+  {
+    path: "tmle/",
+    title: "TMLE Explained: Interactive Targeting Example",
+    canonical: "https://kirilklein.github.io/causal-sandbox/tmle/",
+    heading: "Targeting with TMLE",
+    control: "#apply-targeting",
+    article: /TMLE targeting step/i,
+  },
+  {
+    path: "propensity-score-clipping-trimming/",
+    title: "Propensity Score Clipping vs Trimming: Interactive Guide",
+    canonical:
+      "https://kirilklein.github.io/causal-sandbox/propensity-score-clipping-trimming/",
+    heading: "What changes when we clip?",
+    control: "#threshold",
+    article: /clipping and trimming different/i,
+  },
 ];
 
 try {
@@ -101,7 +145,15 @@ try {
   await page.locator("#selection").fill("1.2");
   assert.equal(await page.locator("#selection-output").innerText(), "1.2");
   await page.locator("#continue").click();
-  assert.equal(page.url(), new URL("?lesson=ipw", root).href);
+  assert.equal(
+    page.url(),
+    new URL("inverse-probability-weighting/", root).href,
+  );
+  assert.equal(await page.locator("h1").innerText(), "Adjustment with IPW");
+  await page.goBack();
+  assert.equal(await page.locator("h1").innerText(), "A common cause");
+  await page.goForward();
+  assert.equal(await page.locator("h1").innerText(), "Adjustment with IPW");
 
   await page.goto(new URL("collider-bias/", root).href);
   const colliderEstimate = await page.locator("#regression").innerText();
