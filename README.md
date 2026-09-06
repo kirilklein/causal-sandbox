@@ -53,8 +53,8 @@ The true effect is always known, so every estimate can be compared with it. All 
 ## For developers
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup and development. The
-[simulation methods](docs/methods.md) describe the causal world, estimators, and
-important limitations.
+[methodology notes](https://kirilklein.github.io/causal-sandbox/methodology/)
+describe the causal world, estimators, and important limitations.
 
 ## Acknowledgments
 

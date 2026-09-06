@@ -105,6 +105,62 @@ try {
     );
   }
 
+  const methodologyUrl = new URL("methodology/", root).href;
+  const methodologyResponse = await page.goto(methodologyUrl);
+  assert.equal(methodologyResponse.status(), 200);
+  assert.equal(await page.title(), "Methodology Notes | Causal Sandbox");
+  assert.equal(
+    await page.locator('link[rel="canonical"]').getAttribute("href"),
+    "https://kirilklein.github.io/causal-sandbox/methodology/",
+  );
+  assert.equal(await page.locator("h1").count(), 1);
+  assert.equal(await page.locator(".methodology-equation math").count(), 13);
+  assert.match(
+    await page.locator("#target").innerText(),
+    /direct and mediated paths/i,
+  );
+  assert.match(
+    await page.locator("#limitations").innerText(),
+    /point estimates/i,
+  );
+  const methodologyFooterLink = page.getByRole("link", {
+    name: "Methodology notes",
+  });
+  assert.equal(await methodologyFooterLink.count(), 1);
+  assert.equal(
+    new URL(await methodologyFooterLink.getAttribute("href"), page.url()).href,
+    methodologyUrl,
+  );
+  const modelDetails = page.locator(".methodology-detail").first();
+  await modelDetails.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await modelDetails.getAttribute("open"), "");
+  await page.getByLabel("Color theme").selectOption("light");
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "light");
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+      `methodology/ overflows at ${width}px`,
+    );
+    if (width !== 320) {
+      await page.screenshot({
+        path: `/tmp/causal-methodology-${width}.png`,
+        fullPage: true,
+      });
+    }
+  }
+  await page.getByLabel("Color theme").selectOption("dark");
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.screenshot({
+    path: "/tmp/causal-methodology-dark-390.png",
+    fullPage: true,
+  });
+  await page.getByLabel("Color theme").selectOption("system");
+
   for (const concept of pages) {
     const response = await page.goto(new URL(concept.path, root).href);
     assert.equal(response.status(), 200, concept.path);

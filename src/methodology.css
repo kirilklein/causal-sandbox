@@ -1,0 +1,443 @@
+/* Methodology page */
+.methodology-header {
+  max-width: 1180px;
+}
+.methodology-header .brand img {
+  display: block;
+}
+.methodology-header nav {
+  display: flex;
+  gap: 20px;
+  margin-left: auto;
+}
+.methodology-header nav a {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-underline-offset: 3px;
+}
+.methodology-header .theme-control {
+  margin-left: 0;
+}
+.methodology-page {
+  max-width: 1180px;
+  padding-top: 54px;
+}
+.methodology-hero {
+  max-width: 800px;
+  margin-bottom: 54px;
+}
+.methodology-hero h1 {
+  max-width: 760px;
+  margin-block: 12px 18px;
+  font-size: clamp(34px, 5vw, 55px);
+  line-height: 1.08;
+  letter-spacing: -2.2px;
+}
+.methodology-hero > p:last-child {
+  max-width: 680px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 17px;
+  line-height: 1.7;
+}
+.methodology-layout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 820px);
+  gap: 70px;
+  align-items: start;
+}
+.methodology-contents {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 9px;
+  padding: 17px 0;
+  border-block: 1px solid var(--border);
+}
+.methodology-contents strong {
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.methodology-contents a {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+.methodology-contents a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.methodology-article {
+  min-width: 0;
+}
+.methodology-article > section {
+  scroll-margin-top: 24px;
+  padding-bottom: 70px;
+}
+.methodology-article > section + section {
+  padding-top: 70px;
+  border-top: 1px solid var(--border);
+}
+.methodology-article h2 {
+  margin: 8px 0 16px;
+  font-size: clamp(25px, 4vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+}
+.methodology-article h3 {
+  margin: 0;
+  font-family: Manrope, sans-serif;
+  font-size: 17px;
+}
+.methodology-article p,
+.methodology-article li {
+  font-size: 15px;
+  line-height: 1.75;
+}
+.methodology-article a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+.section-number {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 9px !important;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+}
+.methodology-graph {
+  margin: 30px 0;
+  padding: 22px 24px 15px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 4px 18px var(--shadow-soft);
+}
+.methodology-graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.methodology-graph figcaption {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+.methodology-edges path {
+  fill: none;
+  stroke: var(--causal-path);
+  stroke-width: 2;
+  marker-end: url("#methodology-arrow");
+}
+.methodology-edges .hidden-edge {
+  stroke-dasharray: 6 6;
+}
+#methodology-arrow path {
+  fill: var(--causal-path);
+}
+.methodology-nodes circle {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+.methodology-nodes .node-c {
+  fill: var(--node-C);
+}
+.methodology-nodes .node-u {
+  fill: var(--node-U);
+  stroke: var(--causal-path);
+  stroke-dasharray: 4 3;
+}
+.methodology-nodes .node-a {
+  fill: var(--node-A);
+}
+.methodology-nodes .node-m {
+  fill: var(--node-M);
+}
+.methodology-nodes .node-y {
+  fill: var(--node-Y);
+}
+.methodology-nodes .node-k {
+  fill: var(--node-K);
+}
+.methodology-nodes .node-symbol {
+  fill: var(--text);
+  font-family: Manrope, sans-serif;
+  font-size: 20px;
+  font-weight: 650;
+  text-anchor: middle;
+  transform: translateY(7px);
+}
+.methodology-nodes .node-name {
+  fill: var(--text-muted);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.8px;
+  text-anchor: middle;
+}
+.methodology-equation-stack,
+.estimator-list {
+  display: grid;
+  gap: 14px;
+}
+.methodology-equation {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  scrollbar-width: thin;
+}
+.methodology-equation > span {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+.methodology-equation math {
+  min-width: max-content;
+  margin: 0 auto;
+  color: var(--text);
+  font-size: 19px;
+}
+.methodology-equation math + math {
+  margin-top: 18px;
+}
+.featured-equation {
+  margin: 26px 0 20px;
+  padding-block: 25px;
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
+.featured-equation math {
+  font-size: 23px;
+}
+.compact-equation {
+  margin-top: 20px;
+}
+.methodology-note {
+  margin: 22px 0 0;
+  padding: 15px 17px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-surface);
+  color: var(--text-secondary);
+}
+.methodology-detail {
+  margin-top: 25px;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-subtle);
+}
+.methodology-detail summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+}
+.methodology-detail > p {
+  font-size: 13px;
+}
+.methodology-table-wrap {
+  overflow-x: auto;
+}
+.methodology-detail table {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 13px;
+}
+.methodology-detail th,
+.methodology-detail td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.methodology-detail th:not(:first-child),
+.methodology-detail td:not(:first-child) {
+  text-align: right;
+}
+.estimator-list {
+  margin-top: 28px;
+}
+.estimator-card {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.estimator-card > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.estimator-card > div:first-child > span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-surface);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+.estimator-card > p {
+  margin: 13px 0 17px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.estimator-card .methodology-equation {
+  background: var(--page);
+}
+.methodology-action {
+  font-weight: 650;
+}
+.assumption-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+.assumption-grid > div {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.assumption-grid p {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.limitation-list {
+  display: grid;
+  gap: 12px;
+  margin: 25px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.limitation-list li {
+  position: relative;
+  padding: 14px 17px 14px 42px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.limitation-list li::before {
+  position: absolute;
+  top: 15px;
+  left: 17px;
+  color: var(--accent);
+  content: "—";
+  font-weight: 700;
+}
+.methodology-next {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 70px;
+}
+.methodology-next > div {
+  padding: 20px;
+  border-radius: 10px;
+  background: var(--accent-surface);
+}
+.methodology-next span,
+.methodology-next a {
+  display: block;
+}
+.methodology-next span {
+  margin-bottom: 7px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.methodology-next a {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+@media (max-width: 820px) {
+  .methodology-header nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+  .methodology-header .theme-control {
+    margin-left: auto;
+  }
+  .methodology-page {
+    padding-top: 38px;
+  }
+  .methodology-layout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .methodology-contents {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px 16px;
+  }
+  .methodology-contents strong {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .methodology-page {
+    padding-inline: 20px;
+  }
+  .methodology-hero {
+    margin-bottom: 38px;
+  }
+  .methodology-hero h1 {
+    font-size: 35px;
+    letter-spacing: -1.4px;
+  }
+  .methodology-hero > p:last-child {
+    font-size: 15px;
+  }
+  .methodology-article > section {
+    padding-bottom: 52px;
+  }
+  .methodology-article > section + section {
+    padding-top: 52px;
+  }
+  .methodology-graph {
+    padding: 10px 8px;
+  }
+  .methodology-graph figcaption {
+    text-align: left;
+  }
+  .methodology-equation {
+    padding: 16px;
+  }
+  .methodology-equation math {
+    font-size: 17px;
+  }
+  .featured-equation math {
+    font-size: 19px;
+  }
+  .estimator-card {
+    min-width: 0;
+    padding: 18px;
+  }
+  .assumption-grid,
+  .methodology-next {
+    grid-template-columns: 1fr;
+  }
+}
