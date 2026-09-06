@@ -131,9 +131,29 @@ try {
     await page.locator(".glossary-entry").count(),
     Object.keys(glossary).length,
   );
+  assert.equal(
+    await page.locator(".glossary-summary").count(),
+    Object.keys(glossary).length,
+  );
+  assert.equal(
+    await page.locator(".glossary-related").count(),
+    Object.keys(glossary).length,
+  );
   assert.match(
     await page.locator("#aipw").innerText(),
     /either the outcome model/i,
+  );
+  assert.match(
+    await page.locator("#ate").innerText(),
+    /Average describes aggregation/i,
+  );
+  assert.match(
+    await page.locator("#total-effect").innerText(),
+    /every causal pathway/i,
+  );
+  assert.match(
+    await page.locator("#hidden .glossary-aliases").innerText(),
+    /Hidden confounder/i,
   );
   assert.equal(
     await page
