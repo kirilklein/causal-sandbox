@@ -1076,6 +1076,14 @@ try {
   for (const width of [320, 768, 1050, 1051, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     assert.equal(await page.locator("#lesson-menu-toggle").isVisible(), true);
+    assert.equal(
+      await page.locator("#lesson-menu-toggle").getAttribute("aria-label"),
+      "Contents",
+    );
+    assert.equal(
+      await page.locator(".contents-label").isVisible(),
+      width > 760,
+    );
     assert.equal(await page.locator("#lesson-menu").isVisible(), false);
     await page.locator("#lesson-menu-toggle").scrollIntoViewIfNeeded();
     const headingPosition = await page.locator("h1").boundingBox();
@@ -1087,6 +1095,7 @@ try {
     const toggleBounds = await page
       .locator("#lesson-menu-toggle")
       .boundingBox();
+    if (width <= 760) assert.equal(toggleBounds.width, 44);
     assert.equal(toggleBounds.x, panelBounds.x);
     assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
     if (width >= 1050)
