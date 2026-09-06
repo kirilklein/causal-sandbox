@@ -43,7 +43,7 @@ const examples = {
   predictor: {
     label: "Outcome predictor",
     edges: ["VY"],
-    text: "V causes Y but does not influence A or share a cause with it here. V predicts the outcome without confounding treatment; an outcome model may gain precision by including it.",
+    text: "V causes Y but does not influence A or share a cause with it here. V predicts the outcome without confounding treatment. An outcome model may gain precision by including it.",
   },
   mediator: {
     label: "Mediator",
@@ -121,7 +121,7 @@ function graphMarkup(key, time) {
 
 const colliderTexts = {
   before:
-    "P and R independently influence a referral score V before treatment. P also causes A; R causes Y. V is a collider on A ← P → V ← R → Y, even though it is before A.",
+    "P and R independently influence a referral score V before treatment. P also causes A, and R causes Y. V is a collider on A ← P → V ← R → Y, even though it is before A.",
   between:
     "V sits between A and Y in time, yet it carries none of A’s effect: A and an unmeasured U both shape V, and U also drives Y. Adjusting for V would link A to U, and through U to Y, introducing collider bias.",
   after:
@@ -137,7 +137,7 @@ document.querySelector("#app").innerHTML =
   <p class="lede">Move V through time. Discover which causal roles are possible, and which timing rules out.</p>
   <section class="experiment" aria-labelledby="explorer-title">
     <h2 id="explorer-title" tabindex="-1">Where could V exist?</h2>
-    <p class="help" id="timeline-help">Drag V or select a region. A is one treatment decision; Y is its later outcome.</p>
+    <p class="help" id="timeline-help">Drag V or select a region. A is one treatment decision and Y is its later outcome.</p>
     <fieldset class="timeline" id="timeline" aria-describedby="timeline-help">
       <legend class="visually-hidden">When V exists</legend>
       <div class="time-track" aria-hidden="true"></div>
