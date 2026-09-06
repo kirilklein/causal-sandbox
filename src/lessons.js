@@ -356,7 +356,6 @@ function enter(level, focus = true, callback = false) {
       ${level === 10 ? '<p><a href="propensity-score-clipping-trimming/">Explore clipping and extreme weights →</a></p><p><a href="?lesson=instrument">Explore instruments and adjustment →</a></p>' : ""}
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
       <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
-      <p class="lesson-credit">Guided prompts inspired by Carlos Mendez’s <a href="https://carlos-mendez.org/post/stata_matching/web_app/">Treatment Effects in Stata — Interactive Lab</a>.</p>
     </main>`;
   const menuToggle = document.querySelector("#lesson-menu-toggle");
   menuToggle.addEventListener("click", () => {

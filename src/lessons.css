@@ -275,8 +275,7 @@
   color: var(--on-accent);
   border-color: var(--accent);
 }
-.sample-actions span,
-.lesson-credit {
+.sample-actions span {
   color: var(--text-secondary);
   font-size: 12px;
 }
@@ -443,9 +442,6 @@
 .learning caption {
   text-align: left;
   font-size: 13px;
-}
-.lesson-credit {
-  margin-top: 32px;
 }
 @media (max-width: 500px) {
   .lesson-header {

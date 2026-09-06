@@ -812,11 +812,54 @@ footer button {
   margin-left: 12px;
 }
 .site-footer {
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
+  display: block;
+  max-width: 940px;
+  margin: 16px auto 0;
   padding: 16px 24px 24px;
+  border-top: 1px solid var(--border);
   font-size: 11px;
+  line-height: 1.5;
+}
+.site-footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+}
+.site-author {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.site-footer a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+.site-references {
+  max-width: 700px;
+  margin: 4px auto 0;
+  font-size: 11px;
+}
+.site-references summary {
+  width: max-content;
+  margin: 0 auto;
+  cursor: pointer;
+}
+.site-references ul {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0 0;
+  padding: 12px 16px 0;
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+.site-references li {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(220px, 1fr);
+  gap: 8px 20px;
+}
+.site-references li > span {
+  color: var(--text-secondary);
 }
 .mobile-break {
   display: none;
@@ -1555,14 +1598,6 @@ button:hover {
   font-size: 12px;
   line-height: 1.65;
 }
-#about .help-credit {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  font-size: 11px;
-}
-.help-credit a {
-  color: var(--accent);
-}
 @media (max-width: 1100px) and (min-width: 761px) {
   .world-picker {
     min-width: 205px;
@@ -1650,6 +1685,10 @@ header .theme-control {
   margin-left: auto;
 }
 @media (max-width: 760px) {
+  .site-references li {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
   header {
     gap: 12px;
   }
