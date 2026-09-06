@@ -1558,14 +1558,6 @@ button:hover {
   font-size: 12px;
   line-height: 1.65;
 }
-#about .help-credit {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  font-size: 11px;
-}
-.help-credit a {
-  color: var(--accent);
-}
 @media (max-width: 1100px) and (min-width: 761px) {
   .world-picker {
     min-width: 205px;
