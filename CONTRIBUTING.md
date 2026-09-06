@@ -57,11 +57,11 @@ development server.
 
 ## Where things live
 
-| Area                       | Files                                                              |
-| -------------------------- | ------------------------------------------------------------------ |
-| Lesson text and flow       | `src/lessons.js`, `docs/education.md`                              |
-| Simulation and estimators  | `src/simulation.js`, `src/lesson-simulation.js`, `docs/methods.md` |
-| TMLE                       | `src/tmle.js`, `src/tmle-lesson.js`, `docs/tmle.md`                |
-| Full sandbox               | `src/sandbox.js`, `docs/sandbox.md`                                |
-| Glossary                   | `src/glossary.js`                                                  |
-| Colors and visual language | `docs/color-conventions.md`                                        |
+| Area                       | Files                                                                     |
+| -------------------------- | ------------------------------------------------------------------------- |
+| Lesson text and flow       | `src/lessons.js`, `docs/education.md`                                     |
+| Simulation and estimators  | `src/simulation.js`, `src/lesson-simulation.js`, `methodology/index.html` |
+| TMLE                       | `src/tmle.js`, `src/tmle-lesson.js`, `docs/tmle.md`                       |
+| Full sandbox               | `src/sandbox.js`, `docs/sandbox.md`                                       |
+| Glossary                   | `src/glossary.js`                                                         |
+| Colors and visual language | `docs/color-conventions.md`                                               |

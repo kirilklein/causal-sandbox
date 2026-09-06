@@ -28,10 +28,13 @@ try {
     "https://github.com/kirilklein/causal-sandbox",
   );
   assert.equal(
-    await sourceFooter
-      .getByRole("link", { name: "Methodology notes" })
-      .getAttribute("href"),
-    "https://github.com/kirilklein/causal-sandbox#the-causal-world",
+    new URL(
+      await sourceFooter
+        .getByRole("link", { name: "Methodology notes" })
+        .getAttribute("href"),
+      page.url(),
+    ).href,
+    new URL("methodology/", page.url()).href,
   );
   const references = sourceFooter.locator(".site-references");
   assert.equal(await references.getAttribute("open"), null);

@@ -1,22 +1,28 @@
 import "./style.css";
-import { setupTheme } from "./theme.js";
+import { setupTheme, themeControl } from "./theme.js";
 
 setupTheme();
 
 const params = new URLSearchParams(location.search);
 const lesson = params.get("lesson") || document.body.dataset.lesson;
-if (params.has("sandbox")) {
-  await import("./sandbox.js");
-} else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
-  await import("./instrument-lesson.js");
-} else if (lesson === "clipping") {
-  await import("./clipping-lesson.js");
-} else if (lesson === "trimming") {
-  await import("./trimming-lesson.js");
-} else if (lesson === "timing") {
-  await import("./timing-lesson.js");
-} else {
-  await import("./lessons.js");
+const page = document.body.dataset.page;
+const methodologyTheme = document.querySelector("#methodology-theme");
+if (methodologyTheme) methodologyTheme.outerHTML = themeControl();
+
+if (page !== "methodology") {
+  if (params.has("sandbox")) {
+    await import("./sandbox.js");
+  } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
+    await import("./instrument-lesson.js");
+  } else if (lesson === "clipping") {
+    await import("./clipping-lesson.js");
+  } else if (lesson === "trimming") {
+    await import("./trimming-lesson.js");
+  } else if (lesson === "timing") {
+    await import("./timing-lesson.js");
+  } else {
+    await import("./lessons.js");
+  }
 }
 
 const references = [
@@ -78,7 +84,7 @@ footer.innerHTML = `
   <div class="site-footer-links">
     <span class="site-author">Created by Kiril Klein, PhD</span>
     <a href="https://github.com/kirilklein/causal-sandbox">GitHub source</a>
-    <a href="https://github.com/kirilklein/causal-sandbox#the-causal-world">Methodology notes</a>
+    <a href="${import.meta.env.BASE_URL}methodology/">Methodology notes</a>
     <span id="site-visits" hidden></span>
   </div>
   <details class="site-references">
