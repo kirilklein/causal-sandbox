@@ -113,7 +113,7 @@ The treatment of TMLE draws on Katherine Hoffman’s [An Illustrated Guide to TM
 
 Ideas, corrections, and contributions are welcome. Open an [issue](https://github.com/kirilklein/causal-sandbox/issues/new/choose) to report a bug, correct an explanation, or propose a lesson, scenario, or estimator. For anything beyond a small fix, open an issue first so we can agree on scope before you write code.
 
-A note for theorists: the explanations favor intuition over rigor, and some statements are simplified. Corrections are appreciated, but the aim is that a learner can change one thing and see what happens. For a full treatment, see van der Laan and Rose, _Targeted Learning_ (Springer, 2011), and Hernán and Robins, [_Causal Inference: What If_](https://miguelhernan.org/whatifbook).
+To the theorists: apologies in advance. The explanations favor intuition over rigor, and some statements are simplified. Corrections are very welcome, but the goal is that a learner can change one thing and see what happens. For the full story, see van der Laan and Rose, _Targeted Learning_ (Springer, 2011), and Hernán and Robins, [_Causal Inference: What If_](https://miguelhernan.org/whatifbook).
 
 ## License
 
