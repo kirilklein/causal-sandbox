@@ -68,6 +68,16 @@
   transform: rotate(180deg);
   transform-origin: 12px 10px;
 }
+@media (max-width: 760px) {
+  .learning #lesson-menu-toggle {
+    width: 44px;
+    justify-content: center;
+    padding-inline: 0;
+  }
+  #lesson-menu-toggle .contents-label {
+    display: none;
+  }
+}
 .learning #lesson-menu-toggle:hover,
 .learning #lesson-menu-toggle[aria-expanded="true"] {
   color: var(--accent);

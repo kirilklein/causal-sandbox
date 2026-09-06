@@ -258,7 +258,7 @@ function lessonNavigation(position) {
     { title: "Models and limitations", start: 7, end: availableLevels.length },
   ];
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
-    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span>Contents</span></button><span>Level ${position + 1} of ${availableLevels.length + 1}${revisiting ? " · Optional revisit" : ""}</span></div>
+    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button><span>Level ${position + 1} of ${availableLevels.length + 1}${revisiting ? " · Optional revisit" : ""}</span></div>
     <div id="lesson-menu">${groups
       .map(
         ({ title, start, end }) =>
