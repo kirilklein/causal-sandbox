@@ -33,7 +33,7 @@ const examples = {
   confounder: {
     label: "Confounder",
     edges: ["VA", "VY"],
-    text: "V causes both A and Y. The backdoor path A ← V → Y can confound the treatment effect. Accounting for V blocks it in this world.",
+    text: "V causes both A and Y. The backdoor path A ← V → Y can confound the treatment effect. Adjusting for V blocks it in this world.",
   },
   instrument: {
     label: "Instrument",
@@ -48,7 +48,7 @@ const examples = {
   mediator: {
     label: "Mediator",
     edges: ["AV", "VY"],
-    text: "A changes V, which changes Y. Holding V fixed would block part of the total treatment effect we want to count.",
+    text: "A changes V, which changes Y. Adjusting for V would remove part of the total treatment effect we want to count.",
   },
   treatment: {
     label: "Affected by A only",
@@ -58,7 +58,7 @@ const examples = {
   outcome: {
     label: "Affected by Y only",
     edges: ["YV"],
-    text: "Y changes V. V is a marker of the outcome, not a cause of it. Adjusting for V would condition on a proxy of Y and distort the effect.",
+    text: "Y changes V. V is a marker of the outcome, not a cause of it. Adjusting for V, a proxy of Y, would distort the effect.",
   },
   collider: { label: "Collider" },
 };
@@ -125,7 +125,7 @@ const colliderTexts = {
   between:
     "V sits between A and Y in time, yet it carries none of A’s effect: A and an unmeasured U both shape V, and U also drives Y. Adjusting for V would link A to U, and through U to Y, introducing collider bias.",
   after:
-    "A and Y both affect V. It is a collider on A → V ← Y. Conditioning on their common consequence can introduce a noncausal association.",
+    "A and Y both affect V. It is a collider on A → V ← Y. Adjusting for their common consequence can introduce a noncausal association.",
 };
 
 document.querySelector("#app").innerHTML =
@@ -173,8 +173,8 @@ document.querySelector("#app").innerHTML =
         <p id="collider-comparison" class="help"></p>
         <p class="timing-result" id="collider-result" aria-live="polite" aria-atomic="true"></p>
         <div class="actions"><button type="button" id="collider-redraw">Draw another sample</button><span class="help" id="collider-sample"></span></div>
-        <details><summary>Why does holding the score fixed connect P and R?</summary>
-          <p>Imagine K = P + R. At K = 10, a larger P means a smaller R. Our simulation adds independent measurement noise to this score, but conditioning still connects prescribing preference and illness risk.</p>
+        <details><summary>Why does adjusting for the score connect P and R?</summary>
+          <p>Imagine K = P + R. At K = 10, a larger P means a smaller R. Our simulation adds independent measurement noise to this score, but adjusting still connects prescribing preference and illness risk.</p>
           <p>P and R are independent, standardized uniform variables. K = P + R + 0.5 × score noise. Treatment has probability sigmoid(1.5P), and Y = 2A + 1.5R + outcome noise. Both noises are independent standard normal variables.</p>
           <p>We compare outcome regression using A alone with A and K, on the same 2,400 people. The target stays 2. A redraw changes the sample; adjusting changes neither people nor causal arrows. One sample cannot establish a general ranking.</p>
         </details>
@@ -275,8 +275,8 @@ function renderCollider() {
     ? `Without K: ${colliderSample.withoutK.toFixed(2)}. With K: ${colliderSample.withK.toFixed(2)}. ${Math.abs(colliderSample.withK - 2) > Math.abs(colliderSample.withoutK - 2) ? "Adjusting moves the estimate farther from truth in this sample." : "Adjusting happens to bring the estimate closer in this sample; the collider path is still open."}`
     : "Try including K. The same people and outcomes are used in both fits.";
   $("collider-result").textContent = adjusted
-    ? "Conditioning on K opens A ← P → K ← R → Y, introducing collider bias despite K being before treatment."
-    : "A ← P → K ← R → Y is blocked at K. There is no confounding through this path without conditioning on K or its descendants.";
+    ? "Adjusting for K opens A ← P → K ← R → Y, introducing collider bias despite K being before treatment."
+    : "A ← P → K ← R → Y is blocked at K. There is no confounding through this path without adjusting for K or its descendants.";
   $("collider-sample").textContent = `2,400 people · Sample ${sampleSeed}`;
 }
 

@@ -147,7 +147,7 @@ try {
     baselineCollider({ seed: 4218 }).withK.toFixed(2),
   );
   await page
-    .getByText("Why does holding the score fixed connect P and R?", {
+    .getByText("Why does adjusting for the score connect P and R?", {
       exact: true,
     })
     .click();
