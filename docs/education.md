@@ -4,6 +4,12 @@ The default experience is a sequence of small experiments. Levels 1–11 impleme
 weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → TMLE targeting → poor overlap.
 The existing advanced sandbox is available through `?sandbox` as level 12.
 
+An optional [clipping chapter](clipping-experiment.md) follows Poor overlap at
+`?lesson=clipping`. Compare estimates before and after probability clipping while
+retaining the sample and fitted models. An optional comparison caps weights
+directly, with clipping and capping mutually exclusive. It is linked from Contents and after
+overlap, with a new 400-person sample and an unclipped starting point.
+
 An optional [instruments and adjustment chapter](instruments.md) follows the
 core journey at `?lesson=instrument`. It introduces Z, its precision cost when
 included in adjustment, and a separate hidden-confounding comparison. The

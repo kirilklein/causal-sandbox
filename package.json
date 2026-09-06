@@ -8,9 +8,9 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test src/*.test.js",
-    "test:trimming": "node tests/trimming-study.mjs && node tests/trimming-browser.mjs",
-    "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs && node tests/theme-browser.mjs && node tests/instruments-browser.mjs",
-    "format": "prettier --write src tests index.html package.json README.md"
+    "test:browser": "node tests/browser.mjs && node tests/lessons-browser.mjs && node tests/theme-browser.mjs && node tests/instruments-browser.mjs && node tests/clipping-browser.mjs",
+    "format": "prettier --write src tests index.html package.json README.md",
+    "test:trimming": "node tests/trimming-study.mjs && node tests/trimming-browser.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
