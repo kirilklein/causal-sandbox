@@ -183,6 +183,7 @@ document.querySelector("#app").innerHTML =
         <details id="world-model"><summary>How this world is simulated</summary><p id="world-equations"></p><p>P and R are independent standardized uniform variables. U and all noise terms are independent standard normal variables. Unless stated otherwise, A is assigned with probability 0.5 independently of these variables. Every world has total effect 2; the mediator world splits it into direct and mediated contributions of 1 each.</p></details>
         <details id="baseline-explanation" hidden><summary>Why does adjusting for the score connect P and R?</summary>
           <p>Imagine V = P + R. At V = 1, a larger P means a smaller R. Our simulation adds independent noise to this score, but adjusting still connects prescribing preference and illness risk.</p>
+          <p><a href="?sandbox=graph-lab&preset=pkr">Explore P–K–R in the Graph lab →</a> <small>Start a separate, editable experiment.</small></p>
         </details>
       </section>
     </div>

@@ -77,7 +77,7 @@ export const presets = [
     adjust: ["M"],
   },
 ];
-function random(seed) {
+export function random(seed) {
   return () => {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;
@@ -152,6 +152,8 @@ function features(d, adjustment, interaction, quadratic) {
   ];
 }
 const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+export class EstimationError extends Error {}
+
 function solve(a, b) {
   const m = a.map((r, i) => [...r, b[i]]),
     n = b.length;
@@ -160,7 +162,10 @@ function solve(a, b) {
     for (let j = i + 1; j < n; j++)
       if (Math.abs(m[j][i]) > Math.abs(m[pivot][i])) pivot = j;
     [m[i], m[pivot]] = [m[pivot], m[i]];
-    if (Math.abs(m[i][i]) < 1e-12) throw new Error("Singular model matrix");
+    if (Math.abs(m[i][i]) < 1e-12)
+      throw new EstimationError(
+        "Singular model matrix. Remove a redundant adjustment variable.",
+      );
     const d = m[i][i];
     for (let k = i; k <= n; k++) m[i][k] /= d;
     for (let j = 0; j < n; j++)
@@ -171,8 +176,9 @@ function solve(a, b) {
   }
   return m.map((r) => r[n]);
 }
-function fit(X, y, logistic = false) {
+function fit(X, y, logistic = false, strict = false) {
   let beta = Array(X[0].length).fill(0);
+  let converged = !logistic;
   for (let step = 0; step < (logistic ? 40 : 1); step++) {
     const n = beta.length,
       h = Array.from({ length: n }, () => Array(n).fill(0)),
@@ -185,15 +191,33 @@ function fit(X, y, logistic = false) {
         for (let k = 0; k < n; k++) h[j][k] += x[j] * x[k] * w;
       }
     });
+    // In editable graphs, do not let regularization hide a rank-deficient design.
+    if (strict && step === 0) solve(h, g);
     // Tiny numerical regularization; no substantive shrinkage intended.
     for (let j = 0; j < n; j++) h[j][j] += 1e-7;
     const delta = solve(h, g);
     beta = beta.map((v, i) => v + delta[i]);
-    if (Math.max(...delta.map(Math.abs)) < 1e-8) break;
+    if (Math.max(...delta.map(Math.abs)) < 1e-8) {
+      converged = true;
+      break;
+    }
   }
+  if (strict && (!converged || beta.some((v) => !Number.isFinite(v))))
+    throw new EstimationError(
+      "The model did not converge. Reduce treatment selection strength or remove adjustment variables; separation may be present.",
+    );
   return beta;
 }
 export function estimate(data, adjustment, models = {}) {
+  if (
+    models.strict &&
+    (!data.length ||
+      !data.some((d) => d.A === 0) ||
+      !data.some((d) => d.A === 1))
+  )
+    throw new EstimationError(
+      "Both treatment groups are needed. Reduce treatment selection strength or its intercept.",
+    );
   const n = data.length,
     xs = data.map((d) =>
       features(d, adjustment, models.outcome, models.outcomeQuadratic),
@@ -206,12 +230,14 @@ export function estimate(data, adjustment, models = {}) {
   const count = a.reduce((s, v) => s + v, 0),
     mean1 = data.reduce((s, d) => s + d.A * d.Y, 0) / count,
     mean0 = data.reduce((s, d) => s + (1 - d.A) * d.Y, 0) / (n - count);
-  const propensity = fit(gs, a, true);
+  const propensity = fit(gs, a, true, models.strict);
   const ps = gs.map((x) => sigmoid(dot(x, propensity))),
     clipped = ps.filter((p) => p < 0.02 || p > 0.98).length;
   const beta = fit(
     xs.map((x, i) => [...x, a[i]]),
     y,
+    false,
+    models.strict,
   );
   const weights = [];
   const aipwContributions = models.aipwDetails ? [] : undefined;

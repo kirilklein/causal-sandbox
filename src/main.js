@@ -14,7 +14,9 @@ if (staticPageTheme) staticPageTheme.outerHTML = themeControl();
 if (page === "glossary") {
   await import("./glossary-page.js");
 } else if (page !== "methodology") {
-  if (params.has("sandbox")) {
+  if (params.get("sandbox") === "graph-lab") {
+    await import("./graph-lab.js");
+  } else if (params.has("sandbox")) {
     await import("./sandbox.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
