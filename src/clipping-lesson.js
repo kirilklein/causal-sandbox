@@ -220,7 +220,7 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
       >.
     </p>
   </details>
-<nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=overlap">← Poor overlap</a><a href="?lesson=instrument">Instruments and adjustment →</a><a href="?sandbox">Full sandbox ↗</a></nav>
+<nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=overlap">← Poor overlap</a><a href="?lesson=trimming">Next: who remains after trimming? →</a><a href="?sandbox">Full sandbox ↗</a></nav>
 </main>
 </div>`;
 

@@ -273,6 +273,7 @@ function lessonNavigation(position) {
       )
       .join("")}
     <a class="sandbox-nav-link" href="?lesson=clipping">Clipping and extreme weights ↗</a>
+    <a class="sandbox-nav-link" href="?lesson=trimming">Trimming and the target population ↗</a>
     <a class="sandbox-nav-link" href="?lesson=instrument">Instruments and adjustment ↗</a>
     <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
   </nav>`;

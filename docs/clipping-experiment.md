@@ -119,9 +119,9 @@ remove the correction that would otherwise identify the ATE. Finite-sample
 behavior need not improve at each slider step. ESS describes weight concentration,
 not precision, retained people, or the absence of bias.
 
-Trimming people, threshold selection, uncertainty intervals, and TMLE are separate
-work. In particular, a trimming experiment must state its
-restricted target and validate it with heterogeneous treatment effects.
+The next [trimming chapter](trimming-experiment.md) changes who remains and labels
+its restricted target, with an optional varying-effect example. Threshold selection,
+uncertainty intervals, and TMLE remain separate work.
 
 ## Validation
 
@@ -182,5 +182,8 @@ use the same sample. The chapter starts unclipped; the shared estimator default
 remains 0.02. Unavailable results carry a reason. Redraw fits a new sample; moving
 the threshold reuses its rows. Restart and history re-entry restore both sliders,
 the initial seed, and closed disclosures. Reading details or changing theme
-preserves estimates and controls. Links return to overlap or continue to instruments
+preserves estimates and controls. Links return to overlap or continue to trimming
 and the sandbox. Screen-reader listening and learner comprehension remain pending.
+
+The former `docs/clipping-preview.html` URL redirects to the published chapter;
+the preview UI is maintained only in `src/clipping-lesson.js`.

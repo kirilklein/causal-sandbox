@@ -6,20 +6,25 @@ import {
 } from "./lesson-simulation.js";
 import { fitClippingSample } from "./clipping-experiment.js";
 
-export function trimmingSample({ n = 400, seed = 4217, selection = 3 } = {}) {
+export function trimmingSample({
+  n = 400,
+  seed = 4217,
+  selection = 3,
+  heterogeneous = false,
+} = {}) {
   const state = { ...lessonBaseline(10), n, seed, selection };
   const noise = makeNoise(n, seed);
-  const data = simulateLesson(state, noise);
+  // Extend only this experiment: the same equation supplies observed and forced outcomes.
+  const world = (draws) =>
+    simulateLesson(state, draws).map((row) => ({
+      ...row,
+      Y: row.Y + (heterogeneous ? row.A * (row.C ** 2 - 1) : 0),
+    }));
+  const data = world(noise);
   // Paired interventions use the same outcome equation and background draws.
   // Only the observed data enter the fit; truth stays in a separate array.
-  const untreated = simulateLesson(
-    state,
-    noise.map((row) => ({ ...row, a: 1 })),
-  );
-  const treated = simulateLesson(
-    state,
-    noise.map((row) => ({ ...row, a: -1 })),
-  );
+  const untreated = world(noise.map((row) => ({ ...row, a: 1 })));
+  const treated = world(noise.map((row) => ({ ...row, a: -1 })));
   return {
     rows: fitClippingSample(data),
     effects: treated.map((row, i) => row.Y - untreated[i].Y),
