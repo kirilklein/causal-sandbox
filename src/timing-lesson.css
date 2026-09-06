@@ -174,7 +174,7 @@
     margin: 0 0 8px;
   }
   #instrument-detail,
-  #baseline-detail {
+  #adjustment-detail {
     grid-column: 1 / -1;
   }
   #example-text {
@@ -274,17 +274,17 @@
   #variable-handle {
     z-index: 4;
   }
-  #baseline-detail {
+  #adjustment-detail {
     border-top: 1px solid var(--border);
     margin-top: 24px;
     padding-top: 8px;
   }
-  .collider-estimates {
+  .timing-estimates {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
-  .collider-estimates > div {
+  .timing-estimates > div {
     padding: 16px;
     border-radius: 10px;
     background: color-mix(
@@ -293,22 +293,41 @@
       var(--error-surface) var(--error-tint, 0%)
     );
   }
-  .collider-estimates .collider-truth {
+  .timing-estimates .timing-truth {
     background: var(--node-Y);
   }
-  .collider-estimates span,
-  .collider-estimates small {
+  .timing-estimates span,
+  .timing-estimates small {
     display: block;
     font-size: 13px;
   }
-  .collider-estimates strong {
+  .timing-estimates strong {
     display: block;
     font-size: 28px;
     font-variant-numeric: tabular-nums;
   }
   @media (max-width: 540px) {
-    .collider-estimates {
+    .timing-estimates {
       grid-template-columns: 1fr;
     }
+  }
+}
+
+.timing-page #studies-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  caption {
+    text-align: left;
+    margin: 12px 0;
+  }
+  th,
+  td {
+    text-align: right;
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  th:first-child {
+    text-align: left;
   }
 }

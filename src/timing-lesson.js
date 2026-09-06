@@ -2,7 +2,8 @@ import "./clipping-lesson.css";
 import "./timing-lesson.css";
 import icon from "./brand.svg?raw";
 import { themeControl } from "./theme.js";
-import { baselineCollider } from "./timing-simulation.js";
+import { timingSample } from "./timing-simulation.js";
+import { studySummary } from "./instrument-simulation.js";
 import { effectComparison } from "./effect-comparison.js";
 
 document.title = "What timing tells us · Causal Sandbox";
@@ -33,32 +34,32 @@ const examples = {
   confounder: {
     label: "Confounder",
     edges: ["VA", "VY"],
-    text: "V causes both A and Y. The backdoor path A ← V → Y can confound the treatment effect. Adjusting for V blocks it in this world.",
+    text: "V causes both A and Y. The backdoor path A ← V → Y can confound the treatment effect.",
   },
   instrument: {
     label: "Instrument",
     edges: ["VA"],
-    text: "V affects Y only through A and shares no cause with Y. Timing alone cannot establish these instrument conditions. Adjusting for an instrument adds no bias here but inflates variance, and can amplify bias from any confounding left unadjusted.",
+    text: "V affects Y only through A and shares no cause with Y. Timing alone cannot establish these instrument conditions.",
   },
   predictor: {
     label: "Outcome predictor",
     edges: ["VY"],
-    text: "V causes Y but does not influence A or share a cause with it here. V predicts the outcome without confounding treatment. An outcome model may gain precision by including it.",
+    text: "V causes Y but does not influence A or share a cause with it here. V predicts the outcome without confounding treatment.",
   },
   mediator: {
     label: "Mediator",
     edges: ["AV", "VY"],
-    text: "A changes V, which changes Y. Adjusting for V would remove part of the total treatment effect we want to count.",
+    text: "A changes V, which changes Y.",
   },
   treatment: {
     label: "Affected by A only",
     edges: ["AV"],
-    text: "A changes V, but V does not affect Y. Adjusting for V would add no bias here, only lose precision by absorbing part of A’s variation.",
+    text: "A changes V, but V does not affect Y.",
   },
   outcome: {
     label: "Affected by Y only",
     edges: ["YV"],
-    text: "Y changes V. V is a marker of the outcome, not a cause of it. Adjusting for V, a proxy of Y, would distort the effect.",
+    text: "Y changes V. V is a marker of the outcome, not a cause of it.",
   },
   collider: { label: "Collider" },
 };
@@ -68,7 +69,8 @@ let windowKey = "before";
 let exampleKey = null;
 let drag = null;
 let sampleSeed = 4217;
-let colliderSample;
+let sample;
+let studyRun = 0;
 
 const node = (name, x, y, fill = "C") =>
   `<g><rect x="${x - 27}" y="${y - 22}" width="54" height="44" rx="12" fill="var(--node-${fill})" ${name === "U" ? 'stroke="var(--causal-path)" stroke-dasharray="4 3"' : ""}/><text x="${x}" y="${y + 6}" text-anchor="middle">${name}</text></g>`;
@@ -123,9 +125,8 @@ const colliderTexts = {
   before:
     "P and R independently influence a referral score V before treatment. P also causes A, and R causes Y. V is a collider on A ← P → V ← R → Y, even though it is before A.",
   between:
-    "V sits between A and Y in time, yet it carries none of A’s effect: A and an unmeasured U both shape V, and U also drives Y. Adjusting for V would link A to U, and through U to Y, introducing collider bias.",
-  after:
-    "A and Y both affect V. It is a collider on A → V ← Y. Adjusting for their common consequence can introduce a noncausal association.",
+    "V sits between A and Y in time, yet it carries none of A’s effect: A and an unmeasured U both shape V, and U also drives Y.",
+  after: "A and Y both affect V. It is a collider on A → V ← Y.",
 };
 
 document.querySelector("#app").innerHTML =
@@ -161,22 +162,27 @@ document.querySelector("#app").innerHTML =
       </figure>
       <p id="example-text" aria-live="polite" aria-atomic="true"></p>
       <details id="instrument-detail" hidden><summary>What makes an instrument valid?</summary><p>It must affect treatment, have no route to Y outside treatment, and share no unblocked common cause with Y. These conditions are stipulated here; a real pretreatment predictor of treatment need not satisfy them.</p><a href="?lesson=instrument">Explore instruments and adjustment →</a></details>
-      <section id="baseline-detail" hidden aria-labelledby="collider-simulation-title">
-        <h3 id="collider-simulation-title">Try adjusting for the baseline score</h3>
-        <p>V is the referral score K. Compare the same simulated people with and without K in the outcome model.</p>
-        <label class="timing-adjust"><input type="checkbox" id="condition-K"> Adjust for referral score K</label>
+      <section id="adjustment-detail" hidden aria-labelledby="adjustment-title">
+        <h3 id="adjustment-title">Try adjusting for V</h3>
+        <p>Compare the same people with and without V in the outcome model.</p>
+        <label class="timing-adjust"><input type="checkbox" id="condition-V"> Adjust for V</label>
         <p class="help" id="adjustment-caption"></p>
-        <div class="collider-estimates" aria-live="polite" aria-atomic="true">
-          <div class="collider-truth"><span>True total effect</span><strong id="collider-truth"></strong></div>
-          <div id="collider-estimate-card"><span>Outcome regression</span><strong id="collider-estimate"></strong><small id="collider-error"></small></div>
+        <div class="timing-estimates" aria-live="polite" aria-atomic="true">
+          <div class="timing-truth"><span>True total effect</span><strong id="timing-truth"></strong></div>
+          <div id="timing-estimate-card"><span id="estimate-label">Unadjusted estimate</span><strong id="timing-estimate"></strong><small id="timing-error"></small></div>
         </div>
-        <p id="collider-comparison" class="help"></p>
-        <p class="timing-result" id="collider-result" aria-live="polite" aria-atomic="true"></p>
-        <div class="actions"><button type="button" id="collider-redraw">Draw another sample</button><span class="help" id="collider-sample"></span></div>
-        <details><summary>Why does adjusting for the score connect P and R?</summary>
-          <p>Imagine K = P + R. At K = 10, a larger P means a smaller R. Our simulation adds independent measurement noise to this score, but adjusting still connects prescribing preference and illness risk.</p>
-          <p>P and R are independent, standardized uniform variables. K = P + R + 0.5 × score noise. Treatment has probability sigmoid(1.5P), and Y = 2A + 1.5R + outcome noise. Both noises are independent standard normal variables.</p>
-          <p>We compare outcome regression using A alone with A and K, on the same 2,400 people. The target stays 2. A redraw changes the sample; adjusting changes neither people nor causal arrows. One sample cannot establish a general ranking.</p>
+        <p id="timing-comparison" class="help"></p>
+        <p class="timing-result" id="timing-result" aria-live="polite" aria-atomic="true"></p>
+        <div class="actions"><button type="button" id="timing-redraw">Draw another sample</button><span class="help" id="timing-sample"></span></div>
+        <details id="repeated-studies"><summary>Compare across repeated samples</summary>
+          <p>Both fits use the same people in each study. The standard deviation (SD) measures how much estimates vary across studies; smaller means more precision.</p>
+          <button type="button" id="timing-repeat">Run 60 studies</button>
+          <p id="studies-status" class="help" role="status"></p>
+          <table id="studies-table" hidden><caption>Repeated estimates · true total effect 2.00</caption><thead><tr><th scope="col">Adjustment</th><th scope="col">Mean</th><th scope="col">SD</th></tr></thead><tbody id="studies-rows"></tbody></table>
+        </details>
+        <details id="world-model"><summary>How this world is simulated</summary><p id="world-equations"></p><p>P and R are independent standardized uniform variables. U and all noise terms are independent standard normal variables. Unless stated otherwise, A is assigned with probability 0.5 independently of these variables. Every world has total effect 2; the mediator world splits it into direct and mediated contributions of 1 each.</p></details>
+        <details id="baseline-explanation" hidden><summary>Why does adjusting for the score connect P and R?</summary>
+          <p>Imagine V = P + R. At V = 1, a larger P means a smaller R. Our simulation adds independent noise to this score, but adjusting still connects prescribing preference and illness risk.</p>
         </details>
       </section>
     </div>
@@ -227,7 +233,8 @@ function renderWindow() {
   $("example-panel").hidden = true;
   $("example-graph").innerHTML = "";
   $("instrument-detail").open = false;
-  $("condition-K").checked = false;
+  $("condition-V").checked = false;
+  resetStudies();
   positionHandle();
 }
 
@@ -249,36 +256,145 @@ function renderExample() {
   $("example-description").textContent = `A causes Y. ${text}`;
   $("example-text").textContent = text;
   $("instrument-detail").hidden = exampleKey !== "instrument";
-  $("baseline-detail").hidden =
+  $("adjustment-detail").hidden = false;
+  $("baseline-explanation").hidden =
     exampleKey !== "collider" || windowKey !== "before";
-  if (!$("baseline-detail").hidden) {
-    colliderSample ??= baselineCollider({ seed: sampleSeed });
-    renderCollider();
-  }
+  $("world-equations").textContent = worldEquations[worldKey()];
+  sample = timingSample({
+    example: exampleKey,
+    window: windowKey,
+    seed: sampleSeed,
+  });
+  renderEstimate();
 }
 
-function renderCollider() {
-  const adjusted = $("condition-K").checked;
-  const current = adjusted ? colliderSample.withK : colliderSample.withoutK;
-  const view = effectComparison(current, colliderSample.truth);
-  $("adjustment-caption").textContent = adjusted
-    ? "Outcome model: adjusting for baseline K (V)."
-    : "Outcome model: no adjustment.";
-  $("collider-truth").textContent = colliderSample.truth.toFixed(2);
-  $("collider-estimate").textContent = view.value;
-  $("collider-error").textContent = view.difference;
-  $("collider-estimate-card").style.setProperty(
-    "--error-tint",
-    `${view.tint}%`,
-  );
-  $("collider-comparison").textContent = adjusted
-    ? `Without K: ${colliderSample.withoutK.toFixed(2)}. With K: ${colliderSample.withK.toFixed(2)}. ${Math.abs(colliderSample.withK - 2) > Math.abs(colliderSample.withoutK - 2) ? "Adjusting moves the estimate farther from truth in this sample." : "Adjusting happens to bring the estimate closer in this sample; the collider path is still open."}`
-    : "Try including K. The same people and outcomes are used in both fits.";
-  $("collider-result").textContent = adjusted
-    ? "Adjusting for K opens A ← P → K ← R → Y, introducing collider bias despite K being before treatment."
-    : "A ← P → K ← R → Y is blocked at K. There is no confounding through this path without adjusting for K or its descendants.";
-  $("collider-sample").textContent = `2,400 people · Sample ${sampleSeed}`;
+function worldKey() {
+  return exampleKey === "collider" ? `collider-${windowKey}` : exampleKey;
 }
+
+const worldEquations = {
+  confounder:
+    "V = P; Pr(A = 1 | V) = sigmoid(1.5V); Y = 2A + 1.5V + outcome noise.",
+  instrument: "V = P; Pr(A = 1 | V) = sigmoid(1.5V); Y = 2A + outcome noise.",
+  predictor: "V = P; Y = 2A + 1.5V + outcome noise.",
+  mediator: "V = A + mediator noise; Y = A + V + outcome noise.",
+  treatment: "V = 2A + variable noise; Y = 2A + outcome noise.",
+  outcome: "Y = 2A + outcome noise; V = Y + variable noise.",
+  "collider-before":
+    "V = P + R + 0.5 × score noise; Pr(A = 1 | P) = sigmoid(1.5P); Y = 2A + 1.5R + outcome noise.",
+  "collider-between":
+    "V = A + U + 0.5 × variable noise; Y = 2A + 1.5U + outcome noise.",
+  "collider-after": "Y = 2A + outcome noise; V = A + Y + variable noise.",
+};
+const adjustmentResults = {
+  confounder: [
+    "The confounding path A ← V → Y is open.",
+    "Adjusting for V blocks the confounding path A ← V → Y in this world.",
+  ],
+  instrument: [
+    "There is no confounding in this world.",
+    "Adjusting for V adds no bias here but reduces precision. Compare repeated samples to see the spread.",
+  ],
+  predictor: [
+    "There is no confounding in this world.",
+    "Adjusting for V explains outcome variation and improves precision here. Compare repeated samples to see the spread.",
+  ],
+  mediator: [
+    "The estimate includes both the direct and mediated paths.",
+    "Adjusting for V removes the mediated contribution. The target remains the total effect, including that contribution.",
+  ],
+  treatment: [
+    "V carries none of A’s effect to Y and creates no confounding here.",
+    "Adjusting for V adds no bias here but reduces precision by absorbing treatment variation. Compare repeated samples to see the spread.",
+  ],
+  outcome: [
+    "V is a consequence of Y; there is no confounding here.",
+    "Adjusting for a consequence of Y distorts the treatment estimate in this world.",
+  ],
+  "collider-before": [
+    "A ← P → V ← R → Y is blocked at V.",
+    "Adjusting for V opens A ← P → V ← R → Y, introducing collider bias despite V being before treatment.",
+  ],
+  "collider-between": [
+    "A → V ← U → Y is blocked at V.",
+    "Adjusting for V opens A → V ← U → Y, introducing collider bias.",
+  ],
+  "collider-after": [
+    "A → V ← Y is blocked at V.",
+    "Adjusting for V opens A → V ← Y, introducing collider bias.",
+  ],
+};
+
+function renderEstimate() {
+  const adjusted = $("condition-V").checked;
+  const view = effectComparison(
+    adjusted ? sample.adjusted : sample.unadjusted,
+    sample.truth,
+  );
+  $("adjustment-caption").textContent = adjusted
+    ? "Outcome model: adjusting for V."
+    : "Outcome model: no adjustment.";
+  $("estimate-label").textContent = adjusted
+    ? "Adjusted estimate"
+    : "Unadjusted estimate";
+  $("timing-truth").textContent = sample.truth.toFixed(2);
+  $("timing-estimate").textContent = view.value;
+  $("timing-error").textContent = view.difference;
+  $("timing-estimate-card").style.setProperty("--error-tint", `${view.tint}%`);
+  $("timing-comparison").textContent =
+    `Without V: ${sample.unadjusted.toFixed(2)}. With V: ${sample.adjusted.toFixed(2)}. One sample cannot establish bias or precision.`;
+  $("timing-result").textContent = adjustmentResults[worldKey()][+adjusted];
+  $("timing-sample").textContent = `2,400 people · Sample ${sampleSeed}`;
+}
+
+function resetStudies() {
+  studyRun += 1;
+  $("repeated-studies").open = false;
+  $("studies-table").hidden = true;
+  $("studies-rows").innerHTML = "";
+  $("studies-status").textContent = "";
+  $("timing-repeat").disabled = false;
+}
+
+$("timing-repeat").addEventListener("click", async () => {
+  const run = ++studyRun;
+  const example = exampleKey,
+    window = windowKey;
+  const unadjusted = [],
+    adjusted = [];
+  $("timing-repeat").disabled = true;
+  $("studies-table").hidden = true;
+  try {
+    for (let i = 0; i < 60; i++) {
+      $("studies-status").textContent = `Running study ${i + 1} of 60…`;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (run !== studyRun) return;
+      const study = timingSample({ example, window, seed: 100 + i });
+      unadjusted.push(study.unadjusted);
+      adjusted.push(study.adjusted);
+    }
+    const format = (value) =>
+      Number.isFinite(value) ? value.toFixed(3) : "Unavailable";
+    $("studies-rows").innerHTML = [unadjusted, adjusted]
+      .map((values, i) => {
+        const summary = studySummary(values);
+        return `<tr><th scope="row">${i ? "With V" : "Without V"}</th><td>${format(summary.mean)}</td><td>${format(summary.sd)}</td></tr>`;
+      })
+      .join("");
+    const missing = [...unadjusted, ...adjusted].filter(
+      (value) => !Number.isFinite(value),
+    ).length;
+    $("studies-status").textContent =
+      `60 studies × 2,400 people · seeds 100–159.${missing ? ` ${missing} unavailable fits excluded from summaries.` : ""}`;
+    $("studies-table").hidden = false;
+  } catch (error) {
+    if (run === studyRun)
+      $("studies-status").textContent = "The study run failed. Try again.";
+    throw error;
+  } finally {
+    if (run === studyRun) $("timing-repeat").disabled = false;
+  }
+});
 
 document
   .querySelectorAll('[name="time-window"]')
@@ -287,13 +403,21 @@ document
   );
 $("example-choices").addEventListener("change", (event) => {
   exampleKey = event.target.value;
+  $("condition-V").checked = false;
+  $("baseline-explanation").open = false;
+  $("world-model").open = false;
+  resetStudies();
   renderExample();
 });
-$("condition-K").addEventListener("change", renderCollider);
-$("collider-redraw").addEventListener("click", () => {
+$("condition-V").addEventListener("change", renderEstimate);
+$("timing-redraw").addEventListener("click", () => {
   sampleSeed += 1;
-  colliderSample = baselineCollider({ seed: sampleSeed });
-  renderCollider();
+  sample = timingSample({
+    example: exampleKey,
+    window: windowKey,
+    seed: sampleSeed,
+  });
+  renderEstimate();
 });
 
 const handle = $("variable-handle");
@@ -367,7 +491,7 @@ $("timing-restart").addEventListener("click", () => {
   windowKey = "before";
   exampleKey = null;
   sampleSeed = 4217;
-  colliderSample = undefined;
+  sample = undefined;
   document.querySelectorAll("details").forEach((detail) => {
     detail.open = false;
   });
