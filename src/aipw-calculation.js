@@ -2,7 +2,7 @@ const number = (value) => value.toFixed(3);
 const sub = (symbol, index = "i") =>
   `<msub><mi>${symbol}</mi><mi>${index}</mi></msub>`;
 const prediction = (arm) =>
-  `<msub><mover><mi>m</mi><mo>^</mo></mover><${arm === "0" || arm === "1" ? "mn" : "mrow"}>${arm}</${arm === "0" || arm === "1" ? "mn" : "mrow"}></msub><mo>(</mo>${sub("C")}<mo>)</mo>`;
+  `<msub><mover><mi>Y</mi><mo>^</mo></mover><${arm === "0" || arm === "1" ? "mn" : "mrow"}>${arm}</${arm === "0" || arm === "1" ? "mn" : "mrow"}></msub><mo>(</mo>${sub("C")}<mo>)</mo>`;
 const math = (body, label) =>
   `<math display="block" aria-label="${label}">${body}</math>`;
 
@@ -31,7 +31,7 @@ export function aipwFormula() {
         </div>
       </div>
     </div>
-    <p class="aipw-prediction-note">${math(prediction("1"), "m hat one at C i")} and ${math(prediction("0"), "m hat zero at C i")} are fitted outcomes with and without treatment, at the same baseline health.</p>
+    <p class="aipw-prediction-note">${math(prediction("1"), "Y hat one at C i")} and ${math(prediction("0"), "Y hat zero at C i")} are fitted outcomes with and without treatment, at the same baseline health.</p>
     <div class="aipw-definitions">
       <section class="aipw-residual" aria-labelledby="aipw-residual-title">
         <h3 id="aipw-residual-title">Regression error</h3>
@@ -78,7 +78,7 @@ export function aipwCalculation(contributions) {
 
   return `
     <p class="sample-note">The first treated and first untreated person in this sample. The averages use all ${contributions.length.toLocaleString("en-US")} people. Values are rounded; calculations use full precision.</p>
-    ${table("Current fitted values and contributions", row("Prediction with treatment", "m1") + row("Prediction without treatment", "m0") + row("Observed outcome", "Y") + row("Predicted contrast", "contrast") + row("Regression error, r", "residual") + row("IPW weight, w", "weight") + row("Signed correction, s × w × r", "correction") + row("Total contribution", "contribution"))}
+    ${table("Current fitted values and contributions", row("Ŷ₁(Cᵢ), prediction with treatment", "m1") + row("Ŷ₀(Cᵢ), prediction without treatment", "m0") + row("Observed outcome", "Y") + row("Predicted contrast", "contrast") + row("Regression error, r", "residual") + row("IPW weight, w", "weight") + row("Signed correction, s × w × r", "correction") + row("Total contribution", "contribution"))}
     <dl class="aipw-totals">
       <div><dt>Average predicted contrast</dt><dd>${number(average("contrast"))}</dd></div>
       <div><dt>Average signed correction</dt><dd>${number(average("correction"))}</dd></div>

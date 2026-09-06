@@ -385,7 +385,7 @@
             <p class="section-number">03 · FULL-SANDBOX ESTIMATORS</p>
             <h2>How each estimate is calculated</h2>
             <p>
-              Let X be the variables selected for adjustment, m̂<sub>a</sub>(X)
+              Let X be the variables selected for adjustment, Ŷ<sub>a</sub>(X)
               the fitted outcome under treatment a, and ê(X) the fitted
               probability of treatment. The app fits ordinary least squares for
               outcome and logistic regression for treatment.
@@ -453,7 +453,7 @@
                 <div class="methodology-equation">
                   <math
                     display="block"
-                    aria-label="Outcome regression estimate equals one over n times the sum of fitted m 1 at X i minus fitted m 0 at X i"
+                    aria-label="Outcome regression estimate equals one over n times the sum of Y hat 1 at X i minus Y hat 0 at X i"
                   >
                     <mrow>
                       <msub
@@ -462,12 +462,12 @@
                       ><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac
                       ><mo>∑</mo><mo>[</mo
                       ><msub
-                        ><mover><mi>m</mi><mo>^</mo></mover
+                        ><mover><mi>Y</mi><mo>^</mo></mover
                         ><mn>1</mn></msub
                       ><mo>(</mo><msub><mi>X</mi><mi>i</mi></msub
                       ><mo>)</mo><mo>−</mo
                       ><msub
-                        ><mover><mi>m</mi><mo>^</mo></mover
+                        ><mover><mi>Y</mi><mo>^</mo></mover
                         ><mn>0</mn></msub
                       ><mo>(</mo><msub><mi>X</mi><mi>i</mi></msub
                       ><mo>)</mo><mo>]</mo>
@@ -565,12 +565,12 @@
                       ><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac
                       ><mo>∑</mo><mo>{</mo>
                       <msub
-                        ><mover><mi>m</mi><mo>^</mo></mover
+                        ><mover><mi>Y</mi><mo>^</mo></mover
                         ><mn>1</mn></msub
                       ><mo>(</mo><msub><mi>X</mi><mi>i</mi></msub
                       ><mo>)</mo> <mo>−</mo
                       ><msub
-                        ><mover><mi>m</mi><mo>^</mo></mover
+                        ><mover><mi>Y</mi><mo>^</mo></mover
                         ><mn>0</mn></msub
                       ><mo>(</mo><msub><mi>X</mi><mi>i</mi></msub
                       ><mo>)</mo> <mo>+</mo
@@ -584,7 +584,7 @@
                       <mo>[</mo><msub><mi>Y</mi><mi>i</mi></msub
                       ><mo>−</mo
                       ><msub
-                        ><mover><mi>m</mi><mo>^</mo></mover
+                        ><mover><mi>Y</mi><mo>^</mo></mover
                         ><mn>1</mn></msub
                       ><mo>(</mo><msub><mi>X</mi><mi>i</mi></msub
                       ><mo>)</mo><mo>]</mo> <mo>−</mo
@@ -603,7 +603,7 @@
                       <mo>[</mo><msub><mi>Y</mi><mi>i</mi></msub
                       ><mo>−</mo
                       ><msub
-                        ><mover><mi>m</mi><mo>^</mo></mover
+                        ><mover><mi>Y</mi><mo>^</mo></mover
                         ><mn>0</mn></msub
                       ><mo>(</mo><msub><mi>X</mi><mi>i</mi></msub
                       ><mo>)</mo><mo>]</mo>
@@ -664,7 +664,7 @@
               propensities, then performs a one-dimensional squared-error update
               for the continuous outcome. The update is chosen so the empirical
               weighted residual score is zero before the revised prediction
-              contrast is averaged. Here rᵢ = Yᵢ − m̂<sub>Aᵢ</sub>(Xᵢ) is the
+              contrast is averaged. Here rᵢ = Yᵢ − Ŷ<sub>Aᵢ</sub>(Xᵢ) is the
               observed residual from the initial outcome model.
             </p>
             <div class="methodology-equation">
@@ -716,15 +716,16 @@
               <span>Updated predictions and estimate</span>
               <math
                 display="block"
-                aria-label="Updated m 1 i equals m 1 i plus epsilon over e i; updated m 0 i equals m 0 i minus epsilon over one minus e i; TMLE is their average contrast"
+                aria-label="Updated Y hat 1 i equals initial Y hat 1 i plus epsilon over e i; updated Y hat 0 i equals initial Y hat 0 i minus epsilon over one minus e i; TMLE is their average contrast"
               >
                 <mrow>
                   <msubsup
-                    ><mi>m</mi><mrow><mn>1</mn><mi>i</mi></mrow
+                    ><mover><mi>Y</mi><mo>^</mo></mover
+                    ><mrow><mn>1</mn><mi>i</mi></mrow
                     ><mo>*</mo></msubsup
                   ><mo>=</mo>
                   <msub
-                    ><mover><mi>m</mi><mo>^</mo></mover
+                    ><mover><mi>Y</mi><mo>^</mo></mover
                     ><mrow><mn>1</mn><mi>i</mi></mrow></msub
                   ><mo>+</mo>
                   <mfrac
@@ -736,11 +737,12 @@
                   >
                   <mo>,</mo><mspace width="0.8em"></mspace>
                   <msubsup
-                    ><mi>m</mi><mrow><mn>0</mn><mi>i</mi></mrow
+                    ><mover><mi>Y</mi><mo>^</mo></mover
+                    ><mrow><mn>0</mn><mi>i</mi></mrow
                     ><mo>*</mo></msubsup
                   ><mo>=</mo>
                   <msub
-                    ><mover><mi>m</mi><mo>^</mo></mover
+                    ><mover><mi>Y</mi><mo>^</mo></mover
                     ><mrow><mn>0</mn><mi>i</mi></mrow></msub
                   ><mo>−</mo>
                   <mfrac
@@ -760,11 +762,13 @@
                   ><mo>=</mo> <mfrac><mn>1</mn><mi>n</mi></mfrac
                   ><mo>∑</mo><mo>(</mo>
                   <msubsup
-                    ><mi>m</mi><mrow><mn>1</mn><mi>i</mi></mrow
+                    ><mover><mi>Y</mi><mo>^</mo></mover
+                    ><mrow><mn>1</mn><mi>i</mi></mrow
                     ><mo>*</mo></msubsup
                   ><mo>−</mo>
                   <msubsup
-                    ><mi>m</mi><mrow><mn>0</mn><mi>i</mi></mrow
+                    ><mover><mi>Y</mi><mo>^</mo></mover
+                    ><mrow><mn>0</mn><mi>i</mi></mrow
                     ><mo>*</mo></msubsup
                   ><mo>)</mo>
                 </mrow>
