@@ -1,18 +1,19 @@
 # Progressive education delivery
 
-The default experience is a sequence of small experiments. Levels 1–10 implement randomization → one common cause → inverse probability
-weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → poor overlap.
-The existing advanced sandbox is available through `?sandbox` as level 11.
+The default experience is a sequence of small experiments. Levels 1–11 implement randomization → one common cause → inverse probability
+weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → TMLE targeting → poor overlap.
+The existing advanced sandbox is available through `?sandbox` as level 12.
 
 Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
 `?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,
 mediator, collider, and hidden confounding, at their new displayed positions.
-Numeric simulator IDs retain these original identities too. The optional revisit
+Numeric simulator IDs retain these original identities too. TMLE uses the new
+ID 11 at displayed position 10; overlap retains ID 10 at position 11. The optional revisit
 uses `?lesson=double-robustness&revisit=hidden-confounding`.
 
 Linear progression through Continue is the default. A quiet Contents toggle stays
 closed on every screen size. When opened, it groups lesson links into Foundations
-(1–4), Causal roles (5–7), and Models and limitations (8–10), followed by the
+(1–4), Causal roles (5–7), and Models and limitations (8–11), followed by the
 sandbox. The Contents control sits in the left margin, aligned with its panel, and uses
 a panel icon whose chevron indicates opening/closing. The panel opens without
 moving the lesson, and
@@ -52,16 +53,16 @@ future work.
    failures and all four model combinations. Learner comprehension remains to be
    assessed; automated checks do not substitute for a new-learner walkthrough.
 3. **Causal limitations (remaining #8) and overlap (#9):** levels 5–7 implement
-   separate mediator, collider, and hidden-confounding experiments. Level 10
+   separate mediator, collider, and hidden-confounding experiments. Level 11
    implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
-   concentration and per-arm effective sample sizes at level 10.
-4. **Full sandbox (level 11):** available at any time and after overlap. Entry
+   concentration and per-arm effective sample sizes at level 11.
+4. **Full sandbox (level 12):** available at any time and after overlap. Entry
    starts a separate experiment and introduces its two measured covariates and
    their interaction. Lesson settings are not transferred into this world.
 
-Only implemented lessons appear in contents. Levels 1–10 now form a continuous
-sequence; “Level N of 11” includes the final sandbox. No scores, completion gates, accounts or stored
+Only implemented lessons appear in contents. Levels 1–11 now form a continuous
+sequence; “Level N of 12” includes the final sandbox. No scores, completion gates, accounts or stored
 progress. Later chapters and confidence intervals are separate changes.
 
 ## Sampling variation (IV prerequisite, PR A)
@@ -216,6 +217,47 @@ the correction must move an estimate closer to truth. The IPW and outcome-regres
 explanations from #46/#47 are integrated; comprehension of the connected sequence
 still needs a learner walkthrough.
 
+## TMLE targeting (level 10)
+
+`?lesson=tmle` follows AIPW and precedes overlap. It resets to the same nonlinear
+world, with a correct treatment model and an initial outcome model missing C².
+The true population total effect is 2. Both models adjust for C; there are no
+hidden causes or post-treatment variables. The same 2,400 people and fitted
+models remain fixed while the learner applies 0–100% of the targeting update.
+
+The experiment shows truth, initial outcome regression, and the current average
+predicted contrast. Only the 100% result is labeled TMLE. A before/current
+readout shows the actual average signed weighted residual approaching zero.
+Two plots show fitted predictions with and without treatment. They draw up to
+81 actual sample rows ordered by C; axes cover all initial and final predictions
+and stay fixed while the slider moves. The plots contain no simulation truth.
+The slider sits immediately above the curves. Each plot has a visible y-axis
+labeled “Predicted outcome”; a short description below explains the panels and
+the original versus targeted predictions. Captions below each curve explain the
+update's direction and where it is largest, using the fitted epsilon and clipped
+probabilities for the current sample. They describe the fitted update even at
+0% progress and handle an effectively zero update explicitly.
+
+“How does targeting work?” uses a large MathML update formula and matching
+labeled components for the initial prediction, direction H, fitted amount ε,
+and targeted prediction. Separate optional details introduce the influence
+function, two observed-prediction examples, assumptions, and clipping. Formulas
+stack on phones. Intermediate predictions are for illustrating the fitted update;
+they are not separate fully targeted estimators.
+
+The lesson reuses the estimator's fitted AIPW contributions and joins baseline
+health by row. `tmle-lesson.js` applies the independently validated calculation
+in `tmle.js`; see [the estimator contract](tmle.md). Initial regression and AIPW
+remain unchanged. Reading explanations preserves the experiment and nested
+open disclosures. Redraw retains the update fraction with a new sample and fit;
+restart, history, and direct lesson entry restore 0% and seed 4217.
+
+Unit checks reconcile the preview with the full estimator and AIPW correction,
+and verify that targeting does not change the sample or initial fits. Browser
+checks cover keyboard/touch, direct entry, AIPW → TMLE → overlap, back/history,
+redraw/restart, explanation invariance, and desktop/320px light/dark layouts.
+Learner comprehension and screen-reader listening remain untested.
+
 ## New-learner walkthrough (pending)
 
 Ask a learner with no causal-inference training to use the default page on their
@@ -323,7 +365,7 @@ untested. The full sandbox link continues to start a separate experiment.
 
 ## Poor-overlap contract
 
-Level 10 resets to the level-4 simple observed-confounding baseline: n=2400,
+Level 11 (stable numeric ID 10) resets to the level-4 simple observed-confounding baseline: n=2400,
 seed=4217, effect=2, selection=1.2, outcomeInfluence=1.5, adjustment for C,
 no curvature, and correct additive outcome/logistic treatment models.
 Two radio choices switch selection between 1.2 and 5 using the same exogenous

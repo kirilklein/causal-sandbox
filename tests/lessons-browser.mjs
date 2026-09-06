@@ -339,7 +339,7 @@ try {
     assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${level - 2} of 11`),
+      new RegExp(`Level ${level - 2} of 12`),
     );
     roleBaselines.push([level, baseline]);
     assert.equal(await page.locator(".lesson-result:visible").count(), 2);
@@ -450,7 +450,7 @@ try {
   await page.locator("#continue").click();
   assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
   assert.equal(await page.locator(".lesson-intuition").count(), 0);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 7 of 11/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 7 of 12/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
   assert.equal(await page.locator("input").count(), 1);
@@ -553,7 +553,7 @@ try {
   assert.equal(await result(), ninth);
   await page.locator("#continue").tap();
   const fifth = await result();
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 11/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 12/);
   assert.doesNotMatch(
     await page.locator("#lesson-graph svg").textContent(),
     /Smoking|response|score/,
@@ -641,7 +641,7 @@ try {
     .check();
   await page.locator("#continue").tap();
   const sixth = await result();
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 11/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 12/);
   assert.equal(await page.locator("#aipw-result").isVisible(), true);
   assert.equal(await page.locator("#outcome-quadratic").isChecked(), true);
   assert.equal(await page.locator("#treatment-quadratic").isChecked(), true);
@@ -706,7 +706,7 @@ try {
   );
   assert.match(
     await page.locator(".lesson-nav").innerText(),
-    /Level 9 of 11.*Optional revisit/,
+    /Level 9 of 12.*Optional revisit/,
   );
   assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
   assert.equal(await page.locator("#aipw-result").isVisible(), true);
@@ -745,10 +745,99 @@ try {
   assert.equal(await result(), sixth);
   await page.locator("#revisit-hidden").click();
   await page.locator("#hidden-strength").fill("2");
-  // Overlap removes U and restores both simple, correctly specified models.
+  // TMLE follows AIPW and its callback, with its own complete baseline.
+  await page.locator("#continue").click();
+  assert.match(await page.locator("h1").innerText(), /Targeting with TMLE/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 12/);
+  const tmleBaseline = await result();
+  const progress = page.getByRole("slider", {
+    name: "Apply the fitted update",
+  });
+  const correction = () => page.locator("#tmle-current-correction").innerText();
+  const initialCorrection = Number(await correction());
+  assert.equal(await progress.inputValue(), "0");
+  assert.equal(await page.locator("#known-effect").innerText(), "2.00");
+  assert.equal(await page.locator(".lesson-result:visible").count(), 3);
+  const beforePaths = await page
+    .locator('[data-tmle-curve="before"]')
+    .evaluateAll((els) => els.map((el) => el.getAttribute("d")));
+  const graph = await page.locator("#lesson-graph").innerHTML();
+  await progress.focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await progress.inputValue(), "1");
+  await progress.fill("50");
+  assert.ok(
+    Math.abs(Number(await correction()) - initialCorrection / 2) < 0.001,
+  );
+  assert.match(
+    await page.locator("#tmle-estimate-label").innerText(),
+    /Current/,
+  );
+  assert.deepEqual(
+    await page
+      .locator('[data-tmle-curve="before"]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute("d"))),
+    beforePaths,
+  );
+  assert.equal(await page.locator("#lesson-graph").innerHTML(), graph);
+  const half = await result();
+  await page.locator(".tmle-formula-details > summary").click();
+  assert.equal(await result(), half);
+  await page.locator(".tmle-influence > summary").click();
+  assert.equal(await result(), half);
+  await page.locator("#apply-targeting").click();
+  assert.equal(await progress.inputValue(), "100");
+  assert.equal(await correction(), "0.000");
+  assert.equal(
+    await page.locator("#tmle-estimate-label").innerText(),
+    "TMLE estimate",
+  );
+  assert.equal(await page.locator(".tmle-influence").getAttribute("open"), "");
+  assert.ok(
+    Math.abs(Number(await page.locator("#tmle").innerText()) - 2) < 0.15,
+  );
+  const complete = await result();
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const theme of ["light", "dark"]) {
+      await page.getByLabel("Color theme").selectOption(theme);
+      assert.equal(await result(), complete);
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      );
+      assert.ok(
+        await page
+          .locator(".tmle-formula-details")
+          .evaluate((el) => el.scrollWidth <= el.clientWidth),
+      );
+      await page.screenshot({
+        path: `/tmp/causal-tmle-${width}-${theme}.png`,
+        fullPage: true,
+      });
+    }
+  }
+  await page.getByLabel("Color theme").selectOption("light");
+  await progress.tap();
+  assert.ok(Number(await progress.inputValue()) < 100);
+  await page.locator("#redraw").click();
+  assert.match(await page.locator("#sample-label").innerText(), /4218/);
+  await page.locator("#restart").click();
+  assert.equal(await result(), tmleBaseline);
+  assert.equal(await progress.inputValue(), "0");
+  await page.goto(`${url}?lesson=tmle`);
+  assert.equal(await result(), tmleBaseline);
+  await page.locator("#apply-targeting").click();
+  await page.locator("#back").click();
+  assert.equal(await result(), sixth);
+  await page.goBack();
+  assert.equal(await result(), tmleBaseline);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  // Overlap removes curvature and restores both simple, correctly specified models.
   await page.locator("#continue").click();
   assert.match(await page.locator("h1").innerText(), /Too little overlap/);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 11/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 11 of 12/);
   const tenth = await result();
   const diagnostics = () => page.locator("#overlap-summary").innerText();
   const moderateDiagnostics = await diagnostics();
@@ -813,12 +902,12 @@ try {
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
   await page.locator("#back").tap();
-  assert.equal(await result(), sixth);
+  assert.equal(await result(), tmleBaseline);
   assert.equal(await page.locator("#propensity-histogram").count(), 0);
   await page.goBack();
   assert.equal(await result(), tenth);
   await page.goForward();
-  assert.equal(await result(), sixth);
+  assert.equal(await result(), tmleBaseline);
   await page.locator("#lesson-menu-toggle").tap();
   await page
     .getByRole("link", { name: "Too little overlap", exact: true })
@@ -842,7 +931,7 @@ try {
     assert.equal(await result(), expected);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${position} of 11`),
+      new RegExp(`Level ${position} of 12`),
     );
   }
   // Contents and the forward journey agree, including after a sandbox visit.
@@ -861,6 +950,7 @@ try {
     "A hidden common cause",
     "When a model is too simple",
     "Double robustness",
+    "Targeting with TMLE",
     "Too little overlap",
   ];
   assert.deepEqual(
@@ -871,7 +961,7 @@ try {
     assert.equal(await page.locator("h1").innerText(), titles[i]);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${i + 1} of 11`),
+      new RegExp(`Level ${i + 1} of 12`),
     );
     if (i < 8)
       assert.doesNotMatch(

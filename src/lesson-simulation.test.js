@@ -105,7 +105,7 @@ test("baseline, adjustment, and redraw do not leak state or alter the world", ()
     treatmentQuadratic: false,
     postAdjusted: false,
   });
-  assert.throws(() => lessonBaseline(11), /Unknown lesson/);
+  assert.throws(() => lessonBaseline(12), /Unknown lesson/);
 });
 
 test("randomization, confounding, and weighting contrasts hold across 40 samples", () => {

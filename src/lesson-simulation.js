@@ -3,6 +3,13 @@ import { makeNoise, estimate } from "./simulation.js";
 // Numeric lesson IDs are stable identities, not display positions (see lessons.js).
 // Complete lesson state; no advanced sandbox setting is shared with this world.
 export function lessonBaseline(level) {
+  if (level === 11)
+    return {
+      ...lessonBaseline(6),
+      level,
+      outcomeQuadratic: false,
+      targeting: 0,
+    };
   if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(level))
     throw new Error("Unknown lesson");
   return {
@@ -75,7 +82,7 @@ export function lessonResult(state, noise) {
   const result = estimate(data, adjustment, {
     ...state,
     predictionPoints,
-    aipwDetails: state.level === 6,
+    aipwDetails: state.level === 6 || state.level === 11,
   });
   const means = (weights) =>
     [0, 1].map((arm) => {
@@ -115,6 +122,14 @@ export function lessonResult(state, noise) {
     aipw: result.values[4],
     ...(state.level === 6
       ? { aipwContributions: result.aipwContributions }
+      : {}),
+    ...(state.level === 11
+      ? {
+          tmleData: result.aipwContributions.map((row, i) => ({
+            ...row,
+            C: data[i].C,
+          })),
+        }
       : {}),
     clipped: result.clipped,
     ...(state.level === 3
