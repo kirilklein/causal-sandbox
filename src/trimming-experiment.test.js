@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { trimmingSample, trimmingResult } from "./trimming-experiment.js";
+import { makeNoise } from "./simulation.js";
 import { clippingResult } from "./clipping-experiment.js";
 
 const rows = [0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95].map((p, i) =>
@@ -136,4 +137,66 @@ test("paired simulation truth agrees with the constant-effect world and zero tri
       assert.deepEqual(trimmed.groups.everyone, result.groups.everyone);
     }
   }
+});
+
+test("varying effects use paired outcomes without changing scores, assignments or trimming membership", () => {
+  const constant = trimmingSample();
+  const varying = trimmingSample({ heterogeneous: true });
+  const noise = makeNoise(400, 4217);
+  varying.effects.forEach((effect, i) => close(effect, 1 + noise[i].C1 ** 2));
+  varying.rows.forEach((row, i) => {
+    assert.equal(row.A, constant.rows[i].A);
+    assert.equal(row.p, constant.rows[i].p);
+    close(row.Y - constant.rows[i].Y, row.A * (noise[i].C1 ** 2 - 1));
+  });
+  for (const threshold of [0, 0.1, 0.2, 0.5]) {
+    const original = trimmingResult(constant.rows, constant.effects, threshold);
+    const result = trimmingResult(varying.rows, varying.effects, threshold);
+    assert.deepEqual(result.retained, original.retained);
+    assert.deepEqual(result.histogram, original.histogram);
+    for (const [key, indices] of [
+      ["retained", result.retained],
+      ["excluded", result.excluded],
+    ]) {
+      if (indices.length)
+        close(
+          result.groups[key].truth,
+          indices.reduce((sum, i) => sum + 1 + noise[i].C1 ** 2, 0) /
+            indices.length,
+        );
+      else assert.equal(result.groups[key].truth, null);
+    }
+    if (result.groups.retained.n && result.groups.excluded.n) {
+      const { everyone, retained, excluded } = result.groups;
+      close(
+        everyone.n * everyone.truth,
+        retained.n * retained.truth + excluded.n * excluded.truth,
+      );
+      assert.ok(retained.truth < everyone.truth);
+      assert.ok(excluded.truth > everyone.truth);
+    }
+  }
+  assert.deepEqual(trimmingSample({ heterogeneous: true }), varying);
+});
+
+test("trimmed IPW follows the varying-effect target across independent studies", () => {
+  let error = 0,
+    fullTruth = 0,
+    retainedTruth = 0;
+  const studies = 100;
+  for (let seed = 2000; seed < 2000 + studies; seed++) {
+    const sample = trimmingSample({ n: 2400, seed, heterogeneous: true });
+    const { everyone, retained } = trimmingResult(
+      sample.rows,
+      sample.effects,
+      0.1,
+    ).groups;
+    assert.equal(retained.available, true);
+    error += retained.ipw - retained.truth;
+    fullTruth += everyone.truth;
+    retainedTruth += retained.truth;
+  }
+  assert.ok(Math.abs(error / studies) < 0.05, `Mean error ${error / studies}`);
+  assert.ok(Math.abs(fullTruth / studies - 2) < 0.03);
+  assert.ok((fullTruth - retainedTruth) / studies > 0.6);
 });

@@ -5,15 +5,15 @@ import { lessonBaseline, simulateLesson } from "../src/lesson-simulation.js";
 import {
   fitClippingSample,
   clippingResult,
+  cappedResult,
 } from "../src/clipping-experiment.js";
 
 const browser = await chromium.launch({
   headless: true,
   channel: process.env.CI ? undefined : "chrome",
 });
-const url =
-  process.env.CLIPPING_URL ||
-  "http://127.0.0.1:5186/causal-sandbox/docs/clipping-preview.html";
+const appUrl = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const url = `${appUrl}?lesson=clipping`;
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 1100 },
@@ -21,10 +21,29 @@ try {
   });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto(url);
+  await page.route("**/*.goatcounter.com/**", (route) =>
+    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
+  );
+  await page.route("**/gc.zgo.at/count.js", (route) =>
+    route.fulfill({ contentType: "application/javascript", body: "" }),
+  );
+  await page.goto(`${appUrl}?lesson=overlap`);
+  await page
+    .getByRole("link", { name: "Explore clipping and extreme weights →" })
+    .click();
+  assert.equal(new URL(page.url()).searchParams.get("lesson"), "clipping");
   await page.locator('[data-method="ipw"]').waitFor();
   const table = () => page.locator("#estimates").innerText();
   const initial = await table();
+  assert.ok(
+    await page
+      .getByText("Start a new 400-person study", { exact: false })
+      .isVisible(),
+  );
+  assert.equal(
+    await page.locator("h1").evaluate((el) => el === document.activeElement),
+    true,
+  );
   const checkValues = async (threshold, selection = 3) => {
     const rows = fitClippingSample(
       simulateLesson({ ...lessonBaseline(10), n: 400, selection }),
@@ -105,8 +124,48 @@ try {
   assert.equal(await page.locator("#threshold").inputValue(), "0");
   assert.equal(await page.locator("#selection").inputValue(), "3");
   assert.equal(await histogram(), initialHistogram);
+  // Weight capping is an alternative operation on the same raw fitted sample.
+  await page.locator("#threshold").fill("0.005");
+  const clippedTable = await table();
+  await page.locator("#cap-options summary").click();
+  assert.equal(await table(), clippedTable);
+  await page.locator("#cap-enabled").focus();
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#threshold").isDisabled(), true);
+  assert.equal(await page.locator("#weight-cap").isEnabled(), true);
+  assert.match(
+    await page.locator("#active-operation").innerText(),
+    /Weight cap: 50/,
+  );
+  const cappedRows = fitClippingSample(
+    simulateLesson({ ...lessonBaseline(10), n: 400, selection: 3 }),
+  );
+  for (const limit of ["50", "1", "300"]) {
+    await page.locator("#weight-cap").fill(limit);
+    const expected = cappedResult(cappedRows, Number(limit));
+    for (const key of ["regression", "ipw", "aipw"])
+      assert.equal(
+        await page
+          .locator(`[data-method="${key}"] .selected strong`)
+          .innerText(),
+        expected[key].toFixed(2),
+      );
+    assert.equal(await histogram(), initialHistogram);
+    assert.equal(await page.locator("#sample").innerText(), seed);
+    assert.equal(await page.locator("#clip-guides").isVisible(), false);
+  }
+  await page.locator("#cap-enabled").uncheck();
+  assert.equal(await table(), clippedTable);
+  assert.equal(await page.locator("#threshold").inputValue(), "0.005");
+  await page.locator("#cap-enabled").check();
+  await page.getByRole("button", { name: "Restart", exact: true }).click();
+  assert.equal(await page.locator("#cap-enabled").isChecked(), false);
+  assert.equal(await page.locator("#weight-cap").inputValue(), "50");
+  assert.equal(await page.locator("#cap-options").getAttribute("open"), null);
+  assert.equal(await table(), initial);
   // Capture the modest-clipping comparison, with visible bounds and diagnostics.
   await page.locator("#threshold").fill("0.005");
+  await page.locator("#weights summary").click();
   const screenshotTable = await table();
   await mkdir("test-results", { recursive: true });
   for (const theme of ["light", "dark"]) {
@@ -120,14 +179,34 @@ try {
       );
       assert.equal(await table(), screenshotTable);
       await page.screenshot({
-        path: `test-results/clipping-preview-${width}-${theme}.png`,
+        path: `test-results/clipping-lesson-${width}-${theme}.png`,
         fullPage: true,
       });
     }
   }
+  // Direct entry and browser history start the chapter at its defined baseline.
+  await page.goto(url);
+  await page.locator('[data-method="ipw"]').waitFor();
+  assert.equal(await table(), initial);
+  await page.locator("#threshold").fill("0.1");
+  await page.getByRole("link", { name: "← Poor overlap" }).click();
+  await page.locator("#lesson-menu-toggle").waitFor();
+  await page.goBack();
+  await page.locator('[data-method="ipw"]').waitFor();
+  assert.equal(await page.locator("#threshold").inputValue(), "0");
+  assert.equal(await table(), initial);
+  await page.goForward();
+  await page.locator("#lesson-menu-toggle").click();
+  await page
+    .getByRole("link", { name: "Clipping and extreme weights ↗" })
+    .click();
+  await page.locator('[data-method="ipw"]').waitFor();
+  assert.equal(await table(), initial);
+  await page.getByRole("link", { name: "Full sandbox ↗", exact: true }).click();
+  assert.equal(new URL(page.url()).searchParams.has("sandbox"), true);
   assert.deepEqual(errors, []);
   console.log(
-    "Clipping preview: both sliders, histogram accounting/invariance, arithmetic, keyboard/touch, redraw/restart, themes, and 320px/desktop layout passed.",
+    "Clipping lesson: production routing/navigation, both sliders, histogram accounting/invariance, arithmetic, keyboard/touch, redraw/restart, themes, and 320px/desktop layout passed.",
   );
 } finally {
   await browser.close();

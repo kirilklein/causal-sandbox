@@ -1,28 +1,30 @@
 # Trimming experiment (#61)
 
-This separate preview follows [probability clipping](clipping-preview.html).
-Its question is: who does the estimate describe after excluding people with
-extreme propensity scores? The retained group's IPW estimate is compared with
-its own truth; everyone and the excluded group remain visible for context.
+The published chapter at `?lesson=trimming` follows [probability clipping](clipping-experiment.md).
+It asks who the estimate describes after excluding people with extreme propensity
+scores. The retained group’s IPW estimate is compared with its own truth; everyone
+and the excluded group remain visible for context. An optional varying-effect
+example shows how those truths can differ.
 
-## Preview and checks
+## Chapter and checks
 
-Run `npm run dev -- --port 5187 --strictPort`, then open
-[the trimming preview](http://127.0.0.1:5187/causal-sandbox/docs/trimming-preview.html).
-It is served by Vite's development server and is not part of the production
-build or published lesson navigation. The clipping preview links forward to it.
+Run `npm run dev -- --port 5173 --strictPort`, then open
+[the trimming chapter](http://127.0.0.1:5173/causal-sandbox/?lesson=trimming).
+The chapter ships in the production build, linked from clipping and Contents.
+The old development preview URLs redirect to their respective chapters; their
+calculation and interaction code now lives under `src/`.
 
 With the server running, `npm run test:trimming` runs the repeated-sample study
-and browser checks. Use `TRIMMING_URL` for another preview address. Screenshots
-are saved under the ignored `test-results/` directory. Unit checks run with
-`node --test src/trimming-experiment.test.js` and are included in `npm test`.
-CI runs the preview checks on a separate development server; HTML changes under
-`docs/` also trigger CI. Production deployment remains unchanged.
+and browser checks. Use `APP_URL` for another base URL. Browser checks also run
+in `npm run test:browser`, against the built site in CI. CI runs the repeated-sample
+study separately without a second development server. Screenshots are saved in
+`test-results/`. Unit checks run with `node --test src/trimming-experiment.test.js`
+and are included in `npm test`.
 
 ## Rule and estimands
 
-`trimmingSample({ n = 400, seed = 4217, selection = 3 })` uses the existing
-constant-effect lesson world: C is the only common cause, the treatment effect
+`trimmingSample({ n = 400, seed = 4217, selection = 3, heterogeneous = false })`
+starts in the existing constant-effect lesson world: C is the only common cause, the treatment effect
 is 2, and the treatment model correctly adjusts for C. It returns `{ rows,
 effects }`. Rows use the full observed sample's raw fitted propensities from
 `fitClippingSample`; its existing outcome fit is unused here.
@@ -30,22 +32,30 @@ effects }`. Rows use the full observed sample's raw fitted propensities from
 `trimmingResult(rows, effects, threshold = 0)` retains person i exactly when
 `threshold <= rows[i].p <= 1 - threshold`. Both endpoints are included. The
 threshold must be finite and in [0, 0.5]; zero retains everyone, and 0.5 retains
-only exact scores of 0.5. The preview uses steps of 0.001. Scores are compared
+only exact scores of 0.5. The chapter uses steps of 0.001. Scores are compared
 at full precision, never after display rounding.
 
 The same fitted scores define membership and weights. Threshold changes never
 refit either model or modify the remaining weights. Selection changes regenerate
 treatment and outcomes using paired background draws, then refit. Redraw changes
 the seed while retaining both sliders; restart restores seed 4217, selection 3,
-and threshold zero. There is no threshold recommendation or optimization.
+and threshold zero, with constant effects and closed details. Browser-history
+re-entry uses the same baseline. Reading details or changing theme preserves the
+experiment. There is no threshold recommendation or optimization.
 
 For each of everyone, retained, and excluded, the target is the average treatment
 effect among that group's people. Simulation truth averages their paired
 potential-outcome differences. The simulator is evaluated with the same noise
 under treatment forced off and on; only observed data enter fitting. Group truth
 never enters the trimming rule or estimate. Fitted-score-defined groups vary
-across samples. All nonempty groups happen to have truth 2 in this world;
-that equality need not hold with heterogeneous treatment effects.
+across samples. With the default constant effect, all nonempty groups have truth 2.
+The optional varying-effect world uses treatment effect `1 + C²`, with C uniform
+on [-√3, √3]. Its population ATE is also 2 because E[C²] = 1. Each displayed truth
+averages the effects among that sample group’s people, so it can differ from 2.
+Trimming in the opening example retains profiles nearer C = 0 and lowers their
+mean true effect. Toggling this world changes outcomes and individual effects;
+it preserves covariates, assignments, fitted propensities, and trimming membership.
+The unused outcome-model fit is not an estimator displayed in this chapter.
 
 Each group's IPW is its weighted treated mean minus its weighted untreated mean.
 The received-treatment weights are `1/p` and `1/(1-p)`; each mean divides by
@@ -114,6 +124,13 @@ selection changes, redraw/restart, empty retained groups, keyboard/touch, links,
 light/dark themes, and 320/390px and desktop layouts. Screen-reader listening and
 new-learner comprehension remain untested.
 
-Heterogeneous-effect controls, refitting after trimming, other estimators,
-uncertainty intervals, automated threshold selection, and production lesson
-integration are separate work.
+The varying-effect tests independently check each potential-outcome difference
+against `1 + C²`, unchanged assignments/scores/membership, subgroup truth arithmetic,
+and deterministic restoration. Across 100 independent studies (seeds 2000–2099,
+n=2,400, selection 3, threshold 0.1), retained IPW’s mean error relative to its own
+group truth is below 0.05 in absolute value; the average retained truth is more
+than 0.6 below everyone’s truth. This validates the intended contrast in this
+world, not a guarantee about arbitrary trimming rules or fitted models.
+
+Refitting after trimming, other estimators, uncertainty intervals, and automated
+threshold selection remain outside this chapter.

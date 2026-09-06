@@ -2,7 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { estimate } from "./simulation.js";
 import { lessonBaseline, simulateLesson } from "./lesson-simulation.js";
-import { fitClippingSample, clippingResult } from "./clipping-experiment.js";
+import {
+  fitClippingSample,
+  clippingResult,
+  cappedResult,
+} from "./clipping-experiment.js";
 
 const close = (actual, expected, tolerance = 1e-10) =>
   assert.ok(
@@ -266,4 +270,87 @@ test("relabeling treatment reverses contrasts and exchanges the arm diagnostics"
       close(arm.ess, original.overlap[1 - i].ess),
     );
   }
+});
+
+test("weight capping preserves raw scores and uses the two estimator normalizations", () => {
+  const rows = Object.freeze(example.map((row) => Object.freeze({ ...row })));
+  const result = cappedResult(rows, 5);
+  assert.equal(result.available, true);
+  assert.deepEqual(result.weights, [5, 5, 1.25, 1.25]);
+  close(result.ipw, 3.4);
+  close(result.aipw, 5.125);
+  close(result.regression, 2);
+  assert.deepEqual(
+    result.propensities,
+    rows.map(({ p }) => p),
+  );
+  assert.deepEqual(
+    result.overlap.map(({ capped }) => capped),
+    [1, 1],
+  );
+  assert.deepEqual(
+    result.overlap.map(({ clipped }) => clipped),
+    [0, 0],
+  );
+  const original = clippingResult(rows, 0);
+  const unlimited = cappedResult(rows);
+  for (const key of [
+    "weights",
+    "propensities",
+    "overlap",
+    "ipw",
+    "aipw",
+    "regression",
+  ])
+    assert.deepEqual(unlimited[key], original[key]);
+  close(cappedResult(rows, 1).ipw, 4); // All weights equal 1: treated mean minus untreated mean.
+  const reversed = rows.map(({ A, p, m0, m1, ...rest }) => ({
+    ...rest,
+    A: 1 - A,
+    p: 1 - p,
+    m0: m1,
+    m1: m0,
+  }));
+  close(cappedResult(reversed, 5).ipw, -result.ipw);
+  close(cappedResult(reversed, 5).aipw, -result.aipw);
+});
+
+test("capping leaves small weights unchanged where probability clipping increases them", () => {
+  const rows = [
+    { A: 1, Y: 4, p: 0.99, m0: 1, m1: 3 },
+    { A: 0, Y: 1, p: 0.01, m0: 1, m1: 3 },
+    { A: 1, Y: 6, p: 0.01, m0: 1, m1: 3 },
+    { A: 0, Y: 2, p: 0.99, m0: 1, m1: 3 },
+  ];
+  const capped = cappedResult(rows, 10);
+  const clipped = clippingResult(rows, 0.1);
+  close(capped.weights[0], 1 / 0.99);
+  close(capped.weights[1], 1 / 0.99);
+  close(clipped.weights[0], 1 / 0.9);
+  close(clipped.weights[1], 1 / 0.9);
+  close(capped.weights[2], 10);
+  close(capped.weights[3], 10);
+  assert.deepEqual(
+    capped.overlap.map(({ bins }) => bins),
+    clipped.overlap.map(({ bins }) => bins),
+  );
+  assert.notEqual(capped.ipw, clipped.ipw);
+});
+
+test("capping can concentrate estimates away from truth and does not restore propensity-only AIPW", () => {
+  const rows = population(false, true);
+  close(cappedResult(rows).ipw, 4);
+  close(cappedResult(rows).aipw, 4);
+  assert.ok(cappedResult(rows, 5).ipw > 4);
+  assert.ok(cappedResult(rows, 5).aipw > 4);
+  close(cappedResult(population(true, true), 5).aipw, 4);
+  for (const bad of [0, -1, NaN, -Infinity, "5", null])
+    assert.throws(() => cappedResult(example, bad), RangeError);
+  for (const rows of [
+    [],
+    [example[0]],
+    [{ ...example[0], p: 0 }, example[1]],
+    [{ ...example[0], Y: Infinity }, example[1]],
+  ])
+    assert.equal(cappedResult(rows, 5).available, false);
 });

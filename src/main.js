@@ -10,6 +10,10 @@ if (params.has("sandbox")) {
   ["instrument", "instrument-hidden-confounding"].includes(params.get("lesson"))
 ) {
   await import("./instrument-lesson.js");
+} else if (params.get("lesson") === "clipping") {
+  await import("./clipping-lesson.js");
+} else if (params.get("lesson") === "trimming") {
+  await import("./trimming-lesson.js");
 } else {
   await import("./lessons.js");
 }

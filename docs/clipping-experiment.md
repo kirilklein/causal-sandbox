@@ -1,15 +1,15 @@
 # Probability-clipping experiment (#42)
 
-This module prepares a lesson-10 extension: can reducing extreme weights make
-an estimate more stable while moving it away from the target? It changes the
-clipping threshold on a fixed sample with fixed fitted models. A standalone
-preview is available; integration into lesson 10 remains separate.
+The optional chapter at `?lesson=clipping` follows Poor overlap, linked from
+that lesson and Contents. It asks what changes when we limit extreme weights.
+Threshold changes reuse a fixed sample and fitted models. The core lesson order
+and legacy numeric URLs are unchanged.
 
-## Local preview
+## Published chapter and local checks
 
-Run `npm run dev -- --port 5186 --strictPort`, then open
-[the experiment preview](http://127.0.0.1:5186/causal-sandbox/docs/clipping-preview.html).
-The page uses the shared theme palette and the module below. Selection strength
+Run `npm run dev -- --port 5173 --strictPort`, then open
+[the clipping chapter](http://127.0.0.1:5173/causal-sandbox/?lesson=clipping).
+The page uses the shared theme, brand, and the calculation module below. Selection strength
 (0–5, starting at 3) changes treatment assignment with paired background draws and
 refits both models. A clipping slider (0–0.10 in steps of 0.001, starting at zero)
 reuses that sample and those fits. The histogram shows raw fitted scores by arm,
@@ -17,18 +17,20 @@ with clipping bounds overlaid. Its bin counts and fixed 0–100% axis stay uncha
 when clipping moves; each arm's bars sum to 100%. Redraw and restart are separate
 actions; restart restores both sliders and the original seed.
 
-The preview uses 400 people to make finite-sample weight instability more visible.
+The chapter uses 400 people to make finite-sample weight instability more visible.
 It retains seed 4217. At selection 3, IPW is 1.75 without clipping, 1.87 at 0.005,
 and 2.98 at 0.10, against truth 2. This illustrates modest benefit and excessive
 clipping without selecting a new seed. The repeated-sample checks below establish
 that benefit and harm both occur beyond this opening example.
-The preview is served by Vite's development server, not included in the production
-site build.
+The chapter is included in the production build. Entry starts a new experiment;
+it does not transfer the preceding overlap lesson’s 2,400-person sample or its
+0.02 clipping threshold. Its introduction makes both differences explicit.
 
-With the server running, `node tests/clipping-browser.mjs` checks arithmetic,
-both sliders, histogram accounting and invariance, keyboard/touch interaction, redraw/restart, light/dark
-themes, and 320px/desktop layout. Set `CLIPPING_URL` to use a different preview
-address. Screenshots are written to the ignored `test-results` directory.
+With the server running, `node tests/clipping-browser.mjs` checks production
+routing, Contents and overlap links, arithmetic, both sliders, histogram accounting
+and invariance, keyboard/touch interaction, redraw/restart, light/dark themes, and
+320px/desktop layout. It runs as part of `npm run test:browser`, including against
+the built site in CI. Set `APP_URL` to use another base URL. Screenshots are written to the ignored `test-results` directory.
 
 ## Contract and use
 
@@ -79,6 +81,30 @@ estimates. Invalid thresholds throw `RangeError`. Fitter exceptions propagate;
 the shared fitter has no convergence-status output, so finite results do not
 certify convergence or model correctness.
 
+## Optional direct weight capping
+
+“Try capping weights instead” opens an optional comparison. Its checkbox switches
+from probability clipping to weight capping, disables the probability threshold,
+and removes its histogram guides. Only one operation is active. The maximum-weight
+slider spans 1–300, initially 50; unchecking restores the saved clipping threshold.
+Opening or closing the explanation alone never changes the operation. A visible
+status and estimate-column label identify capping even with the details closed.
+
+`cappedResult(rows, maxWeight = Infinity)` uses raw received-treatment weights
+`1/p` or `1/(1-p)`, replacing weights above the limit with that limit. Probabilities,
+people, and predictions remain unchanged. It shares IPW/AIPW arithmetic and input
+checks with `clippingResult`, returning `weightCap` and a `capped` count per arm.
+Infinity means no cap; other limits must be finite and at least 1. Endpoint scores
+still return unavailable. At limit 1, IPW becomes the unadjusted group difference.
+
+Probability clipping and weight capping are distinct: clipping p=0.99 to 0.9
+increases a treated person's small weight from 1/0.99 to 1/0.9. Capping at 10
+leaves that weight alone. The unit suite checks this difference, independent hand
+arithmetic, input preservation, treatment reversal, invalid limits, and bias with
+heterogeneous effects. As with clipping, correct outcome predictions protect the
+population AIPW residual mean in this example; capping does not preserve the
+propensity-only guarantee when the outcome model is wrong.
+
 ## Statistical meaning
 
 The question remains the population ATE. Clipping retains the sample but changes
@@ -93,9 +119,9 @@ remove the correction that would otherwise identify the ATE. Finite-sample
 behavior need not improve at each slider step. ESS describes weight concentration,
 not precision, retained people, or the absence of bias.
 
-Trimming people, direct weight capping, threshold selection, uncertainty intervals,
-and TMLE are separate work. In particular, a trimming experiment must state its
-restricted target and validate it with heterogeneous treatment effects.
+The next [trimming chapter](trimming-experiment.md) changes who remains and labels
+its restricted target, with an optional varying-effect example. Threshold selection,
+uncertainty intervals, and TMLE remain separate work.
 
 ## Validation
 
@@ -148,13 +174,16 @@ optimal clipping threshold. The focused unit suite checks the zero/0.01/0.10
 comparison and the opening sample; browser checks validate histogram accounting
 and both sliders at the range boundaries.
 
-## Later lesson integration
+## Lesson integration
 
-Keep selection strength and probability clipping as separate controls. Use the
-raw-score distribution to explain how selection changes overlap, then compare
-unclipped and clipped estimates on the same sample. The preview starts unclipped;
-the existing estimator default remains 0.02. Label unavailable results. A redraw
-generates and fits a new sample; moving the threshold reuses its rows. Coordinate shared lesson
-sections and browser checks before integration. The standalone preview has browser
-coverage; integrated lesson checks, screen-reader listening, and learner
-comprehension remain pending.
+Selection strength and probability clipping are separate controls. The raw-score
+distribution shows how selection changes overlap; unclipped and clipped estimates
+use the same sample. The chapter starts unclipped; the shared estimator default
+remains 0.02. Unavailable results carry a reason. Redraw fits a new sample; moving
+the threshold reuses its rows. Restart and history re-entry restore both sliders,
+the initial seed, and closed disclosures. Reading details or changing theme
+preserves estimates and controls. Links return to overlap or continue to trimming
+and the sandbox. Screen-reader listening and learner comprehension remain pending.
+
+The former `docs/clipping-preview.html` URL redirects to the published chapter;
+the preview UI is maintained only in `src/clipping-lesson.js`.
