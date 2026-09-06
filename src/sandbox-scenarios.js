@@ -87,14 +87,6 @@ export const scenarios = [
 export function scenarioState(scenario) {
   return {
     p: { ...scenario.p },
-    graphVisible: new Set([
-      "A",
-      "Y",
-      "C",
-      "M",
-      "K",
-      ...(scenario.id === "hidden" ? ["U"] : []),
-    ]),
     adjust: new Set(scenario.adjust),
     world: worlds.find((world) => world.id === scenario.world),
     models: { ...scenario.models },

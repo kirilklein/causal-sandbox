@@ -45,8 +45,8 @@ document.querySelector("#app").innerHTML = `
         <div class="panel-heading"><h2 id="world-title">The causal world</h2><span class="small-tag">What generates the data</span></div>
         <div class="world-picker"><label for="world-select">The world’s relationships</label><select id="world-select" aria-describedby="world-description">${worlds.map((w) => `<option value="${w.id}">${w.name}</option>`).join("")}</select><p id="world-description"></p><details class="relationship-help"><summary>About C₁ and C₂</summary><p>C groups two measured baseline variables. An interaction means one variable’s influence depends on the other. This changes the world; choose what the fitted models include under Analysis.</p></details></div>
         <details class="graph-details" open><summary>Causal diagram</summary>
-          <div class="graph-wrap"><svg id="dag" viewBox="0 0 600 290" role="img" aria-label="Causal graph"><defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="context-stroke"/></marker></defs><g id="edges"></g><g id="nodes"></g></svg><div class="graph-key"><span><i class="key-line"></i>Causal path</span><span><i class="key-line dashed"></i>Unmeasured</span><span id="graph-hint"></span></div></div>
-          <div class="graph-view" role="group" aria-label="Graph view" aria-describedby="graph-view-help"><span>Emphasize</span>${["C", "M", "K", "U"].map((k) => `<button class="graph-variable" data-graph-variable="${k}" aria-label="Emphasize ${k} in diagram" aria-pressed="true">${k}</button>`).join("")}</div><p id="graph-view-help" class="graph-toggle-help">Fade variables to simplify the diagram. Estimates stay the same.</p><details class="relationship-help"><summary>Reading the arrows</summary><p>Faint arrows at zero are inactive. Darker arrows show greater strength, not sign.</p></details>
+          <div class="graph-wrap"><svg id="dag" viewBox="0 0 600 290" role="img" aria-label="Causal graph: C (the pair C1 and C2) and unmeasured U cause treatment A and outcome Y. A causes mediator M and Y. A and Y cause collider K."><defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="context-stroke"/></marker></defs><g id="edges"></g><g id="nodes"></g></svg><div class="graph-key"><span><i class="key-line"></i>Causal path</span><span><i class="key-line dashed"></i>Unmeasured</span><span id="graph-hint"></span></div></div>
+          <details class="relationship-help"><summary>Reading the arrows</summary><p>Faint arrows at zero are inactive. Darker arrows show greater strength, not sign.</p></details>
         </details>
         <div class="controls">
           <div class="control-group"><div class="group-heading">Direct treatment effect</div>${slider("direct", "A → Y", "Direct change in outcome Y from treatment A.", -1, 4, 0.1)}</div>
@@ -94,7 +94,7 @@ Y = direct·A + cy·(S + oy·I) + uy·U + my·M + εY
 K = 0.9·A + 0.9·Y + εK
 
 Total causal effect = direct + am·my
-World interactions: ta ∈ {0, 0.7}; oy ∈ {0, 1.5}</pre><p><b>World versus model:</b> the four worlds switch interaction terms in the generating equations. The analyst independently chooses whether to include C₁ × C₂ in each fitted model. Main effects hold each covariate’s contribution constant across values of the other; C₁ × C₂ allows one covariate’s influence to depend on the other. Both covariates are included whenever C is adjusted for. Unchecking C under “Adjust for” removes both, including their interaction.</p><p><b>Graph view versus adjustment:</b> fading a variable changes only its appearance in the diagram. “Adjust for” in the results panel selects which variables enter estimation. C always represents both measured covariates, C₁ and C₂; U remains unmeasured and cannot be adjusted for.</p><p><b>Double robustness:</b> with sufficient observed adjustment and overlap, AIPW can remain consistent if either fitted model represents the relevant conditional mean correctly. Including an interaction alone does not solve hidden confounding or post-treatment adjustment. A single sample need not favor AIPW.</p><p><b>Raw / naive:</b> mean difference and ordinary regression Y ~ A are identical for binary treatment. These baselines intentionally ignore the adjustment set.</p><p><b>Regression:</b> average predicted outcomes under A=1 minus A=0, using a pooled OLS model with the selected variables and optional interaction. <b>IPW:</b> normalized inverse propensity weights from logistic regression. <b>AIPW:</b> the same outcome predictions as regression plus inverse-weighted residual correction, using the chosen propensity model.</p><p>Propensities are clipped to [0.02, 0.98]. The app flags clipping and low effective sample size. The same fixed population is reused after every change; finite-sample estimates need not equal the truth.</p><p><b>Post-treatment adjustment:</b> M blocks the mediated path; regression can recover the direct effect when its outcome model is correctly specified. IPW/AIPW with M or K are illustrative invalid total-effect adjustments, not guaranteed direct-effect estimators. K is measured after Y.</p></dialog>
+World interactions: ta ∈ {0, 0.7}; oy ∈ {0, 1.5}</pre><p><b>World versus model:</b> the four worlds switch interaction terms in the generating equations. The analyst independently chooses whether to include C₁ × C₂ in each fitted model. Main effects hold each covariate’s contribution constant across values of the other; C₁ × C₂ allows one covariate’s influence to depend on the other. Both covariates are included whenever C is adjusted for. Unchecking C under “Adjust for” removes both, including their interaction.</p><p><b>Double robustness:</b> with sufficient observed adjustment and overlap, AIPW can remain consistent if either fitted model represents the relevant conditional mean correctly. Including an interaction alone does not solve hidden confounding or post-treatment adjustment. A single sample need not favor AIPW.</p><p><b>Raw / naive:</b> mean difference and ordinary regression Y ~ A are identical for binary treatment. These baselines intentionally ignore the adjustment set.</p><p><b>Regression:</b> average predicted outcomes under A=1 minus A=0, using a pooled OLS model with the selected variables and optional interaction. <b>IPW:</b> normalized inverse propensity weights from logistic regression. <b>AIPW:</b> the same outcome predictions as regression plus inverse-weighted residual correction, using the chosen propensity model.</p><p>Propensities are clipped to [0.02, 0.98]. The app flags clipping and low effective sample size. The same fixed population is reused after every change; finite-sample estimates need not equal the truth.</p><p><b>Post-treatment adjustment:</b> M blocks the mediated path; regression can recover the direct effect when its outcome model is correctly specified. IPW/AIPW with M or K are illustrative invalid total-effect adjustments, not guaranteed direct-effect estimators. K is measured after Y.</p></dialog>
 ${Object.entries(glossary)
   .map(
     ([key, term]) =>
@@ -127,32 +127,17 @@ const edges = [
   ["Y", "K", null, "M490 179L323 243"],
 ];
 function renderGraph() {
-  document
-    .querySelector("#dag")
-    .setAttribute(
-      "aria-label",
-      `Causal graph: C (the pair C1 and C2) and unmeasured U cause treatment A and outcome Y. A causes mediator M and Y. A and Y cause collider K. Faded in this view: ${["C", "M", "K", "U"].filter((k) => !state.graphVisible.has(k)).join(", ") || "none"}.`,
-    );
   document.querySelector("#edges").innerHTML = edges
     .map(([a, b, key, d]) => {
-      const faded = !state.graphVisible.has(a) || !state.graphVisible.has(b);
       const strength = key ? state.p[key] : 0.9;
-      return `<g opacity="${faded ? 0.12 : 1}"><path d="${d}" fill="none" stroke="var(--causal-path)" ${key ? arrowStrength(strength, key === "direct" ? 4 : ["am", "my"].includes(key) ? 2 : 3) : 'stroke-width="2"'} stroke-dasharray="${a === "U" ? "5 5" : ""}" marker-end="url(#arrow)"/></g>`;
+      return `<path d="${d}" fill="none" stroke="var(--causal-path)" ${key ? arrowStrength(strength, key === "direct" ? 4 : ["am", "my"].includes(key) ? 2 : 3) : 'stroke-width="2"'} stroke-dasharray="${a === "U" ? "5 5" : ""}" marker-end="url(#arrow)"/>`;
     })
     .join("");
   document.querySelector("#nodes").innerHTML = Object.entries(coords)
     .map(([k, [x, y]]) => {
-      return `<g data-node="${k}" transform="translate(${x} ${y})" opacity="${state.graphVisible.has(k) ? 1 : 0.12}"><circle r="25" fill="var(--node-${k})" stroke="${k === "U" ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${k === "U" ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
+      return `<g data-node="${k}" transform="translate(${x} ${y})"><circle r="25" fill="var(--node-${k})" stroke="${k === "U" ? "var(--causal-path)" : "none"}" stroke-width="1.5" stroke-dasharray="${k === "U" ? "4 3" : ""}"/><text text-anchor="middle" y="6" class="node-letter">${k}</text>${k === "C" ? '<text text-anchor="middle" y="18" class="node-members">C₁ · C₂</text>' : ""}<text text-anchor="middle" y="${k === "K" ? 35 : -34}" class="node-label">${{ C: "CONFOUNDERS", U: "HIDDEN CONFOUNDER", A: "TREATMENT", M: "MEDIATOR", Y: "OUTCOME", K: "COLLIDER" }[k]}</text></g>`;
     })
     .join("");
-  document
-    .querySelectorAll("[data-graph-variable]")
-    .forEach((el) =>
-      el.setAttribute(
-        "aria-pressed",
-        state.graphVisible.has(el.dataset.graphVariable),
-      ),
-    );
   document.querySelector("#graph-hint").textContent = state.adjust.size
     ? `Adjusted methods: adjusting for ${["C", "M", "K"].filter((k) => state.adjust.has(k)).join(", ")}`
     : "Adjusted methods: no adjustment";
@@ -480,15 +465,6 @@ document
   .addEventListener("change", (e) =>
     enterScenario(scenarios.find((s) => s.id === e.target.value)),
   );
-document.querySelectorAll("[data-graph-variable]").forEach((el) =>
-  el.addEventListener("click", () => {
-    const k = el.dataset.graphVariable;
-    state.graphVisible.has(k)
-      ? state.graphVisible.delete(k)
-      : state.graphVisible.add(k);
-    renderGraph();
-  }),
-);
 document.querySelectorAll(".adjust-option input").forEach((el) =>
   el.addEventListener("change", () => {
     el.checked ? state.adjust.add(el.value) : state.adjust.delete(el.value);

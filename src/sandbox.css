@@ -176,7 +176,6 @@
   font-size: 13px;
   min-height: 36px;
 }
-.sandbox .graph-toggle-help,
 .sandbox .panel-description {
   margin: 0 0 8px;
   font-size: 12px;
@@ -253,31 +252,6 @@
 }
 .sandbox .adjust-choice > .help-button {
   font-size: 13px;
-}
-.sandbox .graph-view {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0 8px;
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-.sandbox .graph-variable {
-  min-width: 36px;
-  min-height: 36px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text-muted);
-}
-.sandbox .graph-variable[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: var(--accent-surface);
-  color: var(--text);
-}
-.sandbox .graph-variable[aria-pressed="false"] {
-  border-style: dashed;
 }
 .sandbox .model-controls {
   margin: 0;
