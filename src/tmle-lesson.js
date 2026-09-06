@@ -7,7 +7,7 @@ const number = (value) =>
 const math = (body, label) =>
   `<math display="block" aria-label="${label}">${body}</math>`;
 const prediction = (star = false) =>
-  `<msub${star ? "sup" : ""}><mi>m</mi><mi>a</mi>${star ? "<mo>*</mo>" : ""}</msub${star ? "sup" : ""}><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo>`;
+  `<msub${star ? "sup" : ""}><mover><mi>Y</mi><mo>^</mo></mover><mi>a</mi>${star ? "<mo>*</mo>" : ""}</msub${star ? "sup" : ""}><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo>`;
 
 export function tmlePath(rows, fraction) {
   if (!Number.isFinite(fraction) || fraction < 0 || fraction > 1)
@@ -69,18 +69,18 @@ export function tmleFormula() {
       <div class="tmle-formula-parts"><div class="tmle-initial">${math(prediction(), "Initial fitted prediction for treatment a at person i's baseline health")}<span>Initial prediction</span></div><span class="tmle-operator">+</span><div class="tmle-update"><div><span class="tmle-amount">${math("<mover><mi>ε</mi><mo>^</mo></mover>", "epsilon hat, the fitted update amount")}</span><span aria-label="times">×</span><span class="tmle-direction">${math("<mi>H</mi><mo>(</mo><mi>a</mi><mo>,</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo>", "H of treatment a and baseline health C i, the targeting direction")}</span></div><span>Targeted update</span></div></div>
     </div>
     <div class="tmle-definitions">
-      <section class="tmle-initial"><h3>Initial prediction · m</h3><p>What the outcome model predicts for each person under treatment a: 1 for treated, 0 for untreated.</p></section>
+      <section class="tmle-initial"><h3>Initial prediction · Ŷₐ</h3><p>What the outcome model predicts for each person under treatment a: 1 for treated, 0 for untreated.</p></section>
       <section class="tmle-direction"><h3>Targeting direction · H</h3>
         ${math("<mi>H</mi><mo>(</mo><mi>a</mi><mo>,</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>=</mo><mfrac><mi>a</mi><msub><mi>p</mi><mi>i</mi></msub></mfrac><mo>−</mo><mfrac><mrow><mn>1</mn><mo>−</mo><mi>a</mi></mrow><mrow><mn>1</mn><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub></mrow></mfrac>", "H equals a divided by p i minus one minus a divided by one minus p i")}
         <p>The familiar inverse-probability weight, positive for the treated prediction and negative for the untreated prediction. p is the fitted chance of treatment.</p></section>
       <section class="tmle-amount"><h3>Fitted amount · ε</h3><p>One value, fitted using observed outcomes to minimize squared prediction errors along H. The slider applies a fraction of this fitted update.</p><p>Full fitted ε: <strong id="tmle-epsilon"></strong></p></section>
-      <section class="tmle-targeted"><h3>Targeted prediction · m*</h3><p>The updated outcome prediction. Average m₁* − m₀* over all people to get the TMLE estimate.</p></section>
+      <section class="tmle-targeted"><h3>Targeted prediction · Ŷₐ*</h3><p>The updated outcome prediction. Average Ŷ₁* − Ŷ₀* over all people to get the TMLE estimate.</p></section>
     </div>
     <details class="tmle-influence"><summary>Why this direction? The influence function</summary>
       <p>For an average treatment effect, the influence function combines two pieces: a signed weighted prediction error, and the person's predicted treatment contrast minus the overall estimate.</p>
       <div class="tmle-influence-formula" role="group" aria-label="Influence function equals weighted prediction error plus targeted contrast minus the overall estimate">
-        ${math("<mi>D</mi><mo>=</mo><mi>H</mi><mo>(</mo><mi>Y</mi><mo>−</mo><msubsup><mi>m</mi><mi>A</mi><mo>*</mo></msubsup><mo>)</mo>", "D equals the signed weighted prediction error")}
-        ${math("<mo>+</mo><mo>(</mo><msubsup><mi>m</mi><mn>1</mn><mo>*</mo></msubsup><mo>−</mo><msubsup><mi>m</mi><mn>0</mn><mo>*</mo></msubsup><mo>−</mo><mover><mi>τ</mi><mo>^</mo></mover><mo>)</mo>", "plus targeted treatment contrast minus the overall estimate")}
+        ${math("<mi>D</mi><mo>=</mo><mi>H</mi><mo>(</mo><mi>Y</mi><mo>−</mo><msubsup><mover><mi>Y</mi><mo>^</mo></mover><mi>A</mi><mo>*</mo></msubsup><mo>)</mo>", "D equals the signed weighted prediction error")}
+        ${math("<mo>+</mo><mo>(</mo><msubsup><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn><mo>*</mo></msubsup><mo>−</mo><msubsup><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn><mo>*</mo></msubsup><mo>−</mo><mover><mi>τ</mi><mo>^</mo></mover><mo>)</mo>", "plus targeted treatment contrast minus the overall estimate")}
       </div>
       <p>The contrasts minus their average already sum to zero. Fitting ε makes the average weighted error zero too. That is why we update in direction H; H alone is not the influence function. Baseline-health arguments are omitted in this expression.</p>
     </details>

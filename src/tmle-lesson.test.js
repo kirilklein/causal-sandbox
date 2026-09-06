@@ -6,7 +6,14 @@ import {
   simulateLesson,
 } from "./lesson-simulation.js";
 import { targetContinuousAte } from "./tmle.js";
-import { tmleCurveExplanation, tmlePath } from "./tmle-lesson.js";
+import { tmleCurveExplanation, tmleFormula, tmlePath } from "./tmle-lesson.js";
+
+test("TMLE formulas label predictions with Y hat notation", () => {
+  const formula = tmleFormula();
+  assert.match(formula, /Initial prediction · Ŷₐ/);
+  assert.match(formula, /Targeted prediction · Ŷₐ\*/);
+  assert.doesNotMatch(formula, /<mi>m<\/mi>|m₁|m₀|m\*/);
+});
 
 test("TMLE lesson uses the AIPW world and fits without leaking targeting progress into the sample", () => {
   const state = lessonBaseline(11);

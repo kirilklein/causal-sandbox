@@ -293,6 +293,10 @@ try {
   assert.equal(await page.locator("#sample-label").innerText(), outcomeSeed);
   assert.equal(await page.locator("#outcome-formula").isVisible(), true);
   assert.match(
+    await page.locator("#outcome-formula").getAttribute("aria-label"),
+    /Y hat one at C i minus Y hat zero at C i/,
+  );
+  assert.match(
     await page.locator(".lesson-explanation").innerText(),
     /predictions, not two observed outcomes/,
   );

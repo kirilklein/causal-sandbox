@@ -86,6 +86,10 @@ test("worked rendering uses all people and labels unavailable calculations", () 
   const formula = aipwFormula();
   assert.match(formula, /Hájek normalization/);
   assert.match(formula, /<math display="block" aria-label=/);
+  assert.match(formula, /Y hat one at C i/);
+  assert.doesNotMatch(formula, /<mi>m<\/mi>|m hat/);
+  assert.match(html, /Ŷ₁\(Cᵢ\), prediction with treatment/);
+  assert.match(html, /Ŷ₀\(Cᵢ\), prediction without treatment/);
   const mean = rows.reduce((s, d) => s + d.contribution, 0) / rows.length;
   assert.ok(html.includes(`id="aipw-worked-effect">${mean.toFixed(2)}`));
   assert.deepEqual(rows, original);
