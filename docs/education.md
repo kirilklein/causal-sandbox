@@ -18,7 +18,7 @@ baseline on entry; samples and controls are not transferred between chapters.
 
 An optional [instruments and adjustment chapter](instruments.md) follows the
 core journey at `?lesson=instrument`. It introduces Z, its precision cost when
-included in adjustment, and a separate hidden-confounding comparison. The
+included in adjustment, and a follow-on hidden-confounding strength experiment. The
 chapter is linked from Contents and after overlap; it does not introduce an IV
 estimator or change the existing lesson sequence.
 

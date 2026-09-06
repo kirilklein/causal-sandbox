@@ -80,3 +80,57 @@ test("hidden-confounding bias increases with Z while diagnostic adjustment for U
   }
   assert.ok(Math.abs(diagnostic - 2) < 0.03);
 });
+
+test("strength changes preserve background draws and keep U out of both analyses", () => {
+  const noise = makeNoise(2400, 4217);
+  const baseline = instrumentAdjustment();
+  for (const hidden of [0.1, 0.5, 1, 2]) {
+    const { data } = instrumentAdjustment({ hidden });
+    data.forEach((d, i) => {
+      const n = noise[i];
+      assert.equal(d.C, baseline.data[i].C);
+      assert.equal(d.Z, baseline.data[i].Z);
+      assert.equal(
+        d.A,
+        +(n.a < 1 / (1 + Math.exp(0.8 - 1.2 * d.C - 2 * d.Z - hidden * n.U))),
+      );
+      assert.equal(d.Y, 2 * d.A + 1.5 * d.C + 1.5 * hidden * n.U + n.eY);
+      assert.deepEqual(Object.keys(d), ["C", "Z", "A", "Y"]);
+    });
+  }
+  assert.deepEqual(instrumentAdjustment({ hidden: 0 }), baseline);
+});
+
+test("amplification across slider strengths depends on Z supplying treatment variation", () => {
+  // Independent of the 100-299 batch shown first in the lesson.
+  for (const hidden of [0, 0.5, 1, 2]) {
+    for (const strength of [0, 2]) {
+      const means = [
+        [0, 0, 0],
+        [0, 0, 0],
+      ];
+      for (let seed = 600; seed < 680; seed++) {
+        instrumentAdjustment({ seed, hidden, strength }).fits.forEach(
+          (f, j) => {
+            assert.equal(f.clipped, 0);
+            [3, 2, 4].forEach((index, k) => {
+              assert.ok(Number.isFinite(f.values[index]));
+              means[j][k] += f.values[index] / 80;
+            });
+          },
+        );
+      }
+      for (let k = 0; k < 3; k++) {
+        if (!hidden) {
+          assert.ok(Math.abs(means[0][k] - 2) < 0.02);
+          assert.ok(Math.abs(means[1][k] - 2) < 0.02);
+        } else if (!strength) {
+          assert.ok(Math.abs(means[1][k] - means[0][k]) < 0.01);
+        } else {
+          assert.ok(means[0][k] > 2.2);
+          assert.ok(means[1][k] > means[0][k] + 0.03);
+        }
+      }
+    }
+  }
+});
