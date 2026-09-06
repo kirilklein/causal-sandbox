@@ -4,6 +4,12 @@ The default experience is a sequence of small experiments. Levels 1–10 impleme
 weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → poor overlap.
 The existing advanced sandbox is available through `?sandbox` as level 11.
 
+An optional [instruments and adjustment chapter](instruments.md) follows the
+core journey at `?lesson=instrument`. It introduces Z, its precision cost when
+included in adjustment, and a separate hidden-confounding comparison. The
+chapter is linked from Contents and after overlap; it does not introduce an IV
+estimator or change the existing lesson sequence.
+
 Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
 `?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,
 mediator, collider, and hidden confounding, at their new displayed positions.

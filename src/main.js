@@ -3,8 +3,13 @@ import { setupTheme } from "./theme.js";
 
 setupTheme();
 
-if (new URLSearchParams(location.search).has("sandbox")) {
+const params = new URLSearchParams(location.search);
+if (params.has("sandbox")) {
   await import("./sandbox.js");
+} else if (
+  ["instrument", "instrument-hidden-confounding"].includes(params.get("lesson"))
+) {
+  await import("./instrument-lesson.js");
 } else {
   await import("./lessons.js");
 }
