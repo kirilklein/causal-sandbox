@@ -125,7 +125,7 @@ export function setupLessonNavigation() {
   });
   if (app.dataset.lessonNavigationSetup) return;
   app.dataset.lessonNavigationSetup = "true";
-  app.addEventListener("pointerdown", (event) => {
+  app.addEventListener("click", (event) => {
     if (!event.target.closest(".lesson-nav"))
       document
         .querySelector("#lesson-menu-toggle")

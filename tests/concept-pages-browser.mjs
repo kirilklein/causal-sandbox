@@ -1,6 +1,6 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
-import { glossary } from "../src/glossary.js";
+import { coreAssumptionKeys, glossary } from "../src/glossary.js";
 
 const browser = await chromium.launch({
   headless: true,
@@ -81,6 +81,7 @@ const pages = [
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
+    hasTouch: true,
   });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -113,7 +114,11 @@ try {
   }
 
   const glossaryUrl = new URL("glossary/", root).href;
-  const glossaryResponse = await page.goto(glossaryUrl);
+  const [glossaryResponse] = await Promise.all([
+    page.waitForNavigation(),
+    page.locator('.concept-menu a[href="glossary/"]').tap(),
+  ]);
+  assert.equal(page.url(), glossaryUrl);
   assert.equal(glossaryResponse.status(), 200);
   assert.equal(
     await page.title(),
@@ -139,6 +144,38 @@ try {
     await page.locator(".glossary-related").count(),
     Object.keys(glossary).length,
   );
+  assert.deepEqual(
+    await page
+      .locator("#glossary-assumptions-list a")
+      .evaluateAll((links) => links.map((link) => link.hash.slice(1))),
+    coreAssumptionKeys,
+  );
+  assert.equal(
+    await page
+      .locator('#glossary-assumptions-list a[href="glossary/#positivity"] p')
+      .innerText(),
+    glossary.positivity.formal,
+  );
+  assert.equal(
+    await page
+      .locator('#glossary-assumptions-list a[href="glossary/#positivity"]')
+      .evaluate((link) => getComputedStyle(link).textDecorationLine),
+    "none",
+  );
+  await page
+    .locator('#glossary-assumptions-list a[href="glossary/#consistency"]')
+    .tap();
+  assert.equal(page.url(), `${glossaryUrl}#consistency`);
+  assert.equal(
+    await page.locator("#consistency h2").innerText(),
+    "Consistency",
+  );
+  for (const key of coreAssumptionKeys) {
+    assert.equal(
+      await page.locator(`#${key} .glossary-sources a`).count(),
+      glossary[key].sources.length,
+    );
+  }
   assert.match(
     await page.locator("#aipw").innerText(),
     /either the outcome model/i,
@@ -157,9 +194,13 @@ try {
   );
   assert.equal(
     await page
-      .locator('#glossary-contents-list a[href="#confounder"]')
+      .locator('#glossary-contents-list a[href="glossary/#confounder"]')
       .innerText(),
     "Confounder",
+  );
+  assert.equal(
+    await page.locator(".glossary-back").first().getAttribute("href"),
+    "glossary/#glossary-title",
   );
   await page.getByLabel("Color theme").selectOption("light");
   for (const width of [1280, 390, 320]) {

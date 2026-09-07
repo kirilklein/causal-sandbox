@@ -23,7 +23,7 @@
     </script>
     <meta
       name="description"
-      content="Detailed definitions of causal inference terms used in Causal Sandbox, including confounding, adjustment, propensity scores, IPW, AIPW, and overlap."
+      content="Detailed definitions of causal inference terms used in Causal Sandbox, including exchangeability, positivity, consistency, confounding, adjustment, and causal estimators."
     />
     <link
       rel="canonical"
@@ -40,7 +40,7 @@
     />
     <meta
       property="og:description"
-      content="Detailed definitions of the causal structures, estimators, and diagnostics used throughout Causal Sandbox."
+      content="Definitions and references for causal assumptions, structures, estimators, and diagnostics used throughout Causal Sandbox."
     />
     <link rel="icon" type="image/svg+xml" href="/src/brand.svg" />
     <link rel="stylesheet" href="/src/glossary.css" />
@@ -73,10 +73,26 @@
         <h1 id="glossary-title">Causal inference glossary</h1>
         <p>
           Detailed definitions for the terms used in the lessons and full
-          sandbox. Each definition describes how the concept works here; the
+          sandbox. Each definition describes how the concept works here. The
           <a href="methodology/">methodology notes</a> give the equations and
           assumptions behind the simulations.
         </p>
+      </section>
+
+      <section
+        class="glossary-assumptions"
+        aria-labelledby="glossary-assumptions-title"
+      >
+        <p class="eyebrow">CORE ASSUMPTIONS</p>
+        <h2 id="glossary-assumptions-title">
+          What connects observed data to a causal effect?
+        </h2>
+        <p>
+          These assumptions connect the observed treatment comparison to the
+          potential-outcome contrast used in this app. They are claims about the
+          study and causal question; a fitted model cannot prove them.
+        </p>
+        <div id="glossary-assumptions-list"></div>
       </section>
 
       <div class="methodology-layout glossary-layout">
