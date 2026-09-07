@@ -5,6 +5,10 @@ import { themeControl } from "./theme.js";
 import { timingSample } from "./timing-simulation.js";
 import { studySummary } from "./instrument-simulation.js";
 import { effectComparison } from "./effect-comparison.js";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 
 document.title = "What timing tells us · Causal Sandbox";
 
@@ -133,6 +137,7 @@ document.querySelector("#app").innerHTML =
   `<div class="clipping-page timing-page"><main>
   <svg class="timing-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><marker id="timing-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--causal-path)"/></marker></defs></svg>
   <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
+  ${lessonNavigation({ currentOptional: "timing" })}
   <div class="eyebrow">Optional · Causal roles</div>
   <h1>What timing tells us</h1>
   <p class="lede">Move V through time. Discover which causal roles are possible, and which timing rules out.</p>
@@ -203,6 +208,7 @@ document.querySelector("#app").innerHTML =
   <details><summary>What are we assuming?</summary><p>Causes do not act backward in time, and the relevant states are correctly ordered. We want the total effect of this one treatment decision. These illustrative worlds contain only the arrows and common causes shown; moving V does not infer a graph from real data.</p><p>Timing does not establish a sufficient adjustment set or remove hidden confounding.</p><p><a href="https://dagitty.net/learn/graphs/roles.html">DAGitty: causal roles</a> · <a href="https://miguelhernan.org/whatifbook">Hernán and Robins: Causal Inference: What If</a></p></details>
   <nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=hidden-confounding">← Back to hidden confounding</a><a href="?lesson=misspecification">Resume core: when a model is too simple →</a></nav>
 </main></div>`;
+setupLessonNavigation();
 
 function positionHandle() {
   const timeline = $("timeline").getBoundingClientRect();

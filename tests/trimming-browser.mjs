@@ -28,6 +28,15 @@ try {
     .click();
   assert.equal(new URL(page.url()).searchParams.get("lesson"), "trimming");
   await page.locator('[data-group="retained"]').waitFor();
+  const contents = page.getByRole("button", { name: "Contents" });
+  assert.ok(await contents.isVisible());
+  await contents.click();
+  assert.ok(await page.locator("#lesson-menu").isVisible());
+  assert.equal(
+    await page.locator('.optional-menu a[aria-current="step"]').innerText(),
+    "Trimming and the target population\nWho remains after trimming",
+  );
+  await contents.click();
   const table = () => page.locator("#groups").innerText();
   const initial = await table();
   const histogram = () => page.locator("#histogram-bars").innerHTML();

@@ -47,6 +47,15 @@ try {
     await page.locator("h1").evaluate((el) => el === document.activeElement),
     true,
   );
+  const contents = page.getByRole("button", { name: "Contents" });
+  assert.ok(await contents.isVisible());
+  await contents.click();
+  assert.ok(await page.locator("#lesson-menu").isVisible());
+  assert.equal(
+    await page.locator('.optional-menu a[aria-current="step"]').innerText(),
+    "Clipping and extreme weights\nLimiting extreme weights",
+  );
+  await contents.click();
   const checkValues = async (threshold, selection = 3) => {
     const rows = fitClippingSample(
       simulateLesson({ ...lessonBaseline(10), n: 400, selection }),
@@ -175,6 +184,11 @@ try {
     await page.getByLabel("Color theme").selectOption(theme);
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 1100 });
+      assert.ok(await contents.isVisible());
+      assert.equal(
+        await page.locator(".contents-label").isVisible(),
+        width > 760,
+      );
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,

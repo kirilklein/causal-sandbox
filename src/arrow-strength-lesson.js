@@ -9,11 +9,16 @@ import {
   populationZEffect,
 } from "./arrow-strength-simulation.js";
 import icon from "./brand.svg?raw";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 
 document.querySelector("#app").innerHTML = `
   <div class="instrument-page arrow-strength-page">
     <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Full sandbox ↗</a>${themeControl()}</header>
     <main>
+      ${lessonNavigation({ currentOptional: "arrow-strength" })}
       <p class="eyebrow">OPTIONAL · CAUSAL ROLES</p>
       <h1 tabindex="-1">How strong is a causal arrow?</h1>
       <p class="intro">A graph shows whether a causal path is assumed to exist, but not how large its effect is. A <a href="https://stacks.cdc.gov/view/cdc/229116/cdc_229116_DS1.pdf">missing arrow is a causal claim</a>, not a conclusion from a small coefficient. Meanwhile, <a href="https://doi.org/10.1214/12-AOS1080">causal paths can cancel</a> so that an observed association is close to zero.</p>
@@ -112,6 +117,7 @@ document.querySelector("#app").innerHTML = `
       <footer>Point estimates only; fictional effect values.</footer>
     </main>
   </div>`;
+setupLessonNavigation();
 
 const el = (id) => document.getElementById(id);
 const methods = [

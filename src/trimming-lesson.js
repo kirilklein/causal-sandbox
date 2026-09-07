@@ -4,6 +4,10 @@ import icon from "./brand.svg?raw";
 import { trimmingSample, trimmingResult } from "./trimming-experiment.js";
 import { effectComparison } from "./effect-comparison.js";
 import { themeControl } from "./theme.js";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 
 document.title = "Who remains after trimming? · Causal Sandbox";
 document.querySelector("#app").innerHTML =
@@ -12,6 +16,7 @@ document.querySelector("#app").innerHTML =
   <header>
     <a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}
   </header>
+  ${lessonNavigation({ currentOptional: "trimming" })}
   <div class="eyebrow">Overlap · Trimming</div>
   <h1 tabindex="-1">Who remains after trimming?</h1>
   <p class="lede">
@@ -224,6 +229,7 @@ document.querySelector("#app").innerHTML =
 <nav class="chapter-nav" aria-label="Chapter navigation"><a href="propensity-score-clipping-trimming/">← Probability clipping</a><a href="positivity/">← Back to overlap</a><a href="?sandbox">Continue to the full sandbox ↗</a></nav>
 </main>
 </div>`;
+setupLessonNavigation();
 
 const slider = document.querySelector("#threshold");
 const selectionSlider = document.querySelector("#selection");
