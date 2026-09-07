@@ -305,6 +305,20 @@
     }
   }
 
+  .trimming-preview {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    h2 {
+      font-size: 16px;
+      margin: 6px 0;
+    }
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+    }
+  }
   .chapter-nav {
     display: flex;
     gap: 16px;

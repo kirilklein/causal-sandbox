@@ -205,7 +205,6 @@ app.addEventListener("keydown", (event) => {
     toggle.focus();
   }
 });
-enterFromUrl(false);
 
 function enterFromUrl(focus = true) {
   const params = new URLSearchParams(location.search);
@@ -262,6 +261,39 @@ function controls(level) {
   return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
 }
 
+const optionalChapters = [
+  {
+    after: 9,
+    title: "What timing tells us",
+    href: "?lesson=timing",
+    description:
+      "See why measuring a variable before treatment does not make it safe to adjust for.",
+    summary: "Timing and safe adjustment",
+  },
+  {
+    after: 6,
+    title: "Instruments and adjustment",
+    href: "?lesson=instrument",
+    description:
+      "See how adjusting for an instrument can increase variability and amplify hidden-confounding bias.",
+    summary: "Variability and hidden-confounding bias",
+  },
+  {
+    after: 10,
+    title: "Clipping and extreme weights",
+    href: "propensity-score-clipping-trimming/",
+    description:
+      "Explore the tradeoff from limiting extreme weights, then see how trimming changes the target population.",
+    summary: "Limiting extreme weights",
+  },
+  {
+    title: "Trimming and the target population",
+    href: "?lesson=trimming",
+    summary: "Who remains after trimming",
+  },
+];
+enterFromUrl(false);
+
 function lessonNavigation(position) {
   const groups = [
     { title: "Foundations", start: 0, end: 4 },
@@ -282,10 +314,9 @@ function lessonNavigation(position) {
             .join("")}</ol></section>`,
       )
       .join("")}
-    <a class="sandbox-nav-link" href="?lesson=timing">What timing tells us ↗</a>
-    <a class="sandbox-nav-link" href="propensity-score-clipping-trimming/">Clipping and extreme weights ↗</a>
-    <a class="sandbox-nav-link" href="?lesson=trimming">Trimming and the target population ↗</a>
-    <a class="sandbox-nav-link" href="?lesson=instrument">Instruments and adjustment ↗</a>
+    <section class="concept-menu optional-menu" aria-label="Optional chapters"><h2>Optional chapters</h2>
+      ${optionalChapters.map(({ title, href, summary }) => `<a href="${href}" aria-label="${title}">${title}<small>${summary}</small></a>`).join("")}
+    </section>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
       <a href="glossary/">Glossary</a>
       <a href="confounding/">Confounding</a>
@@ -295,7 +326,6 @@ function lessonNavigation(position) {
       <a href="aipw-double-robustness/">How double robustness works</a>
       <a href="mediator-adjustment/">Mediator adjustment</a>
       <a href="tmle/">TMLE</a>
-      <a href="propensity-score-clipping-trimming/">Clipping and trimming</a>
     </section>
     <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
   </nav>`;
@@ -353,10 +383,19 @@ function enter(level, focus = true, callback = false) {
       ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Curvature adds C² − 1 to the world’s equation. Subtracting 1 centers the term without changing its shape. A model that includes C² can capture it because it also has an intercept. The causal graph stays the same: C is still the only common cause.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, baseline health is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
-      ${level === 8 ? '<p><a href="?lesson=timing">Optional: what timing tells us →</a></p>' : ""}
-      ${level === 10 ? '<p><a href="propensity-score-clipping-trimming/">Explore clipping and extreme weights →</a></p><p><a href="?lesson=instrument">Explore instruments and adjustment →</a></p>' : ""}
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
       <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      ${
+        !revisiting
+          ? optionalChapters
+              .filter(({ after }) => after === level)
+              .map(
+                ({ title, href, description }) =>
+                  `<aside class="optional-preview" aria-label="Optional exploration"><span class="sample-note">Optional exploration</span><h2><a href="${href}">${title} →</a></h2><p>${description}</p></aside>`,
+              )
+              .join("")
+          : ""
+      }
     </main>`;
   const menuToggle = document.querySelector("#lesson-menu-toggle");
   menuToggle.addEventListener("click", () => {

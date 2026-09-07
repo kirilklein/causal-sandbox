@@ -168,6 +168,27 @@
   cursor: pointer;
   padding: 10px 0;
 }
+.optional-menu small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.optional-preview {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.optional-preview h2 {
+  margin: 6px 0;
+  font-size: 16px;
+}
+.optional-preview p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
 .learning a {
   color: var(--accent);
 }

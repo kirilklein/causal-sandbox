@@ -232,7 +232,10 @@ try {
   await page.goto(`${appUrl}?lesson=overlap`);
   await page.locator("#lesson-menu-toggle").click();
   await page
-    .getByRole("link", { name: "Trimming and the target population ↗" })
+    .getByRole("link", {
+      name: "Trimming and the target population",
+      exact: true,
+    })
     .click();
   await page.locator('[data-group="retained"]').waitFor();
   assert.equal(await table(), initial);

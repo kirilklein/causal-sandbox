@@ -1,7 +1,8 @@
 # What timing tells us
 
-Optional chapter at `?lesson=timing`, linked from Contents and the collider lesson.
-Prerequisites: common causes, mediators, colliders, and the total-effect target.
+Optional chapter at `?lesson=timing`, linked from Contents and hidden confounding.
+Prerequisites: common causes, mediators, colliders, hidden confounding, and the total-effect target.
+Return to hidden confounding or resume the core at model misspecification.
 Core lesson order and legacy numeric URLs are unchanged.
 
 ## Timeline explorer
