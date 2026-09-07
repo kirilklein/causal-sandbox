@@ -173,12 +173,18 @@ export const glossary = {
     related: { label: "Explore collider bias", href: "collider-bias/" },
   },
   exchangeability: {
-    title: "Conditional exchangeability",
-    aliases: ["No unmeasured confounding"],
+    title: "Exchangeability",
+    aliases: ["Conditional exchangeability", "No unmeasured confounding"],
     summary:
-      "Conditional exchangeability means that, within the adjusted covariate groups, treatment assignment carries no further information about the potential outcomes.",
+      "Exchangeability means that the treatment groups being compared have the same distribution of potential outcomes, either marginally or within adjusted covariate groups.",
     detail: [
-      "Informally, all common causes needed for the treatment–outcome comparison have been measured and handled correctly. Randomization can establish exchangeability by design; observational analyses require causal knowledge and cannot verify it from fitted data alone.",
+      "Randomization can establish exchangeability without conditioning. In an observational analysis, conditional exchangeability means that all common causes needed for the treatment–outcome comparison have been measured and handled correctly. This claim requires causal knowledge and cannot be verified from fitted data alone.",
+    ],
+    sources: [
+      {
+        label: "Hernán & Robins (2020), Causal Inference: What If, Chapter 3",
+        href: "https://miguelhernan.org/whatifbook",
+      },
     ],
     related: {
       label: "Review the causal assumptions",
@@ -191,6 +197,13 @@ export const glossary = {
       "Positivity requires every covariate pattern in the target population to have a positive chance of receiving each treatment being compared.",
     detail: [
       "A structural zero means the missing treatment outcome cannot be learned for that group from the observed comparison. Larger samples, more flexible models, and clipping cannot create absent support. Practical near-violations can still make estimates unstable even when probabilities are not exactly zero.",
+    ],
+    sources: [
+      {
+        label:
+          "Petersen et al. (2012), Diagnosing and responding to violations in the positivity assumption",
+        href: "https://pmc.ncbi.nlm.nih.gov/articles/PMC4107929/",
+      },
     ],
     related: { label: "Explore positivity", href: "positivity/" },
   },
@@ -205,12 +218,37 @@ export const glossary = {
     related: { label: "Explore overlap", href: "positivity/" },
   },
   consistency: {
-    title: "Consistency and no interference",
-    aliases: ["Stable unit treatment value assumption (SUTVA)"],
+    title: "Consistency",
     summary:
-      "Consistency links a person’s observed outcome to the potential outcome under the treatment they received; no interference rules out effects of other people’s treatments.",
+      "Consistency says that a person’s observed outcome equals their potential outcome under the treatment they actually received.",
     detail: [
-      "Consistency also requires treatments to be defined well enough that the intervention in the causal question matches what was observed. SUTVA commonly bundles no interference with no relevant hidden versions of treatment. The simulator builds these conditions into its data-generating process.",
+      "The treatment must be defined well enough that the intervention in the causal question matches what was observed. If clinically different versions are grouped under one label, the potential outcome under that label may be ambiguous. The simulator defines one version of each treatment and builds consistency into its data-generating process.",
+    ],
+    sources: [
+      {
+        label:
+          "Cole & Frangakis (2009), The consistency statement in causal inference",
+        href: "https://pubmed.ncbi.nlm.nih.gov/19234395/",
+      },
+    ],
+    related: {
+      label: "Review the causal assumptions",
+      href: "methodology/#assumptions",
+    },
+  },
+  "no-interference": {
+    title: "No interference",
+    summary:
+      "No interference means that one person’s potential outcome does not depend on the treatments received by other people.",
+    detail: [
+      "This assumption can fail when treatment has spillover effects, such as vaccination changing another person’s infection risk. Causal effects can still be defined when interference is present, but the treatment strategies, potential outcomes, and analysis must represent it. SUTVA commonly bundles no interference with no relevant hidden versions of treatment. The simulator generates each person independently, so no interference holds here.",
+    ],
+    sources: [
+      {
+        label:
+          "Tchetgen Tchetgen & VanderWeele (2012), On causal inference in the presence of interference",
+        href: "https://pmc.ncbi.nlm.nih.gov/articles/PMC4216807/",
+      },
     ],
     related: {
       label: "Review the causal assumptions",
@@ -392,3 +430,10 @@ export const glossary = {
     },
   },
 };
+
+export const coreAssumptionKeys = [
+  "consistency",
+  "exchangeability",
+  "positivity",
+  "no-interference",
+];

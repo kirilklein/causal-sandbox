@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { glossary } from "./glossary.js";
+import { coreAssumptionKeys, glossary } from "./glossary.js";
 
 const contextualTerms = [
   "adjustment",
@@ -56,4 +56,30 @@ test("the glossary separates effect and overlap concepts", () => {
     glossary.overlap.detail.join(" "),
     /cannot prove the positivity/,
   );
+});
+
+test("core causal assumptions are distinct and cite supporting sources", () => {
+  assert.deepEqual(coreAssumptionKeys, [
+    "consistency",
+    "exchangeability",
+    "positivity",
+    "no-interference",
+  ]);
+  for (const key of coreAssumptionKeys) {
+    const term = glossary[key];
+    assert.ok(term, `${key} needs a glossary entry`);
+    assert.ok(term.sources.length > 0, `${key} needs a reference`);
+    for (const source of term.sources) {
+      assert.ok(source.label.length > 0, `${key} has an unnamed reference`);
+      assert.match(
+        source.href,
+        /^https:\/\//,
+        `${key} needs an HTTPS reference`,
+      );
+    }
+  }
+  assert.match(glossary.consistency.summary, /observed outcome equals/);
+  assert.match(glossary.exchangeability.summary, /potential outcomes/);
+  assert.match(glossary.positivity.summary, /positive chance/);
+  assert.match(glossary["no-interference"].summary, /other people/);
 });
