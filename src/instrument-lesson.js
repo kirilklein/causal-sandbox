@@ -224,7 +224,7 @@ const lessons = [
     detailTitle: "Why can adjustment make things worse?",
     detail:
       '<p>Imagine Z is a randomly assigned invitation to take treatment. After adjusting for measured C, people still take treatment partly because of U, partly because of the invitation, and partly by chance. U also changes outcomes, so the C-only estimate can mistake some of U’s effect for a treatment effect.</p><p>The invitation supplies treatment differences unrelated to U. Accounting for Z removes that source of variation from the comparison without removing U’s influence. Among people with the same invitation status, U can have more influence over the remaining treatment differences, amplifying the existing bias.</p><p>Adjustment changes the comparison, not anyone’s treatment or outcome. The hidden path A ← U → Y remains open with either choice. Using Z for IV estimation is a different operation: it uses the treatment variation supplied by Z.</p><p>Amplification depends on the causal model and is not guaranteed in every sample. C still controls measured confounding. The pattern across independent studies is more informative than one estimate moving away from truth.</p><p><a href="https://arxiv.org/abs/1701.04177">Read more: when instruments amplify bias</a></p>',
-    next: "Return to the instrument introduction",
+    next: "How strong is a causal arrow?",
   },
 ];
 function render() {
@@ -244,13 +244,13 @@ function render() {
   el("next").href =
     state.step === 1
       ? "?lesson=instrument-hidden-confounding"
-      : "?lesson=instrument";
+      : "?lesson=arrow-strength";
   el("back").href = "?lesson=instrument";
   document.title = `${lesson.title} · Causal Sandbox`;
   el("back").hidden = state.step === 1;
   el("next-note").textContent =
     state.step === 2
-      ? "Using an instrument to estimate a treatment effect is a separate, later lesson."
+      ? "Next: what changes when the exclusion restriction is only approximately true?"
       : "";
   const comparing = state.step === 2;
   el("hidden-control").hidden = !comparing;
