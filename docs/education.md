@@ -461,8 +461,10 @@ predict each person under both treatments at the same baseline health, and
 average the predicted differences to estimate the average treatment effect.
 One optional explanation contains the averaging formula, symbol definitions,
 the distinction between predictions and observations, and why both methods work
-in this world. There are no prediction cards, worked arithmetic, or separate
-model-details disclosure. The estimator and its outputs are unchanged.
+in this world. A second closed disclosure shows one person's current fitted
+outcomes under both treatments, their difference, and the average difference
+across the sample. It updates on redraw and reconciles with the displayed outcome
+regression estimate. There is no separate model-details disclosure.
 
 Browser checks cover explanation state, redraw/reset, keyboard/touch, and phone
 layouts. New-learner comprehension and screen-reader listening remain untested.

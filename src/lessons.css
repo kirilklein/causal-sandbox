@@ -300,7 +300,8 @@
   color: var(--text-secondary);
   font-size: 12px;
 }
-.lesson-explanation {
+.lesson-explanation,
+.outcome-numbers {
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }

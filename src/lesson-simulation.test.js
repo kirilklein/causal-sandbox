@@ -187,6 +187,20 @@ test("model lessons keep one cause, the total effect, and paired world draws", (
   }
 });
 
+test("outcome lesson predictions reconcile with its regression estimate", () => {
+  const state = lessonBaseline(4);
+  const result = lessonResult(state);
+  assert.equal(result.outcomePredictions.length, state.n);
+  const first = result.outcomePredictions[0];
+  assert.equal(first.person, 1);
+  assert.equal(first.C, simulateLesson(state)[0].C);
+  assert.ok(Math.abs(first.contrast - (first.m1 - first.m0)) < 1e-12);
+  const average =
+    result.outcomePredictions.reduce((sum, row) => sum + row.contrast, 0) /
+    result.outcomePredictions.length;
+  assert.ok(Math.abs(average - result.regression) < 1e-12);
+});
+
 test("quadratic model choices are independent and require observed C", () => {
   const state = {
     ...lessonBaseline(6),
