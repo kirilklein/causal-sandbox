@@ -23,9 +23,9 @@ try {
   await page.route("**/gc.zgo.at/count.js", (route) =>
     route.fulfill({ contentType: "application/javascript", body: "" }),
   );
-  await page.goto(`${url}?lesson=overlap`);
+  await page.goto(`${url}?lesson=double-robustness`);
   await page
-    .getByRole("link", { name: "Explore instruments and adjustment →" })
+    .getByRole("link", { name: "Instruments and adjustment →" })
     .click();
   await page.locator("#ipw").filter({ hasText: /\d/ }).waitFor();
   assert.equal(new URL(page.url()).searchParams.get("lesson"), "instrument");

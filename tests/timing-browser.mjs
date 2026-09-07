@@ -24,10 +24,7 @@ try {
   await page.goto(`${appUrl}?lesson=collider`);
   await page.locator("#continue").click();
   assert.match(page.url(), /lesson=hidden-confounding/);
-  await page.goBack();
-  await page
-    .getByRole("link", { name: "Optional: what timing tells us →" })
-    .click();
+  await page.getByRole("link", { name: "What timing tells us →" }).click();
   const handle = page.locator("#variable-handle");
   await handle.waitFor();
   const selectedWindow = () =>
@@ -290,8 +287,10 @@ try {
     await page.locator("#timing-estimate").innerText(),
     initial.unadjusted.toFixed(2),
   );
-  await page.getByRole("link", { name: "Continue the core lessons →" }).click();
-  assert.match(page.url(), /lesson=hidden-confounding/);
+  await page
+    .getByRole("link", { name: "Resume core: when a model is too simple →" })
+    .click();
+  assert.match(page.url(), /lesson=misspecification/);
   await page.goBack();
   await handle.waitFor();
   assert.equal(await selectedWindow(), "before");
@@ -300,11 +299,11 @@ try {
   await handle.waitFor();
   assert.equal(await selectedWindow(), "before");
   await page
-    .getByRole("link", { name: "← Return to the collider lesson" })
+    .getByRole("link", { name: "← Back to hidden confounding" })
     .click();
   await page.locator("#lesson-menu-toggle").click();
   await page
-    .getByRole("link", { name: "What timing tells us ↗", exact: true })
+    .getByRole("link", { name: "What timing tells us", exact: true })
     .click();
   await handle.waitFor();
   assert.deepEqual(errors, []);

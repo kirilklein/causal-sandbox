@@ -162,6 +162,7 @@ document.querySelector("#app").innerHTML =
         ><a id="next" class="primary"></a>
       </nav>
       <p class="small" id="next-note"></p>
+      <nav class="actions" aria-label="Chapter navigation"><a href="?lesson=double-robustness">← Back to double robustness</a><a href="?lesson=tmle">Resume core: targeting with TMLE →</a></nav>
       <footer>
         Point estimates only; fictional effect values.
       </footer>

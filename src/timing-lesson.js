@@ -161,7 +161,7 @@ document.querySelector("#app").innerHTML =
         <svg class="timing-dag" viewBox="0 0 360 280" role="img" aria-labelledby="example-caption example-description"><desc id="example-description"></desc><g id="example-graph"></g></svg>
       </figure>
       <p id="example-text" aria-live="polite" aria-atomic="true"></p>
-      <details id="instrument-detail" hidden><summary>What makes an instrument valid?</summary><p>It must affect treatment, have no route to Y outside treatment, and share no unblocked common cause with Y. These conditions are stipulated here; a real pretreatment predictor of treatment need not satisfy them.</p><a href="?lesson=instrument">Explore instruments and adjustment →</a></details>
+      <details id="instrument-detail" hidden><summary>What makes an instrument valid?</summary><p>It must affect treatment, have no route to Y outside treatment, and share no unblocked common cause with Y. These conditions are stipulated here; a real pretreatment predictor of treatment need not satisfy them.</p><p>First learn <a href="?lesson=double-robustness">double robustness</a>, then <a href="?lesson=instrument">explore instruments and adjustment →</a>.</p></details>
       <section id="adjustment-detail" hidden aria-labelledby="adjustment-title">
         <h3 id="adjustment-title">Try adjusting for V</h3>
         <p>Compare the same people with and without V in the outcome model.</p>
@@ -201,7 +201,7 @@ document.querySelector("#app").innerHTML =
     )}</div><p class="help">Roles can overlap. Dates do not tell us which causal arrows actually exist.</p></details>
   <details><summary>When a condition existed versus when it was recorded</summary><p>A diagnosis recorded after treatment may describe an earlier condition. The timeline places the health state itself, not its recording date.</p><p>A measurement before today’s dose may already reflect earlier treatment. States recorded in the same visit need a clearer order before timing can rule out an arrow.</p></details>
   <details><summary>What are we assuming?</summary><p>Causes do not act backward in time, and the relevant states are correctly ordered. We want the total effect of this one treatment decision. These illustrative worlds contain only the arrows and common causes shown; moving V does not infer a graph from real data.</p><p>Timing does not establish a sufficient adjustment set or remove hidden confounding.</p><p><a href="https://dagitty.net/learn/graphs/roles.html">DAGitty: causal roles</a> · <a href="https://miguelhernan.org/whatifbook">Hernán and Robins: Causal Inference: What If</a></p></details>
-  <nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=collider">← Return to the collider lesson</a><a href="?lesson=hidden-confounding">Continue the core lessons →</a></nav>
+  <nav class="chapter-nav" aria-label="Chapter navigation"><a href="?lesson=hidden-confounding">← Back to hidden confounding</a><a href="?lesson=misspecification">Resume core: when a model is too simple →</a></nav>
 </main></div>`;
 
 function positionHandle() {

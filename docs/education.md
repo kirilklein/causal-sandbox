@@ -16,20 +16,30 @@ compares each IPW estimate with its own group’s truth. The optional varying-ef
 world shows how trimming can change that truth. Each chapter restores its own
 baseline on entry; samples and controls are not transferred between chapters.
 
-An optional [instruments and adjustment chapter](instruments.md) follows the
-core journey at `?lesson=instrument`. It introduces Z, its precision cost when
+An optional [instruments and adjustment chapter](instruments.md) follows
+double robustness at `?lesson=instrument`. It introduces Z, its precision cost when
 included in adjustment, and a follow-on hidden-confounding strength experiment. The
-chapter is linked from Contents and after overlap; it does not introduce an IV
+chapter is linked from Contents and after double robustness, once IPW, outcome
+regression, AIPW, and hidden confounding have been introduced; it does not introduce an IV
 estimator or change the existing lesson sequence.
 
 An optional [What timing tells us chapter](timing.md) is available at
-`?lesson=timing`, linked from Contents and the collider lesson. It follows the
-mediator/collider material without interrupting Continue through the core lessons.
+`?lesson=timing`, linked from Contents and hidden confounding. It follows the
+mediator, collider, and hidden-confounding material without interrupting Continue through the core lessons.
 A movable V explores three time windows with fixed A/Y and selectable example
 graphs. Every example compares outcome regression with and without V against
 the true total effect. An optional repeated-sample comparison shows the mean
 and spread of both estimates.
 Repeated treatment is deferred to [#79](https://github.com/kirilklein/causal-sandbox/issues/79).
+
+Optional exploration cards follow the primary core navigation, with one learning
+promise each. Contents groups Timing, Instruments, Clipping, and Trimming under
+Optional chapters with short descriptions; clipping appears only once.
+Timing returns to hidden confounding or resumes at model misspecification. Its
+instrument link names double robustness as a prerequisite. Both instrument
+sections offer a return to double robustness and a route onward to TMLE.
+Clipping leads to trimming; both offer a return to overlap or entry to the full
+sandbox. The optional AIPW revisit remains a separate short reinforcement exercise.
 
 Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
 `?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,

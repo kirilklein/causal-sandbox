@@ -1,7 +1,8 @@
 # Instruments and adjustment
 
-The optional chapter opens at `?lesson=instrument` from Contents and after the
-overlap lesson. `?lesson=instrument-hidden-confounding` opens its second section.
+The optional chapter opens at `?lesson=instrument` from Contents and after
+double robustness. `?lesson=instrument-hidden-confounding` opens its second section.
+Both sections return to double robustness or resume the core at TMLE.
 Existing lesson URLs and progression remain available. This chapter teaches
 ordinary covariate adjustment, not IV estimation.
 

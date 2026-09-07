@@ -221,7 +221,8 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
       >.
     </p>
   </details>
-<nav class="chapter-nav" aria-label="Chapter navigation"><a href="positivity/">← Poor overlap</a><a href="?lesson=trimming">Next: who remains after trimming? →</a><a href="?sandbox">Full sandbox ↗</a></nav>
+<aside class="trimming-preview" aria-label="Optional exploration"><small>Optional exploration</small><h2><a href="?lesson=trimming">Next: who remains after trimming? →</a></h2><p>See how excluding people changes the target population.</p></aside>
+<nav class="chapter-nav" aria-label="Chapter navigation"><a href="positivity/">← Back to overlap</a><a href="?sandbox">Continue to the full sandbox ↗</a></nav>
 </main>
 </div>`;
 

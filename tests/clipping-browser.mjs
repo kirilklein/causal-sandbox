@@ -29,7 +29,7 @@ try {
   );
   await page.goto(`${appUrl}?lesson=overlap`);
   await page
-    .getByRole("link", { name: "Explore clipping and extreme weights →" })
+    .getByRole("link", { name: "Clipping and extreme weights →" })
     .click();
   assert.equal(
     new URL(page.url()).pathname,
@@ -192,7 +192,7 @@ try {
   await page.locator('[data-method="ipw"]').waitFor();
   assert.equal(await table(), initial);
   await page.locator("#threshold").fill("0.1");
-  await page.getByRole("link", { name: "← Poor overlap" }).click();
+  await page.getByRole("link", { name: "← Back to overlap" }).click();
   await page.locator("#lesson-menu-toggle").waitFor();
   await page.goBack();
   await page.locator('[data-method="ipw"]').waitFor();
@@ -201,11 +201,13 @@ try {
   await page.goForward();
   await page.locator("#lesson-menu-toggle").click();
   await page
-    .getByRole("link", { name: "Clipping and extreme weights ↗" })
+    .getByRole("link", { name: "Clipping and extreme weights", exact: true })
     .click();
   await page.locator('[data-method="ipw"]').waitFor();
   assert.equal(await table(), initial);
-  await page.getByRole("link", { name: "Full sandbox ↗", exact: true }).click();
+  await page
+    .getByRole("link", { name: "Continue to the full sandbox ↗", exact: true })
+    .click();
   assert.equal(new URL(page.url()).searchParams.has("sandbox"), true);
   assert.deepEqual(errors, []);
   console.log(
