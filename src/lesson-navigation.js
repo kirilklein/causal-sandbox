@@ -50,6 +50,12 @@ export const optionalChapters = [
     summary: "Timing and safe adjustment",
   },
   {
+    id: "time-varying-confounding",
+    title: "When treatment changes the next treatment decision",
+    href: "?lesson=time-varying-confounding",
+    summary: "Repeated treatment and time-varying confounding",
+  },
+  {
     id: "instrument",
     after: 6,
     title: "Instruments and adjustment",

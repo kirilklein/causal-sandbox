@@ -45,7 +45,12 @@ A movable V explores three time windows with fixed A/Y and selectable example
 graphs. Every example compares outcome regression with and without V against
 the true total effect. An optional repeated-sample comparison shows the mean
 and spread of both estimates.
-Repeated treatment is deferred to [#79](https://github.com/kirilklein/causal-sandbox/issues/79).
+The optional [time-varying confounding chapter](time-varying-confounding.md)
+extends timing to two treatment decisions at `?lesson=time-varying-confounding`.
+It is linked from Timing and Contents, after learners have met IPW, outcome
+regression, and mediators. Three stages compare randomized decisions, treatment
+responding to updated severity, and sequential weighting. The target stays the
+total effect of treating at both visits versus neither. Core order is unchanged.
 
 Optional exploration cards follow the primary core navigation, with one learning
 promise each. Contents groups Timing, Instruments, Clipping, and Trimming under
