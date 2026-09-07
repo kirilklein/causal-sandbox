@@ -101,8 +101,9 @@ may reflect previous treatment. Timing cannot establish a sufficient adjustment
 set, instrument validity, or the absence of hidden confounding.
 
 Unknown causal relevance remains [#82](https://github.com/kirilklein/causal-sandbox/issues/82);
-there is no “X = non-contributing” category. Repeated treatment remains
-[#79](https://github.com/kirilklein/causal-sandbox/issues/79), with survival later.
+there is no “X = non-contributing” category. The
+[time-varying confounding chapter](time-varying-confounding.md) extends this
+experiment to repeated treatment; survival remains a later topic.
 References: [DAGitty causal roles](https://dagitty.net/learn/graphs/roles.html) and
 Hernán and Robins, [Causal Inference: What If](https://miguelhernan.org/whatifbook).
 

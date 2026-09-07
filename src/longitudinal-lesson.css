@@ -1,0 +1,88 @@
+.longitudinal-page .longitudinal-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0;
+}
+.longitudinal-page [aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.longitudinal-page .graph rect {
+  stroke: none;
+}
+.longitudinal-page .longitudinal-intro {
+  max-width: 750px;
+  color: var(--text-secondary);
+}
+.longitudinal-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.longitudinal-page .results {
+  grid-template-columns: 1fr;
+}
+.longitudinal-page .result.truth {
+  background: var(--truth-surface, var(--node-Y));
+}
+.longitudinal-page .result.estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+.longitudinal-page .result[hidden] {
+  display: none;
+}
+.longitudinal-page .result small {
+  display: block;
+}
+.longitudinal-page #person {
+  display: block;
+  width: 100%;
+  margin: 18px 0;
+}
+.longitudinal-page .weight-equation {
+  font-variant-numeric: tabular-nums;
+}
+.longitudinal-page .table-wrap {
+  overflow-x: auto;
+}
+.longitudinal-page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.longitudinal-page th,
+.longitudinal-page td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.longitudinal-page caption {
+  text-align: left;
+  padding: 12px 0;
+}
+@media (max-width: 650px) {
+  .longitudinal-page .graph text {
+    font-size: 30px;
+  }
+  .longitudinal-page .graph-time {
+    display: none;
+  }
+  .longitudinal-workspace {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .longitudinal-page .longitudinal-steps {
+    flex-direction: column;
+  }
+  .longitudinal-page .longitudinal-steps button {
+    text-align: left;
+  }
+  .longitudinal-page .panel {
+    padding: 16px;
+  }
+}
