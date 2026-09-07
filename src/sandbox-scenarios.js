@@ -29,6 +29,18 @@ export const scenarios = [
       "Uncheck M under Adjust for, then change the mediator pathway.",
     ][i],
   })),
+  {
+    id: "instrument",
+    name: "Adjusting for an instrument",
+    group: "Confounding and causal roles",
+    question: "Can adjusting for an instrument make hidden confounding worse?",
+    action:
+      "Check Z under Adjust for. Compare the errors with Z included and excluded.",
+    p: { ...defaults, za: 2, ua: 1, uy: 1.5 },
+    adjust: ["C"],
+    world: "additive",
+    models: { outcome: false, treatment: false },
+  },
   ...[
     [
       "outcome-model",

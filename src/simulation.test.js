@@ -79,6 +79,48 @@ test("world switches change mechanisms while preserving covariates and causal ef
   assert.ok(treatmentWorld.some((d, i) => d.A !== base[i].A));
 });
 
+test("instrument Z changes treatment but has no outcome path outside treatment", () => {
+  const noTreatmentEffect = {
+    ...defaults,
+    direct: 0,
+    ca: 0,
+    cy: 0,
+    za: 3,
+  };
+  const withInstrument = simulate(noTreatmentEffect, noise);
+  const withoutInstrument = simulate({ ...noTreatmentEffect, za: 0 }, noise);
+  assert.ok(withInstrument.every((d) => d.Z === 0 || d.Z === 1));
+  assert.ok(withInstrument.some((d, i) => d.A !== withoutInstrument[i].A));
+  withInstrument.forEach((d, i) => {
+    assert.equal(d.Y, withoutInstrument[i].Y);
+    assert.equal(d.Z, withoutInstrument[i].Z);
+  });
+});
+
+test("instrument adjustment amplifies hidden-confounding bias across samples", () => {
+  const estimates = [[], []].map(() => [[], [], []]);
+  for (let seed = 200; seed < 400; seed++) {
+    const data = simulate(
+      { ...defaults, za: 2, ua: 1, uy: 1.5 },
+      makeNoise(2400, seed),
+    );
+    [["C"], ["C", "Z"]].forEach((adjustment, j) => {
+      estimate(data, adjustment)
+        .values.slice(2)
+        .forEach((value, k) => estimates[j][k].push(value));
+    });
+  }
+  const means = estimates.map((fits) =>
+    fits.map(
+      (values) => values.reduce((sum, value) => sum + value, 0) / values.length,
+    ),
+  );
+  for (let method = 0; method < 3; method++) {
+    assert.ok(means[0][method] > 3);
+    assert.ok(means[1][method] > means[0][method] + 0.1);
+  }
+});
+
 test("model choices affect only methods that use those models", () => {
   const data = simulate(defaults, noise, worlds[3]);
   const basic = estimate(data, ["C"]);
@@ -178,7 +220,14 @@ test("every world, feature choice, and adjustment set handles supported extremes
         noise,
         world,
       );
-      for (const adjustment of [[], ["C"], ["M"], ["K"], ["C", "M", "K"]]) {
+      for (const adjustment of [
+        [],
+        ["C"],
+        ["Z"],
+        ["M"],
+        ["K"],
+        ["C", "Z", "M", "K"],
+      ]) {
         const result = estimate(data, adjustment, spec);
         assert.ok(result.values.every(Number.isFinite));
       }
