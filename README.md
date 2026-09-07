@@ -39,12 +39,9 @@ Choose a scenario, then customize its world and analysis in separate tabs. Each 
 
 [![Full sandbox: scenario selection, analysis controls, and estimates compared with truth](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox)
 
-- **Edit the causal world.** Sliders set every arrow strength in a DAG with treatment A, outcome Y, observed covariates C (C₁, C₂), hidden confounder U, mediator M, and collider K.
-- **Play analyst.** Choose adjustment variables beside the estimates and configure the outcome and propensity models in the Analysis tab. Graph display controls only fade nodes and arrows; they never change adjustment or estimates.
-- **Compare estimates against the truth.** Unadjusted, regression adjustment, IPW, and AIPW use a fixed error scale with starting markers. The unadjusted row combines raw association and the equivalent naive regression.
-- **Switch worlds** between simple and more complex relationships. Choose simple or more flexible models and see whether they can capture each world’s covariate relationships.
-- **Explore ten scenarios:** randomization, observed or hidden confounding, collider or mediator adjustment, four model-specification comparisons, and an isolated poor-overlap experiment. Restart the selected scenario or share its starting setup through its link.
-- **Look up terms as you explore.** Pause over an underlined term, or tap or click it, for a short definition, or open the collapsed glossary in “How this world works.” Help supports keyboard navigation and Escape to close, without changing the simulation.
+- **Edit the causal world.** Change relationships among treatment, outcome, observed covariates, hidden confounding, mediation, and collider bias.
+- **Play analyst.** Choose adjustment variables and models, then compare unadjusted, regression, IPW, and AIPW estimates with the known true effect.
+- **Explore different scenarios.** Experiment with randomization, confounding, inappropriate adjustment, model misspecification, and poor overlap. Restart a scenario or share its setup with a link.
 
 The true effect is always known, so every estimate can be compared with it. All simulations run in the browser; the static site uses GoatCounter for visit analytics.
 
