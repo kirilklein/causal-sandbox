@@ -8,6 +8,10 @@ import {
 } from "./clipping-experiment.js";
 import { effectComparison } from "./effect-comparison.js";
 import { themeControl } from "./theme.js";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 
 if (!document.body.dataset.lesson)
   document.title = "What changes when we clip? · Causal Sandbox";
@@ -16,6 +20,7 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
   <header>
     <a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}
   </header>
+  ${lessonNavigation({ currentOptional: "clipping" })}
   <p class="eyebrow">Overlap · optional chapter</p>
   <h1 tabindex="-1">What changes when we clip?</h1>
   <p class="lede">
@@ -225,6 +230,7 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
 <nav class="chapter-nav" aria-label="Chapter navigation"><a href="positivity/">← Back to overlap</a><a href="?sandbox">Continue to the full sandbox ↗</a></nav>
 </main>
 </div>`;
+setupLessonNavigation();
 
 const slider = document.querySelector("#threshold");
 const selectionSlider = document.querySelector("#selection");

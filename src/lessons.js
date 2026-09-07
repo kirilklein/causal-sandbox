@@ -9,6 +9,11 @@ import { lessonBaseline, lessonResult } from "./lesson-simulation.js";
 import { samplingView } from "./sampling-variation.js";
 import { aipwCalculation, aipwFormula } from "./aipw-calculation.js";
 import { tmlePanel, tmleFormula, renderTmle } from "./tmle-lesson.js";
+import {
+  lessonNavigation,
+  optionalChapters,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 import "./tmle-lesson.css";
 
 const lessons = [
@@ -192,23 +197,6 @@ let state,
   revealed = false,
   revisiting = false;
 const app = document.querySelector("#app");
-app.addEventListener("pointerdown", (event) => {
-  if (!event.target.closest(".lesson-nav")) {
-    document
-      .querySelector("#lesson-menu-toggle")
-      .setAttribute("aria-expanded", "false");
-  }
-});
-app.addEventListener("keydown", (event) => {
-  const toggle = document.querySelector("#lesson-menu-toggle");
-  if (
-    event.key === "Escape" &&
-    toggle.getAttribute("aria-expanded") === "true"
-  ) {
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.focus();
-  }
-});
 
 function enterFromUrl(focus = true) {
   const params = new URLSearchParams(location.search);
@@ -265,80 +253,7 @@ function controls(level) {
   return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
 }
 
-const optionalChapters = [
-  {
-    after: 9,
-    title: "What timing tells us",
-    href: "?lesson=timing",
-    description:
-      "See why measuring a variable before treatment does not make it safe to adjust for.",
-    summary: "Timing and safe adjustment",
-  },
-  {
-    after: 6,
-    title: "Instruments and adjustment",
-    href: "?lesson=instrument",
-    description:
-      "See how adjusting for an instrument can increase variability and amplify hidden-confounding bias.",
-    summary: "Variability and hidden-confounding bias",
-  },
-  {
-    title: "How strong is a causal arrow?",
-    href: "?lesson=arrow-strength",
-    summary: "Weak effects and cancelling paths",
-  },
-  {
-    after: 10,
-    title: "Clipping and extreme weights",
-    href: "propensity-score-clipping-trimming/",
-    description:
-      "Explore the tradeoff from limiting extreme weights, then see how trimming changes the target population.",
-    summary: "Limiting extreme weights",
-  },
-  {
-    title: "Trimming and the target population",
-    href: "?lesson=trimming",
-    summary: "Who remains after trimming",
-  },
-];
 enterFromUrl(false);
-
-function lessonNavigation(position) {
-  const groups = [
-    { title: "Foundations", start: 0, end: 4 },
-    { title: "Causal roles", start: 4, end: 7 },
-    { title: "Models and limitations", start: 7, end: availableLevels.length },
-  ];
-  return `<nav class="lesson-nav" aria-label="Lesson navigation">
-    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button><span>Level ${position + 1} of ${availableLevels.length + 1}${revisiting ? " · Optional revisit" : ""}</span></div>
-    <div id="lesson-menu">${groups
-      .map(
-        ({ title, start, end }) =>
-          `<section class="lesson-group" aria-label="${title}"><h2>${title}</h2><ol start="${start + 1}">${availableLevels
-            .slice(start, end)
-            .map(
-              (id, offset) =>
-                `<li><a href="${lessonUrl(id)}" data-level="${id}" aria-label="${lessons[id - 1].title}" data-number="${start + offset + 1}" ${position === start + offset ? 'aria-current="step"' : ""}>${lessons[id - 1].title}</a></li>`,
-            )
-            .join("")}</ol></section>`,
-      )
-      .join("")}
-    <section class="concept-menu optional-menu" aria-label="Optional chapters"><h2>Optional chapters</h2>
-      ${optionalChapters.map(({ title, href, summary }) => `<a href="${href}" aria-label="${title}">${title}<small>${summary}</small></a>`).join("")}
-    </section>
-    <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
-      <a href="glossary/">Glossary</a>
-      <a href="confounding/">Confounding</a>
-      <a href="collider-bias/">Collider bias</a>
-      <a href="positivity/">Positivity and overlap</a>
-      <a href="inverse-probability-weighting/">Inverse probability weighting</a>
-      <a href="aipw-double-robustness/">How double robustness works</a>
-      <a href="mediator-adjustment/">Mediator adjustment</a>
-      <a href="tmle/">TMLE</a>
-    </section>
-    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
-  </nav>`;
-}
 
 function enter(level, focus = true, callback = false) {
   revisiting = callback;
@@ -355,7 +270,7 @@ function enter(level, focus = true, callback = false) {
     <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
       ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
-      ${lessonNavigation(position)}
+      ${lessonNavigation({ position, revisiting })}
       <div class="eyebrow">${recap ? "TAKEAWAYS" : "PREDICT · TRY · OBSERVE"}</div><h1 tabindex="-1">${lesson.title}</h1>
       ${
         recap
@@ -414,13 +329,7 @@ function enter(level, focus = true, callback = false) {
           : ""
       }
     </main>`;
-  const menuToggle = document.querySelector("#lesson-menu-toggle");
-  menuToggle.addEventListener("click", () => {
-    menuToggle.setAttribute(
-      "aria-expanded",
-      String(menuToggle.getAttribute("aria-expanded") !== "true"),
-    );
-  });
+  setupLessonNavigation();
   document.querySelector("#lesson-menu").addEventListener("click", (event) => {
     const link = event.target.closest("a[data-level]");
     if (

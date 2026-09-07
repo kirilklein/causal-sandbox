@@ -27,6 +27,15 @@ try {
   await page.getByRole("link", { name: "What timing tells us →" }).click();
   const handle = page.locator("#variable-handle");
   await handle.waitFor();
+  const contents = page.getByRole("button", { name: "Contents" });
+  assert.ok(await contents.isVisible());
+  await contents.click();
+  assert.ok(await page.locator("#lesson-menu").isVisible());
+  assert.equal(
+    await page.locator('.optional-menu a[aria-current="step"]').innerText(),
+    "What timing tells us\nTiming and safe adjustment",
+  );
+  await contents.click();
   const selectedWindow = () =>
     page.locator('[name="time-window"]:checked').inputValue();
   const chooseWindow = (key) =>

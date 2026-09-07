@@ -2,9 +2,14 @@ import "./instrument-lesson.css";
 import { themeControl } from "./theme.js";
 import { effectComparison } from "./effect-comparison.js";
 import icon from "./brand.svg?raw";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 document.querySelector("#app").innerHTML =
   `<div class="instrument-page"><header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Full sandbox ↗</a>${themeControl()}</header>
     <main>
+      ${lessonNavigation({ currentOptional: "instrument" })}
       <p class="eyebrow" id="step"></p>
       <h1 id="title" tabindex="-1"></h1>
       <p class="intro" id="intro"></p>
@@ -167,6 +172,7 @@ document.querySelector("#app").innerHTML =
         Point estimates only; fictional effect values.
       </footer>
     </main></div>`;
+setupLessonNavigation();
 
 import { instrumentAdjustment, studySummary } from "./instrument-simulation.js";
 const el = (id) => document.getElementById(id);

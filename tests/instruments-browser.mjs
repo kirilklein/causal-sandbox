@@ -29,6 +29,15 @@ try {
     .click();
   await page.locator("#ipw").filter({ hasText: /\d/ }).waitFor();
   assert.equal(new URL(page.url()).searchParams.get("lesson"), "instrument");
+  const contents = page.getByRole("button", { name: "Contents" });
+  assert.ok(await contents.isVisible());
+  await contents.click();
+  assert.ok(await page.locator("#lesson-menu").isVisible());
+  assert.equal(
+    await page.locator('.optional-menu a[aria-current="step"]').innerText(),
+    "Instruments and adjustment\nVariability and hidden-confounding bias",
+  );
+  await contents.click();
   assert.equal(
     await page.locator("#step").textContent(),
     "CAUSAL ROLES · 1 OF 2",

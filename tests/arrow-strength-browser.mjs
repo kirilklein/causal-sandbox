@@ -41,6 +41,15 @@ try {
     await page.locator("h1").innerText(),
     "How strong is a causal arrow?",
   );
+  const contents = page.getByRole("button", { name: "Contents" });
+  assert.ok(await contents.isVisible());
+  await contents.click();
+  assert.ok(await page.locator("#lesson-menu").isVisible());
+  assert.equal(
+    await page.locator('.optional-menu a[aria-current="step"]').innerText(),
+    "How strong is a causal arrow?\nWeak effects and cancelling paths",
+  );
+  await contents.click();
   assert.equal(await page.locator(".intro a").count(), 2);
   assert.equal(await page.getByLabel("Z → A strength").inputValue(), "2");
   assert.equal(await page.getByLabel("Z → Y direct effect").inputValue(), "0");
