@@ -43,8 +43,51 @@
   font-variant-numeric: tabular-nums;
 }
 .arrow-strength-page .strength-controls input {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
-  accent-color: var(--accent);
+  height: 24px;
+  background: transparent;
+}
+.arrow-strength-page .strength-controls input::-webkit-slider-runnable-track {
+  height: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--grid);
+}
+.arrow-strength-page .strength-controls input::-moz-range-track {
+  height: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--grid);
+}
+.arrow-strength-page .strength-controls input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.arrow-strength-page .strength-controls input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.arrow-strength-page .strength-controls input:focus-visible {
+  outline: none;
+}
+.arrow-strength-page
+  .strength-controls
+  input:focus-visible::-webkit-slider-runnable-track,
+.arrow-strength-page .strength-controls input:focus-visible::-moz-range-track {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 .arrow-strength-page .strength-controls p {
   grid-column: 2;
