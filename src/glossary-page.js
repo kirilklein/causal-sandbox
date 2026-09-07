@@ -12,7 +12,7 @@ document.querySelector("#glossary-assumptions-list").innerHTML =
   coreAssumptionKeys
     .map(
       (key) =>
-        `<a href="glossary/#${key}"><span>${glossary[key].title}</span><small>${glossary[key].summary}</small></a>`,
+        `<a href="glossary/#${key}"><span>${glossary[key].title}</span><p>${glossary[key].formal}</p></a>`,
     )
     .join("");
 

@@ -150,6 +150,18 @@ try {
       .evaluateAll((links) => links.map((link) => link.hash.slice(1))),
     coreAssumptionKeys,
   );
+  assert.equal(
+    await page
+      .locator('#glossary-assumptions-list a[href="glossary/#positivity"] p')
+      .innerText(),
+    glossary.positivity.formal,
+  );
+  assert.equal(
+    await page
+      .locator('#glossary-assumptions-list a[href="glossary/#positivity"]')
+      .evaluate((link) => getComputedStyle(link).textDecorationLine),
+    "none",
+  );
   await page
     .locator('#glossary-assumptions-list a[href="glossary/#consistency"]')
     .tap();

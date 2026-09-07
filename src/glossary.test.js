@@ -51,7 +51,7 @@ test("sandbox help remains limited to its original contextual terms", () => {
 test("the glossary separates effect and overlap concepts", () => {
   assert.match(glossary.ate.detail.join(" "), /Average describes aggregation/);
   assert.match(glossary["total-effect"].summary, /every causal pathway/);
-  assert.match(glossary.positivity.summary, /requires every covariate pattern/);
+  assert.match(glossary.positivity.summary, /Every covariate pattern/);
   assert.match(
     glossary.overlap.detail.join(" "),
     /cannot prove the positivity/,
@@ -68,6 +68,7 @@ test("core causal assumptions are distinct and cite supporting sources", () => {
   for (const key of coreAssumptionKeys) {
     const term = glossary[key];
     assert.ok(term, `${key} needs a glossary entry`);
+    assert.ok(term.formal.length > 0, `${key} needs a formal definition`);
     assert.ok(term.sources.length > 0, `${key} needs a reference`);
     for (const source of term.sources) {
       assert.ok(source.label.length > 0, `${key} has an unnamed reference`);
@@ -82,4 +83,7 @@ test("core causal assumptions are distinct and cite supporting sources", () => {
   assert.match(glossary.exchangeability.summary, /potential outcomes/);
   assert.match(glossary.positivity.summary, /positive chance/);
   assert.match(glossary["no-interference"].summary, /other people/);
+  assert.match(glossary.exchangeability.formal, /Y\(a\).*independent/);
+  assert.match(glossary.positivity.formal, /P\(A = a \| L = l\) > 0/);
+  assert.match(glossary.positivity.detail.join(" "), /near 0 or 1/);
 });

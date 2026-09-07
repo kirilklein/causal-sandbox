@@ -175,10 +175,13 @@ export const glossary = {
   exchangeability: {
     title: "Exchangeability",
     aliases: ["Conditional exchangeability", "No unmeasured confounding"],
+    formal:
+      "For each treatment a, the potential outcome Y(a) is independent of received treatment A, either marginally or conditional on sufficient pre-treatment covariates L.",
     summary:
-      "Exchangeability means that the treatment groups being compared have the same distribution of potential outcomes, either marginally or within adjusted covariate groups.",
+      "The treatment groups being compared have the same distribution of potential outcomes, either marginally or within adjusted covariate groups.",
     detail: [
       "Randomization can establish exchangeability without conditioning. In an observational analysis, conditional exchangeability means that all common causes needed for the treatment–outcome comparison have been measured and handled correctly. This claim requires causal knowledge and cannot be verified from fitted data alone.",
+      "For example, if baseline disease severity affects both treatment choice and the outcome, leaving severity unmeasured breaks conditional exchangeability. Similar measured covariates or good balance after weighting cannot rule out this hidden difference.",
     ],
     sources: [
       {
@@ -193,10 +196,13 @@ export const glossary = {
   },
   positivity: {
     title: "Positivity",
+    formal:
+      "For every relevant covariate pattern L = l, each treatment a has nonzero probability: P(A = a | L = l) > 0.",
     summary:
-      "Positivity requires every covariate pattern in the target population to have a positive chance of receiving each treatment being compared.",
+      "Every covariate pattern in the target population has a positive chance of receiving each treatment being compared.",
     detail: [
-      "A structural zero means the missing treatment outcome cannot be learned for that group from the observed comparison. Larger samples, more flexible models, and clipping cannot create absent support. Practical near-violations can still make estimates unstable even when probabilities are not exactly zero.",
+      "A structural zero means the missing treatment outcome cannot be learned for that group from the observed comparison. For example, if every patient with a particular contraindication remains untreated, the effect of treatment in that group is unsupported by the observed data. Larger samples, more flexible models, and clipping cannot create this absent support.",
+      "In practice, propensity scores concentrated near 0 or 1, little overlap between treatment groups, and very large inverse-probability weights warn about weak support. These are diagnostics under a fitted treatment model, not proof that theoretical positivity holds, and there is no universal cutoff that separates adequate from inadequate support.",
     ],
     sources: [
       {
@@ -219,10 +225,12 @@ export const glossary = {
   },
   consistency: {
     title: "Consistency",
+    formal:
+      "If a person receives treatment A = a, their observed outcome Y equals their potential outcome Y(a).",
     summary:
-      "Consistency says that a person’s observed outcome equals their potential outcome under the treatment they actually received.",
+      "A person’s observed outcome equals their potential outcome under the treatment they actually received.",
     detail: [
-      "The treatment must be defined well enough that the intervention in the causal question matches what was observed. If clinically different versions are grouped under one label, the potential outcome under that label may be ambiguous. The simulator defines one version of each treatment and builds consistency into its data-generating process.",
+      "The treatment must be defined well enough that the intervention in the causal question matches what was observed. For example, if “surgery” combines techniques with different effects, the potential outcome under surgery is ambiguous unless the relevant version is specified. The simulator defines one version of each treatment and builds consistency into its data-generating process.",
     ],
     sources: [
       {
@@ -238,8 +246,10 @@ export const glossary = {
   },
   "no-interference": {
     title: "No interference",
+    formal:
+      "Two treatment assignments that give person i the same treatment give person i the same potential outcome.",
     summary:
-      "No interference means that one person’s potential outcome does not depend on the treatments received by other people.",
+      "One person’s potential outcome does not depend on the treatments received by other people.",
     detail: [
       "This assumption can fail when treatment has spillover effects, such as vaccination changing another person’s infection risk. Causal effects can still be defined when interference is present, but the treatment strategies, potential outcomes, and analysis must represent it. SUTVA commonly bundles no interference with no relevant hidden versions of treatment. The simulator generates each person independently, so no interference holds here.",
     ],
