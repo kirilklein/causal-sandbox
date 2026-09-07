@@ -5,14 +5,14 @@ const terms = Object.entries(glossary).sort(([, a], [, b]) =>
 );
 
 document.querySelector("#glossary-contents-list").innerHTML = terms
-  .map(([key, term]) => `<a href="#${key}">${term.title}</a>`)
+  .map(([key, term]) => `<a href="glossary/#${key}">${term.title}</a>`)
   .join("");
 
 document.querySelector("#glossary-assumptions-list").innerHTML =
   coreAssumptionKeys
     .map(
       (key) =>
-        `<a href="#${key}"><span>${glossary[key].title}</span><small>${glossary[key].summary}</small></a>`,
+        `<a href="glossary/#${key}"><span>${glossary[key].title}</span><small>${glossary[key].summary}</small></a>`,
     )
     .join("");
 
@@ -27,7 +27,7 @@ document.querySelector("#glossary-entries").innerHTML = terms
         <div class="glossary-detail">${term.detail.map((paragraph) => `<p>${paragraph}</p>`).join("")}</div>
         ${term.sources?.length ? `<p class="glossary-sources"><span>${term.sources.length === 1 ? "Reference" : "References"}</span>${term.sources.map((source) => `<a href="${source.href}">${source.label}</a>`).join(" · ")}</p>` : ""}
         <a class="glossary-related" href="${term.related.href}">${term.related.label} →</a>
-        <a class="glossary-back" href="#glossary-title">Back to terms ↑</a>
+        <a class="glossary-back" href="glossary/#glossary-title">Back to terms ↑</a>
       </section>`,
   )
   .join("");

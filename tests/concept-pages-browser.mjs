@@ -150,6 +150,14 @@ try {
       .evaluateAll((links) => links.map((link) => link.hash.slice(1))),
     coreAssumptionKeys,
   );
+  await page
+    .locator('#glossary-assumptions-list a[href="glossary/#consistency"]')
+    .tap();
+  assert.equal(page.url(), `${glossaryUrl}#consistency`);
+  assert.equal(
+    await page.locator("#consistency h2").innerText(),
+    "Consistency",
+  );
   for (const key of coreAssumptionKeys) {
     assert.equal(
       await page.locator(`#${key} .glossary-sources a`).count(),
@@ -174,9 +182,13 @@ try {
   );
   assert.equal(
     await page
-      .locator('#glossary-contents-list a[href="#confounder"]')
+      .locator('#glossary-contents-list a[href="glossary/#confounder"]')
       .innerText(),
     "Confounder",
+  );
+  assert.equal(
+    await page.locator(".glossary-back").first().getAttribute("href"),
+    "glossary/#glossary-title",
   );
   await page.getByLabel("Color theme").selectOption("light");
   for (const width of [1280, 390, 320]) {
