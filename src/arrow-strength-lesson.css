@@ -1,0 +1,132 @@
+.arrow-strength-page .intro a,
+.arrow-strength-page details a {
+  color: var(--accent);
+}
+.arrow-strength-page .intro {
+  display: block;
+}
+.arrow-strength-page .strength-graph {
+  margin-top: 18px;
+}
+.arrow-strength-page .strength-graph path {
+  transition: opacity 120ms ease;
+}
+.arrow-strength-page .strength-graph #za-label,
+.arrow-strength-page .strength-graph #zy-label {
+  font-size: 12px;
+  fill: var(--text-secondary);
+}
+.arrow-strength-page .strength-presets {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 20px;
+}
+.arrow-strength-page .strength-presets [aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.arrow-strength-page .strength-controls {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.7fr) minmax(220px, 1fr);
+  gap: 8px 20px;
+  align-items: center;
+  padding: 18px 0;
+  border-block: 1px solid var(--border);
+}
+.arrow-strength-page .strength-controls label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+.arrow-strength-page .strength-controls output {
+  font-variant-numeric: tabular-nums;
+}
+.arrow-strength-page .strength-controls input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+}
+.arrow-strength-page .strength-controls input::-webkit-slider-runnable-track {
+  height: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--grid);
+}
+.arrow-strength-page .strength-controls input::-moz-range-track {
+  height: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--grid);
+}
+.arrow-strength-page .strength-controls input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.arrow-strength-page .strength-controls input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.arrow-strength-page .strength-controls input:focus-visible {
+  outline: none;
+}
+.arrow-strength-page
+  .strength-controls
+  input:focus-visible::-webkit-slider-runnable-track,
+.arrow-strength-page .strength-controls input:focus-visible::-moz-range-track {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.arrow-strength-page .strength-controls p {
+  grid-column: 2;
+  margin: -4px 0 8px;
+}
+.arrow-strength-page .near-zero {
+  background: var(--accent-surface);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.arrow-strength-page .paired-table td {
+  font-size: 16px;
+}
+.arrow-strength-page .study-association {
+  display: grid;
+  gap: 2px;
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 10px;
+  background: var(--accent-surface);
+}
+.arrow-strength-page .study-association strong {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+.arrow-strength-page .study-association small {
+  color: var(--text-secondary);
+}
+.arrow-strength-page .reading-list li {
+  margin: 8px 0;
+}
+@media (max-width: 560px) {
+  .arrow-strength-page .strength-controls {
+    grid-template-columns: 1fr;
+  }
+  .arrow-strength-page .strength-controls p {
+    grid-column: 1;
+    margin-top: -2px;
+  }
+  .arrow-strength-page .strength-evidence {
+    grid-template-columns: 1fr 1fr;
+  }
+}

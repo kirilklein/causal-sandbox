@@ -279,6 +279,11 @@ const optionalChapters = [
     summary: "Variability and hidden-confounding bias",
   },
   {
+    title: "How strong is a causal arrow?",
+    href: "?lesson=arrow-strength",
+    summary: "Weak effects and cancelling paths",
+  },
+  {
     after: 10,
     title: "Clipping and extreme weights",
     href: "propensity-score-clipping-trimming/",
