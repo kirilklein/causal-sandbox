@@ -2,6 +2,9 @@
 .arrow-strength-page details a {
   color: var(--accent);
 }
+.arrow-strength-page .intro {
+  display: block;
+}
 .arrow-strength-page .strength-graph {
   margin-top: 18px;
 }
