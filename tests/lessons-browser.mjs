@@ -603,7 +603,7 @@ try {
   );
   assert.match(
     await page.locator(".lesson-transition").innerText(),
-    /remove the hidden cause/,
+    /one measured confounder/,
   );
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
   assert.equal(
