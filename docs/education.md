@@ -2,7 +2,18 @@
 
 The default experience is a sequence of small experiments. Levels 1–11 implement randomization → one common cause → inverse probability
 weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → TMLE targeting → poor overlap.
-The existing advanced sandbox is available through `?sandbox` as level 12.
+Level 12, **Leaving the sandbox** (`?lesson=leaving-the-sandbox`), is a quiet
+recap after overlap: define the question, defend the causal story and adjustment,
+and distinguish estimator assumptions from diagnostic checks. One emphasized takeaway
+leads into five supporting reminders and a practical sensitivity-analysis section
+that asks which plausible departures would change the practical conclusion.
+This includes uncertain causal relationships and whether an adjustment set remains
+valid across plausible graphs; changes in estimates alone cannot choose the graph.
+Optional detail covers exchangeability, positivity, consistency, and interference,
+without treating all assumptions as inevitably violated or empirically testable.
+It has no simulation,
+estimates, or restart button. Back returns to overlap; the forward link opens the
+existing advanced sandbox through `?sandbox` as level 13.
 
 An optional [clipping chapter](clipping-experiment.md) follows Poor overlap at
 `?lesson=clipping`. Compare estimates before and after probability clipping while
@@ -50,7 +61,7 @@ uses `?lesson=double-robustness&revisit=hidden-confounding`.
 
 Linear progression through Continue is the default. A quiet Contents toggle stays
 closed on every screen size. When opened, it groups lesson links into Foundations
-(1–4), Causal roles (5–7), and Models and limitations (8–11), followed by the
+(1–4), Causal roles (5–7), and Models and limitations (8–12), followed by the
 sandbox. The Contents control sits in the left margin, aligned with its panel, and uses
 a panel icon whose chevron indicates opening/closing. The panel opens without
 moving the lesson, and
@@ -95,12 +106,12 @@ future work.
    implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 11.
-4. **Full sandbox (level 12):** available at any time and after overlap. Entry
+4. **Full sandbox (level 13):** available at any time and after the recap. Entry
    starts a separate experiment and introduces its two measured covariates and
    their interaction. Lesson settings are not transferred into this world.
 
-Only implemented lessons appear in contents. Levels 1–11 now form a continuous
-sequence; “Level N of 12” includes the final sandbox. No scores, completion gates, accounts or stored
+Only implemented lessons appear in contents. Levels 1–12 now form a continuous
+sequence; “Level N of 13” includes the final sandbox. No scores, completion gates, accounts or stored
 progress. Later chapters and confidence intervals are separate changes.
 
 ## Sampling variation (IV prerequisite, PR A)

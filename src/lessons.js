@@ -150,7 +150,7 @@ lessons[9] = {
     "Strengthen treatment selection, then compare the treatment probabilities and weights. Redraw to explore how the estimates vary.",
   explanation:
     "Overlap means people with similar baseline health can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models. An estimate can still be close to truth in a particular sample.",
-  next: "You can now explore how these limitations combine in the full sandbox. That link starts a separate experiment with two measured baseline variables. C groups C₁ and C₂ there; an interaction lets the influence of one depend on the other.",
+  next: "Before exploring the full sandbox, take stock of what changes when the causal world and true effect are unknown.",
 };
 // Numeric IDs retain the original simulation and ?level= link identities.
 // Only this order determines the displayed positions and navigation.
@@ -166,7 +166,11 @@ lessons[10] = {
     "Targeted minimum loss-based estimation (TMLE) adjusts the outcome predictions in a direction set by the treatment probabilities. It fits the amount of this update using observed outcomes, then averages the updated predicted treatment contrasts. Solving the targeting equation does not guarantee a correct causal answer: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
-const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 11, 10];
+lessons[11] = {
+  slug: "leaving-the-sandbox",
+  title: "Leaving the sandbox",
+};
+const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 11, 10, 12];
 const lessonPaths = {
   ipw: "inverse-probability-weighting/",
   mediator: "mediator-adjustment/",
@@ -338,9 +342,10 @@ function lessonNavigation(position) {
 
 function enter(level, focus = true, callback = false) {
   revisiting = callback;
-  state = lessonBaseline(level);
+  const recap = level === 12;
+  state = recap ? null : lessonBaseline(level);
   studies = [];
-  noise = makeNoise(state.n, state.seed);
+  noise = recap ? null : makeNoise(state.n, state.seed);
   revealed = false;
   const lesson = revisiting ? hiddenCallback : lessons[level - 1];
   const position = availableLevels.indexOf(revisiting ? 6 : level);
@@ -351,7 +356,11 @@ function enter(level, focus = true, callback = false) {
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
       ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
       ${lessonNavigation(position)}
-      <div class="eyebrow">PREDICT · TRY · OBSERVE</div><h1 tabindex="-1">${lesson.title}</h1>
+      <div class="eyebrow">${recap ? "TAKEAWAYS" : "PREDICT · TRY · OBSERVE"}</div><h1 tabindex="-1">${lesson.title}</h1>
+      ${
+        recap
+          ? leavingTheSandbox()
+          : `
       <p class="lesson-transition">${lesson.transition}</p>
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
         <div id="lesson-graph"></div>
@@ -389,8 +398,10 @@ function enter(level, focus = true, callback = false) {
       ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Here, the true relationship includes C² − 1. A linear model using only C cannot capture this curve. It needs a C² term and an intercept to represent the relationship correctly.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, baseline health is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
+      `
+      }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}<button id="restart">Restart level</button>${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters
@@ -498,7 +509,7 @@ function enter(level, focus = true, callback = false) {
     });
   document
     .querySelector("#restart")
-    .addEventListener("click", () => enter(level, true, revisiting));
+    ?.addEventListener("click", () => enter(level, true, revisiting));
   document
     .querySelector("#revisit-hidden")
     ?.addEventListener("click", () => navigate(6, true));
@@ -508,8 +519,42 @@ function enter(level, focus = true, callback = false) {
   document
     .querySelector("#continue")
     ?.addEventListener("click", () => navigate(next));
-  update();
+  if (!recap) update();
   if (focus) document.querySelector("h1").focus();
+}
+
+function leavingTheSandbox() {
+  return `<article class="lesson-recap" aria-label="What changes in real research">
+    <p class="lesson-transition">The sandbox gave us something real studies never do: a known causal world and a known true effect. Before leaving it, here is what changes when both are hidden.</p>
+    <section class="recap-takeaway" aria-labelledby="recap-takeaway-title">
+      <h2 id="recap-takeaway-title">Causal estimates should arrive with their assumptions attached.</h2>
+    <p>This is the strange bargain of causal inference: answering one causal question requires assumptions about the relationships around it. In the sandbox, those relationships are known because we created them. In real studies, they remain partly uncertain.</p>
+    </section>
+    <section aria-labelledby="recap-reminders-title">
+      <h2 id="recap-reminders-title">Important to remember</h2>
+      <ul class="recap-reminders">
+        <li><strong>The question comes first.</strong> Define the intervention, comparison, outcome, population, and time horizon before choosing an estimator.</li>
+        <li><strong>Data do not choose the causal story.</strong> The same observed pattern can fit different causal explanations. Study design, timing, and subject-matter knowledge help decide what is plausible.</li>
+        <li><strong>Adjustment is a causal decision.</strong> A variable can remove confounding, block part of the effect, or create bias. More adjustment is not automatically safer.</li>
+        <li><strong>Methods inherit the assumptions.</strong> Regression, IPW, AIPW, and TMLE solve statistical problems inside a causal design. By themselves, they cannot resolve unmeasured confounding or create a comparison with no support.</li>
+        <li><strong>Diagnostics can warn, not certify.</strong> Checks for imbalance, model misspecification, and poor overlap can reveal trouble. Passing those checks does not prove that the causal model is right.</li>
+      </ul>
+    </section>
+    <section aria-labelledby="recap-practice-title">
+      <h2 id="recap-practice-title">Ask what would change your conclusion</h2>
+      <p>Make assumptions explicit and defend them, then explore plausible alternatives. What if a suspected cause has no effect on the outcome? Would adjusting for it reduce bias, add uncertainty, or make bias worse? How strong would an unmeasured common cause need to be to change the practical conclusion? Use causal reasoning and sensitivity analysis to examine these possibilities, and judge their plausibility using subject-matter knowledge.</p>
+    </section>
+    <details class="lesson-explanation"><summary>What does it mean to defend an assumption?</summary>
+      <p>These assumptions describe conditions for identifying an effect. Some can hold by design, while others remain uncertain. Their failure need not have the same consequences in every study.</p>
+      <p><strong>Uncertain relationships:</strong> consider plausible causal graphs, including whether an uncertain arrow is absent, and ask whether the same adjustment set remains valid. A variable with no causal effect on the outcome is not automatically harmless to adjust for: its other relationships matter. For example, adjusting for an instrument can reduce precision and amplify remaining unmeasured confounding. Comparing estimates with and without a variable shows sensitivity to that choice, but it does not tell you which estimate is closer to truth.</p>
+      <p><strong>Exchangeability:</strong> within the covariate groups used for adjustment, treatment groups must be comparable in their potential outcomes. Adjusting for all observed confounders is not enough if important confounding remains unmeasured. Randomization supports exchangeability for assigned treatment, but does not guarantee exact balance in a finite sample.</p>
+      <p><strong>Positivity:</strong> both treatments must be possible within relevant covariate groups in the target population. Sparse comparisons can make estimates unstable. An impossible comparison prevents identification under this adjustment strategy. Restricting the population changes the question, while extrapolation adds assumptions.</p>
+      <p><strong>Consistency:</strong> the observed treatment must correspond to the intervention whose effect we ask about. Different doses, delivery methods, or versions may need to be distinguished if they change outcomes.</p>
+      <p><strong>No interference:</strong> one person’s treatment must not affect another person’s outcome under the usual individual-treatment formulation. When spillovers matter, such as with vaccination, the causal question and analysis need to represent them.</p>
+      <p>Observed data can reveal sparse comparisons, but cannot by themselves establish exchangeability. Sensitivity analyses explore specified departures, such as a range of unmeasured-confounding strengths. No single check covers every assumption. If plausible departures change the practical conclusion, report that fragility.</p>
+      <p class="sample-note">Further reading: <a href="https://www.stats.ox.ac.uk/~evans/APTS/causassmp.html">Causal assumptions</a>, <a href="https://carloscinelli.com/sensemakr/">sensitivity analysis for unmeasured confounding</a>, and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3254160/">instrument adjustment, bias, and precision</a>.</p>
+    </details>
+  </article>`;
 }
 function navigate(level, callback = false) {
   const url = lessonUrl(level);
