@@ -1,5 +1,9 @@
 # Progressive education delivery
 
+The optional [causal assumptions chapter](assumptions.md) makes exchangeability,
+positivity, consistency, and no interference tangible through four separate
+experiments. It is linked from Contents and the recap without changing core order.
+
 The default experience is a sequence of small experiments. Levels 1–11 implement randomization → one common cause → inverse probability
 weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → TMLE targeting → poor overlap.
 Level 12, **Leaving the sandbox** (`?lesson=leaving-the-sandbox`), is a quiet

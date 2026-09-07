@@ -190,8 +190,8 @@ export const glossary = {
       },
     ],
     related: {
-      label: "Review the causal assumptions",
-      href: "methodology/#assumptions",
+      label: "Compare the groups’ potential outcomes",
+      href: "?lesson=assumptions&assumption=exchangeability",
     },
   },
   positivity: {
@@ -211,7 +211,10 @@ export const glossary = {
         href: "https://pmc.ncbi.nlm.nih.gov/articles/PMC4107929/",
       },
     ],
-    related: { label: "Explore positivity", href: "positivity/" },
+    related: {
+      label: "See common, rare, and missing comparisons",
+      href: "?lesson=assumptions&assumption=positivity",
+    },
   },
   overlap: {
     title: "Overlap",
@@ -240,8 +243,8 @@ export const glossary = {
       },
     ],
     related: {
-      label: "Review the causal assumptions",
-      href: "methodology/#assumptions",
+      label: "Unpack the treatment label",
+      href: "?lesson=assumptions&assumption=consistency",
     },
   },
   "no-interference": {
@@ -251,7 +254,7 @@ export const glossary = {
     summary:
       "One person’s potential outcome does not depend on the treatments received by other people.",
     detail: [
-      "This assumption can fail when treatment has spillover effects, such as vaccination changing another person’s infection risk. Causal effects can still be defined when interference is present, but the treatment strategies, potential outcomes, and analysis must represent it. SUTVA commonly bundles no interference with no relevant hidden versions of treatment. The simulator generates each person independently, so no interference holds here.",
+      "This assumption can fail when treatment has spillover effects, such as vaccination changing another person’s infection risk. Causal effects can still be defined when interference is present, but the treatment strategies, potential outcomes, and analysis must represent it. SUTVA commonly bundles no interference with no relevant hidden versions of treatment. The core lesson simulator generates each person independently; the optional assumptions chapter explores spillover separately.",
     ],
     sources: [
       {
@@ -261,8 +264,8 @@ export const glossary = {
       },
     ],
     related: {
-      label: "Review the causal assumptions",
-      href: "methodology/#assumptions",
+      label: "Try the study-partner spillover experiment",
+      href: "?lesson=assumptions&assumption=no-interference",
     },
   },
   models: {

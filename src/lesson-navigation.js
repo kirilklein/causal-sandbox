@@ -32,6 +32,15 @@ const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "assumptions",
+    after: 12,
+    title: "Making causal assumptions tangible",
+    href: "?lesson=assumptions",
+    description:
+      "Change treatment assignment, available options, treatment versions, and spillovers to see what each assumption means.",
+    summary: "Four visual experiments",
+  },
+  {
     id: "timing",
     after: 9,
     title: "What timing tells us",
