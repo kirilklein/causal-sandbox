@@ -284,8 +284,10 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#regression-explanation").isVisible(), true);
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
-  assert.equal(await page.locator(".learning details").count(), 1);
+  assert.equal(await page.locator(".learning details").count(), 2);
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
+  const outcomeNumbers = page.locator(".outcome-numbers");
+  assert.equal(await outcomeNumbers.getAttribute("open"), null);
   const outcomeSeed = await page.locator("#sample-label").innerText();
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
@@ -318,11 +320,46 @@ try {
   await page.locator(".lesson-explanation summary").tap();
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   assert.equal(await result(), fourth);
+  const numberToggle = outcomeNumbers.locator("summary");
+  await numberToggle.focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await outcomeNumbers.getAttribute("open"), "");
+  assert.equal(await result(), fourth);
+  assert.equal(await page.locator("#sample-label").innerText(), outcomeSeed);
+  assert.match(
+    await outcomeNumbers.innerText(),
+    /only that outcome was observed.*same baseline health/s,
+  );
+  const reconcilesOutcome = async () =>
+    assert.equal(
+      await page.locator("#outcome-worked-effect").innerText(),
+      await page.locator("#regression").innerText(),
+    );
+  await reconcilesOutcome();
+  const initialNumbers = await page.locator("#outcome-arithmetic").innerText();
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: width === 320 ? 740 : 900 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    await outcomeNumbers.screenshot({
+      path: `/tmp/causal-outcome-numbers-${width}.png`,
+    });
+  }
   await page.locator("#redraw").tap();
+  assert.equal(await outcomeNumbers.getAttribute("open"), "");
+  assert.notEqual(
+    await page.locator("#outcome-arithmetic").innerText(),
+    initialNumbers,
+  );
+  await reconcilesOutcome();
   assert.notEqual(await result(), fourth);
   await page.locator("#restart").tap();
   assert.equal(await result(), fourth);
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
+  assert.equal(await outcomeNumbers.getAttribute("open"), null);
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.ok(
     await page.evaluate(

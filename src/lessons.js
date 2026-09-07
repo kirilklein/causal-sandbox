@@ -347,6 +347,7 @@ function enter(level, focus = true, callback = false) {
         }
       </section>
       <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with baseline health Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? "<p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>" : ""}</details>
+      ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 6 ? `<details class="aipw-calculation"><summary>How is AIPW calculated?</summary>${aipwFormula()}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
@@ -518,6 +519,9 @@ function updateEstimate(id, estimate, truth) {
 
 function update() {
   const result = lessonResult(state, noise);
+  if (state.level === 4)
+    document.querySelector("#outcome-arithmetic").innerHTML =
+      outcomeCalculation(result.outcomePredictions);
   if (state.level === 6)
     document.querySelector("#aipw-arithmetic").innerHTML = aipwCalculation(
       result.aipwContributions,
@@ -634,6 +638,22 @@ function update() {
     : `${treatmentDescription} Treatment is assigned at random.`;
   document.querySelector("#lesson-graph").innerHTML =
     `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M155 ${commonCause ? 145 : 45}H380" ${state.level === 1 ? arrowStrength(state.effect, 4) : ""}/>${commonCause ? `<path d="M320 65L400 123"/><path d="M220 65L130 123" ${[2, 10].includes(state.level) ? arrowStrength(state.selection, state.level === 2 ? 1.2 : 5) : ""}/>` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${[1, 2, 10].includes(state.level) ? '<p class="sample-note">Darker arrows show stronger influence; faint arrows at zero are inactive. Shading shows magnitude, not sign.</p>' : ""}${state.level >= 3 ? `<p class="sample-note">${state.level === 3 ? "IPW uses baseline health (C)." : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
+}
+
+function outcomeCalculation(predictions) {
+  const person = predictions[0];
+  const number = (value) => value.toFixed(2);
+  const average =
+    predictions.reduce((sum, row) => sum + row.contrast, 0) /
+    predictions.length;
+  return `<p>Person ${person.person} received ${person.A ? "treatment" : "no treatment"}, so only that outcome was observed. The model predicts both outcomes at the same baseline health, C = ${number(person.C)}.</p>
+    <table><caption>Current predictions for person ${person.person}</caption><tbody>
+      <tr><th scope="row">With treatment, Ŷ₁(Cᵢ)</th><td>${number(person.m1)}</td></tr>
+      <tr><th scope="row">Without treatment, Ŷ₀(Cᵢ)</th><td>${number(person.m0)}</td></tr>
+      <tr><th scope="row">Predicted difference</th><td>${number(person.contrast)}</td></tr>
+    </tbody></table>
+    <p><strong>Average predicted difference:</strong> <span id="outcome-worked-effect">${number(average)}</span> across all ${predictions.length.toLocaleString("en-US")} people.</p>
+    <p class="sample-note">Values are rounded; the estimate uses full precision.</p>`;
 }
 
 function overlapPanel() {

@@ -82,6 +82,7 @@ export function lessonResult(state, noise) {
   const result = estimate(data, adjustment, {
     ...state,
     predictionPoints,
+    outcomeDetails: state.level === 4,
     aipwDetails: state.level === 6 || state.level === 11,
   });
   const means = (weights) =>
@@ -120,6 +121,9 @@ export function lessonResult(state, noise) {
     ipw: result.values[3],
     regression: result.values[2],
     aipw: result.values[4],
+    ...(state.level === 4
+      ? { outcomePredictions: result.outcomePredictions }
+      : {}),
     ...(state.level === 6
       ? { aipwContributions: result.aipwContributions }
       : {}),
