@@ -10,6 +10,8 @@ import { samplingView } from "./sampling-variation.js";
 import { aipwCalculation, aipwFormula } from "./aipw-calculation.js";
 import { tmlePanel, tmleFormula, renderTmle } from "./tmle-lesson.js";
 import {
+  coreLessons,
+  lessonHref,
   lessonNavigation,
   optionalChapters,
   setupLessonNavigation,
@@ -18,8 +20,6 @@ import "./tmle-lesson.css";
 
 const lessons = [
   {
-    slug: "randomization",
-    title: "A randomized experiment",
     question:
       "If treatment is assigned at random, will the outcome difference equal the true effect?",
     transition:
@@ -31,8 +31,6 @@ const lessons = [
     next: "In practice, people often receive treatment because of their baseline health. What changes then?",
   },
   {
-    slug: "confounding",
-    title: "A common cause",
     question:
       "What happens if baseline health also influences who receives treatment?",
     transition:
@@ -44,8 +42,6 @@ const lessons = [
     next: "How can we compare the groups while accounting for their different baseline health?",
   },
   {
-    slug: "ipw",
-    title: "Adjustment with IPW",
     question:
       "Can accounting for baseline health make the groups more comparable?",
     transition:
@@ -57,8 +53,6 @@ const lessons = [
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
-    slug: "outcome-regression",
-    title: "Adjustment with an outcome model",
     question: "Can we predict outcomes under each treatment?",
     transition:
       "Same confounded world; both models now account for baseline health.",
@@ -68,8 +62,6 @@ const lessons = [
     next: "Both methods account for baseline health. Should we also account for variables that treatment changes?",
   },
   {
-    slug: "misspecification",
-    title: "When a model is too simple",
     question: "Which relationship does each method need to model?",
     transition:
       "Here, we explore what happens when one of the models is misspecified. We return to the simple scenario with one measured confounder, baseline health (C).",
@@ -80,8 +72,6 @@ const lessons = [
     next: "We may not know which model is adequate. Can we combine the two approaches?",
   },
   {
-    slug: "double-robustness",
-    title: "Double robustness",
     question: "Can combining the models help when one is too simple?",
     transition:
       "Both relationships now contain the extra patterns from the preceding model experiment. We start with models that capture both. The world stays fixed while you change the models.",
@@ -92,8 +82,6 @@ const lessons = [
     next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to building the correction into the predictions.",
   },
   {
-    slug: "mediator",
-    title: "A mediator",
     intuition: {
       title: "Example: exercise and fitness",
       paragraphs: [
@@ -111,8 +99,6 @@ const lessons = [
     next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
   },
   {
-    slug: "collider",
-    title: "A collider",
     intuition: {
       title: "Example: follow-up care in healthcare",
       paragraphs: [
@@ -132,8 +118,6 @@ const lessons = [
     next: "We can account for measured baseline health. What if another common cause is missing from our data?",
   },
   {
-    slug: "hidden-confounding",
-    title: "A hidden common cause",
     question: "What if an important confounder is unavailable?",
     transition:
       "We remove the follow-up score and keep baseline health (C) measured and adjusted for. The true total effect remains 2. Now add smoking status (U), which is missing from our data. We show it in the graph so you can see what the models cannot use.",
@@ -145,8 +129,6 @@ const lessons = [
   },
 ];
 lessons[9] = {
-  slug: "overlap",
-  title: "Too little overlap",
   question:
     "What if almost everyone with the same baseline health receives the same treatment?",
   transition:
@@ -160,8 +142,6 @@ lessons[9] = {
 // Numeric IDs retain the original simulation and ?level= link identities.
 // Only this order determines the displayed positions and navigation.
 lessons[10] = {
-  slug: "tmle",
-  title: "Targeting with TMLE",
   question: "Can we build the correction into the predictions?",
   transition:
     "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. Baseline health is the only common cause.",
@@ -171,17 +151,10 @@ lessons[10] = {
     "Targeted minimum loss-based estimation (TMLE) adjusts the outcome predictions in a direction set by the treatment probabilities. It fits the amount of this update using observed outcomes, then averages the updated predicted treatment contrasts. Solving the targeting equation does not guarantee a correct causal answer: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
-lessons[11] = {
-  slug: "leaving-the-sandbox",
-  title: "Leaving the sandbox",
-};
-const availableLevels = [1, 2, 3, 4, 7, 8, 9, 5, 6, 11, 10, 12];
-const lessonPaths = {
-  ipw: "inverse-probability-weighting/",
-  mediator: "mediator-adjustment/",
-  "double-robustness": "aipw-double-robustness/",
-  tmle: "tmle/",
-};
+lessons[11] = {};
+for (const [id, slug, title] of coreLessons)
+  Object.assign(lessons[id - 1], { slug, title });
+const availableLevels = coreLessons.map(([id]) => id);
 const hiddenCallback = {
   ...lessons[8],
   title: "Revisit hidden confounding with AIPW",
@@ -202,9 +175,9 @@ function enterFromUrl(focus = true) {
   const params = new URLSearchParams(location.search);
   const topic = params.has("lesson")
     ? params.get("lesson")
-    : Object.entries(lessonPaths).find(([, path]) =>
-        location.pathname.endsWith(`/${path}`),
-      )?.[0] || document.body.dataset.lesson;
+    : coreLessons.find(
+        ([, , , path]) => path && location.pathname.endsWith(`/${path}`),
+      )?.[1] || document.body.dataset.lesson;
   const named = lessons.findIndex((lesson) => lesson.slug === topic) + 1;
   const requested = topic ? named : Number(params.get("level"));
   const level = availableLevels.includes(requested) ? requested : 1;
@@ -214,8 +187,7 @@ function enterFromUrl(focus = true) {
 }
 
 function lessonUrl(level) {
-  const slug = lessons[level - 1].slug;
-  return `${import.meta.env.BASE_URL}${lessonPaths[slug] || `?lesson=${slug}`}`;
+  return `${import.meta.env.BASE_URL}${lessonHref(coreLessons.find(([id]) => id === level))}`;
 }
 
 function showsAipw(level) {

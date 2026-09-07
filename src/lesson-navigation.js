@@ -6,14 +6,14 @@ const coreGroups = [
     lessons: [
       [1, "randomization", "A randomized experiment"],
       [2, "confounding", "A common cause"],
-      [3, "inverse-probability-weighting/", "Adjustment with IPW", true],
+      [3, "ipw", "Adjustment with IPW", "inverse-probability-weighting/"],
       [4, "outcome-regression", "Adjustment with an outcome model"],
     ],
   },
   {
     title: "Causal roles",
     lessons: [
-      [7, "mediator-adjustment/", "A mediator", true],
+      [7, "mediator", "A mediator", "mediator-adjustment/"],
       [8, "collider", "A collider"],
       [9, "hidden-confounding", "A hidden common cause"],
     ],
@@ -22,9 +22,10 @@ const coreGroups = [
     title: "Models and limitations",
     lessons: [
       [5, "misspecification", "When a model is too simple"],
-      [6, "aipw-double-robustness/", "Double robustness", true],
-      [11, "tmle/", "Targeting with TMLE", true],
+      [6, "double-robustness", "Double robustness", "aipw-double-robustness/"],
+      [11, "tmle", "Targeting with TMLE", "tmle/"],
       [10, "overlap", "Too little overlap"],
+      [12, "leaving-the-sandbox", "Leaving the sandbox"],
     ],
   },
 ];
@@ -71,12 +72,8 @@ export const optionalChapters = [
   },
 ];
 
-const lessonHref = ([, slug, , permanent]) =>
-  permanent ? slug : `?lesson=${slug}`;
-const coreLessonCount = coreGroups.reduce(
-  (count, group) => count + group.lessons.length,
-  0,
-);
+export const coreLessons = coreGroups.flatMap((group) => group.lessons);
+export const lessonHref = ([, slug, , path]) => path || `?lesson=${slug}`;
 
 export function lessonNavigation({
   position,
@@ -85,7 +82,7 @@ export function lessonNavigation({
 } = {}) {
   const status = currentOptional
     ? "Optional chapter"
-    : `Level ${position + 1} of ${coreLessonCount + 1}${revisiting ? " · Optional revisit" : ""}`;
+    : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
   let number = 0;
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
     <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button><span>${status}</span></div>
