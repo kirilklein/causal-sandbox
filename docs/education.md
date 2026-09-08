@@ -3,7 +3,7 @@
 The homepage opens an unnumbered Introduction (`?lesson=introduction`) to the
 whole framework. Three entry cards each give one learning promise: **Learn**
 opens randomization, **Explore** opens the full sandbox, and **Build** opens
-the graph lab. The existing 32-second film is a secondary text button.
+the graph lab. The existing 22-second film is a secondary text button.
 Contents and lesson 1 offer a return to the introduction. Explicit lesson,
 legacy level, and sandbox links retain their destinations and numbering.
 

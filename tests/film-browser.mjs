@@ -42,6 +42,10 @@ try {
   );
   assert.ok(requests.length > 0);
   assert.ok(await video.evaluate((el) => !el.paused));
+  assert.equal(
+    await video.evaluate((el) => el.duration),
+    Number.parseFloat(await page.locator(".film-duration").textContent()),
+  );
   await page.keyboard.press("Escape");
   await dialog.waitFor({ state: "hidden" });
   assert.ok(await video.evaluate((el) => el.paused));
@@ -51,7 +55,7 @@ try {
   await open.click();
   await video.evaluate((el) => {
     el.pause();
-    el.currentTime = 31;
+    el.currentTime = el.duration - 1;
   });
   await page.waitForFunction(
     () => !document.querySelector("#intro-film video").seeking,

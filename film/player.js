@@ -22,7 +22,7 @@ function draw() {
     "aria-valuetext",
     `${seconds.toFixed(1)} seconds of ${DURATION}`,
   );
-  time.value = `00:${String(Math.floor(seconds)).padStart(2, "0")} / 00:32`;
+  time.value = `00:${String(Math.floor(seconds)).padStart(2, "0")} / 00:${DURATION}`;
   play.textContent = playing
     ? "Pause"
     : seconds === DURATION

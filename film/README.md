@@ -1,8 +1,9 @@
 # Two possible futures
 
-A standalone 32-second Causal Sandbox film. The browser renderer uses a 3D coordinate system and a continuous camera
+A standalone 22-second Causal Sandbox film. The browser renderer uses a 3D coordinate system and a continuous camera
 orbit, drawing to a Canvas 2D surface. It has no runtime dependencies, remote assets,
-or tracking. This first visual cut is silent.
+or tracking. The website master is silent. See [launch music](launch-music.md) for
+the soundtrack brief and how to mix a separate LinkedIn export.
 
 From the repository root, with the existing npm dependencies installed:
 
@@ -16,13 +17,20 @@ final still. `?t=12` opens paused at a specific second.
 
 ## Creative timing
 
-| Seconds | Image                                                                                     |
-| ------- | ----------------------------------------------------------------------------------------- |
-| 0–7     | Silver patients; the camera begins revealing time and their shared history.               |
-| 8–12    | Patients cross the treatment plane. Colour emerges; the alternative future peels away.    |
-| 12–22   | The orbit reveals heterogeneous responses in the two worlds.                              |
-| 22–26.5 | The camera settles into an orthographic endpoint view. Trails recede; paired gaps appear. |
-| 26.5–32 | Identity and tagline arrive; the endpoint composition holds.                              |
+| Seconds      | Image                                                              |
+| ------------ | ------------------------------------------------------------------ |
+| 0–3          | Silver histories are already moving; the opening titles crossfade. |
+| 3–7.6        | Treatment worlds separate while the question remains readable.     |
+| 7.6–11.6     | The camera continues its orbit, gradually slowing.                 |
+| 11.6–15.6    | The view flattens and the paired gaps become legible.              |
+| 12.2–16.2    | The headline emerges gently as the camera settles.                 |
+| 16.4–18.2    | The bottom brand and tagline appear after the headline.            |
+| 18.2–20 / 22 | A short social hold, with two extra seconds on the website.        |
+
+Both exports use one scene clock: 2.2× at the start, easing continuously to 1×
+over seconds 3–11. There is no extra speed-up in the middle. The final camera
+move takes about five seconds; titles use playback time independently of the
+scene speed. The patient trajectories and causal contrasts are unchanged.
 
 ## Visual and causal contract
 
@@ -40,30 +48,44 @@ final still. `?t=12` opens paused at a specific second.
   simulation truths, not fitted predictions or effects recovered from real data.
   The camera uses a shared orthographic scale for the final comparison.
 
-`model.js` defines the cohort, trajectories and camera. `render.js` draws one frame
+`model.js` defines the cohort, trajectories, scene clock and camera. `render.js` draws one frame
 from a time in seconds; `player.js` provides playback. This separation allows a
 future website mount to reuse the same renderer without the preview controls.
 
 ## Checks and export
 
 Keep the preview server running for capture. Chrome and ffmpeg must be installed.
+For long exports, use a static preview so live reload cannot interrupt capture:
 
 ```sh
 node --test film/model.test.js
-node film/capture.mjs
-node film/capture.mjs --video
 node node_modules/vite/bin/vite.js build film --base ./ --outDir dist
+node node_modules/vite/bin/vite.js preview film --host 127.0.0.1 --port 5220 --strictPort
+# In a second terminal:
+FILM_URL=http://127.0.0.1:5220/ node film/capture.mjs --video
+FILM_URL=http://127.0.0.1:5220/ node film/capture.mjs --social
+FILM_URL=http://127.0.0.1:5220/ node film/capture.mjs --gif
 ```
 
 Capture checks playback, pausing, keyboard seeking, narrow-screen overflow,
 reduced-motion behavior and browser errors. It saves six full-resolution film
 stills plus desktop/mobile player screenshots to ignored `film/exports/`.
 `--video` renders every frame from its exact timestamp and encodes a 1920×1080,
-30 fps H.264 MP4 with fast-start metadata. It does not record the preview controls.
+60 fps H.264 MP4 with fast-start metadata. It does not record the preview controls.
 The output is `film/exports/causal-sandbox-two-futures.mp4`; the final still is
 `film/exports/thumbnail.png`. Re-running capture replaces these generated files.
 
 The standalone production build is written to ignored `film/dist/`.
+
+`--social` produces a separate 20-second `exports/causal-sandbox-social-silent.mp4`.
+It uses the same rendered sequence as the website master; only the final hold
+is shorter. It renders fresh frames at 60 fps and never replaces the website
+master. The social export stays ignored; reproduce it with the command above.
+
+`--gif` regenerates the README's `docs/intro.gif`: the 20-second social cut at
+800×450 and 20 fps. It renders lossless PNG frames directly from the canvas,
+then uses a single global palette with stable ordered dithering. This avoids
+carrying MP4 compression noise into the GIF or adding lossy temporal streaks.
 
 ## Website use and preserved master
 

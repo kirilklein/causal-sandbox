@@ -5,11 +5,11 @@ import "./film-preview.css";
 export function filmPreview() {
   return `<section class="film-preview" aria-label="An introduction to causal effects">
     <button class="film-open" type="button" aria-haspopup="dialog" aria-controls="intro-film">
-      <span aria-hidden="true">▷</span> Watch the introduction <span class="film-duration">32 seconds</span>
+      <span aria-hidden="true">▷</span> Watch the introduction <span class="film-duration">22 seconds</span>
     </button>
     <dialog id="intro-film" aria-labelledby="intro-film-title" aria-describedby="intro-film-caption">
       <div class="film-heading"><h2 id="intro-film-title">Two possible futures</h2><button class="film-close" type="button" aria-label="Close film" autofocus>Close <span aria-hidden="true">×</span></button></div>
-      <video controls playsinline preload="none" poster="${poster}" aria-label="Causal Sandbox: Two possible futures. A silent 32-second film."></video>
+      <video controls playsinline preload="none" poster="${poster}" aria-label="Causal Sandbox: Two possible futures. A silent 22-second film."></video>
       <p id="intro-film-caption">Simulated patients. The gap between each person’s treated and untreated outcomes is their causal effect.</p>
       <details class="film-description"><summary>Film description</summary><p>Fourteen silver spheres represent patients. The camera turns to reveal their movement through time. At treatment, each branches into a coral treated future and a blue untreated future. Solid spheres and continuous trails show the factual path; translucent spheres and broken trails show the counterfactual path. The camera aligns the endpoint pairs, revealing each patient’s causal effect. In real data, only one of these outcomes is observed for each person.</p></details>
       <p class="film-status" role="status" hidden></p>

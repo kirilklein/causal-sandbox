@@ -7,7 +7,54 @@ import {
   cameraAt,
   project,
   TREATMENT,
+  sceneTime,
+  DURATION,
+  SOCIAL_DURATION,
 } from "./model.js";
+
+test("one scene clock decelerates continuously without a late speed burst", () => {
+  assert.equal(sceneTime(0), 2);
+  const h = 0.001;
+  let previousSpeed = 2.2;
+  let previousYaw = cameraAt(sceneTime(0)).yaw;
+  for (let t = h; t < DURATION - h; t += 0.025) {
+    const speed = (sceneTime(t + h) - sceneTime(t - h)) / (2 * h);
+    assert.ok(speed >= 1 - 1e-9 && speed <= 2.2 + 1e-9);
+    assert.ok(
+      speed <= previousSpeed + 1e-9,
+      "the scene must not accelerate again",
+    );
+    const yaw = cameraAt(sceneTime(t)).yaw;
+    assert.ok(yaw >= previousYaw, "the camera must not reverse direction");
+    previousSpeed = speed;
+    previousYaw = yaw;
+  }
+  for (const t of [3, 11]) {
+    const before = (sceneTime(t) - sceneTime(t - h)) / h;
+    const after = (sceneTime(t + h) - sceneTime(t)) / h;
+    assert.ok(Math.abs(before - after) < 1e-6);
+  }
+});
+
+test("the final camera move has five seconds and both exports end on the same view", () => {
+  assert.ok(Math.abs(sceneTime(11.6) - 22) < 1e-12);
+  assert.ok(Math.abs(sceneTime(15.6) - 26) < 1e-12);
+  assert.ok(sceneTime(10.6) < 21.01);
+  assert.ok(cameraAt(sceneTime(12.2)).flatten < 0.05);
+  assert.equal(cameraAt(sceneTime(16.2)).flatten, 1);
+  assert.equal(SOCIAL_DURATION, 20);
+  assert.equal(DURATION, 22);
+  for (const duration of [SOCIAL_DURATION, DURATION]) {
+    assert.ok(sceneTime(duration) > 29);
+    const camera = cameraAt(sceneTime(duration));
+    for (const patient of patients) {
+      assert.equal(progress(sceneTime(duration), patient), 1);
+      const a = project(position(patient, 1, 0), camera);
+      const b = project(position(patient, 1, 1), camera);
+      assert.ok(Math.abs(a.y - b.y - patient.effect * 72) < 1e-10);
+    }
+  }
+});
 
 test("the two worlds share all history and a tangent at treatment", () => {
   for (const patient of patients) {
