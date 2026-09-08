@@ -1,8 +1,12 @@
 # Launch soundtrack
 
-The user-selected [LinkedIn export](exports/causal-sandbox-linkedin.mp4) is
-tracked in Git, preserved exactly as supplied (20 seconds, 1080p, 60 fps). This supplied file contains no embedded audio stream. The brief
-and mixing command below describe how to produce a version with audio.
+The approved [LinkedIn video with music](exports/causal-sandbox-linkedin.mp4)
+is tracked in Git: 24.03 seconds, 1080p at 30 fps, with stereo AAC audio.
+It is preserved exactly as supplied in the ElevenLabs export. The website
+continues to use the separate silent master.
+
+The brief below can generate alternate soundtracks for the renderer's
+20-second social cut.
 
 In Adobe Firefly, choose **Audio → Generate music** and upload
 `exports/causal-sandbox-social-silent.mp4`. Keep the detected 20-second duration,
@@ -36,10 +40,10 @@ ffmpeg -y -i film/exports/causal-sandbox-social-silent.mp4 \
   -map 0:v:0 -map 1:a:0 -c:v copy \
   -af "loudnorm=I=-25:TP=-9:LRA=7,afade=t=in:d=0.25,afade=t=out:st=18:d=2,apad" \
   -t 20 -c:a aac -b:a 192k -ar 48000 -movflags +faststart \
-  film/exports/causal-sandbox-linkedin.mp4
+  film/exports/causal-sandbox-linkedin-preview.mp4
 ```
 
 The quiet mix is a starting point; audition on phone speakers and headphones.
 Raw soundtrack files and intermediate exports stay ignored in `film/exports/`;
-the selected `causal-sandbox-linkedin.mp4` is tracked. The mixing command above
-replaces that selected export, so run it only when updating the final asset.
+the approved `causal-sandbox-linkedin.mp4` is tracked. The mixing command above
+writes a separate preview for auditioning.

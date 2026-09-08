@@ -91,9 +91,9 @@ carrying MP4 compression noise into the GIF or adding lossy temporal streaks.
 
 The source, full-resolution `exports/thumbnail.png`, and 1080p
 `exports/causal-sandbox-two-futures.mp4` are tracked in Git. The small
-`exports/poster.webp` and the user-selected `exports/causal-sandbox-linkedin.mp4`
+`exports/poster.webp` and the approved `exports/causal-sandbox-linkedin.mp4` with music
 are tracked too; other capture outputs stay ignored. See [launch music](launch-music.md)
-for the selected export’s audio status and soundtrack instructions.
+for export details and soundtrack instructions.
 Capture regenerates the poster from the same renderer at 960×540.
 
 The homepage offers a secondary watch link via `src/film-preview.js`. Its native
