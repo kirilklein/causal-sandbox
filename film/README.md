@@ -3,7 +3,7 @@
 A standalone 22-second Causal Sandbox film. The browser renderer uses a 3D coordinate system and a continuous camera
 orbit, drawing to a Canvas 2D surface. It has no runtime dependencies, remote assets,
 or tracking. The website master is silent. See [launch music](launch-music.md) for
-the soundtrack brief and how to mix a separate LinkedIn export.
+details of the finished LinkedIn video.
 
 From the repository root, with the existing npm dependencies installed:
 
@@ -91,7 +91,9 @@ carrying MP4 compression noise into the GIF or adding lossy temporal streaks.
 
 The source, full-resolution `exports/thumbnail.png`, and 1080p
 `exports/causal-sandbox-two-futures.mp4` are tracked in Git. The small
-`exports/poster.webp` is tracked too; other capture outputs stay ignored.
+`exports/poster.webp` and the approved `exports/causal-sandbox-linkedin.mp4` with music
+are tracked too; other capture outputs stay ignored. See [launch music](launch-music.md)
+for export details.
 Capture regenerates the poster from the same renderer at 960×540.
 
 The homepage offers a secondary watch link via `src/film-preview.js`. Its native
