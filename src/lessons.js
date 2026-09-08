@@ -96,7 +96,7 @@ const lessons = [
     instruction:
       "Include the intermediate response and compare the estimate with the total effect. Then remove it to restore the pathway we want to count.",
     explanation:
-      "To estimate the total effect, leave M out of the adjustment set: its pathway is part of the effect we want to measure. Here treatment raises M by 1, and each unit of M raises the outcome by 1. Together with the contribution of 2 along A → Y, this gives a total effect of 3. Including M holds it fixed in our outcome predictions, excluding the mediated contribution of 1. We still adjust for C in both comparisons.",
+      "To estimate the total effect, leave M out because A → M → Y is part of what we want to count. Including M holds it fixed and removes that mediated contribution from the outcome-regression contrast. The risk score remains adjusted for in both cases.",
     next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
   },
   {
