@@ -141,7 +141,7 @@ future work.
    their interaction. Lesson settings are not transferred into this world.
 
 Only implemented lessons appear in contents. Levels 1–12 now form a continuous
-sequence; “Level N of 13” includes the final sandbox. No scores, completion gates, accounts or stored
+sequence; “Level N of 13” includes the final sandbox. No scores, lesson-completion gates, accounts or stored
 progress. Later chapters and confidence intervals are separate changes.
 
 ## Sampling variation (IV prerequisite, PR A)
@@ -509,3 +509,14 @@ regression estimate. There is no separate model-details disclosure.
 
 Browser checks cover explanation state, redraw/reset, keyboard/touch, and phone
 layouts. New-learner comprehension and screen-reader listening remain untested.
+
+## Prediction checkpoints
+
+Randomization, collider, and poor overlap ask for one prediction before their
+first experiment. Any choice enables Try it; navigation remains available.
+Randomization withholds its first estimate. Collider and overlap show the baseline,
+then apply collider adjustment or strong selection using the same background draws.
+Controls and explanations become available after reveal. Correct predictions receive
+a brief acknowledgment; other choices receive a gentle correction. Feedback records the
+initial comparison and stays fixed during further exploration. Restart and lesson
+re-entry reset the checkpoint; nothing is stored across visits.

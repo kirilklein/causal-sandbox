@@ -278,6 +278,10 @@ try {
   for (const concept of pages) {
     const response = await page.goto(new URL(concept.path, root).href);
     assert.equal(response.status(), 200, concept.path);
+    if (["collider-bias/", "positivity/"].includes(concept.path)) {
+      await page.locator('input[name="prediction"]').first().check();
+      await page.locator("#try-prediction").click();
+    }
     await page.locator(concept.control).waitFor();
     assert.equal(await page.title(), concept.title);
     assert.equal(
@@ -327,7 +331,8 @@ try {
 
   await page.goto(new URL("collider-bias/", root).href);
   const colliderEstimate = await page.locator("#regression").innerText();
-  await page.locator("#post-adjustment").check();
+  await page.locator('input[name="prediction"]').first().check();
+  await page.locator("#try-prediction").click();
   assert.notEqual(
     await page.locator("#regression").innerText(),
     colliderEstimate,
@@ -335,7 +340,8 @@ try {
 
   await page.goto(new URL("positivity/", root).href);
   const moderate = await page.locator(".overlap-diagnostics").innerText();
-  await page.locator('#overlap-selection input[value="5"]').check();
+  await page.locator('input[name="prediction"]').first().check();
+  await page.locator("#try-prediction").click();
   assert.notEqual(
     await page.locator(".overlap-diagnostics").innerText(),
     moderate,

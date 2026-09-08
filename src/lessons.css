@@ -864,3 +864,25 @@
 .ipw-weight-table math {
   margin-top: 8px;
 }
+
+.lesson-prediction {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+}
+.lesson-prediction .lesson-switch {
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.lesson-prediction .lesson-switch:has(input:checked) {
+  background: var(--page);
+  outline: 1px solid var(--border-strong);
+}
+.lesson-prediction p:last-child {
+  margin-bottom: 0;
+}
+.lesson-prediction button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

@@ -12,7 +12,122 @@ try {
   });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  async function tryPrediction() {
+    await page.locator('input[name="prediction"]').first().check();
+    await page.locator("#try-prediction").click();
+  }
+  // Every choice reveals feedback and the experiment without blocking navigation.
+  for (const topic of ["randomization", "collider", "overlap"]) {
+    for (let choice = 0; choice < 3; choice++) {
+      await page.setViewportSize({
+        width: choice === 2 ? 320 : 1280,
+        height: 900,
+      });
+      await page.goto(`${url}?lesson=${topic}`);
+      await page.locator("#try-prediction").waitFor();
+      assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      assert.equal(
+        await page.locator(".lesson-explanation").isVisible(),
+        false,
+      );
+      assert.equal(await page.locator(".lesson-controls").isVisible(), false);
+      assert.equal(await page.locator("#continue").isEnabled(), true);
+      if (topic === "randomization") {
+        assert.equal(await page.locator("#unadjusted").isVisible(), false);
+        assert.equal(
+          await page.locator(".sampling-variation").isVisible(),
+          false,
+        );
+      } else {
+        assert.equal(
+          await page.locator("#regression-result").isVisible(),
+          true,
+        );
+      }
+      if (choice === 0)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-pending-desktop.png`,
+          fullPage: true,
+        });
+      const seed = await page.locator("#sample-label").textContent();
+      const choices = page.locator('input[name="prediction"]');
+      const selected = await choices.nth(choice).locator("..").innerText();
+      if (choice === 2) {
+        await choices.first().focus();
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Tab");
+        await page.keyboard.press("Enter");
+      } else {
+        await choices.nth(choice).check();
+        await page.locator("#try-prediction").click();
+      }
+      const feedback = page.getByRole("region", {
+        name: "Prediction explained",
+      });
+      assert.ok((await feedback.innerText()).includes(selected));
+      assert.equal(
+        await feedback.locator("strong").innerText(),
+        choice === 1 ? "Good prediction!" : "Not quite.",
+      );
+      assert.equal(
+        await feedback.evaluate((el) => el === document.activeElement),
+        true,
+      );
+      assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(await page.locator("#sample-label").textContent(), seed);
+      if (topic === "collider")
+        assert.equal(await page.locator("#post-adjustment").isChecked(), true);
+      if (topic === "overlap")
+        assert.equal(
+          await page
+            .getByRole("radio", { name: "Strong selection", exact: true })
+            .isChecked(),
+          true,
+        );
+      if (choice === 0)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-revealed-desktop.png`,
+          fullPage: true,
+        });
+      const firstFeedback = await feedback.innerText();
+      await page.locator("#redraw").click();
+      assert.equal(await feedback.innerText(), firstFeedback);
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      );
+      if (choice === 2)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-revealed-mobile.png`,
+          fullPage: true,
+        });
+      await page.locator("#restart").click();
+      assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      assert.equal(
+        await page.locator('input[name="prediction"]:checked').count(),
+        0,
+      );
+      assert.equal(
+        await page
+          .locator("h1")
+          .evaluate((el) => el === document.activeElement),
+        true,
+      );
+      if (choice === 2)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-pending-mobile.png`,
+          fullPage: true,
+        });
+      await page.locator("#continue").click();
+      await page.goBack();
+      assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+    }
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(`${url}?lesson=randomization`);
+  await tryPrediction();
   await page.locator("#unadjusted").waitFor();
   const result = () => page.locator(".lesson-results").innerText();
   const first = await result();
@@ -74,11 +189,12 @@ try {
   await page.locator("#redraw").click();
   assert.match(await page.locator("#sample-label").innerText(), /4218/);
   await page.locator("#restart").click();
-  assert.equal(await result(), first);
   assert.equal(
     await page.locator("h1").evaluate((el) => el === document.activeElement),
     true,
   );
+  await tryPrediction();
+  assert.equal(await result(), first);
   await page.screenshot({
     path: "/tmp/causal-lesson-desktop.png",
     fullPage: true,
@@ -376,6 +492,10 @@ try {
   const roleBaselines = [];
   for (const level of [7, 8]) {
     await page.locator("#continue").click();
+    if (level === 8) {
+      await tryPrediction();
+      await page.locator("#post-adjustment").uncheck();
+    }
     const baseline = await result();
     assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
     assert.match(
@@ -487,6 +607,7 @@ try {
   }
   // One slider, a fixed graph, and constant adjustment for measured C.
   const eighth = await result();
+  await tryPrediction();
   await page.locator("#post-adjustment").check();
   await page.locator("#continue").click();
   assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
@@ -884,6 +1005,10 @@ try {
   const tenth = await result();
   const diagnostics = () => page.locator("#overlap-summary").innerText();
   const moderateDiagnostics = await diagnostics();
+  await tryPrediction();
+  await page
+    .getByRole("radio", { name: "Moderate selection", exact: true })
+    .check();
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
   assert.equal(await page.locator("input").count(), 2);
@@ -1025,6 +1150,7 @@ try {
   await page.locator('input[value="K"]').check();
   await page.getByRole("link", { name: "Guided lessons", exact: true }).click();
   await page.getByRole("link", { name: "Learn" }).click();
+  await tryPrediction();
   assert.equal(await result(), first);
   const titles = [
     "A randomized experiment",
@@ -1060,6 +1186,7 @@ try {
   // Contents stays secondary and closed by default on every screen size.
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(`${url}?lesson=randomization`);
+  await tryPrediction();
   assert.equal(await page.locator("#lesson-menu-toggle").isVisible(), true);
   assert.equal(await page.locator("#lesson-menu").isVisible(), false);
   const beforeContents = await result();
@@ -1206,6 +1333,7 @@ try {
     fullPage: true,
   });
   await page.goto(`${url}?lesson=randomization`);
+  await tryPrediction();
   assert.equal(await page.locator("#sampling-plot").isVisible(), false);
   await page.locator(".sampling-variation > summary").click();
   const studyValues = () =>

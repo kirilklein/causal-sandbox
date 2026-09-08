@@ -22,6 +22,17 @@ import "./tmle-lesson.css";
 
 const lessons = [
   {
+    prediction: {
+      question: "Will the outcome difference equal the true effect?",
+      choices: [
+        "Exactly",
+        "Approximately, with chance variation",
+        "No connection",
+      ],
+      correctChoice: 1,
+      explanation:
+        "Randomization makes the groups comparable in the population. Chance differences remain in a finite sample; redraw to see the estimate vary.",
+    },
     question:
       "If treatment is assigned at random, will the outcome difference equal the true effect?",
     transition:
@@ -110,11 +121,19 @@ const lessons = [
         "There are two reasons for ending up with the same amount of care: treatment and worse symptoms. Once we hold care use fixed, more of one reason tends to mean less of the other. That creates a relationship between treatment and symptoms that can distort our estimate.",
       ],
     },
+    prediction: {
+      question:
+        "We already adjust for C. What happens if we also adjust for the follow-up score?",
+      choices: ["Removes bias", "Can introduce bias", "Has no effect"],
+      correctChoice: 1,
+      explanation:
+        "Holding the follow-up score fixed can distort the comparison because both treatment and outcome influence it. More adjustment is not automatically better.",
+    },
     question: "Can adjustment create a misleading relationship?",
     transition:
       "We remove the mediator and return to the simple baseline: the true total effect is 2 again. We now measure a follow-up score (K) after the outcome. Both treatment and outcome raise this score; it causes neither.",
     instruction:
-      "Start with adjustment for C alone. Then include the follow-up score in the outcome model. The world stays fixed; only the comparison changes.",
+      "Toggle adjustment for the follow-up score and compare estimates. The world stays fixed; only the comparison changes.",
     explanation:
       "A follow-up score, such as later care use, is a collider: two arrows meet at it, treatment → score ← outcome. Among people with the same score, having treatment leaves less of the score to be explained by the outcome. Holding the score fixed creates a misleading relationship and can distort the treatment estimate, even while we correctly account for C. Measured variables are not automatically valid adjustment variables.",
     next: "We can account for measured C. What if another common cause is missing from our data?",
@@ -131,12 +150,20 @@ const lessons = [
   },
 ];
 lessons[9] = {
+  prediction: {
+    question:
+      "As treatment becomes nearly determined by risk score, how will IPW distribute weight?",
+    choices: ["More evenly", "More concentrated", "Unchanged"],
+    correctChoice: 1,
+    explanation:
+      "Stronger selection leaves fewer people receiving the less likely treatment for their risk score. IPW asks those people to represent many others. An estimate can still be close to truth in one sample.",
+  },
   question:
     "What if almost everyone with the same risk score receives the same treatment?",
   transition:
     "We return to the simple world: the risk score (C) is observed and included in both correctly specified models. There are no hidden causes or post-treatment variables. The true total effect is 2.",
   instruction:
-    "Strengthen treatment selection, then compare the treatment probabilities and weights. Redraw to explore how the estimates vary.",
+    "Compare moderate and strong treatment selection: look at the probabilities and weights, then redraw to explore how estimates vary.",
   explanation:
     "Overlap means people with similar risk scores can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models. An estimate can still be close to truth in a particular sample.",
   next: "Before exploring the full sandbox, take stock of what changes when the causal world and true effect are unknown.",
@@ -339,10 +366,10 @@ function enter(level, focus = true, callback = false) {
           ? leavingTheSandbox()
           : `
       <p class="lesson-transition">${lesson.transition}</p>
-      <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
+      <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
         ${previousGraph ? graphComparison(level, revisiting) : ""}
         <div id="lesson-graph"></div>
-        <p>${lesson.instruction}</p>
+        <p class="lesson-instruction">${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
         <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
         <p class="sample-note">Stronger red means farther from truth in this sample.</p>
@@ -484,7 +511,71 @@ function enter(level, focus = true, callback = false) {
       renderLessonGraph();
     });
   if (!recap) update();
+  if (lesson.prediction) setupPrediction(lesson.prediction);
   if (focus) document.querySelector("h1").focus();
+}
+
+function setupPrediction(prediction) {
+  const withheld = [
+    ...document.querySelectorAll(
+      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next, .overlap-details",
+    ),
+  ];
+  if (state.level === 1) {
+    withheld.push(document.querySelector("#unadjusted").parentElement);
+    withheld.push(document.querySelector(".lesson-results + .sample-note"));
+  }
+  withheld.forEach((element) => {
+    element.hidden = true;
+  });
+  const checkpoint = document.createElement("div");
+  checkpoint.className = "lesson-prediction";
+  checkpoint.innerHTML = `
+    <fieldset class="model-choices" aria-describedby="prediction-hint">
+      <legend>Your prediction</legend>
+      ${prediction.choices.map((choice, index) => `<label class="lesson-switch"><input type="radio" name="prediction" value="${index}">${choice}</label>`).join("")}
+    </fieldset>
+    <p id="prediction-hint" class="sample-note">Choose a prediction to try the experiment. Any choice lets you continue.</p>
+    <button id="try-prediction" disabled>Try it</button>`;
+  document.querySelector("#lesson-graph").after(checkpoint);
+  const button = checkpoint.querySelector("button");
+  checkpoint.addEventListener("change", () => {
+    button.disabled = false;
+  });
+  button.addEventListener("click", () => {
+    const selected = checkpoint.querySelector("input:checked");
+    if (!selected) return;
+    const before = lessonResult(state, noise);
+    if (state.level === 8) {
+      state.postAdjusted = true;
+      document.querySelector("#post-adjustment").checked = true;
+    } else if (state.level === 10) {
+      state.selection = 5;
+      document.querySelector('#overlap-selection input[value="5"]').checked =
+        true;
+    }
+    update();
+    const after = lessonResult(state, noise);
+    const observed =
+      state.level === 1
+        ? `First sample: outcome difference ${after.unadjusted.toFixed(2)}; true effect ${after.totalEffect.toFixed(2)}.`
+        : state.level === 8
+          ? `First comparison: the estimate changed from ${before.regression.toFixed(2)} to ${after.regression.toFixed(2)}; the true total effect stayed ${after.totalEffect.toFixed(2)}.`
+          : `First comparison, moderate → strong selection. Top 1% weight share: ${after.overlap.map((arm, index) => `${index === 0 ? "untreated" : "treated"} ${(100 * before.overlap[index].topShare).toFixed(1)}% → ${(100 * arm.topShare).toFixed(1)}%`).join("; ")}.`;
+    withheld.forEach((element) => {
+      element.hidden = false;
+    });
+    const encouragement =
+      Number(selected.value) === prediction.correctChoice
+        ? "Good prediction!"
+        : "Not quite.";
+    checkpoint.innerHTML = `<p><strong>${encouragement}</strong></p><p class="sample-note">Your prediction: ${prediction.choices[Number(selected.value)]}</p><p>${observed}</p><p>${prediction.explanation}</p>`;
+    checkpoint.setAttribute("tabindex", "-1");
+    checkpoint.setAttribute("role", "region");
+    checkpoint.setAttribute("aria-label", "Prediction explained");
+    document.querySelector(".lesson-results").after(checkpoint);
+    checkpoint.focus();
+  });
 }
 
 function leavingTheSandbox() {
