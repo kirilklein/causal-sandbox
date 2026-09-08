@@ -104,7 +104,8 @@ const lessons = [
       title: "Example: follow-up care in healthcare",
       paragraphs: [
         "Patients receiving treatment have scheduled follow-up visits, while patients with worse symptoms also need more care. Symptoms are measured before those visits, so later care cannot change the outcome already recorded.",
-        "Follow-up care is a common effect of treatment and symptoms. Among people with the same amount of care, treated and untreated patients can therefore differ in symptoms even if treatment was randomized. Holding care fixed creates this relationship and can distort the estimate.",
+        "Now compare people receiving the same amount of follow-up care. A treated patient may have received those visits because of the treatment schedule, while an untreated patient may have needed them because their symptoms were worse.",
+        "Holding follow-up care fixed can therefore select treated patients with fewer symptoms and untreated patients with worse symptoms. This creates a relationship between treatment and symptoms and can make treatment look better, even if it was originally randomized.",
       ],
     },
     question: "Can adjustment create a misleading relationship?",
