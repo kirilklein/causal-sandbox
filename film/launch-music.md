@@ -1,5 +1,9 @@
 # Launch soundtrack
 
+The user-selected [LinkedIn export](exports/causal-sandbox-linkedin.mp4) is
+tracked in Git, preserved exactly as supplied (20 seconds, 1080p, 60 fps). This supplied file contains no embedded audio stream. The brief
+and mixing command below describe how to produce a version with audio.
+
 In Adobe Firefly, choose **Audio → Generate music** and upload
 `exports/causal-sandbox-social-silent.mp4`. Keep the detected 20-second duration,
 set **Energy: Low** and **Tempo: Slow**, and replace the suggested prompt with:
@@ -36,4 +40,6 @@ ffmpeg -y -i film/exports/causal-sandbox-social-silent.mp4 \
 ```
 
 The quiet mix is a starting point; audition on phone speakers and headphones.
-The soundtrack and LinkedIn export stay in ignored `film/exports/`.
+Raw soundtrack files and intermediate exports stay ignored in `film/exports/`;
+the selected `causal-sandbox-linkedin.mp4` is tracked. The mixing command above
+replaces that selected export, so run it only when updating the final asset.
