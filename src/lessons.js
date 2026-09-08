@@ -68,7 +68,7 @@ const lessons = [
   {
     question: "Can we predict outcomes under each treatment?",
     transition:
-      "Same confounded world; both models now account for the risk score.",
+      "The confounded world stays the same. Both models now account for the risk score.",
     instruction: "Compare the estimates, then redraw to see how they vary.",
     explanation:
       "Here both models capture the correct relationships and C is the only common cause. Both methods can estimate the effect; neither must equal truth in a sample.",
