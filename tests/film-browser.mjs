@@ -30,6 +30,27 @@ try {
   const open = page.getByRole("button", { name: /Watch the introduction/ });
   const video = page.locator("#intro-film video");
   const dialog = page.getByRole("dialog");
+  const fullscreen = page.getByRole("button", {
+    name: "Full screen",
+    exact: true,
+  });
+  const checkFullscreen = async () => {
+    await page.waitForFunction(
+      () =>
+        document.fullscreenElement ===
+        document.querySelector("#intro-film video"),
+    );
+    await page.waitForFunction(() => {
+      const bounds = document.fullscreenElement.getBoundingClientRect();
+      return (
+        Math.abs(bounds.height - innerHeight) < 2 &&
+        Math.abs(bounds.width - innerWidth) < 2
+      );
+    });
+    await page.evaluate(() => document.exitFullscreen());
+    await page.waitForFunction(() => !document.fullscreenElement);
+    assert.ok(await dialog.isVisible());
+  };
   assert.equal(await open.count(), 1);
   assert.equal(await video.getAttribute("src"), null);
   assert.equal(await video.getAttribute("preload"), "none");
@@ -42,6 +63,9 @@ try {
   );
   assert.ok(requests.length > 0);
   assert.ok(await video.evaluate((el) => !el.paused));
+  await fullscreen.focus();
+  await page.keyboard.press("Enter");
+  await checkFullscreen();
   assert.equal(
     await video.evaluate((el) => el.duration),
     Number.parseFloat(await page.locator(".film-duration").textContent()),
@@ -73,6 +97,9 @@ try {
     await open.tap();
     const bounds = await dialog.boundingBox();
     assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width);
+    await page.screenshot({ path: `/tmp/film-controls-${width}.png` });
+    await fullscreen.tap();
+    await checkFullscreen();
     await page.getByRole("button", { name: "Close film" }).tap();
     assert.ok(await video.evaluate((el) => el.paused));
     await page.screenshot({
@@ -170,6 +197,47 @@ try {
   await failure.waitForFunction(
     () => document.querySelector("#intro-film video").currentTime > 0,
   );
+  // Exercise Safari's video-only API when the standard API is unavailable.
+  await failure.evaluate(() => {
+    Object.defineProperty(document, "fullscreenEnabled", {
+      value: false,
+      configurable: true,
+    });
+    const video = document.querySelector("#intro-film video");
+    video.webkitEnterFullscreen = function () {
+      this.dataset.webkitFullscreen = "entered";
+    };
+  });
+  const failureFullscreen = failure.getByRole("button", {
+    name: "Full screen",
+    exact: true,
+  });
+  await failureFullscreen.click();
+  assert.equal(
+    await failure.locator("video").getAttribute("data-webkit-fullscreen"),
+    "entered",
+  );
+  for (const mode of ["unsupported", "rejected"]) {
+    await failure.evaluate((mode) => {
+      const video = document.querySelector("#intro-film video");
+      video.webkitEnterFullscreen = undefined;
+      Object.defineProperty(document, "fullscreenEnabled", {
+        value: mode === "rejected",
+        configurable: true,
+      });
+      video.requestFullscreen = () =>
+        Promise.reject(new TypeError("Fullscreen denied"));
+    }, mode);
+    await failureFullscreen.click();
+    const direct = failure.getByRole("link", {
+      name: "Open the video directly.",
+    });
+    assert.ok(await direct.isVisible());
+    assert.equal(
+      await direct.getAttribute("href"),
+      await failure.locator("video").getAttribute("src"),
+    );
+  }
   await failure.close();
   assert.deepEqual(errors, []);
   console.log(
