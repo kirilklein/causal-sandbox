@@ -80,8 +80,8 @@ const lessons = [
     instruction:
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
-      "Augmented inverse probability weighting (AIPW) combines the outcome predictions with a propensity-weighted correction based on their errors. When adjustment controls confounding and comparable people can receive either treatment (overlap), it is consistent if either model is correctly specified: across increasingly large samples, it approaches the true effect. This does not promise exact recovery or the best estimate in every sample. When both models are wrong, that protection is lost. Model choices do not fix missing confounders or invalid adjustment.",
-    next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to building the correction into the predictions.",
+      "With confounding controlled and adequate overlap, AIPW can approach the true effect as samples grow if either model is correctly specified. It need not be exact or closest to truth in this sample. If both models are wrong, that protection is lost. Double robustness does not repair missing confounders or invalid adjustment.",
+    next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to see how TMLE builds the correction into the predictions.",
   },
   {
     intuition: {
