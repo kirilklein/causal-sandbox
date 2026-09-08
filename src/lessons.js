@@ -51,7 +51,7 @@ const lessons = [
     instruction:
       "Increase how strongly the risk score influences treatment assignment. Compare the outcome difference with the true effect.",
     explanation:
-      "When the risk score affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment. Their outcome difference mixes the treatment effect with the influence of the risk score. Returning the slider to zero restores random assignment; C still affects the outcome. Sample variation means the estimate need not move steadily away from truth at every step.",
+      "When the risk score affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment. Their outcome difference mixes the treatment effect with the influence of the risk score. Returning the slider to zero restores random assignment; C still affects the outcome. Sampling variation means the estimate need not move steadily away from truth at every step.",
     next: "How can we compare the groups while accounting for their different risk scores?",
   },
   {
