@@ -8,6 +8,7 @@ import {
   mix,
   clamp,
   TREATMENT,
+  sceneTime,
 } from "./model.js";
 
 const SILVER = [188, 203, 216];
@@ -185,6 +186,8 @@ function legend(ctx, seconds) {
 }
 
 export function renderFilm(canvas, seconds) {
+  const playback = seconds;
+  seconds = sceneTime(seconds);
   const ctx = canvas.getContext("2d");
   ctx.save();
   ctx.scale(canvas.width / 1920, canvas.height / 1080);
@@ -296,12 +299,13 @@ export function renderFilm(canvas, seconds) {
     { align: "right", spacing: "2px" },
   );
 
-  const opening = windowFade(seconds, 0, 7.5);
+  // Reading time is independent of the scene clock and shared by both exports.
+  const opening = 1 - ease(1.55, 2.4, playback);
   text(ctx, "We only see", 960, 191, 59, opening);
   text(ctx, "one future.", 960, 259, 65, opening, { serif: true });
-  const split = windowFade(seconds, 8, 16.2);
+  const split = ease(2.15, 3, playback) * (1 - ease(6.4, 7.6, playback));
   text(ctx, "What if we could see both?", 960, 211, 53, split);
-  const ending = ease(23, 25.5, seconds);
+  const ending = ease(12.2, 16.2, playback);
   text(ctx, "The causal effect", 960, 192, 57, ending);
   text(ctx, "lives in the gap.", 960, 258, 64, ending, { serif: true });
   legend(ctx, seconds);
@@ -317,7 +321,7 @@ export function renderFilm(canvas, seconds) {
     SILVER,
     baselineLabel * 0.1,
   );
-  const brand = ease(26.5, 29, seconds);
+  const brand = ease(16.4, 18.2, playback);
   text(ctx, "CAUSAL SANDBOX", 960, 904, 29, brand, {
     weight: 500,
     spacing: "7px",

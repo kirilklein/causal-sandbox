@@ -1,10 +1,20 @@
-export const DURATION = 32;
+export const DURATION = 22;
+export const SOCIAL_DURATION = 20;
 export const TREATMENT = 0.38;
 export const clamp = (x, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, x));
 export const mix = (a, b, t) => a + (b - a) * t;
 export function ease(a, b, value) {
   const t = clamp((value - a) / (b - a));
   return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+// One clock for both exports: start briskly, then ease from 2.2× to 1× over 3–11s.
+// Integrating the speed curve prevents a second acceleration before the reveal.
+export function sceneTime(seconds) {
+  const t = clamp(seconds, 0, DURATION);
+  const u = clamp((t - 3) / 8);
+  const deceleration = 8 * (u ** 6 - 3 * u ** 5 + 2.5 * u ** 4);
+  return 2 + 2.2 * t - 1.2 * (deceleration + Math.max(0, t - 11));
 }
 
 // Fixed exogenous variation is shared by each patient's two treatment worlds.
@@ -60,7 +70,11 @@ export function progress(seconds, patient) {
 export function cameraAt(seconds) {
   const orbit = ease(2.5, 26, seconds);
   return {
-    yaw: Math.PI * orbit,
+    yaw: mix(
+      0.16 + 0.07 * (seconds - 2),
+      Math.PI * orbit,
+      ease(2, 16, seconds),
+    ),
     pitch: 0.13 * Math.sin(Math.PI * orbit),
     z: mix(mix(-6.8, 2, ease(1, 20, seconds)), 8, ease(21, 26, seconds)),
     y: mix(0.15, 0.55, ease(19, 26, seconds)),
