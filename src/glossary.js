@@ -15,7 +15,7 @@ export const glossary = {
     summary:
       "The simple sandbox model includes C₁ + C₂; the more flexible model also includes C₁ × C₂, so one covariate’s influence can depend on the other.",
     detail: [
-      "The simple sandbox model includes C₁ + C₂. The more flexible model also includes C₁ × C₂, allowing one covariate’s influence to depend on the other. For treatment assignment, the terms describe log odds that are converted to probabilities.",
+      "For treatment assignment, the terms describe log odds that are converted to probabilities.",
       "The sandbox feedback checks only whether a model can capture the world’s measured C relationships. Extra flexibility is unnecessary when the interaction is absent or inactive. It cannot repair hidden confounding or invalid adjustment, and it does not guarantee an estimate equal to truth.",
     ],
     related: {
