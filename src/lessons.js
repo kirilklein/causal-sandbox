@@ -103,10 +103,8 @@ const lessons = [
     intuition: {
       title: "Example: follow-up care in healthcare",
       paragraphs: [
-        "Consider a healthcare example. Patients receiving treatment have scheduled follow-up visits. Patients with worse symptoms also need more follow-up care. Here, symptoms are measured before those visits, so the later care cannot change the outcome already recorded.",
-        "Now compare only people with the same amount of follow-up care. A treated person may have needed those visits simply because of the treatment schedule. An untreated person may have needed them because their symptoms were worse.",
-        "Matching on follow-up care therefore tends to select treated people with fewer symptoms and untreated people with more symptoms. That can make treatment look better, even if treatment was originally assigned at random.",
-        "There are two reasons for ending up with the same amount of care: treatment and worse symptoms. Once we hold care use fixed, more of one reason tends to mean less of the other. That creates a relationship between treatment and symptoms that can distort our estimate.",
+        "Patients receiving treatment have scheduled follow-up visits, while patients with worse symptoms also need more care. Symptoms are measured before those visits, so later care cannot change the outcome already recorded.",
+        "Follow-up care is a common effect of treatment and symptoms. Among people with the same amount of care, treated and untreated patients can therefore differ in symptoms even if treatment was randomized. Holding care fixed creates this relationship and can distort the estimate.",
       ],
     },
     question: "Can adjustment create a misleading relationship?",
