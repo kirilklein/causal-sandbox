@@ -208,7 +208,7 @@ const lessons = [
   {
     title: "Instruments",
     intro:
-      "An instrument Z influences treatment A, affects outcome Y only through treatment, and is independent of the underlying causes of treatment and outcome. Measured baseline health C is still adjusted for.",
+      "An instrument Z influences treatment A, affects outcome Y only through treatment, and is independent of the underlying causes of treatment and outcome. The measured risk score C is still adjusted for.",
     question: "Should we also adjust for Z?",
     instruction:
       "Add Z to the adjustment set, then remove it. The people, outcomes, and treatment uptake below stay fixed.",

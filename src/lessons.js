@@ -29,43 +29,43 @@ const lessons = [
       "Change the treatment effect, then redraw the sample to see how estimates vary.",
     explanation:
       "Random assignment makes the groups comparable before treatment in the population. The unadjusted difference can estimate the treatment effect without adjustment. A finite sample still has chance differences, so its estimate need not equal the truth.",
-    next: "In practice, people often receive treatment because of their baseline health. What changes then?",
+    next: "In practice, a person's health can affect whether they receive treatment. What changes then?",
   },
   {
     question:
-      "What happens if baseline health also influences who receives treatment?",
+      "What happens if the risk score also influences who receives treatment?",
     transition:
-      "We reset the treatment effect to 2 and add one measured variable: baseline health (C). Higher C raises the outcome. Treatment starts randomized.",
+      "We reset the treatment effect to 2 and add one measured variable: a risk score (C), measured before treatment. Higher C means greater risk and raises the outcome. Treatment starts randomized.",
     instruction:
-      "Increase baseline health’s influence on treatment assignment. Compare the outcome difference with the true effect.",
+      "Increase how strongly the risk score influences treatment assignment. Compare the outcome difference with the true effect.",
     explanation:
-      "When baseline health affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment. Their outcome difference mixes the treatment effect with the influence of baseline health. Returning the slider to zero restores random assignment; C still affects the outcome. Sample variation means the estimate need not move steadily away from truth at every step.",
-    next: "How can we compare the groups while accounting for their different baseline health?",
+      "When the risk score affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment. Their outcome difference mixes the treatment effect with the influence of the risk score. Returning the slider to zero restores random assignment; C still affects the outcome. Sample variation means the estimate need not move steadily away from truth at every step.",
+    next: "How can we compare the groups while accounting for their different risk scores?",
   },
   {
     question:
-      "Can accounting for baseline health make the groups more comparable?",
+      "Can accounting for the risk score make the groups more comparable?",
     transition:
-      "We return to the same baseline-health world with treatment selection on and a true effect of 2. First, look at the unadjusted difference.",
+      "We return to the same confounded world with treatment selection on and a true effect of 2. First, look at the unadjusted difference.",
     instruction:
-      "Try IPW, then compare the estimate and baseline-health balance before and after weighting.",
+      "Try IPW, then compare the estimate and balance in C before and after weighting.",
     explanation:
-      "A propensity score is a person's probability of receiving treatment given baseline health. Inverse probability weighting (IPW) gives more weight to treated people with lower treatment probabilities and untreated people with higher treatment probabilities. We compare the weighted outcome averages. Here the treatment model captures the correct baseline-health relationship, and C is the only common cause. Weighting tends to reduce imbalance and bias across samples; it need not bring every estimate closer to truth.",
+      "A propensity score is a person's probability of receiving treatment given their risk score. Inverse probability weighting (IPW) gives more weight to treated people with lower treatment probabilities and untreated people with higher treatment probabilities. We compare the weighted outcome averages. Here the treatment model captures the correct relationship with C, and C is the only common cause. Weighting tends to reduce imbalance and bias across samples; it need not bring every estimate closer to truth.",
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
     question: "Can we predict outcomes under each treatment?",
     transition:
-      "Same confounded world; both models now account for baseline health.",
+      "Same confounded world; both models now account for the risk score.",
     instruction: "Compare the estimates, then redraw to see how they vary.",
     explanation:
       "Here both models capture the correct relationships and C is the only common cause. Both methods can estimate the effect; neither must equal truth in a sample.",
-    next: "Both methods account for baseline health. Should we also account for variables that treatment changes?",
+    next: "Both methods account for C. Should we also account for variables that treatment changes?",
   },
   {
     question: "Which relationship does each method need to model?",
     transition:
-      "Here, we explore what happens when one of the models is misspecified. We return to the simple scenario with one measured confounder, baseline health (C).",
+      "Here, we explore what happens when one of the models is misspecified. We return to the simple scenario with one measured confounder, a risk score (C).",
     instruction:
       "Make the outcome relationship more complex, then make treatment assignment more complex. Compare which estimates are affected.",
     explanation:
@@ -92,11 +92,11 @@ const lessons = [
     },
     question: "Should we adjust for a mediator to estimate the total effect?",
     transition:
-      "We keep the simple relationships and correct baseline-health adjustment from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
+      "We keep the simple relationships and correct adjustment for C from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
     instruction:
       "Include the intermediate response and compare the estimate with the total effect. Then remove it to restore the pathway we want to count.",
     explanation:
-      "To estimate the total effect, leave M out of the adjustment set: its pathway is part of the effect we want to measure. Here treatment raises M by 1, and each unit of M raises the outcome by 1. Together with the contribution of 2 along A → Y, this gives a total effect of 3. Including M holds it fixed in our outcome predictions, excluding the mediated contribution of 1. We still adjust for baseline health in both comparisons.",
+      "To estimate the total effect, leave M out of the adjustment set: its pathway is part of the effect we want to measure. Here treatment raises M by 1, and each unit of M raises the outcome by 1. Together with the contribution of 2 along A → Y, this gives a total effect of 3. Including M holds it fixed in our outcome predictions, excluding the mediated contribution of 1. We still adjust for C in both comparisons.",
     next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
   },
   {
@@ -113,31 +113,31 @@ const lessons = [
     transition:
       "We remove the mediator and return to the simple baseline: the true total effect is 2 again. We now measure a follow-up score (K) after the outcome. Both treatment and outcome raise this score; it causes neither.",
     instruction:
-      "Start with baseline-health adjustment alone. Then include the follow-up score in the outcome model. The world stays fixed; only the comparison changes.",
+      "Start with adjustment for C alone. Then include the follow-up score in the outcome model. The world stays fixed; only the comparison changes.",
     explanation:
-      "A follow-up score, such as later care use, is a collider: two arrows meet at it, treatment → score ← outcome. Among people with the same score, having treatment leaves less of the score to be explained by the outcome. Holding the score fixed creates a misleading relationship and can distort the treatment estimate, even while we correctly account for baseline health. Measured variables are not automatically valid adjustment variables.",
-    next: "We can account for measured baseline health. What if another common cause is missing from our data?",
+      "A follow-up score, such as later care use, is a collider: two arrows meet at it, treatment → score ← outcome. Among people with the same score, having treatment leaves less of the score to be explained by the outcome. Holding the score fixed creates a misleading relationship and can distort the treatment estimate, even while we correctly account for C. Measured variables are not automatically valid adjustment variables.",
+    next: "We can account for measured C. What if another common cause is missing from our data?",
   },
   {
     question: "What if an important confounder is unavailable?",
     transition:
-      "We remove the follow-up score and keep baseline health (C) measured and adjusted for. The true total effect remains 2. Now add smoking status (U), which is missing from our data. We show it in the graph so you can see what the models cannot use.",
+      "We remove the follow-up score and keep the risk score (C) measured and adjusted for. The true total effect remains 2. Now add smoking status (U), which is missing from our data. We show it in the graph so you can see what the models cannot use.",
     instruction:
       "Turn up smoking’s influence on treatment and outcome. Do the estimates still track the true effect?",
     explanation:
-      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for baseline health. The estimates mix this difference with the treatment effect. IPW and outcome regression cannot adjust for information they do not have. Sample variation means estimates need not move steadily away from truth at every slider step.",
+      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for C. The estimates mix this difference with the treatment effect. IPW and outcome regression cannot adjust for information they do not have. Sample variation means estimates need not move steadily away from truth at every slider step.",
     next: "Missing information is one problem; describing measured information incorrectly is another. Next, remove the hidden cause and test models that are too simple.",
   },
 ];
 lessons[9] = {
   question:
-    "What if almost everyone with the same baseline health receives the same treatment?",
+    "What if almost everyone with the same risk score receives the same treatment?",
   transition:
-    "We return to the simple world: baseline health (C) is observed and included in both correctly specified models. There are no hidden causes or post-treatment variables. The true total effect is 2.",
+    "We return to the simple world: the risk score (C) is observed and included in both correctly specified models. There are no hidden causes or post-treatment variables. The true total effect is 2.",
   instruction:
     "Strengthen treatment selection, then compare the treatment probabilities and weights. Redraw to explore how the estimates vary.",
   explanation:
-    "Overlap means people with similar baseline health can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models. An estimate can still be close to truth in a particular sample.",
+    "Overlap means people with similar risk scores can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models. An estimate can still be close to truth in a particular sample.",
   next: "Before exploring the full sandbox, take stock of what changes when the causal world and true effect are unknown.",
 };
 // Numeric IDs retain the original simulation and ?level= link identities.
@@ -145,7 +145,7 @@ lessons[9] = {
 lessons[10] = {
   question: "Can we build the correction into the predictions?",
   transition:
-    "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. Baseline health is the only common cause.",
+    "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. The risk score is the only common cause.",
   instruction:
     "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
   explanation:
@@ -160,7 +160,7 @@ const hiddenCallback = {
   ...lessons[8],
   title: "Revisit hidden confounding with AIPW",
   transition:
-    "We return to the hidden-confounding experiment from level 7, with simple relationships and smoking’s influence reset to zero. Both models use baseline health; neither can use smoking status. AIPW is now included in the comparison.",
+    "We return to the hidden-confounding experiment from level 7, with simple relationships and smoking’s influence reset to zero. Both models use C; neither can use smoking status. AIPW is now included in the comparison.",
   explanation:
     "AIPW combines the same predictions and weights as before. A correct model for one part of an identified causal problem can protect against the other model being wrong; it cannot supply missing confounding information. As smoking’s influence grows, all three estimates can miss the true effect. Agreement between methods does not establish that confounding has been controlled.",
   next: "Return to the fixed model experiment, or continue to targeting: can we build the correction into the outcome predictions?",
@@ -197,17 +197,17 @@ function showsAipw(level) {
 
 function controls(level) {
   if (level === 10)
-    return `<fieldset class="model-choices" id="overlap-selection"><legend>How strongly does baseline health determine treatment?</legend><label class="lesson-switch"><input type="radio" name="overlap-selection" value="1.2" checked> Moderate selection</label><label class="lesson-switch"><input type="radio" name="overlap-selection" value="5"> Strong selection</label></fieldset>`;
+    return `<fieldset class="model-choices" id="overlap-selection"><legend>How strongly does the risk score determine treatment?</legend><label class="lesson-switch"><input type="radio" name="overlap-selection" value="1.2" checked> Moderate selection</label><label class="lesson-switch"><input type="radio" name="overlap-selection" value="5"> Strong selection</label></fieldset>`;
   if (level === 9)
     return '<label for="hidden-strength">Hidden confounding strength <output id="hidden-strength-output">0.0</output></label><input id="hidden-strength" type="range" min="0" max="2" step="0.1" value="0" aria-describedby="hidden-strength-help"><p id="hidden-strength-help" class="sample-note">0: no influence · 2: strong influence on both treatment and outcome. Both models always adjust for C; neither can use U.</p>';
   if (level === 1)
     return '<label for="effect">True treatment effect <output id="effect-output">2.0</output></label><input id="effect" type="range" min="-1" max="4" step="0.1" value="2">';
   if (level === 2)
-    return '<label for="selection">Baseline health’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Baseline health’s influence on the outcome stays fixed.</p>';
+    return '<label for="selection">Risk score’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Its influence on the outcome stays fixed.</p>';
   if (level === 3)
-    return '<p>Imagine people in poorer health receive treatment more often. To balance baseline health across groups, give more weight to healthier people who received treatment and less healthy people who did not.</p><button id="reveal-ipw">Try IPW</button>';
+    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
-    return '<p id="regression-explanation">For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed baseline health, and we average the predicted differences to estimate the average treatment effect.</p>';
+    return '<p id="regression-explanation">For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
       ["simple", "Simple relationships"],
@@ -222,8 +222,8 @@ function controls(level) {
         "",
       )}</fieldset><p id="world-description" aria-live="polite"></p><figure class="model-preview" aria-labelledby="model-preview-title"><figcaption id="model-preview-title"></figcaption><div id="model-preview"></div><div class="model-legend"><span>━━ True relationship</span><span>┄┄ Our fitted model</span></div></figure><p id="model-description" aria-live="polite"></p>`;
   if (level === 7 || level === 8)
-    return `<p>Outcome regression always accounts for baseline health. The target remains the <strong>total treatment effect</strong>.</p><label class="lesson-switch"><input id="post-adjustment" type="checkbox"> Also account for ${level === 7 ? "the intermediate response (M)" : "the follow-up score (K)"}</label>`;
-  return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
+    return `<p>Outcome regression always accounts for C. The target remains the <strong>total treatment effect</strong>.</p><label class="lesson-switch"><input id="post-adjustment" type="checkbox"> Also account for ${level === 7 ? "the intermediate response (M)" : "the follow-up score (K)"}</label>`;
+  return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for C.</p></fieldset>`;
 }
 
 enterFromUrl(false);
@@ -263,7 +263,7 @@ function enter(level, focus = true, callback = false) {
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
         ${(level >= 4 && level <= 6) || level === 9 || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
         ${level === 10 ? overlapPanel() : ""}${level === 11 ? tmlePanel() : ""}
-        <div id="balance" hidden><h3>Baseline health in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average baseline health (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
+        <div id="balance" hidden><h3>Risk scores in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average risk score (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         ${level === 3 ? '<details id="weighting" hidden><summary>Why these weights?</summary><div id="weight-examples"></div><details id="ipw-calculation"><summary>How do weights become an effect?</summary><div id="ipw-arithmetic"></div></details></details>' : ""}
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
         ${
@@ -280,13 +280,13 @@ function enter(level, focus = true, callback = false) {
             : ""
         }
       </section>
-      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with baseline health Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? "<p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>" : ""}</details>
+      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? "<p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>" : ""}</details>
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 6 ? `<details class="aipw-calculation"><summary>How is AIPW calculated?</summary>${aipwFormula()}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
       ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Here, the true relationship includes C² − 1. A linear model using only C cannot capture this curve. It needs a C² term and an intercept to represent the relationship correctly.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
-      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and baseline health${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, baseline health is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
+      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       `
       }
@@ -473,7 +473,7 @@ function renderModelPreview(points) {
       .join(" ");
   document.querySelector("#model-preview-title").textContent = title;
   document.querySelector("#model-preview").innerHTML =
-    `<svg viewBox="0 0 360 165" role="img" aria-label="${title} by baseline health: solid line is the true relationship; dashed line is the fitted model.">${[lo, (lo + hi) / 2, hi].map((v) => `<path d="M42 ${y(v)}H342" stroke="var(--grid)"/><text x="34" y="${y(v) + 4}" text-anchor="end">${treatment ? `${v * 100}%` : v}</text>`).join("")}<path data-curve="truth" d="${path(false)}" fill="none" stroke="var(--truth)" stroke-width="2.5"/><path data-curve="fitted" d="${path(true)}" fill="none" stroke="var(--fitted)" stroke-width="2.5" stroke-dasharray="6 4"/><text x="42" y="143">−1.7</text><text x="192" y="143" text-anchor="middle">0</text><text x="342" y="143" text-anchor="end">1.7</text><text x="192" y="161" text-anchor="middle">Baseline health (C)</text></svg>`;
+    `<svg viewBox="0 0 360 165" role="img" aria-label="${title} by risk score: solid line is the true relationship; dashed line is the fitted model.">${[lo, (lo + hi) / 2, hi].map((v) => `<path d="M42 ${y(v)}H342" stroke="var(--grid)"/><text x="34" y="${y(v) + 4}" text-anchor="end">${treatment ? `${v * 100}%` : v}</text>`).join("")}<path data-curve="truth" d="${path(false)}" fill="none" stroke="var(--truth)" stroke-width="2.5"/><path data-curve="fitted" d="${path(true)}" fill="none" stroke="var(--fitted)" stroke-width="2.5" stroke-dasharray="6 4"/><text x="42" y="143">−1.7</text><text x="192" y="143" text-anchor="middle">0</text><text x="342" y="143" text-anchor="end">1.7</text><text x="192" y="161" text-anchor="middle">Risk score (C)</text></svg>`;
 }
 
 function updateEstimate(id, estimate, truth) {
@@ -557,7 +557,7 @@ function update() {
     document.querySelector("#world-description").textContent =
       state.outcomeCurve
         ? state.treatmentCurve
-          ? "World: both baseline-health relationships are curved. Model choices change only the analysis."
+          ? "World: both relationships with C are curved. Model choices change only the analysis."
           : "Only the outcome relationship is now more complex. Treatment assignment stays simple."
         : state.treatmentCurve
           ? "Only treatment assignment is now more complex. The outcome relationship is simple again."
@@ -584,18 +584,18 @@ function update() {
       ? state.level === 7
         ? "Including M blocks part of the effect we want to measure. The estimate near 2 misses our total-effect target of 3. Leave M out of the adjustment set to include its pathway."
         : "We now hold the follow-up score fixed. Conditioning on this shared consequence can distort the treatment comparison."
-      : "We account for baseline health only, leaving the total treatment effect intact. Try including the new variable.";
+      : "We account for C only, leaving the total treatment effect intact. Try including the new variable.";
     renderRoleGraph();
     return;
   }
   if (state.level === 9) {
     const strength = state.hiddenStrength;
     document.querySelector("#lesson-graph").innerHTML = `
-      <svg viewBox="0 0 540 300" role="img" aria-label="Baseline health C is measured and causes treatment and outcome. Smoking status U is unmeasured and ${strength === 0 ? "currently has no influence; its faded paths are inactive" : "also causes treatment and outcome"}. Treatment causes outcome. Only C is adjusted for.">
+      <svg viewBox="0 0 540 300" role="img" aria-label="Risk score C is measured before treatment and causes treatment and outcome. Smoking status U is unmeasured and ${strength === 0 ? "currently has no influence; its faded paths are inactive" : "also causes treatment and outcome"}. Treatment causes outcome. Only C is adjusted for.">
         <defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs>
         <g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M220 60L100 125"/><path d="M320 60L440 125"/><path d="M155 145H380"/></g>
         <g data-hidden-paths fill="none" stroke="var(--causal-path)" ${arrowStrength(strength, 2)} stroke-dasharray="6 4" marker-end="url(#lesson-arrow)"><path d="M220 235L100 169"/><path d="M320 235L440 169"/></g>
-        <rect x="165" y="10" width="210" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="41">Baseline health (C)</text>
+        <rect x="165" y="10" width="210" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="41">Risk score (C)</text>
         <rect x="15" y="125" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="152">Treatment<tspan class="graph-symbol"> (A)</tspan></text>
         <rect x="385" y="125" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="152">Outcome<tspan class="graph-symbol"> (Y)</tspan></text>
         <rect x="165" y="235" width="210" height="50" rx="16" fill="var(--node-U)" stroke="var(--causal-path)" stroke-dasharray="6 4"/><text x="270" y="266">Smoking status (U)</text>
@@ -608,10 +608,10 @@ function update() {
       ? "Treatment has no effect on outcome."
       : "Treatment causes outcome.";
   const description = commonCause
-    ? `Baseline health causes outcome${state.selection ? " and treatment" : ""}. ${treatmentDescription}`
+    ? `The risk score causes outcome${state.selection ? " and treatment" : ""}. ${treatmentDescription}`
     : `${treatmentDescription} Treatment is assigned at random.`;
   document.querySelector("#lesson-graph").innerHTML =
-    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M155 ${commonCause ? 145 : 45}H380" ${state.level === 1 ? arrowStrength(state.effect, 4) : ""}/>${commonCause ? `<path d="M320 65L400 123"/><path d="M220 65L130 123" ${[2, 10].includes(state.level) ? arrowStrength(state.selection, state.level === 2 ? 1.2 : 5) : ""}/>` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Baseline health<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${[1, 2, 10].includes(state.level) ? '<p class="sample-note">Darker arrows show stronger influence; faint arrows at zero are inactive. Shading shows magnitude, not sign.</p>' : ""}${state.level >= 3 ? `<p class="sample-note">${state.level === 3 ? "IPW uses baseline health (C)." : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
+    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M155 ${commonCause ? 145 : 45}H380" ${state.level === 1 ? arrowStrength(state.effect, 4) : ""}/>${commonCause ? `<path d="M320 65L400 123"/><path d="M220 65L130 123" ${[2, 10].includes(state.level) ? arrowStrength(state.selection, state.level === 2 ? 1.2 : 5) : ""}/>` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Risk score<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${[1, 2, 10].includes(state.level) ? '<p class="sample-note">Darker arrows show stronger influence; faint arrows at zero are inactive. Shading shows magnitude, not sign.</p>' : ""}${state.level >= 3 ? `<p class="sample-note">${state.level === 3 ? "IPW uses C." : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
 }
 
 function outcomeCalculation(predictions) {
@@ -620,7 +620,7 @@ function outcomeCalculation(predictions) {
   const average =
     predictions.reduce((sum, row) => sum + row.contrast, 0) /
     predictions.length;
-  return `<p>Person ${person.person} received ${person.A ? "treatment" : "no treatment"}, so only that outcome was observed. The model predicts both outcomes at the same baseline health, C = ${number(person.C)}.</p>
+  return `<p>Person ${person.person} received ${person.A ? "treatment" : "no treatment"}, so only that outcome was observed. The model predicts both outcomes at the same risk score, C = ${number(person.C)}.</p>
     <table><caption>Current predictions for person ${person.person}</caption><tbody>
       <tr><th scope="row">With treatment, Ŷ₁(Cᵢ)</th><td>${number(person.m1)}</td></tr>
       <tr><th scope="row">Without treatment, Ŷ₀(Cᵢ)</th><td>${number(person.m0)}</td></tr>
@@ -686,16 +686,16 @@ function renderRoleGraph() {
   const mediator = state.level === 7;
   const role = mediator ? "Intermediate response" : "Follow-up score";
   const symbol = mediator ? "M" : "K";
-  const description = `Baseline health causes treatment and outcome. Treatment causes outcome. ${mediator ? "Treatment causes the intermediate response, which causes outcome." : "Treatment and outcome cause the follow-up score; the score causes neither."} We adjust for baseline health${state.postAdjusted ? ` and ${role.toLowerCase()}` : " only"}.`;
+  const description = `The risk score causes treatment and outcome. Treatment causes outcome. ${mediator ? "Treatment causes the intermediate response, which causes outcome." : "Treatment and outcome cause the follow-up score; the score causes neither."} We adjust for C${state.postAdjusted ? ` and ${role.toLowerCase()}` : " only"}.`;
   const nodes = mediator
     ? [
-        ["C", 170, 16, 200, 48, "Baseline health", "var(--node-C)"],
+        ["C", 170, 16, 200, 48, "Risk score", "var(--node-C)"],
         ["A", 10, 158, 130, 48, "Treatment", "var(--node-A)"],
         ["Y", 400, 158, 130, 48, "Outcome", "var(--node-Y)"],
         ["M", 195, 150, 150, 64, "Intermediate|response", "var(--node-M)"],
       ]
     : [
-        ["C", 70, 16, 200, 48, "Baseline health", "var(--node-C)"],
+        ["C", 70, 16, 200, 48, "Risk score", "var(--node-C)"],
         ["A", 10, 158, 130, 48, "Treatment", "var(--node-A)"],
         ["Y", 205, 158, 130, 48, "Outcome", "var(--node-Y)"],
         ["K", 390, 150, 140, 64, "Follow-up|score", "var(--node-K)"],

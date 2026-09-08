@@ -89,10 +89,10 @@ try {
   assert.equal(await page.locator("#selection").inputValue(), "0");
   assert.match(
     await page.locator("#lesson-graph svg").getAttribute("aria-label"),
-    /health causes outcome\./,
+    /risk score causes outcome\./,
   );
   const selection = page.getByRole("slider", {
-    name: "Baseline health’s influence on treatment",
+    name: "Risk score’s influence on treatment",
   });
   await selection.focus();
   await page.keyboard.press("ArrowRight");
@@ -328,7 +328,7 @@ try {
   assert.equal(await page.locator("#sample-label").innerText(), outcomeSeed);
   assert.match(
     await outcomeNumbers.innerText(),
-    /only that outcome was observed.*same baseline health/s,
+    /only that outcome was observed.*same risk score/s,
   );
   const reconcilesOutcome = async () =>
     assert.equal(
@@ -503,7 +503,7 @@ try {
     .locator("#lesson-graph svg text")
     .allTextContents();
   assert.deepEqual(graphLabels, [
-    "Baseline health (C)",
+    "Risk score (C)",
     "Treatment (A)",
     "Outcome (Y)",
     "Smoking status (U)",
@@ -599,7 +599,7 @@ try {
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 13/);
   assert.doesNotMatch(
     await page.locator("#lesson-graph svg").textContent(),
-    /Smoking|response|score/,
+    /Smoking|Intermediate response|Follow-up score/,
   );
   assert.match(
     await page.locator(".lesson-transition").innerText(),

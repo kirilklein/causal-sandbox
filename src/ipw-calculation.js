@@ -6,7 +6,7 @@ function fraction(top, bottom) {
 
 export function renderIpwCalculation(groups) {
   document.querySelector("#weight-examples").innerHTML = `
-    <p>Let p be the chance of treatment given baseline health. Weight by the inverse chance of the assignment actually received:</p>
+    <p>Let p be the chance of treatment given the risk score. Weight by the inverse chance of the assignment actually received:</p>
     <table class="ipw-weight-table"><caption>Illustrative probabilities, not this sample</caption>
       <thead><tr><th scope="col">Treatment chance<br>p</th>
       <th scope="col">Treated weight<br><math aria-label="one divided by p"><mfrac><mn>1</mn><mi>p</mi></mfrac></math></th>

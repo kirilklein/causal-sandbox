@@ -72,8 +72,8 @@ document.querySelector("#app").innerHTML =
     </div>
     <details id="heterogeneous-example">
       <summary>What if treatment effects differ between people?</summary>
-      <label class="effect-switch"><input type="checkbox" id="heterogeneous"> Let the treatment effect vary with baseline health</label>
-      <p class="help">In this example, treatment helps people near the extremes of baseline health more. Trimming changes which effects enter the average. Treatment assignment and the sample’s baseline health stay fixed.</p>
+      <label class="effect-switch"><input type="checkbox" id="heterogeneous"> Let the treatment effect vary with the risk score</label>
+      <p class="help">In this example, treatment helps people near the extremes of C more. Trimming changes which effects enter the average. Treatment assignment and the sample’s risk scores stay fixed.</p>
     </details>
     <div class="comparison">
       <figure aria-labelledby="histogram-title">
@@ -212,7 +212,7 @@ document.querySelector("#app").innerHTML =
       needed for an estimate.
     </p>
     <p class="note">
-      There are 400 people and one measured common cause, baseline health C.
+      There are 400 people and one measured common cause, the risk score C.
       The treatment model correctly adjusts for C. Moving the threshold
       reuses the full-sample fit. Changing selection or redrawing refits;
       redraw keeps the threshold, while restart restores the original sample
@@ -253,7 +253,7 @@ function update() {
     );
   }
   document.querySelector("#effect-note").textContent = heterogeneous.checked
-    ? "Effects vary with baseline health. Compare the retained group’s truth with everyone’s truth below."
+    ? "Effects vary with the risk score. Compare the retained group’s truth with everyone’s truth below."
     : "Treatment adds 2 to every person’s outcome, so every nonempty group has truth 2.";
   const result = trimmingResult(sample.rows, sample.effects, threshold);
   const range = `[${threshold.toFixed(3)}, ${(1 - threshold).toFixed(3)}]`;

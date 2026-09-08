@@ -209,7 +209,7 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
     </p>
     <p class="note">
       Selection strength changes treatment assignment and outcomes, keeping
-      baseline health and background random draws fixed. Both models are
+      the sample’s risk scores and background random draws fixed. Both models are
       refitted for that world.
     </p>
     <p class="note">
