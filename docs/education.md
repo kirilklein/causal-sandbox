@@ -192,7 +192,7 @@ Level 2 sets outcomeInfluence to 1.5 and lets selection vary from 0 to 1.2 in st
 The slider preserves covariates and random draws; redraw is separate. Returning
 to zero restores random assignment, and entry/restart restores zero and the initial sample.
 Level 3 starts with selection 1.2 and shows truth and the unadjusted difference.
-One “Try IPW” action fits treatment probabilities using baseline health (C) and
+One “Try IPW” action fits treatment probabilities using the risk score (C) and
 reveals the adjusted estimate alongside before/after balance for the same sample.
 There is no adjustment checkbox or intermediate unadjusted IPW result. Redraw
 updates both estimates; restart restores the initial view. Weighted balance uses
@@ -338,7 +338,7 @@ After each level, ask:
 
 1. Why can the randomized groups' outcome difference estimate the treatment effect?
    Why does redrawing change the answer?
-2. What changed when baseline health started influencing treatment assignment?
+2. What changed when the risk score started influencing treatment assignment?
    Why is the outcome difference now mixing two influences?
 3. What is weighting trying to repair? Does it guarantee an exact answer in every
    sample? What does the balance comparison tell you?
@@ -356,7 +356,7 @@ protect against. This comprehension walkthrough is still pending.
 ## Causal-role contract
 
 Levels 5–6 explicitly return to the level-4 baseline (selection=1.2, simple
-relationships and models, baseline health always included). They show only the
+relationships and models, the risk score always included). They show only the
 true total effect and familiar standardized outcome regression, with one switch
 for the new variable. Graph captions state the adjustment set; nodes and arrows never change with
 the switch. The world and draws stay fixed. Level 5 introduces the true breakdown;
@@ -393,7 +393,7 @@ without changing the total effect we are trying to estimate.
 
 ## Hidden common cause (level 7)
 
-Level 7 keeps measured baseline health C and adds binary, unmeasured smoking
+Level 7 keeps measured risk score C and adds binary, unmeasured smoking
 status U. This is a fictional teaching example, not a model of smoking's actual
 prevalence or effects. U is 1 for half the population and independent of C.
 One strength slider s runs from 0 to 2 and controls both pathways:
@@ -489,7 +489,7 @@ migrate the other formulas tracked by #19 or add AIPW/TMLE explanations.
 
 Lesson 4 briefly distinguishes the observed outcome from the counterfactual
 outcome under the alternative treatment. It then states the operation once:
-predict each person under both treatments at the same baseline health, and
+predict each person under both treatments at the same risk score, and
 average the predicted differences to estimate the average treatment effect.
 One optional explanation contains the averaging formula, symbol definitions,
 the distinction between predictions and observations, and why both methods work

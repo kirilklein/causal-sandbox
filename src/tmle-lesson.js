@@ -65,8 +65,8 @@ export function tmleFormula() {
   return `<details class="tmle-formula-details"><summary>How does targeting work?</summary>
     <p>TMLE fits an update to the outcome predictions, then averages their treated-minus-untreated differences.</p>
     <div class="tmle-formula" role="group" aria-label="Targeted prediction equals initial prediction plus the fitted update amount times the targeting direction">
-      <div class="tmle-formula-start"><div class="tmle-targeted">${math(prediction(true), "Targeted prediction for treatment a at person i's baseline health")}<span>Targeted prediction</span></div><span class="tmle-operator">=</span></div>
-      <div class="tmle-formula-parts"><div class="tmle-initial">${math(prediction(), "Initial fitted prediction for treatment a at person i's baseline health")}<span>Initial prediction</span></div><span class="tmle-operator">+</span><div class="tmle-update"><div><span class="tmle-amount">${math("<mover><mi>ε</mi><mo>^</mo></mover>", "epsilon hat, the fitted update amount")}</span><span aria-label="times">×</span><span class="tmle-direction">${math("<mi>H</mi><mo>(</mo><mi>a</mi><mo>,</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo>", "H of treatment a and baseline health C i, the targeting direction")}</span></div><span>Targeted update</span></div></div>
+      <div class="tmle-formula-start"><div class="tmle-targeted">${math(prediction(true), "Targeted prediction for treatment a at person i's risk score")}<span>Targeted prediction</span></div><span class="tmle-operator">=</span></div>
+      <div class="tmle-formula-parts"><div class="tmle-initial">${math(prediction(), "Initial fitted prediction for treatment a at person i's risk score")}<span>Initial prediction</span></div><span class="tmle-operator">+</span><div class="tmle-update"><div><span class="tmle-amount">${math("<mover><mi>ε</mi><mo>^</mo></mover>", "epsilon hat, the fitted update amount")}</span><span aria-label="times">×</span><span class="tmle-direction">${math("<mi>H</mi><mo>(</mo><mi>a</mi><mo>,</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo>", "H of treatment a and risk score C i, the targeting direction")}</span></div><span>Targeted update</span></div></div>
     </div>
     <div class="tmle-definitions">
       <section class="tmle-initial"><h3>Initial prediction · Ŷₐ</h3><p>What the outcome model predicts for each person under treatment a: 1 for treated, 0 for untreated.</p></section>
@@ -82,7 +82,7 @@ export function tmleFormula() {
         ${math("<mi>D</mi><mo>=</mo><mi>H</mi><mo>(</mo><mi>Y</mi><mo>−</mo><msubsup><mover><mi>Y</mi><mo>^</mo></mover><mi>A</mi><mo>*</mo></msubsup><mo>)</mo>", "D equals the signed weighted prediction error")}
         ${math("<mo>+</mo><mo>(</mo><msubsup><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn><mo>*</mo></msubsup><mo>−</mo><msubsup><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn><mo>*</mo></msubsup><mo>−</mo><mover><mi>τ</mi><mo>^</mo></mover><mo>)</mo>", "plus targeted treatment contrast minus the overall estimate")}
       </div>
-      <p>The contrasts minus their average already sum to zero. Fitting ε makes the average weighted error zero too. That is why we update in direction H; H alone is not the influence function. Baseline-health arguments are omitted in this expression.</p>
+      <p>The contrasts minus their average already sum to zero. Fitting ε makes the average weighted error zero too. That is why we update in direction H; H alone is not the influence function. Arguments involving C are omitted in this expression.</p>
     </details>
     <details><summary>Inspect this sample</summary><div id="tmle-sample-values"></div></details>
     <details><summary>Assumptions and clipping</summary><p>This continuous-outcome version uses a linear update with squared-error loss. Its predictions can leave the observed outcome range. Treatment probabilities are clipped to [0.02, 0.98], matching IPW and AIPW; clipping can introduce bias. A zero correction does not establish that the models or causal assumptions are correct. Targeting cannot recover missing confounders or absent treatment comparisons.</p><p>AIPW adds the initial weighted correction to the initial regression estimate. TMLE updates predictions first, so the two estimates can differ in a finite sample. No confidence intervals are shown.</p><p><a href="https://escholarship.org/content/qt1849174p/qt1849174p.pdf#page=40">Read more: targeted estimation of an average treatment effect</a></p></details>
@@ -140,14 +140,14 @@ function predictionPlots(rows, view) {
           )
           .join(" ");
       const title = arm ? "With treatment" : "Without treatment";
-      return `<figure><figcaption>${title}</figcaption><svg viewBox="0 0 336 207" role="img" aria-label="${title}: predicted outcome by baseline health. Dashed line is before targeting; solid line is the current prediction.">
+      return `<figure><figcaption>${title}</figcaption><svg viewBox="0 0 336 207" role="img" aria-label="${title}: predicted outcome by risk score. Dashed line is before targeting; solid line is the current prediction.">
       <text transform="translate(14 90) rotate(-90)" text-anchor="middle">Predicted outcome</text>
       ${[low, (low + high) / 2, high].map((q) => `<path d="M60 ${y(q)}H318" stroke="var(--grid)"/><path d="M55 ${y(q)}H60" stroke="var(--text-muted)"/><text x="52" y="${y(q) + 4}" text-anchor="end">${q.toFixed(1)}</text>`).join("")}
       <path class="tmle-y-axis" d="M60 24V156H318" fill="none" stroke="var(--text-muted)"/>
       <path data-tmle-curve="before" d="${path(before)}" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-dasharray="6 4"/>
       <path data-tmle-curve="current" d="${path(current)}" fill="none" stroke="var(--arm-${arm})" stroke-width="2.5"/>
       ${[lowC, (lowC + highC) / 2, highC].map((c) => `<text x="${x(c)}" y="179" text-anchor="middle">${c.toFixed(1)}</text>`).join("")}
-      <text x="189" y="201" text-anchor="middle">Baseline health (C)</text>
+      <text x="189" y="201" text-anchor="middle">Risk score (C)</text>
     </svg><p class="sample-note tmle-curve-explanation">${tmleCurveExplanation(rows, view, arm)}</p></figure>`;
     })
     .join("");

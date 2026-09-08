@@ -17,7 +17,7 @@ export function aipwFormula() {
       </div>
       <div class="aipw-summand">
         <div class="aipw-contrast">
-          ${math(contrast, "Predicted outcome with treatment minus predicted outcome without treatment, at person i's baseline health")}
+          ${math(contrast, "Predicted outcome with treatment minus predicted outcome without treatment, at person i's risk score")}
           <span>Predicted contrast</span>
         </div>
         <span class="aipw-plus" aria-label="plus">+</span>
@@ -31,7 +31,7 @@ export function aipwFormula() {
         </div>
       </div>
     </div>
-    <p class="aipw-prediction-note">${math(prediction("1"), "Y hat one at C i")} and ${math(prediction("0"), "Y hat zero at C i")} are fitted outcomes with and without treatment, at the same baseline health.</p>
+    <p class="aipw-prediction-note">${math(prediction("1"), "Y hat one at C i")} and ${math(prediction("0"), "Y hat zero at C i")} are fitted outcomes with and without treatment, at the same risk score.</p>
     <div class="aipw-definitions">
       <section class="aipw-residual" aria-labelledby="aipw-residual-title">
         <h3 id="aipw-residual-title">Regression error</h3>
