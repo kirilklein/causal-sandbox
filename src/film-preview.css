@@ -23,51 +23,6 @@
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
-.film-poster {
-  position: relative;
-  display: block;
-  flex: 0 0 192px;
-}
-.film-poster img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.film-play-mark {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  margin: auto;
-  padding-left: 2px;
-  border: 1px solid var(--film-control-border);
-  border-radius: 50%;
-  background: var(--film-control);
-  color: var(--film-ink);
-  font-size: 12px;
-}
-.film-invitation {
-  display: grid;
-  gap: 7px;
-  padding: 14px 18px 14px 0;
-}
-.film-invitation strong {
-  font-family: Manrope, sans-serif;
-  font-size: 19px;
-  font-weight: 550;
-  letter-spacing: -0.4px;
-}
-.film-invitation > span {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-.film-invitation small {
-  margin-left: 14px;
-  font-size: 11px;
-  color: var(--text-muted);
-}
 #intro-film {
   width: min(1120px, calc(100% - 32px));
   max-width: none;
@@ -140,22 +95,6 @@
 @media (max-width: 480px) {
   .film-open {
     gap: 14px;
-  }
-  .film-poster {
-    flex-basis: 115px;
-  }
-  .film-invitation {
-    padding: 12px 10px 12px 0;
-  }
-  .film-invitation strong {
-    font-size: 15px;
-  }
-  .film-invitation > span {
-    font-size: 12px;
-  }
-  .film-invitation small {
-    display: block;
-    margin: 2px 0 0;
   }
   .film-heading {
     padding: 8px 14px;

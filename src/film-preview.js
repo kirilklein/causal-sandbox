@@ -5,8 +5,7 @@ import "./film-preview.css";
 export function filmPreview() {
   return `<section class="film-preview" aria-label="An introduction to causal effects">
     <button class="film-open" type="button" aria-haspopup="dialog" aria-controls="intro-film">
-      <span class="film-poster"><img src="${poster}" width="960" height="540" alt="" /><span class="film-play-mark" aria-hidden="true">▶</span></span>
-      <span class="film-invitation"><strong>Two possible futures.</strong><span>Watch the film <span aria-hidden="true">↗</span><small>32 seconds</small></span></span>
+      <span aria-hidden="true">▷</span> Watch the introduction <span class="film-duration">32 seconds</span>
     </button>
     <dialog id="intro-film" aria-labelledby="intro-film-title" aria-describedby="intro-film-caption">
       <div class="film-heading"><h2 id="intro-film-title">Two possible futures</h2><button class="film-close" type="button" aria-label="Close film" autofocus>Close <span aria-hidden="true">×</span></button></div>

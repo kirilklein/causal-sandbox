@@ -12,7 +12,7 @@ try {
   });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto(url);
+  await page.goto(`${url}?lesson=randomization`);
   await page.locator("#unadjusted").waitFor();
   const result = () => page.locator(".lesson-results").innerText();
   const first = await result();
@@ -1024,6 +1024,7 @@ try {
   await page.getByRole("tab", { name: "Analysis" }).click();
   await page.locator('input[value="K"]').check();
   await page.getByRole("link", { name: "Guided lessons", exact: true }).click();
+  await page.getByRole("link", { name: "Learn" }).click();
   assert.equal(await result(), first);
   const titles = [
     "A randomized experiment",

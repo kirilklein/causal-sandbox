@@ -1,5 +1,17 @@
 # Progressive education delivery
 
+The homepage opens an unnumbered Introduction (`?lesson=introduction`) to the
+whole framework. Three entry cards each give one learning promise: **Learn**
+opens randomization, **Explore** opens the full sandbox, and **Build** opens
+the graph lab. The existing 32-second film is a secondary text button.
+Contents and lesson 1 offer a return to the introduction. Explicit lesson,
+legacy level, and sandbox links retain their destinations and numbering.
+
+On initial entry, a decorative causal graph connects and the three cards appear
+in an overlapping 1.55-second reveal. Keyboard focus cancels the reveal; reduced
+motion shows everything immediately. In-app return navigation does not replay
+it. There is no autoplay, completion gate, or stored learner progress.
+
 The optional [causal assumptions chapter](assumptions.md) makes exchangeability,
 positivity, consistency, and no interference tangible through four separate
 experiments. It is linked from Contents and the recap without changing core order.

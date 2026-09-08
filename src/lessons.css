@@ -12,9 +12,265 @@
   font-size: 16px;
   line-height: 1.6;
 }
-.brand-tagline {
-  margin: 0 0 20px;
+.introduction {
+  max-width: 1060px;
+  padding-top: 0;
+}
+.introduction .lesson-nav {
+  margin-bottom: 0;
+}
+.introduction .lesson-nav-heading > span {
+  display: none;
+}
+.introduction .lesson-nav-heading {
+  justify-content: flex-start;
+}
+.introduction .lesson-nav #lesson-menu-toggle {
+  position: static;
+  width: auto;
+  padding-inline: 0;
+}
+.introduction #lesson-menu-toggle .contents-label {
+  display: inline;
+}
+.intro-hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 36px;
+  align-items: center;
+  padding: 22px 0 48px;
+}
+.intro-kicker {
   color: var(--text-secondary);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 22px;
+}
+.learning.introduction h1 {
+  font-size: clamp(48px, 6.6vw, 78px);
+  letter-spacing: -3px;
+  line-height: 1.04;
+  margin: 0 0 24px;
+}
+.intro-context {
+  max-width: 410px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 17px;
+}
+.intro-graph {
+  width: 100%;
+  overflow: visible;
+}
+.intro-orbits {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 0.8;
+}
+.intro-orbits path {
+  stroke-dasharray: 2 7;
+}
+.intro-edges {
+  stroke: var(--text-secondary);
+  color: var(--text-secondary);
+  stroke-width: 1.5;
+}
+.intro-node circle {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+.intro-node-c circle {
+  fill: var(--node-C);
+}
+.intro-node-a circle {
+  fill: var(--node-A);
+}
+.intro-node-y circle {
+  fill: var(--node-Y);
+}
+.intro-node text {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: var(--text);
+  font-size: 21px;
+}
+.intro-node .intro-node-label {
+  font-size: 12px;
+  fill: var(--text-secondary);
+}
+.intro-paths {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.introduction .intro-path {
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 180ms,
+    background 180ms;
+}
+.intro-path:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+.intro-path:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
+.intro-path-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  margin-bottom: 23px;
+}
+.intro-path-top svg {
+  width: 56px;
+  height: 36px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.intro-path-top circle {
+  fill: var(--surface);
+}
+.intro-path-arrow {
+  font-size: 23px;
+}
+.introduction .intro-path h2 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  letter-spacing: -0.6px;
+}
+.intro-path p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0 0 25px;
+}
+.intro-path-detail {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--accent);
+}
+.introduction .film-preview {
+  margin: 25px 0 8px;
+}
+.introduction .film-open {
+  width: auto;
+  min-height: 44px;
+  margin: auto;
+  padding: 8px 12px;
+  gap: 10px;
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.film-duration {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+@keyframes introduction-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .introduction-arriving
+    :is(.intro-copy, .intro-node, .intro-path, .film-preview) {
+    animation: introduction-arrive 800ms ease-out backwards;
+  }
+  .introduction-arriving .intro-node-a {
+    animation-delay: 150ms;
+  }
+  .introduction-arriving .intro-node-y {
+    animation-delay: 300ms;
+  }
+  .introduction-arriving .intro-edges path {
+    animation: introduction-connect 800ms 350ms ease-out backwards;
+  }
+  .introduction-arriving .intro-path:nth-child(1) {
+    animation-delay: 450ms;
+  }
+  .introduction-arriving .intro-path:nth-child(2) {
+    animation-delay: 550ms;
+  }
+  .introduction-arriving .intro-path:nth-child(3) {
+    animation-delay: 650ms;
+  }
+  .introduction-arriving .film-preview {
+    animation-delay: 750ms;
+  }
+  .introduction-arriving:focus-within *,
+  .introduction-arriving:focus-within .intro-edges path {
+    animation: none;
+  }
+}
+@keyframes introduction-connect {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+@media (max-width: 700px) {
+  .intro-hero {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 8px 0 30px;
+  }
+  .learning.introduction h1 {
+    font-size: clamp(46px, 10vw, 66px);
+    letter-spacing: -2px;
+  }
+  .intro-graph {
+    width: 220px;
+    justify-self: center;
+  }
+  .intro-paths {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .introduction .intro-path {
+    padding: 20px;
+    position: relative;
+  }
+  .intro-path-top {
+    position: absolute;
+    right: 20px;
+    top: 19px;
+    margin: 0;
+  }
+  .intro-path-top svg {
+    display: none;
+  }
+  .introduction .intro-path h2 {
+    font-size: 24px;
+  }
+  .intro-path p {
+    margin-bottom: 15px;
+  }
+  .intro-context {
+    font-size: 15px;
+  }
 }
 .lesson-recap p {
   margin: 0 0 24px;
