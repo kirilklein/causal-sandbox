@@ -13,6 +13,11 @@
 body {
   margin: 0;
 }
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 50% 0, var(--surface-subtle), transparent 900px),
+    var(--page);
+}
 .concept-content {
   max-width: 800px;
   margin: 8px auto 72px;

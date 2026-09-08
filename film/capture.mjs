@@ -17,6 +17,17 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("http://127.0.0.1:5198/?t=0");
   await page.waitForFunction(() => Boolean(window.cohortFilm));
+  const poster = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 960;
+    canvas.height = 540;
+    window.cohortFilm.render(canvas, 32);
+    return canvas.toDataURL("image/webp", 0.85).split(",")[1];
+  });
+  await writeFile(
+    path.join(output, "poster.webp"),
+    Buffer.from(poster, "base64"),
+  );
   for (const [name, time] of [
     ["observation", 2],
     ["time", 7],

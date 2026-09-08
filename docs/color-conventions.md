@@ -6,6 +6,13 @@ error feedback for #16. Future equation work follows the variable conventions. L
 page background and pale node fills; dark mode uses neutral charcoal surfaces, lighter
 text and chart strokes, and muted versions of the same variable hues.
 
+Dark-mode surfaces now use the cohort film’s blue-charcoal palette, with cool-blue
+UI accents. Existing diagram, treatment-arm, truth, and error meanings remain
+unchanged. The film has its own explicit legend: coral is the treated world,
+blue is untreated; solid versus translucent marks distinguish factual and
+counterfactual paths. This local treatment-world palette does not identify graph
+variables or estimation error. Film-player colours also live in `src/theme.css`.
+
 Open the [visual examples](color-examples.html) in a browser to compare the palette,
 adjustment captions, and an illustrative estimate plot. The examples use inline SVG
 and work offline; their numbers are not simulation results.

@@ -1,7 +1,6 @@
 # Two possible futures
 
-A standalone 32-second Causal Sandbox film. No website routes or lesson code are
-changed. The browser renderer uses a 3D coordinate system and a continuous camera
+A standalone 32-second Causal Sandbox film. The browser renderer uses a 3D coordinate system and a continuous camera
 orbit, drawing to a Canvas 2D surface. It has no runtime dependencies, remote assets,
 or tracking. This first visual cut is silent.
 
@@ -65,3 +64,17 @@ The output is `film/exports/causal-sandbox-two-futures.mp4`; the final still is
 `film/exports/thumbnail.png`. Re-running capture replaces these generated files.
 
 The standalone production build is written to ignored `film/dist/`.
+
+## Website use and preserved master
+
+The source, full-resolution `exports/thumbnail.png`, and 1080p
+`exports/causal-sandbox-two-futures.mp4` are tracked in Git. The small
+`exports/poster.webp` is tracked too; other capture outputs stay ignored.
+Capture regenerates the poster from the same renderer at 960×540.
+
+The first lesson offers a compact watch card via `src/film-preview.js`. Its native
+video player opens in a dialog on request. No video source is attached until the
+user opens it; playback pauses on close, and lesson values are preserved.
+The regular site build bundles the poster and MP4 with hashed URLs. It does not
+bundle or run the animation renderer. The original standalone preview is still
+available through the command above.
