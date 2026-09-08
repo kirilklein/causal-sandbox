@@ -23,7 +23,7 @@ try {
         ?.getAttribute("aria-label"),
     }));
   await page.goto(`${url}?lesson=randomization`);
-  await page.locator("#unadjusted").waitFor();
+  await page.locator("#known-effect").waitFor();
   assert.equal(await theme(), "light");
   const initial = await snapshot();
   await page.getByLabel("Color theme").selectOption("dark");
@@ -33,7 +33,7 @@ try {
   await page.getByLabel("Color theme").selectOption("light");
   assert.equal(await theme(), "light");
   await page.reload();
-  await page.locator("#unadjusted").waitFor();
+  await page.locator("#known-effect").waitFor();
   assert.equal(await theme(), "light");
   await page.getByLabel("Color theme").selectOption("system");
   assert.equal(await theme(), "dark");
@@ -162,7 +162,7 @@ try {
     });
   });
   await blocked.goto(`${url}?lesson=randomization`);
-  await blocked.locator("#unadjusted").waitFor();
+  await blocked.locator("#known-effect").waitFor();
   await blocked.getByLabel("Color theme").selectOption("light");
   assert.equal(
     await blocked.locator("html").getAttribute("data-theme"),

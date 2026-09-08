@@ -111,7 +111,7 @@ try {
   await page.getByLabel("Color theme").selectOption("light");
   await page.screenshot({ path: "/tmp/cohort-site-light.png", fullPage: true });
   await page.getByRole("link", { name: "Learn" }).click();
-  await page.locator("#unadjusted").waitFor();
+  await page.locator("#known-effect").waitFor();
   assert.equal(
     await page.locator(".lesson-nav-heading > span").textContent(),
     "Level 1 of 13",
@@ -126,7 +126,7 @@ try {
   assert.equal(await video.getAttribute("src"), null);
   assert.equal(await page.locator(".introduction-arriving").count(), 0);
   await page.goBack();
-  await page.locator("#unadjusted").waitFor();
+  await page.locator("#known-effect").waitFor();
   await page.goForward();
   await open.waitFor();
   assert.equal(await page.locator(".introduction-arriving").count(), 0);
@@ -167,7 +167,7 @@ try {
   await page.getByRole("link", { name: "Learn" }).focus();
   assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
   await page.keyboard.press("Enter");
-  await page.locator("#unadjusted").waitFor();
+  await page.locator("#known-effect").waitFor();
   await page.goBack();
   await open.waitFor();
   assert.equal(await page.locator(".introduction-arriving").count(), 0);
