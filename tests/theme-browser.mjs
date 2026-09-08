@@ -22,7 +22,7 @@ try {
         .querySelector(".sample-note, #population")
         ?.getAttribute("aria-label"),
     }));
-  await page.goto(url);
+  await page.goto(`${url}?lesson=randomization`);
   await page.locator("#unadjusted").waitFor();
   assert.equal(await theme(), "light");
   const initial = await snapshot();
@@ -161,7 +161,7 @@ try {
       },
     });
   });
-  await blocked.goto(url);
+  await blocked.goto(`${url}?lesson=randomization`);
   await blocked.locator("#unadjusted").waitFor();
   await blocked.getByLabel("Color theme").selectOption("light");
   assert.equal(

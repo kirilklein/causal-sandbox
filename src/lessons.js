@@ -179,6 +179,17 @@ function enterFromUrl(focus = true) {
     : coreLessons.find(
         ([, , , path]) => path && location.pathname.endsWith(`/${path}`),
       )?.[1] || document.body.dataset.lesson;
+  if (
+    topic === "introduction" ||
+    (!topic && !params.has("lesson") && !params.has("level"))
+  ) {
+    enterIntroduction(
+      focus,
+      !focus &&
+        performance.getEntriesByType("navigation")[0]?.type !== "back_forward",
+    );
+    return;
+  }
   const named = lessons.findIndex((lesson) => lesson.slug === topic) + 1;
   const requested = topic ? named : Number(params.get("level"));
   const level = availableLevels.includes(requested) ? requested : 1;
@@ -226,7 +237,70 @@ function controls(level) {
   return `<p>Augmented inverse probability weighting (AIPW) combines outcome regression with a correction weighted by treatment probabilities. It uses both models below.</p><fieldset class="model-choices"><legend>What can our models capture?</legend><label class="lesson-switch"><input id="outcome-quadratic" type="checkbox" checked> Use a more flexible outcome model</label><label class="lesson-switch"><input id="treatment-quadratic" type="checkbox" checked> Use a more flexible treatment model</label><p class="sample-note">Checked: includes the extra pattern from the preceding model experiment. Unchecked: uses the simple model. Both still account for baseline health.</p></fieldset>`;
 }
 
+app.addEventListener("click", (event) => {
+  const link = event.target.closest("a[data-introduction], a[data-level]");
+  if (
+    !link ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  )
+    return;
+  event.preventDefault();
+  if (link.hasAttribute("data-introduction")) {
+    history.pushState(
+      null,
+      "",
+      `${import.meta.env.BASE_URL}?lesson=introduction`,
+    );
+    enterIntroduction();
+  } else navigate(Number(link.dataset.level));
+});
+
 enterFromUrl(false);
+
+function enterIntroduction(focus = true, animate = false) {
+  document.querySelector("#intro-film video")?.pause();
+  app.innerHTML = `
+    <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
+    <main class="learning introduction${animate ? " introduction-arriving" : ""}">
+      ${lessonNavigation({ introduction: true })}
+      <section class="intro-hero" aria-labelledby="intro-title">
+        <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
+          <h1 tabindex="-1" id="intro-title">See what<br>causes what.</h1>
+          <p class="intro-context">Learn through experiments, explore simulated worlds, or build your own causal graphs.</p>
+        </div>
+        <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
+          <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
+          <g class="intro-orbits"><circle cx="230" cy="170" r="125"/><circle cx="230" cy="170" r="85"/><path d="M30 170h400M230 20v280"/></g>
+          <g class="intro-edges" fill="none" marker-end="url(#intro-arrow)"><path pathLength="1" d="M209 86 116 211"/><path pathLength="1" d="m251 86 93 125"/><path pathLength="1" d="M135 240h188"/></g>
+          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text><text class="intro-node-label" x="230" y="115">Context</text></g>
+          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text><text class="intro-node-label" x="94" y="296">Treatment</text></g>
+          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text><text class="intro-node-label" x="366" y="296">Outcome</text></g>
+        </svg>
+      </section>
+      <nav class="intro-paths" aria-label="Choose your way in">
+        <a class="intro-path" href="${lessonUrl(1)}" data-level="1" aria-label="Learn">
+          <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M8 30h16V20h16V10h16"/><circle cx="8" cy="30" r="3"/><circle cx="56" cy="10" r="3"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
+          <h2>Learn</h2><p>Build your intuition through guided experiments, one concept at a time.</p><span class="intro-path-detail">Start with the foundations <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="intro-path" href="?sandbox" aria-label="Explore">
+          <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M6 10h52M6 30h52"/><circle cx="22" cy="10" r="5"/><circle cx="43" cy="30" r="5"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
+          <h2>Explore</h2><p>Change a simulated world and see how causal estimates respond.</p><span class="intro-path-detail">Open the full sandbox <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="intro-path" href="?sandbox=graph-lab" aria-label="Build">
+          <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="m16 30 16-20 16 20M16 30h32"/><circle cx="16" cy="30" r="5"/><circle cx="32" cy="10" r="5"/><circle cx="48" cy="30" r="5"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
+          <h2>Build</h2><p>Draw a causal graph and explore what your assumptions imply.</p><span class="intro-path-detail">Enter the graph lab <span aria-hidden="true">→</span></span>
+        </a>
+      </nav>
+      ${filmPreview()}
+    </main>`;
+  setupFilmPreview();
+  setupLessonNavigation();
+  if (focus) document.querySelector("h1").focus();
+}
 
 function enter(level, focus = true, callback = false) {
   document.querySelector("#intro-film video")?.pause();
@@ -241,10 +315,8 @@ function enter(level, focus = true, callback = false) {
   const previous = revisiting ? 6 : availableLevels[position - 1];
   const next = availableLevels[position + 1];
   app.innerHTML = `
-    <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
+    <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
-      ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
-      ${position === 0 ? filmPreview() : ""}
       ${lessonNavigation({ position, revisiting })}
       <div class="eyebrow">${recap ? "TAKEAWAYS" : "PREDICT · TRY · OBSERVE"}</div><h1 tabindex="-1">${lesson.title}</h1>
       ${
@@ -291,7 +363,7 @@ function enter(level, focus = true, callback = false) {
       `
       }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : ""}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters
@@ -304,22 +376,7 @@ function enter(level, focus = true, callback = false) {
           : ""
       }
     </main>`;
-  setupFilmPreview();
   setupLessonNavigation();
-  document.querySelector("#lesson-menu").addEventListener("click", (event) => {
-    const link = event.target.closest("a[data-level]");
-    if (
-      !link ||
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    )
-      return;
-    event.preventDefault();
-    navigate(Number(link.dataset.level));
-  });
   document
     .querySelector("#targeting-progress")
     ?.addEventListener("input", (event) => {

@@ -72,9 +72,9 @@ The source, full-resolution `exports/thumbnail.png`, and 1080p
 `exports/poster.webp` is tracked too; other capture outputs stay ignored.
 Capture regenerates the poster from the same renderer at 960×540.
 
-The first lesson offers a compact watch card via `src/film-preview.js`. Its native
+The homepage offers a secondary watch link via `src/film-preview.js`. Its native
 video player opens in a dialog on request. No video source is attached until the
-user opens it; playback pauses on close, and lesson values are preserved.
+user opens it; playback pauses on close or navigation into a lesson.
 The regular site build bundles the poster and MP4 with hashed URLs. It does not
 bundle or run the animation renderer. The original standalone preview is still
 available through the command above.

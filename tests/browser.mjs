@@ -760,7 +760,7 @@ try {
     fullPage: true,
   });
   await page.locator(".lessons-link").click();
-  await page.locator("#continue").waitFor();
+  await page.getByRole("link", { name: "Learn" }).waitFor();
   await page.goBack();
   await page.locator("#effects").waitFor();
   assert.equal(await page.locator("#scenario-select").inputValue(), "observed");
