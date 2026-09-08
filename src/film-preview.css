@@ -19,6 +19,7 @@
   filter: none;
 }
 .film-open:focus-visible,
+.film-fullscreen:focus-visible,
 .film-close:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
@@ -48,7 +49,13 @@
   font-size: 16px;
   font-weight: 550;
 }
-.film-close {
+.film-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.film-close,
+.film-fullscreen {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -64,7 +71,8 @@
   font-size: 24px;
   line-height: 1;
 }
-.film-close:hover {
+.film-close:hover,
+.film-fullscreen:hover {
   background: var(--surface-hover);
 }
 #intro-film video {
@@ -74,6 +82,10 @@
   aspect-ratio: 16 / 9;
   background: var(--film-background);
   object-fit: contain;
+}
+#intro-film video:fullscreen {
+  height: 100%;
+  max-height: none;
 }
 #intro-film-caption,
 #intro-film .film-status {
@@ -97,6 +109,8 @@
     gap: 14px;
   }
   .film-heading {
+    flex-wrap: wrap;
+    gap: 4px 16px;
     padding: 8px 14px;
   }
   #intro-film-title {
