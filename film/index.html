@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b141e" />
+    <title>Two possible futures — Causal Sandbox</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span>CAUSAL SANDBOX <i>/</i> Motion study 01</span
+        ><span class="edition">Two possible futures</span>
+      </header>
+      <div class="screen">
+        <canvas
+          id="film"
+          width="1920"
+          height="1080"
+          role="img"
+          aria-label="Fourteen simulated patients move through time. At treatment, each branches into a coral treated future and a blue untreated future. Solid paths are factual; faint broken paths are counterfactual. The camera aligns their final outcomes to reveal each patient's causal effect."
+        ></canvas>
+      </div>
+      <nav aria-label="Film controls">
+        <button id="play" aria-label="Pause animation">Pause</button>
+        <button id="restart" aria-label="Replay from beginning">
+          ↺ <span>Replay</span>
+        </button>
+        <output id="time">00:00 / 00:32</output>
+        <input
+          id="seek"
+          type="range"
+          min="0"
+          max="32"
+          step="0.01"
+          value="0"
+          aria-label="Animation time in seconds"
+        />
+        <button id="ending">The reveal <span>↗</span></button>
+        <button id="fullscreen" aria-label="Show film fullscreen">⛶</button>
+      </nav>
+      <footer>
+        <span>One continuous shot. Fourteen lives. Two worlds.</span
+        ><span>32 SEC <i>·</i> 16:9</span>
+      </footer>
+      <p class="sr-only">
+        This is an illustrative simulation, not patient data or an estimated
+        clinical treatment effect. Colour identifies treatment world. Opacity
+        and trail style identify observability. Treatment effects are positive
+        and heterogeneous by design.
+      </p>
+    </main>
+    <script type="module" src="./player.js"></script>
+  </body>
+</html>

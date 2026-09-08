@@ -1,5 +1,6 @@
 import { arrowStrength } from "./arrow-strength.js";
 import { themeControl } from "./theme.js";
+import { filmPreview, setupFilmPreview } from "./film-preview.js";
 import { renderIpwCalculation } from "./ipw-calculation.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
@@ -228,6 +229,7 @@ function controls(level) {
 enterFromUrl(false);
 
 function enter(level, focus = true, callback = false) {
+  document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
   state = recap ? null : lessonBaseline(level);
@@ -242,6 +244,7 @@ function enter(level, focus = true, callback = false) {
     <header class="lesson-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
       ${position === 0 ? '<p class="brand-tagline">Learn causal inference by changing the world.</p>' : ""}
+      ${position === 0 ? filmPreview() : ""}
       ${lessonNavigation({ position, revisiting })}
       <div class="eyebrow">${recap ? "TAKEAWAYS" : "PREDICT · TRY · OBSERVE"}</div><h1 tabindex="-1">${lesson.title}</h1>
       ${
@@ -301,6 +304,7 @@ function enter(level, focus = true, callback = false) {
           : ""
       }
     </main>`;
+  setupFilmPreview();
   setupLessonNavigation();
   document.querySelector("#lesson-menu").addEventListener("click", (event) => {
     const link = event.target.closest("a[data-level]");

@@ -13,6 +13,11 @@
 body {
   margin: 0;
 }
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 50% 0, var(--surface-subtle), transparent 900px),
+    var(--page);
+}
 .concept-content {
   max-width: 800px;
   margin: 8px auto 72px;
@@ -94,6 +99,9 @@ header {
 .brand svg {
   width: 29px;
   height: 29px;
+}
+.brand svg > rect {
+  fill: transparent;
 }
 .header-note {
   font-size: 9px;
