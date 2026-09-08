@@ -92,6 +92,15 @@ Selecting a lesson resets its baseline and focuses its heading. Opening Contents
 preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
+Core experiments after randomization offer **Compare with previous** above the
+diagram. Clicking opens a persistent Previous / Current switch and a short
+explanation of the lesson change. Shared nodes stay aligned and both views reserve
+the same space. The preview uses the preceding lesson's settings when arriving
+from that lesson ("As you left it"); otherwise it uses its labelled "Starting view".
+Only the graph switches: controls, estimates, and the sample remain on the current
+lesson. Navigation and Restart close the comparison. The AIPW hidden-confounding
+revisit compares with AIPW; other optional chapters and the recap have no comparison.
+
 The core target remains the population total effect. The mediator lesson teaches
 that M must stay out of the adjustment set to retain its contribution to that
 effect. Optional model details explain the separate controlled-direct-effect

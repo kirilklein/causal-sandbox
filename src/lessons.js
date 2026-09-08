@@ -1,4 +1,5 @@
-import { arrowStrength } from "./arrow-strength.js";
+import { lessonGraph } from "./lesson-graph.js";
+import { graphComparison, setupGraphComparison } from "./graph-comparison.js";
 import { themeControl } from "./theme.js";
 import { filmPreview, setupFilmPreview } from "./film-preview.js";
 import { renderIpwCalculation } from "./ipw-calculation.js";
@@ -169,7 +170,10 @@ let state,
   noise,
   studies = [],
   revealed = false,
-  revisiting = false;
+  revisiting = false,
+  previousGraph = null,
+  comparisonOpen = false,
+  comparisonView = "current";
 const app = document.querySelector("#app");
 
 function enterFromUrl(focus = true) {
@@ -262,6 +266,7 @@ app.addEventListener("click", (event) => {
 enterFromUrl(false);
 
 function enterIntroduction(focus = true, animate = false) {
+  state = null;
   document.querySelector("#intro-film video")?.pause();
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
@@ -306,13 +311,23 @@ function enter(level, focus = true, callback = false) {
   document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
+  const position = availableLevels.indexOf(revisiting ? 6 : level);
+  const previous = revisiting ? 6 : availableLevels[position - 1];
+  previousGraph =
+    !recap && previous
+      ? {
+          state:
+            state?.level === previous ? { ...state } : lessonBaseline(previous),
+          visited: state?.level === previous,
+        }
+      : null;
+  comparisonOpen = false;
+  comparisonView = "current";
   state = recap ? null : lessonBaseline(level);
   studies = [];
   noise = recap ? null : makeNoise(state.n, state.seed);
   revealed = false;
   const lesson = revisiting ? hiddenCallback : lessons[level - 1];
-  const position = availableLevels.indexOf(revisiting ? 6 : level);
-  const previous = revisiting ? 6 : availableLevels[position - 1];
   const next = availableLevels[position + 1];
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
@@ -325,6 +340,7 @@ function enter(level, focus = true, callback = false) {
           : `
       <p class="lesson-transition">${lesson.transition}</p>
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.question}</h2>
+        ${previousGraph ? graphComparison(level, revisiting) : ""}
         <div id="lesson-graph"></div>
         <p>${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
@@ -461,6 +477,12 @@ function enter(level, focus = true, callback = false) {
   document
     .querySelector("#continue")
     ?.addEventListener("click", () => navigate(next));
+  if (previousGraph)
+    setupGraphComparison((open, view) => {
+      comparisonOpen = open;
+      comparisonView = view;
+      renderLessonGraph();
+    });
   if (!recap) update();
   if (focus) document.querySelector("h1").focus();
 }
@@ -642,33 +664,8 @@ function update() {
         ? "Including M blocks part of the effect we want to measure. The estimate near 2 misses our total-effect target of 3. Leave M out of the adjustment set to include its pathway."
         : "We now hold the follow-up score fixed. Conditioning on this shared consequence can distort the treatment comparison."
       : "We account for C only, leaving the total treatment effect intact. Try including the new variable.";
-    renderRoleGraph();
-    return;
   }
-  if (state.level === 9) {
-    const strength = state.hiddenStrength;
-    document.querySelector("#lesson-graph").innerHTML = `
-      <svg viewBox="0 0 540 300" role="img" aria-label="Risk score C is measured before treatment and causes treatment and outcome. Smoking status U is unmeasured and ${strength === 0 ? "currently has no influence; its faded paths are inactive" : "also causes treatment and outcome"}. Treatment causes outcome. Only C is adjusted for.">
-        <defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs>
-        <g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M220 60L100 125"/><path d="M320 60L440 125"/><path d="M155 145H380"/></g>
-        <g data-hidden-paths fill="none" stroke="var(--causal-path)" ${arrowStrength(strength, 2)} stroke-dasharray="6 4" marker-end="url(#lesson-arrow)"><path d="M220 235L100 169"/><path d="M320 235L440 169"/></g>
-        <rect x="165" y="10" width="210" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="41">Risk score (C)</text>
-        <rect x="15" y="125" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="152">Treatment<tspan class="graph-symbol"> (A)</tspan></text>
-        <rect x="385" y="125" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="152">Outcome<tspan class="graph-symbol"> (Y)</tspan></text>
-        <rect x="165" y="235" width="210" height="50" rx="16" fill="var(--node-U)" stroke="var(--causal-path)" stroke-dasharray="6 4"/><text x="270" y="266">Smoking status (U)</text>
-      </svg><p class="sample-note">Treatment and outcome models: adjusting for C. Dashed paths: unmeasured smoking status. Darker paths mean stronger influence as the slider increases; faint paths at zero are inactive.</p>`;
-    return;
-  }
-  const commonCause = state.level > 1;
-  const treatmentDescription =
-    state.effect === 0
-      ? "Treatment has no effect on outcome."
-      : "Treatment causes outcome.";
-  const description = commonCause
-    ? `The risk score causes outcome${state.selection ? " and treatment" : ""}. ${treatmentDescription}`
-    : `${treatmentDescription} Treatment is assigned at random.`;
-  document.querySelector("#lesson-graph").innerHTML =
-    `<svg viewBox="0 0 540 ${commonCause ? 190 : 95}" role="img" aria-label="${description}"><defs><marker id="lesson-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs><g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#lesson-arrow)"><path d="M155 ${commonCause ? 145 : 45}H380" ${state.level === 1 ? arrowStrength(state.effect, 4) : ""}/>${commonCause ? `<path d="M320 65L400 123"/><path d="M220 65L130 123" ${[2, 10].includes(state.level) ? arrowStrength(state.selection, state.level === 2 ? 1.2 : 5) : ""}/>` : ""}</g>${commonCause ? '<rect x="170" y="15" width="200" height="50" rx="16" fill="var(--node-C)"/><text x="270" y="46">Risk score<tspan class="graph-symbol"> (C)</tspan></text>' : ""}<rect x="15" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-A)"/><text x="85" y="${commonCause ? 152 : 52}">Treatment<tspan class="graph-symbol"> (A)</tspan></text><rect x="385" y="${commonCause ? 125 : 25}" width="140" height="42" rx="16" fill="var(--node-Y)"/><text x="455" y="${commonCause ? 152 : 52}">Outcome<tspan class="graph-symbol"> (Y)</tspan></text></svg>${[1, 2, 10].includes(state.level) ? '<p class="sample-note">Darker arrows show stronger influence; faint arrows at zero are inactive. Shading shows magnitude, not sign.</p>' : ""}${state.level >= 3 ? `<p class="sample-note">${state.level === 3 ? "IPW uses C." : "Treatment and outcome models: adjusting for C."}</p>` : ""}`;
+  renderLessonGraph();
 }
 
 function outcomeCalculation(predictions) {
@@ -739,51 +736,37 @@ function renderOverlap(arms) {
       : "Start with moderate selection, then strengthen it using the same underlying sample draws. The true effect and both model specifications stay fixed.";
 }
 
-function renderRoleGraph() {
-  const mediator = state.level === 7;
-  const role = mediator ? "Intermediate response" : "Follow-up score";
-  const symbol = mediator ? "M" : "K";
-  const description = `The risk score causes treatment and outcome. Treatment causes outcome. ${mediator ? "Treatment causes the intermediate response, which causes outcome." : "Treatment and outcome cause the follow-up score; the score causes neither."} We adjust for C${state.postAdjusted ? ` and ${role.toLowerCase()}` : " only"}.`;
-  const nodes = mediator
-    ? [
-        ["C", 170, 16, 200, 48, "Risk score", "var(--node-C)"],
-        ["A", 10, 158, 130, 48, "Treatment", "var(--node-A)"],
-        ["Y", 400, 158, 130, 48, "Outcome", "var(--node-Y)"],
-        ["M", 195, 150, 150, 64, "Intermediate|response", "var(--node-M)"],
-      ]
-    : [
-        ["C", 70, 16, 200, 48, "Risk score", "var(--node-C)"],
-        ["A", 10, 158, 130, 48, "Treatment", "var(--node-A)"],
-        ["Y", 205, 158, 130, 48, "Outcome", "var(--node-Y)"],
-        ["K", 390, 150, 140, 64, "Follow-up|score", "var(--node-K)"],
-      ];
-  const paths = mediator
-    ? [
-        "M220 64C220 100 75 100 75 136V150",
-        "M320 64C320 100 465 100 465 136V150",
-        "M140 182H187",
-        "M345 182H392",
-        "M75 206V228C75 282 465 282 465 228V214",
-      ]
-    : [
-        "M120 64C120 100 75 100 75 136V150",
-        "M220 64C220 100 270 100 270 136V150",
-        "M140 182H197",
-        "M335 182H382",
-        "M75 206V228C75 282 460 282 460 236V222",
-      ];
-  document.querySelector("#lesson-graph").innerHTML =
-    `<svg class="role-graph" viewBox="0 0 540 290" role="img" aria-label="${description}">
-      <defs><marker id="lesson-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1 1L9 5L1 9Z" fill="var(--causal-path)"/></marker></defs>
-      <g fill="none" stroke="var(--causal-path)" stroke-width="1.8" stroke-linecap="butt" marker-end="url(#lesson-arrow)">
-        ${paths.map((d) => `<path d="${d}"/>`).join("")}
-      </g>
-      ${nodes
-        .map(([id, x, y, width, height, label, fill]) => {
-          const lines = label.split("|");
-          return `<rect class="role-node" x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="${fill}"/>
-          <text x="${x + width / 2}" y="${y + height / 2 + (lines.length === 1 ? 6 : -6)}">${lines[0]}${lines.length > 1 ? `<tspan x="${x + width / 2}" dy="24">${lines[1]}<tspan class="graph-symbol"> (${id})</tspan></tspan>` : `<tspan class="graph-symbol"> (${id})</tspan>`}</text>`;
-        })
-        .join("")}
-    </svg><p class="sample-note">Outcome model: adjusting for C${state.postAdjusted ? ` and ${symbol}` : " only"}. Arrows describe the world and stay fixed.</p>`;
+function renderLessonGraph() {
+  const graph = document.querySelector("#lesson-graph");
+  if (!comparisonOpen) {
+    graph.innerHTML = lessonGraph(state);
+    return;
+  }
+  const previous = previousGraph.state;
+  graph.innerHTML = `<div class="graph-comparison-views">${[
+    [
+      "previous",
+      previous,
+      `Previous: ${lessons[previous.level - 1].title}`,
+      previousGraph.visited ? "As you left it" : "Starting view",
+    ],
+    [
+      "current",
+      state,
+      `Current: ${revisiting ? hiddenCallback.title : lessons[state.level - 1].title}`,
+      "Your current settings",
+    ],
+  ]
+    .map(
+      ([
+        view,
+        graphState,
+        title,
+        source,
+      ]) => `<div class="graph-comparison-view" aria-hidden="${comparisonView !== view}">
+    <p class="graph-comparison-label"><strong>${title}</strong><span>${source}</span></p>
+    ${lessonGraph(graphState, { aligned: true, markerId: `comparison-${view}-arrow` })}
+  </div>`,
+    )
+    .join("")}</div>`;
 }

@@ -352,6 +352,55 @@
   fill: var(--text);
   font-size: 16px;
 }
+.graph-comparison {
+  max-width: 540px;
+  margin: 16px auto 0;
+}
+.graph-comparison > button {
+  min-height: 44px;
+  color: var(--text-secondary);
+}
+#graph-comparison-options > p {
+  margin: 10px 0;
+}
+.graph-comparison-switch {
+  display: flex;
+  gap: 8px;
+}
+.graph-comparison-switch button {
+  flex: 1;
+  min-height: 44px;
+}
+.graph-comparison-switch [aria-pressed="true"] {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  box-shadow: inset 0 -2px var(--accent);
+}
+.graph-comparison-views {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+.graph-comparison-view {
+  display: grid;
+  grid-area: 1 / 1 / 4 / 2;
+  grid-template-rows: subgrid;
+  min-width: 0;
+}
+/* Reserve both views' space so switching does not move the experiment. */
+.graph-comparison-view[aria-hidden="true"] {
+  visibility: hidden;
+}
+.graph-comparison-label {
+  margin: 0 0 8px;
+}
+.graph-comparison-label strong,
+.graph-comparison-label span {
+  display: block;
+}
+.graph-comparison-label span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
 .lesson-controls {
   margin: 18px 0;
 }
