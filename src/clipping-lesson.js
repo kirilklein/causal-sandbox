@@ -27,7 +27,7 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
     Make treatment choice more predictable to create extreme weights. Then
     try modest clipping and see what happens if you push it further.
   </p>
-  <p class="help">Start a new 400-person study, with clipping off. Earlier lessons use 2,400 people and clip probabilities to [0.02, 0.98].</p>
+  <p class="help">Start a new 400-person study with clipping off. Earlier lessons use 2,400 people and clip probabilities to [0.02, 0.98].</p>
   <section class="experiment" aria-labelledby="experiment-title">
     <div class="heading">
       <h2 id="experiment-title">Change overlap, then try clipping</h2>
