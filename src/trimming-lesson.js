@@ -201,9 +201,10 @@ document.querySelector("#app").innerHTML =
   <details id="estimand-details">
     <summary>What is being estimated?</summary>
     <p class="note">
-      Each target is the average treatment effect among the people in that
-      row. These are effects among the sample’s people, not estimates of a fixed
-      population effect. With varying effects, trimming changes their average.
+      Each row targets the average treatment effect among the people it contains.
+      Because these groups are defined within this sample, the displayed truths
+      are sample-specific. When treatment effects vary, trimming changes which
+      effects are averaged.
     </p>
     <p class="note">
       For each group, IPW subtracts the weighted untreated mean from the
