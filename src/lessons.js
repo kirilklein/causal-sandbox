@@ -177,7 +177,7 @@ lessons[10] = {
   instruction:
     "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
   explanation:
-    "Targeted minimum loss-based estimation (TMLE) adjusts the outcome predictions in a direction set by the treatment probabilities. It fits the amount of this update using observed outcomes, then averages the updated predicted treatment contrasts. Solving the targeting equation does not guarantee a correct causal answer: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
+    "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
 lessons[11] = {};

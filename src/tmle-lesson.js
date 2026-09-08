@@ -56,7 +56,7 @@ export function tmlePanel() {
     <div class="lesson-controls">${tmleControls()}</div>
     <div class="tmle-legend"><span><i class="tmle-key-before"></i>Before targeting</span><span><i class="tmle-key-current"></i>Current predictions</span></div>
     <div id="tmle-predictions" class="tmle-predictions"></div>
-    <p class="sample-note">Each panel predicts outcomes assuming everyone receives the treatment shown. Here, p is the fitted chance of treatment. Observed prediction errors set the update's direction; treatment probabilities shape the bends. Targeting aims at the average effect; individual predictions need not improve.</p>
+    <p class="sample-note">Each panel assumes everyone receives the treatment shown. Here, p is the fitted chance of treatment. Observed prediction errors set the update’s direction. Treatment probabilities shape the bends. The target is the average effect, so individual predictions need not improve.</p>
     </section>
   </section>`;
 }
