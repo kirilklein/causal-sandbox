@@ -125,7 +125,7 @@ const lessons = [
     instruction:
       "Turn up smoking’s influence on treatment and outcome. Do the estimates still track the true effect?",
     explanation:
-      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for C. The estimates mix this difference with the treatment effect. IPW and outcome regression cannot adjust for information they do not have. Sample variation means estimates need not move steadily away from truth at every slider step.",
+      "In this fictional experiment, smoking makes treatment more likely and raises the outcome. As its influence grows, treated and untreated groups differ in smoking status even after adjusting for C. The estimates mix this difference with the treatment effect. IPW and outcome regression cannot adjust for information they do not have. Sampling variation means estimates need not move steadily away from truth at every slider step.",
     next: "Missing information is one problem; describing measured information incorrectly is another. Next, remove the hidden cause and test models that are too simple.",
   },
 ];
