@@ -47,7 +47,7 @@ const lessons = [
     question:
       "What happens if the risk score also influences who receives treatment?",
     transition:
-      "We reset the treatment effect to 2 and add one measured variable: a risk score (C), measured before treatment. Higher C means greater risk and raises the outcome. Treatment starts randomized.",
+      "We set the treatment effect to 2 and add one measured variable: a risk score (C), measured before treatment. Higher C means greater risk and raises the outcome. Treatment starts randomized.",
     instruction:
       "Increase how strongly the risk score influences treatment assignment. Compare the outcome difference with the true effect.",
     explanation:
