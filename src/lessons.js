@@ -518,7 +518,7 @@ function enter(level, focus = true, callback = false) {
 function setupPrediction(prediction) {
   const withheld = [
     ...document.querySelectorAll(
-      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next, .overlap-details",
+      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next",
     ),
   ];
   if (state.level === 1) {

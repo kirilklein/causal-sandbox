@@ -44,6 +44,50 @@ try {
           true,
         );
       }
+      if (topic === "overlap") {
+        const details = page.locator(".overlap-details");
+        const summary = details.locator("summary");
+        const estimates = await page.locator(".lesson-results").innerText();
+        const diagnostics = await page.locator("#overlap-summary").innerText();
+        assert.equal(await summary.isVisible(), true);
+        assert.equal(await details.evaluate((el) => el.open), false);
+        await summary.focus();
+        assert.equal(
+          await summary.evaluate((el) => el === document.activeElement),
+          true,
+        );
+        await page.keyboard.press("Enter");
+        assert.equal(await details.evaluate((el) => el.open), true);
+        assert.equal(await details.locator("p").first().isVisible(), true);
+        assert.equal(
+          await page.locator(".lesson-explanation").isVisible(),
+          false,
+        );
+        assert.equal(await page.locator(".lesson-controls").isVisible(), false);
+        assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+        assert.equal(
+          await page.locator('input[name="prediction"]:checked').count(),
+          0,
+        );
+        assert.equal(
+          await page
+            .locator('#overlap-selection input[value="1.2"]')
+            .isChecked(),
+          true,
+        );
+        assert.equal(
+          await page.locator(".lesson-results").innerText(),
+          estimates,
+        );
+        assert.equal(
+          await page.locator("#overlap-summary").innerText(),
+          diagnostics,
+        );
+        await page.screenshot({
+          path: `/tmp/overlap-definitions-pending-${choice}.png`,
+          fullPage: true,
+        });
+      }
       if (choice === 0)
         await page.screenshot({
           path: `/tmp/prediction-${topic}-pending-desktop.png`,
@@ -105,6 +149,16 @@ try {
         });
       await page.locator("#restart").click();
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      if (topic === "overlap") {
+        assert.equal(
+          await page.locator(".overlap-details summary").isVisible(),
+          true,
+        );
+        assert.equal(
+          await page.locator(".overlap-details").evaluate((el) => el.open),
+          false,
+        );
+      }
       assert.equal(
         await page.locator('input[name="prediction"]:checked').count(),
         0,
