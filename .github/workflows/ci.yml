@@ -24,6 +24,8 @@ jobs:
       - run: npx prettier --check src tests index.html methodology/index.html confounding/index.html collider-bias/index.html positivity/index.html inverse-probability-weighting/index.html aipw-double-robustness/index.html mediator-adjustment/index.html tmle/index.html propensity-score-clipping-trimming/index.html package.json README.md
       - run: npm test
       - run: npm run build
+        env:
+          VITE_FEEDBACK_ENDPOINT: https://formspree.io/f/feedbacktest
       - run: npx playwright install --with-deps chromium
       - name: Browser test against built site
         run: |

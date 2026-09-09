@@ -1,5 +1,6 @@
 import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
+import { setupFeedback } from "./feedback.js";
 
 setupTheme();
 
@@ -111,6 +112,7 @@ footer.innerHTML = `
       .join("")}</ul>
   </details>`;
 document.body.append(footer);
+setupFeedback(footer);
 
 async function showSiteVisits() {
   const tracking = document.querySelector("script[data-goatcounter]");

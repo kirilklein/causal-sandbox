@@ -1,0 +1,109 @@
+.site-footer .feedback-open {
+  margin: 0;
+  padding: 0 8px;
+  min-height: 44px;
+  font: inherit;
+  font-weight: 650;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.site-footer-links {
+  align-items: center;
+}
+.feedback-dialog {
+  width: min(540px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 16px 48px var(--shadow);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.feedback-dialog::backdrop {
+  background: var(--backdrop);
+}
+.feedback-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.feedback-heading h2 {
+  margin: 0;
+  font-family: Manrope, sans-serif;
+  font-size: 24px;
+}
+.feedback-close {
+  min-height: 44px;
+  padding: 8px;
+  border: 0;
+  background: none;
+  text-decoration: underline;
+}
+.feedback-dialog fieldset {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.feedback-dialog label {
+  margin-top: 8px;
+  font-weight: 600;
+}
+.feedback-dialog label span {
+  font-weight: 400;
+}
+.feedback-dialog textarea,
+.feedback-dialog input:not(.feedback-honeypot) {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--page);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  outline-offset: 3px;
+}
+.feedback-dialog textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.feedback-dialog small,
+.feedback-context,
+.feedback-privacy {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.feedback-context,
+.feedback-privacy {
+  margin: 6px 0;
+}
+.feedback-dialog a {
+  color: var(--accent);
+}
+.feedback-honeypot {
+  display: none;
+}
+.feedback-send {
+  justify-self: start;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.feedback-dialog :disabled {
+  cursor: default;
+}
+.feedback-status:empty {
+  display: none;
+}
