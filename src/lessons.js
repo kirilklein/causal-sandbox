@@ -107,7 +107,7 @@ const lessons = [
     transition:
       "We keep the simple relationships and correct adjustment for C from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
     instruction:
-      "Include the intermediate response and compare the estimate with the total effect. Then remove it to restore the pathway we want to count.",
+      "Include the intermediate response in the model and compare the estimate with the total effect. Then remove it from the model to include its contribution in the estimated effect.",
     explanation:
       "To estimate the total effect, leave M out because A → M → Y is part of what we want to count. Including M holds it fixed and removes that mediated contribution from the outcome-regression contrast. The risk score remains adjusted for in both cases.",
     next: "The intermediate response lies on a path from treatment to outcome. What if a measured variable is instead a consequence of both?",
