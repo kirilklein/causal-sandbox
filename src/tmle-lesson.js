@@ -48,6 +48,7 @@ function tmleControls() {
 export function tmlePanel() {
   return `<section class="tmle-diagnostics" aria-labelledby="tmle-correction-title">
     <h3 id="tmle-correction-title">The correction left to make</h3>
+    <p class="sample-note">The observed data determine the update. The slider below shows how the predictions change as we apply it.</p>
     <div class="tmle-correction-readout" aria-live="polite" aria-atomic="true"><span>Before <strong id="tmle-before-correction"></strong></span><span aria-hidden="true">→</span><span>Now <strong id="tmle-current-correction"></strong></span></div>
     <p class="sample-note">Average signed, propensity-weighted prediction error, in outcome units. Full targeting brings this to zero.</p>
     <p id="tmle-status" role="status"></p>
@@ -55,8 +56,9 @@ export function tmlePanel() {
     <h3 id="tmle-prediction-title">How the predictions change</h3>
     <div class="lesson-controls">${tmleControls()}</div>
     <div class="tmle-legend"><span><i class="tmle-key-before"></i>Before targeting</span><span><i class="tmle-key-current"></i>Current predictions</span></div>
+    <p class="sample-note">Each panel assumes everyone receives the treatment shown. Here, p is the fitted chance of treatment.</p>
     <div id="tmle-predictions" class="tmle-predictions"></div>
-    <p class="sample-note">Each panel assumes everyone receives the treatment shown. Here, p is the fitted chance of treatment. Observed prediction errors set the update’s direction. Treatment probabilities shape the bends. The target is the average effect, so individual predictions need not improve.</p>
+    <p class="sample-note">Observed prediction errors set the update’s direction. Treatment probabilities shape the bends. The target is the average effect, so individual predictions need not improve.</p>
     </section>
   </section>`;
 }
@@ -85,7 +87,7 @@ export function tmleFormula() {
       <p>The contrasts minus their average already sum to zero. Fitting ε makes the average weighted error zero too. That is why we update in direction H; H alone is not the influence function. Arguments involving C are omitted in this expression.</p>
     </details>
     <details><summary>Inspect this sample</summary><div id="tmle-sample-values"></div></details>
-    <details><summary>Assumptions and clipping</summary><p>This continuous-outcome version uses a linear update with squared-error loss. Its predictions can leave the observed outcome range. Treatment probabilities are clipped to [0.02, 0.98], matching IPW and AIPW; clipping can introduce bias. A zero correction does not establish that the models or causal assumptions are correct. Targeting cannot recover missing confounders or absent treatment comparisons.</p><p>AIPW adds the initial weighted correction to the initial regression estimate. TMLE updates predictions first, so the two estimates can differ in a finite sample. No confidence intervals are shown.</p><p><a href="https://escholarship.org/content/qt1849174p/qt1849174p.pdf#page=40">Read more: targeted estimation of an average treatment effect</a></p></details>
+    <details><summary>Assumptions and clipping</summary><p>This continuous-outcome version uses a linear update with squared-error loss. Its predictions can leave the observed outcome range. Treatment probabilities are clipped to [0.02, 0.98], matching IPW and AIPW; clipping can introduce bias. A zero correction does not establish that the models or causal assumptions are correct. Targeting cannot recover missing confounders or absent treatment comparisons. Large-sample guarantees also require suitable regularity conditions.</p><p>AIPW adds the initial weighted correction to the initial regression estimate. TMLE updates predictions first, so the two estimates can differ in a finite sample. No confidence intervals are shown.</p><p><a href="https://escholarship.org/content/qt1849174p/qt1849174p.pdf#page=40">Read more: targeted estimation of an average treatment effect</a></p></details>
   </details>`;
 }
 
@@ -175,7 +177,9 @@ export function renderTmle(rows, fraction, clipped) {
     ? "Targeting is unavailable for this sample. Redraw to try another sample."
     : fraction === 1
       ? "Targeting complete: the average weighted error is zero, up to numerical rounding. This does not guarantee an unbiased estimate."
-      : "Move toward 100% to remove the aggregate correction. Intermediate positions show the update in progress, not the final TMLE estimate.";
+      : fraction === 0
+        ? "Before and Now match because no update has been applied yet. Move the slider below toward 100%, or select Apply full update, to apply the fitted change to the predictions."
+        : "The update is partly applied. Move the slider below to 100%, or select Apply full update, to finish targeting.";
   document.querySelector("#tmle-predictions").innerHTML = available
     ? predictionPlots(rows, view)
     : "";

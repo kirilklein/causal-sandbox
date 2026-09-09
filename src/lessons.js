@@ -177,7 +177,7 @@ lessons[10] = {
   instruction:
     "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
   explanation:
-    "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
+    "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
 lessons[11] = {};
@@ -366,6 +366,7 @@ function enter(level, focus = true, callback = false) {
           ? leavingTheSandbox()
           : `
       <p class="lesson-transition">${lesson.transition}</p>
+      ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
         ${previousGraph ? graphComparison(level, revisiting) : ""}
         <div id="lesson-graph"></div>
