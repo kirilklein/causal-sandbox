@@ -546,7 +546,7 @@ try {
   const roleBaselines = [];
   for (const level of [7, 8]) {
     await page.locator("#continue").click();
-    if (level === 8) {
+    if (level === 7 || level === 8) {
       await tryPrediction();
       await page.locator("#post-adjustment").uncheck();
     }
@@ -1270,6 +1270,7 @@ try {
     await page.locator("h1").evaluate((el) => el === document.activeElement),
     true,
   );
+  await tryPrediction();
   await page.locator("#post-adjustment").check();
   await page.locator("#lesson-menu-toggle").click();
   await page

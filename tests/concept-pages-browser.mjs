@@ -278,7 +278,11 @@ try {
   for (const concept of pages) {
     const response = await page.goto(new URL(concept.path, root).href);
     assert.equal(response.status(), 200, concept.path);
-    if (["collider-bias/", "positivity/"].includes(concept.path)) {
+    if (
+      ["collider-bias/", "positivity/", "mediator-adjustment/"].includes(
+        concept.path,
+      )
+    ) {
       await page.locator('input[name="prediction"]').first().check();
       await page.locator("#try-prediction").click();
     }

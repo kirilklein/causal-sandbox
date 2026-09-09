@@ -104,6 +104,18 @@ const lessons = [
         "The total effect includes this benefit through improved fitness. Holding fitness fixed by adjusting for it would exclude that pathway. To estimate the total effect, we therefore do not adjust for fitness.",
       ],
     },
+    prediction: {
+      question:
+        "If we hold the intermediate response fixed, what happens to the estimated total effect?",
+      choices: [
+        "It includes more of the treatment effect",
+        "It loses the contribution through M",
+        "It stays the same",
+      ],
+      correctChoice: 1,
+      explanation:
+        "Holding M fixed blocks A → M → Y. In this additive world, the adjusted contrast targets the direct effect of 2 instead of the total effect of 3. C stays adjusted for. Remove M to count both pathways again.",
+    },
     question: "Should we adjust for a mediator to estimate the total effect?",
     transition:
       "We keep the simple relationships and correct adjustment for C from outcome regression. Treatment now also changes an intermediate response (M), which changes the outcome. This extra pathway raises the true total effect from 2 to 3.",
@@ -537,7 +549,7 @@ function setupPrediction(prediction) {
       <legend>Your prediction</legend>
       ${prediction.choices.map((choice, index) => `<label class="lesson-switch"><input type="radio" name="prediction" value="${index}">${choice}</label>`).join("")}
     </fieldset>
-    <p id="prediction-hint" class="sample-note">Choose a prediction to try the experiment. Any choice lets you continue.</p>
+    <p id="prediction-hint" class="sample-note">Unscored: choose a prediction to try the experiment. Any choice lets you continue.</p>
     <button id="try-prediction" disabled>Try it</button>`;
   document.querySelector("#lesson-graph").after(checkpoint);
   const button = checkpoint.querySelector("button");
@@ -548,7 +560,7 @@ function setupPrediction(prediction) {
     const selected = checkpoint.querySelector("input:checked");
     if (!selected) return;
     const before = lessonResult(state, noise);
-    if (state.level === 8) {
+    if (state.level === 7 || state.level === 8) {
       state.postAdjusted = true;
       document.querySelector("#post-adjustment").checked = true;
     } else if (state.level === 10) {
@@ -561,7 +573,7 @@ function setupPrediction(prediction) {
     const observed =
       state.level === 1
         ? `First sample: outcome difference ${after.unadjusted.toFixed(2)}; true effect ${after.totalEffect.toFixed(2)}.`
-        : state.level === 8
+        : state.level === 7 || state.level === 8
           ? `First comparison: the estimate changed from ${before.regression.toFixed(2)} to ${after.regression.toFixed(2)}; the true total effect stayed ${after.totalEffect.toFixed(2)}.`
           : `First comparison, moderate → strong selection. Top 1% weight share: ${after.overlap.map((arm, index) => `${index === 0 ? "untreated" : "treated"} ${(100 * before.overlap[index].topShare).toFixed(1)}% → ${(100 * arm.topShare).toFixed(1)}%`).join("; ")}.`;
     withheld.forEach((element) => {

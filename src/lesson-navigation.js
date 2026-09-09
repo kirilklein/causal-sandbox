@@ -32,6 +32,15 @@ const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "quiz",
+    after: 12,
+    title: "Test your causal intuition",
+    href: "?lesson=quiz",
+    description:
+      "Six new challenges: choose adjustments, predict consequences, and judge conclusions. Get feedback and a final score.",
+    summary: "Interactive quiz · about 5–8 minutes",
+  },
+  {
     id: "propensity-score",
     after: 3,
     title: "Where do propensity scores come from?",
@@ -108,7 +117,9 @@ export function lessonNavigation({
   const status = introduction
     ? "Introduction"
     : currentOptional
-      ? "Optional chapter"
+      ? currentOptional === "quiz"
+        ? "Final quiz"
+        : "Optional chapter"
       : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
   let number = 0;
   return `<nav class="lesson-nav" aria-label="Lesson navigation">

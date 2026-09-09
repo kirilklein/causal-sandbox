@@ -49,6 +49,8 @@ try {
       );
 
   await page.goto(`${url}?lesson=mediator`);
+  await page.locator('input[name="prediction"]').first().check();
+  await page.locator("#try-prediction").click();
   await page.locator("#post-adjustment").check();
   await page.locator("#redraw").click();
   await page.locator("#continue").click();

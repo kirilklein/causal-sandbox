@@ -178,8 +178,7 @@ future work.
    their interaction. Lesson settings are not transferred into this world.
 
 Only implemented lessons appear in contents. Levels 1–12 now form a continuous
-sequence; “Level N of 13” includes the final sandbox. No scores, lesson-completion gates, accounts or stored
-progress. Later chapters and confidence intervals are separate changes.
+sequence; “Level N of 13” includes the final sandbox. No lesson-completion gates, accounts or stored progress. The optional final quiz scores first answers within the current page session. Later chapters and confidence intervals are separate changes.
 
 ## Sampling variation (IV prerequisite, PR A)
 
@@ -557,3 +556,35 @@ Controls and explanations become available after reveal. Correct predictions rec
 a brief acknowledgment; other choices receive a gentle correction. Feedback records the
 initial comparison and stays fixed during further exploration. Restart and lesson
 re-entry reset the checkpoint; nothing is stored across visits.
+
+## Lesson predictions and final quiz
+
+Randomization, mediator, collider, and overlap lessons ask for an unscored prediction
+before revealing the experiment. The mediator prediction holds M fixed in the
+existing additive simulation and compares the resulting contrast with the total
+effect. Restart restores the prediction; Continue remains available throughout.
+
+After the recap, **Test your causal intuition** (`?lesson=quiz`) offers six
+questions, also accessible through Contents. Core numbering and the sandbox route
+are unchanged. Questions use new decisions rather than repeating lesson prompts:
+
+| Lesson experience                       | Quiz transfer task                                                            |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| Confounding and mediator adjustment     | Choose C but not M for a new total-effect question                            |
+| Collider adjustment changes an estimate | Recognize restriction to attendees as conditioning                            |
+| Strong selection concentrates weights   | Predict whether more observations under a deterministic policy create support |
+| Change either AIPW model                | Distinguish large-sample protection from a single-sample ranking              |
+| Hidden confounding moves estimates      | Assess agreement between methods sharing missing information                  |
+| Recap assumptions and sensitivity       | Choose a conclusion when plausible confounding reverses the result            |
+
+The graph uses native keyboard-accessible buttons synchronized with checkboxes.
+Variable colors remain stable; selected adjustment is stated in a caption. After
+submission, thicker arrows trace the path explained in the feedback. Radio
+questions give choice-specific reasoning. Questions state the target and necessary
+assumptions; no optional chapter is required.
+
+Each first submission earns zero or one point. Practice retries cannot change that
+score. The final summary shows the score out of six, original answers, and lesson
+links for missed concepts. Review links open separately to preserve the attempt.
+Restart or reload clears the attempt; no answers are stored or sent to a service.
+The quiz tests transfer in six examples and does not certify mastery.
