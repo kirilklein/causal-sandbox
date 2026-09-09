@@ -9,7 +9,6 @@ const math = (body, label) =>
 export function aipwFormula() {
   const contrast = `${prediction("1")}<mo>−</mo>${prediction("0")}`;
   return `
-    <p>Outcome predictions give a starting estimate. IPW-weighted regression errors supply the correction.</p>
     <div class="aipw-formula" role="group" aria-label="AIPW: average the predicted contrasts plus signed, weighted regression errors over all people">
       <div class="aipw-average">
         ${math("<mover><mi>τ</mi><mo>^</mo></mover><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover>", "AIPW estimate equals the average over all n people")}
@@ -33,20 +32,20 @@ export function aipwFormula() {
     </div>
     <p class="aipw-prediction-note">${math(prediction("1"), "Y hat one at C i")} and ${math(prediction("0"), "Y hat zero at C i")} are fitted outcomes with and without treatment, at the same risk score.</p>
     <div class="aipw-definitions">
-      <section class="aipw-residual" aria-labelledby="aipw-residual-title">
-        <h3 id="aipw-residual-title">Regression error</h3>
-        ${math(`${sub("r")}<mo>=</mo>${sub("Y")}<mo>−</mo>${prediction(sub("A"))}`, "r i equals observed outcome minus the prediction for the treatment actually received")}
-        <p>Observed minus predicted, for the treatment actually received.</p>
+      <section class="aipw-sign" aria-labelledby="aipw-sign-title">
+        <h3 id="aipw-sign-title">Direction</h3>
+        ${math(`${sub("s")}<mo>=</mo><mrow><mo>{</mo><mtable columnalign="left left"><mtr><mtd><mo>+</mo><mn>1</mn></mtd><mtd><mtext>treated</mtext></mtd></mtr><mtr><mtd><mo>−</mo><mn>1</mn></mtd><mtd><mtext>untreated</mtext></mtd></mtr></mtable></mrow>`, "s i equals plus one if treated and minus one if untreated")}
+        <p>Add treated errors; subtract untreated errors. The contrast is treated minus untreated.</p>
       </section>
       <section class="aipw-weight" aria-labelledby="aipw-weight-title">
         <h3 id="aipw-weight-title">IPW weight</h3>
         ${math(`${sub("w")}<mo>=</mo><mrow><mo>{</mo><mtable columnalign="left left"><mtr><mtd><mfrac><mn>1</mn>${sub("p")}</mfrac></mtd><mtd><mtext>treated</mtext></mtd></mtr><mtr><mtd><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo>${sub("p")}</mrow></mfrac></mtd><mtd><mtext>untreated</mtext></mtd></mtr></mtable></mrow>`, "w i equals one divided by p i if treated, or one divided by one minus p i if untreated")}
         <p>Inverse chance of the treatment received; p is the fitted chance of treatment.</p>
       </section>
-      <section class="aipw-sign" aria-labelledby="aipw-sign-title">
-        <h3 id="aipw-sign-title">Direction</h3>
-        ${math(`${sub("s")}<mo>=</mo><mrow><mo>{</mo><mtable columnalign="left left"><mtr><mtd><mo>+</mo><mn>1</mn></mtd><mtd><mtext>treated</mtext></mtd></mtr><mtr><mtd><mo>−</mo><mn>1</mn></mtd><mtd><mtext>untreated</mtext></mtd></mtr></mtable></mrow>`, "s i equals plus one if treated and minus one if untreated")}
-        <p>Add treated errors; subtract untreated errors. The contrast is treated minus untreated.</p>
+      <section class="aipw-residual" aria-labelledby="aipw-residual-title">
+        <h3 id="aipw-residual-title">Regression error</h3>
+        ${math(`${sub("r")}<mo>=</mo>${sub("Y")}<mo>−</mo>${prediction(sub("A"))}`, "r i equals observed outcome minus the prediction for the treatment actually received")}
+        <p>Observed minus predicted, for the treatment actually received.</p>
       </section>
     </div>
     <p class="sample-note">A is 1 for treated and 0 for untreated. The correction need not move a sample’s estimate closer to truth; it cannot repair hidden confounding or absent overlap.</p>

@@ -577,6 +577,7 @@
   margin: 20px 0;
 }
 .aipw-definitions section {
+  container-type: inline-size;
   padding: 16px 12px;
   border-radius: 12px;
 }
@@ -585,7 +586,7 @@
   font-size: 15px;
 }
 .aipw-definitions math {
-  font-size: 22px;
+  font-size: clamp(16px, 9cqi, 22px);
 }
 .aipw-definitions p {
   font-size: 13px;
