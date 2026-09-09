@@ -59,6 +59,16 @@ document.querySelector("#app").innerHTML = `
         <div id="weight-section" hidden>
           <p>Use severity to model the second treatment decision. Weight each observed treatment history, then compare the weighted outcomes for both visits versus neither. This lets severity retain its role in the first treatment's effect.</p>
           <details id="weight-detail"><summary>Follow one person's weight</summary>
+            <p>Weight both decisions together: multiply their inverse probabilities, using the history available at each visit.</p>
+            <div class="sequential-weight-formula">
+              <math display="block" aria-label="Weight equals one over q 1 times q 2, the probabilities of the decisions actually observed at visits one and two">
+                <mtext>Weight</mtext><mo>=</mo><mfrac><mn>1</mn><mrow><msub><mi>q</mi><mn>1</mn></msub><mo>×</mo><msub><mi>q</mi><mn>2</mn></msub></mrow></mfrac>
+              </math>
+              <div class="sequential-weight-factors">
+                <p><strong>q₁ · Visit 1</strong>Chance of the observed first decision.</p>
+                <p><strong>q₂ · Visit 2</strong>Chance of the observed second decision, given first treatment and updated severity.</p>
+              </div>
+            </div>
             <label for="person">Person <output id="person-number" for="person"></output></label>
             <input id="person" type="range" min="1" max="2400" step="1" value="1"/>
             <p id="person-history"></p><p id="person-weight" class="weight-equation"></p><p id="person-role" class="small"></p>

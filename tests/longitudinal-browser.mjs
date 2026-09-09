@@ -82,6 +82,23 @@ try {
   await expect(page.locator("#person-weight")).toContainText(
     confounded.weights[1].weight.toFixed(3),
   );
+  for (const [A1, A2] of [
+    [0, 0],
+    [1, 1],
+    [0, 1],
+    [1, 0],
+  ]) {
+    const i = confounded.data.findIndex((d) => d.A1 === A1 && d.A2 === A2);
+    await page.locator("#person").fill(String(i + 1));
+    await expect(page.locator("#person-weight")).toHaveText(
+      `Weight = 1 ÷ (0.500 × ${confounded.weights[i].observedP2.toFixed(3)}) = ${confounded.weights[i].weight.toFixed(3)}`,
+    );
+    await expect(page.locator("#person-role")).toContainText(
+      A1 === A2
+        ? `contributes to the weighted mean for ${A1 ? "both visits" : "neither visit"}`
+        : "contributes to neither strategy's outcome mean",
+    );
+  }
   await page.locator("#studies > summary").click();
   await page.locator("#repeat").click();
   await expect(page.locator("#study-status")).toHaveText(
@@ -109,6 +126,9 @@ try {
     randomized.unadjusted.toFixed(2),
   );
   await page.locator('[data-stage="2"]').click();
+  await page.locator("#weight-detail > summary").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".sequential-weight-formula")).toBeVisible();
   await page.screenshot({
     path: "/tmp/longitudinal-desktop.png",
     fullPage: true,
