@@ -23,7 +23,8 @@ import "./tmle-lesson.css";
 const lessons = [
   {
     prediction: {
-      question: "Will the outcome difference equal the true effect?",
+      question:
+        "With random assignment, will the observed outcome difference equal the true effect?",
       choices: [
         "Exactly",
         "Approximately, with chance variation",
@@ -34,9 +35,9 @@ const lessons = [
         "Randomization makes the groups comparable in the population. Chance differences remain in a finite sample; redraw to see the estimate vary.",
     },
     question:
-      "If treatment is assigned at random, will the outcome difference equal the true effect?",
+      "With random assignment, will the observed outcome difference equal the true effect?",
     transition:
-      "Start with a treatment that changes an outcome. Nothing else influences treatment assignment.",
+      "<strong>True effect:</strong> Imagine the same population under two alternatives: everyone receives treatment, or nobody does. The true effect is the average outcome under the first alternative minus the average under the second.",
     instruction:
       "Change the treatment effect, then redraw the sample to see how estimates vary.",
     explanation:
@@ -365,6 +366,7 @@ function enter(level, focus = true, callback = false) {
           ? leavingTheSandbox()
           : `
       <p class="lesson-transition">${lesson.transition}</p>
+      ${level === 1 ? "<p><strong>Observed outcome difference:</strong> In our study, each person receives only one treatment option. We calculate the average outcome among those treated minus the average among those untreated.</p><p>Here, we know the true effect because we set the simulation’s rules. In a real study, we would need to estimate it.</p>" : ""}
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
         ${previousGraph ? graphComparison(level, revisiting) : ""}
         <div id="lesson-graph"></div>
