@@ -137,7 +137,10 @@ export function lessonResult(state, noise) {
       : {}),
     clipped: result.clipped,
     ...(state.level === 3
-      ? { calculation: ipwCalculation(data, result.weights) }
+      ? {
+          calculation: ipwCalculation(data, result.weights),
+          propensityData: data,
+        }
       : {}),
     ...(state.level === 10
       ? {

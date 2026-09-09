@@ -1,5 +1,42 @@
 # Progressive education delivery
 
+Lesson 3's Explain disclosure plots fitted treatment probabilities against C for
+120 actual patients, with treatment encoded by the existing arm symbols. The
+logistic fit uses all 2,400 patients and C, including before Try IPW; inspecting
+these probabilities does not apply weighting or change the main experiment.
+Selection is available through marks and a keyboard-accessible person selector.
+
+The linked optional chapter **Where do propensity scores come from?**
+(`?lesson=propensity-score`) also appears in Contents and after IPW. It preserves
+the core Continue route to outcome regression. A separate 400-person fictional
+cohort has age (40–80 years) and baseline severity (0–10), both common causes of
+treatment and outcome. Each is a linear rescaling of an independent unit-variance
+uniform C variable. Treatment follows `sigmoid(-0.4 + ageInfluence*C1 +
+severityInfluence*C2)`; the unshown outcome is `2*A + 0.8*C1 + 1.2*C2 + error`.
+
+Fit treatment model reveals equal-probability contours, a linked score strip,
+and the selected person's basic IPW weight. The fit uses only baseline variables
+and observed treatment, reusing the shared logistic fitter with strict failure
+handling. Sliders range from −2 to 2, start at 0.8, and change assignment while
+preserving covariates and random draws; after the first fit they automatically
+refit the updated sample. Scores and illustrative weights are unclipped. Extreme
+weight remedies remain in the overlap, clipping, and trimming chapters.
+
+Both plots identify the same selected person. Vertical spread within a score-strip
+arm only separates marks. Redraw changes the seed; Restart restores seed 4217,
+default influences, and the pre-fit view. Selection, explanation, and theme
+changes preserve the data and fit. Entry starts a separate experiment; settings
+are not transferred to or from IPW. A failed fit clears predictions and offers
+redraw or weaker assignment influences instead of displaying simulator truth.
+
+Tests reconcile preview and chapter probabilities with the existing estimator,
+check contour coordinates, fixed patient profiles, outcome exclusion from the fit,
+explicit failures, and coefficient recovery across 40 independent samples.
+Browser checks cover linked selection, keyboard controls, navigation, reset,
+and desktop/phone layouts. Learner comprehension remains to be checked: can an
+untreated person have an 80% propensity score, which data are fitted, and does
+calculating scores alone adjust the outcome comparison?
+
 The homepage opens an unnumbered Introduction (`?lesson=introduction`) to the
 whole framework. Three entry cards each give one learning promise: **Learn**
 opens randomization, **Explore** opens the full sandbox, and **Build** opens
