@@ -3,6 +3,7 @@ import { graphComparison, setupGraphComparison } from "./graph-comparison.js";
 import { themeControl } from "./theme.js";
 import { filmPreview, setupFilmPreview } from "./film-preview.js";
 import { renderIpwCalculation } from "./ipw-calculation.js";
+import { renderPropensityPreview } from "./propensity-preview.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import { effectComparison } from "./effect-comparison.js";
@@ -177,7 +178,7 @@ lessons[10] = {
   instruction:
     "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
   explanation:
-    "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate under the required regularity conditions.",
+    "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
 lessons[11] = {};
@@ -367,6 +368,7 @@ function enter(level, focus = true, callback = false) {
           : `
       <p class="lesson-transition">${lesson.transition}</p>
       ${level === 1 ? "<p><strong>Observed outcome difference:</strong> In our study, each person receives only one treatment option. We calculate the average outcome among those treated minus the average among those untreated.</p><p>Here, we know the true effect because we set the simulation’s rules. In a real study, we would need to estimate it.</p>" : ""}
+      ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
         ${previousGraph ? graphComparison(level, revisiting) : ""}
         <div id="lesson-graph"></div>
@@ -396,7 +398,7 @@ function enter(level, focus = true, callback = false) {
             : ""
         }
       </section>
-      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? "<p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>" : ""}</details>
+      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>' : ""}</details>
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 6 ? `<details class="aipw-calculation"><summary>How is AIPW calculated?</summary>${aipwFormula()}</details>` : ""}
@@ -519,7 +521,7 @@ function enter(level, focus = true, callback = false) {
 function setupPrediction(prediction) {
   const withheld = [
     ...document.querySelectorAll(
-      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next, .overlap-details",
+      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next",
     ),
   ];
   if (state.level === 1) {
@@ -664,6 +666,11 @@ function updateEstimate(id, estimate, truth) {
 
 function update() {
   const result = lessonResult(state, noise);
+  if (state.level === 3)
+    renderPropensityPreview(
+      document.querySelector("#propensity-preview"),
+      result.propensityData,
+    );
   if (state.level === 4)
     document.querySelector("#outcome-arithmetic").innerHTML =
       outcomeCalculation(result.outcomePredictions);

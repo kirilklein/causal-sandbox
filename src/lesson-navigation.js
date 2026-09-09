@@ -32,6 +32,15 @@ const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "propensity-score",
+    after: 3,
+    title: "Where do propensity scores come from?",
+    href: "?lesson=propensity-score",
+    description:
+      "Fit treatment probabilities from age and severity, then connect one person's score to their IPW weight.",
+    summary: "From patient characteristics to treatment probability",
+  },
+  {
     id: "assumptions",
     after: 12,
     title: "Making causal assumptions tangible",

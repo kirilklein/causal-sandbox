@@ -214,6 +214,22 @@ function fit(X, y, logistic = false, strict = false) {
     );
   return beta;
 }
+// Treatment-only fit for inspecting probabilities without fitting an outcome model.
+export function fitPropensity(data, adjustment) {
+  if (!data.some((d) => d.A === 0) || !data.some((d) => d.A === 1))
+    throw new EstimationError(
+      "Both treatment groups are needed to fit probabilities.",
+    );
+  const beta = fit(
+    data.map((d) => features(d, adjustment)),
+    data.map((d) => d.A),
+    true,
+    true,
+  );
+  const predict = (d) => sigmoid(dot(features(d, adjustment), beta));
+  return { beta, predict, propensities: data.map(predict) };
+}
+
 export function estimate(data, adjustment, models = {}) {
   if (
     models.strict &&

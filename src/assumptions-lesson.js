@@ -40,13 +40,6 @@ const topics = [
     "Can someone else’s treatment change your outcome?",
   ],
 ];
-const requested = new URLSearchParams(location.search).get("assumption");
-const topicIndex = Math.max(
-  0,
-  topics.findIndex(([key]) => key === requested),
-);
-const [topic, title, question] = topics[topicIndex];
-const term = glossary[topic];
 const href = (key) => `?lesson=assumptions&assumption=${key}`;
 const fmt = (number) => number.toFixed(1);
 
@@ -100,15 +93,43 @@ document.querySelector("#app").innerHTML =
   <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
   <main>${lessonNavigation({ currentOptional: "assumptions" })}
     <p class="eyebrow">OPTIONAL · CAUSAL ASSUMPTIONS</p>
-    <nav class="assumption-topics" aria-label="Assumption experiments">${topics.map(([key, label], index) => `<a href="${href(key)}" ${key === topic ? 'aria-current="page"' : ""}><small>${index + 1} · ${glossary[key].title}</small>${label}</a>`).join("")}</nav>
-    <h1>${title}</h1><p class="intro">${question}</p>
+    <nav class="assumption-topics" aria-label="Assumption experiments">${topics.map(([key, label], index) => `<a href="${href(key)}"><small>${index + 1} · ${glossary[key].title}</small>${label}</a>`).join("")}</nav>
+    <div id="assumption-content"></div>
+  </main></div>`;
+setupLessonNavigation();
+const el = (id) => document.getElementById(id);
+
+function renderTopic(focus = false) {
+  const requested = new URLSearchParams(location.search).get("assumption");
+  const topicIndex = Math.max(
+    0,
+    topics.findIndex(([key]) => key === requested),
+  );
+  const [topic, title, question] = topics[topicIndex];
+  const term = glossary[topic];
+  for (const link of document.querySelectorAll(".assumption-topics a")) {
+    if (link.getAttribute("href") === href(topic))
+      link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  el("assumption-content").innerHTML = `
+    <h1 tabindex="-1">${title}</h1><p class="intro">${question}</p>
     <section class="panel" aria-label="${term.title} experiment">${experiments[topic]}</section>
     <details><summary>The assumption in formal terms</summary><p>${term.formal}</p><a href="glossary/#${topic}">Read the glossary entry →</a></details>
     <details><summary>Sources and scope</summary><p>These are constructed teaching examples, not empirical evidence. Each isolates one assumption; satisfying it alone does not identify a causal effect.</p><ul>${term.sources.map(({ label, href: url }) => `<li><a href="${url}">${label}</a></li>`).join("")}<li><a href="https://doi.org/10.1177/0962280211398037">Hernán (2012), Beyond exchangeability</a></li></ul></details>
     <nav class="actions" aria-label="Continue learning"><a href="?lesson=leaving-the-sandbox">← Leaving the sandbox</a>${topicIndex < topics.length - 1 ? `<a class="primary" href="${href(topics[topicIndex + 1][0])}">Next: ${glossary[topics[topicIndex + 1][0]].title} →</a>` : '<a class="primary" href="?sandbox">Explore the full sandbox →</a>'}</nav>
-  </main></div>`;
-setupLessonNavigation();
-const el = (id) => document.getElementById(id);
+  `;
+  const render = {
+    exchangeability: renderExchangeability,
+    positivity: renderSupport,
+    consistency: renderConsistency,
+    "no-interference": renderInterference,
+  }[topic];
+  document.querySelector(".panel").addEventListener("input", render);
+  render();
+  if (focus)
+    el("assumption-content").querySelector("h1").focus({ preventScroll: true });
+}
 
 function distributionChart(rows, outcome, label) {
   const distributions = [0, 1].map((arm) =>
@@ -244,11 +265,26 @@ function renderInterference() {
     : "Alex’s two futures match. Changing Sam’s treatment does not change Alex’s outcome: no interference holds in this world.";
 }
 
-const render = {
-  exchangeability: renderExchangeability,
-  positivity: renderSupport,
-  consistency: renderConsistency,
-  "no-interference": renderInterference,
-}[topic];
-document.querySelector(".panel").addEventListener("input", render);
-render();
+document.querySelector("#app").addEventListener("click", (event) => {
+  const link = event.target.closest(".assumption-topics a, .actions a");
+  if (
+    !link ||
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  )
+    return;
+  const url = new URL(link.href);
+  if (url.searchParams.get("lesson") !== "assumptions") return;
+  event.preventDefault();
+  if (url.href === location.href) return;
+  history.pushState(null, "", url);
+  renderTopic(true);
+  if (link.closest(".actions"))
+    document.querySelector(".assumption-topics").scrollIntoView();
+});
+window.addEventListener("popstate", () => renderTopic(true));
+renderTopic();

@@ -31,6 +31,58 @@ try {
         fullPage: true,
       });
   };
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await open("exchangeability");
+    const documentStart = await page.evaluate(() => performance.timeOrigin);
+    const header = await page.locator("header").elementHandle();
+    let documentRequests = 0;
+    const onRequest = (request) => {
+      if (request.isNavigationRequest()) documentRequests += 1;
+    };
+    page.on("request", onRequest);
+    await page.locator('.assumption-topics a[href$="positivity"]').focus();
+    await page.keyboard.press("Enter");
+    await page.locator("#support").waitFor();
+    assert.match(page.url(), /assumption=positivity$/);
+    assert.equal(
+      await page
+        .locator("h1")
+        .evaluate((heading) => heading === document.activeElement),
+      true,
+    );
+    await page.locator("#support").selectOption("weak");
+    assert.match(await feedback(), /rare/i);
+    await page.getByRole("link", { name: "Next: Consistency →" }).click();
+    await page.locator("#version").waitFor();
+    await page.goBack();
+    await page.locator("#support").waitFor();
+    assert.equal(await page.locator("#support").inputValue(), "good");
+    await page.goForward();
+    await page.locator("#version").waitFor();
+    await page.locator('.assumption-topics a[href$="no-interference"]').tap();
+    await page.locator("#peer").check();
+    await page.locator("#spillover").check();
+    assert.match(await page.locator("#peer-picture").innerText(), /Score 58/);
+    assert.equal(
+      await page.evaluate(() => performance.timeOrigin),
+      documentStart,
+    );
+    assert.equal(await header.evaluate((element) => element.isConnected), true);
+    assert.equal(
+      documentRequests,
+      0,
+      "Topic navigation must not reload the document",
+    );
+    assert.equal(
+      await page
+        .locator('.assumption-topics [aria-current="page"]')
+        .getAttribute("href"),
+      "?lesson=assumptions&assumption=no-interference",
+    );
+    page.off("request", onRequest);
+  }
+  await page.setViewportSize({ width: 1280, height: 1000 });
   await page.goto(`${root}?lesson=leaving-the-sandbox`);
   await page.locator('.optional-preview a[href="?lesson=assumptions"]').click();
   assert.equal(await page.locator("#comparison").innerText(), "2.0");
