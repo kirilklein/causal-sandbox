@@ -9,7 +9,6 @@ const math = (body, label) =>
 export function aipwFormula() {
   const contrast = `${prediction("1")}<mo>−</mo>${prediction("0")}`;
   return `
-    <p>Outcome predictions give a starting estimate. IPW-weighted regression errors supply the correction.</p>
     <div class="aipw-formula" role="group" aria-label="AIPW: average the predicted contrasts plus signed, weighted regression errors over all people">
       <div class="aipw-average">
         ${math("<mover><mi>τ</mi><mo>^</mo></mover><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover>", "AIPW estimate equals the average over all n people")}

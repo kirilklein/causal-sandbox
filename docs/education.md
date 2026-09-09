@@ -303,8 +303,8 @@ navigation, keyboard controls, and mobile layout for the model chapter.
 
 ## AIPW formula and optional calculation (level 9)
 
-A closed “How is AIPW calculated?” section follows the general explanation.
-It leads with a large annotated formula: average the predicted treatment contrast
+A short introduction explains what AIPW corrects and why errors are weighted.
+The annotated formula is visible immediately before the model controls: average the predicted treatment contrast
 plus s × w × r over people. Matching boxes define r as the observed regression
 error, w as the IPW weight for the treatment received, and s as +1 for treated or
 −1 for untreated. Predictions use a treatment subscript and explicit C argument,

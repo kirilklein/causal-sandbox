@@ -1460,10 +1460,11 @@ try {
   await page.goto(`${url}?lesson=double-robustness`);
   const aipwInitial = await result();
   const calculation = page.locator(".aipw-calculation");
-  const calculationToggle = calculation.locator(":scope > summary");
-  assert.equal(await calculation.getAttribute("open"), null);
-  await calculationToggle.focus();
-  await page.keyboard.press("Enter");
+  assert.equal(await calculation.locator(".aipw-formula").isVisible(), true);
+  assert.equal(
+    await calculation.locator(".aipw-definitions").isVisible(),
+    true,
+  );
   assert.equal(await result(), aipwInitial);
   const numbers = page.locator(".aipw-numbers");
   assert.equal(await numbers.getAttribute("open"), null);
@@ -1483,7 +1484,7 @@ try {
   for (const selector of ["#outcome-quadratic", "#treatment-quadratic"]) {
     await page.locator(selector).uncheck();
     assert.notEqual(await arithmetic(), initialArithmetic);
-    assert.equal(await calculation.getAttribute("open"), "");
+    assert.equal(await calculation.locator(".aipw-formula").isVisible(), true);
     assert.equal(await numbers.getAttribute("open"), "");
     assert.match(await page.locator("#sample-label").innerText(), /4217/);
     await reconciles();
@@ -1496,9 +1497,8 @@ try {
   assert.notEqual(await arithmetic(), initialArithmetic);
   await reconciles();
   await page.locator("#restart").click();
-  assert.equal(await calculation.getAttribute("open"), null);
+  assert.equal(await calculation.locator(".aipw-formula").isVisible(), true);
   assert.equal(await result(), aipwInitial);
-  await calculationToggle.tap();
   assert.equal(await numbers.getAttribute("open"), null);
   await numbers.locator("summary").tap();
   assert.equal(await arithmetic(), initialArithmetic);
@@ -1534,12 +1534,11 @@ try {
       assert.equal(await result(), aipwInitial);
     }
   }
-  await calculationToggle.tap();
   assert.equal(await result(), aipwInitial);
   await page.locator("#revisit-hidden").click();
   assert.equal(await calculation.count(), 0);
   await page.goBack();
-  assert.equal(await calculation.getAttribute("open"), null);
+  assert.equal(await calculation.locator(".aipw-formula").isVisible(), true);
   assert.equal(await result(), aipwInitial);
   await page.goto(`${url}?lesson=outcome-regression`);
   assert.equal(await calculation.count(), 0);
