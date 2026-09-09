@@ -3,6 +3,7 @@ import { graphComparison, setupGraphComparison } from "./graph-comparison.js";
 import { themeControl } from "./theme.js";
 import { filmPreview, setupFilmPreview } from "./film-preview.js";
 import { renderIpwCalculation } from "./ipw-calculation.js";
+import { renderPropensityPreview } from "./propensity-preview.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import { effectComparison } from "./effect-comparison.js";
@@ -394,7 +395,7 @@ function enter(level, focus = true, callback = false) {
             : ""
         }
       </section>
-      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? "<p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>" : ""}</details>
+      <details class="lesson-explanation"><summary>Explain what is happening</summary><p>${lesson.explanation}</p>${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, everyone would have the same fitted treatment probability. Weights would be constant within each group and cancel in its weighted average, leaving the unadjusted difference.</p>' : ""}</details>
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 6 ? `<details class="aipw-calculation"><summary>How is AIPW calculated?</summary>${aipwFormula()}</details>` : ""}
@@ -662,6 +663,11 @@ function updateEstimate(id, estimate, truth) {
 
 function update() {
   const result = lessonResult(state, noise);
+  if (state.level === 3)
+    renderPropensityPreview(
+      document.querySelector("#propensity-preview"),
+      result.propensityData,
+    );
   if (state.level === 4)
     document.querySelector("#outcome-arithmetic").innerHTML =
       outcomeCalculation(result.outcomePredictions);

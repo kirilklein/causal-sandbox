@@ -20,6 +20,8 @@ if (page === "glossary") {
     await import("./sandbox.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
+  } else if (lesson === "propensity-score") {
+    await import("./propensity-lesson.js");
   } else if (lesson === "assumptions") {
     await import("./assumptions-lesson.js");
   } else if (lesson === "arrow-strength") {
