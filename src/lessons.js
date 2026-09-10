@@ -251,7 +251,7 @@ function controls(level) {
   if (level === 3)
     return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
-    return '<p id="regression-explanation">For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
+    return '<p id="regression-explanation">We fit a model to predict the observed outcome from treatment received and risk score. For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
       ["simple", "Simple relationships"],
