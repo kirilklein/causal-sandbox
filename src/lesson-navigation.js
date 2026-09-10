@@ -33,66 +33,66 @@ const coreGroups = [
 export const optionalChapters = [
   {
     id: "propensity-score",
+    menuTitle: "Propensity scores",
     after: 3,
     title: "Where do propensity scores come from?",
     href: "?lesson=propensity-score",
     description:
       "Fit treatment probabilities from age and severity, then connect one person's score to their IPW weight.",
-    summary: "From patient characteristics to treatment probability",
   },
   {
     id: "assumptions",
+    menuTitle: "Causal assumptions",
     after: 12,
     title: "Making causal assumptions tangible",
     href: "?lesson=assumptions",
     description:
       "Change treatment assignment, available options, treatment versions, and spillovers to see what each assumption means.",
-    summary: "Four visual experiments",
   },
   {
     id: "timing",
+    menuTitle: "Timing and adjustment",
     after: 9,
     title: "What timing tells us",
     href: "?lesson=timing",
     description:
       "See why measuring a variable before treatment does not make it safe to adjust for.",
-    summary: "Timing and safe adjustment",
   },
   {
     id: "time-varying-confounding",
+    menuTitle: "Longitudinal treatment",
     title: "When treatment changes the next treatment decision",
     href: "?lesson=time-varying-confounding",
-    summary: "Repeated treatment and time-varying confounding",
   },
   {
     id: "instrument",
+    menuTitle: "Instruments and adjustment",
     after: 6,
     title: "Instruments and adjustment",
     href: "?lesson=instrument",
     description:
       "See how adjusting for an instrument can increase variability and amplify hidden-confounding bias.",
-    summary: "Variability and hidden-confounding bias",
   },
   {
     id: "arrow-strength",
+    menuTitle: "Causal arrow strength",
     title: "How strong is a causal arrow?",
     href: "?lesson=arrow-strength",
-    summary: "Weak effects and cancelling paths",
   },
   {
     id: "clipping",
+    menuTitle: "Weight clipping",
     after: 10,
     title: "Clipping and extreme weights",
     href: "propensity-score-clipping-trimming/",
     description:
       "Explore the tradeoff from limiting extreme weights, then see how trimming changes the target population.",
-    summary: "Limiting extreme weights",
   },
   {
     id: "trimming",
+    menuTitle: "Population trimming",
     title: "Trimming and the target population",
     href: "?lesson=trimming",
-    summary: "Who remains after trimming",
   },
 ];
 
@@ -125,7 +125,7 @@ export function lessonNavigation({
       )
       .join("")}
     <section class="concept-menu optional-menu" aria-label="Optional chapters"><h2>Optional chapters</h2>
-      ${optionalChapters.map(({ id, title, href, summary }) => `<a href="${href}" aria-label="${title}" ${currentOptional === id ? 'aria-current="step"' : ""}>${title}<small>${summary}</small></a>`).join("")}
+      ${optionalChapters.map(({ id, menuTitle, href }) => `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`).join("")}
     </section>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
       <a href="glossary/">Glossary</a>
@@ -137,7 +137,8 @@ export function lessonNavigation({
       <a href="mediator-adjustment/">Mediator adjustment</a>
       <a href="tmle/">TMLE</a>
     </section>
-    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
+    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a>
+    <a class="sandbox-nav-link" href="?sandbox=graph-lab">Build a graph ↗</a></div>
   </nav>`;
 }
 
