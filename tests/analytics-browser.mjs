@@ -18,6 +18,16 @@ try {
     Object.defineProperty(navigator, "globalPrivacyControl", { value: false });
     Object.defineProperty(navigator, "webdriver", { value: false });
     Object.defineProperty(window, "doNotTrack", { value: "0" });
+    if (navigator.userAgentData) {
+      // PostHog's bot filter reads User-Agent Client Hints too.
+      Object.defineProperty(navigator, "userAgentData", {
+        value: {
+          brands: [{ brand: "Chromium", version: "140" }],
+          mobile: false,
+          platform: "macOS",
+        },
+      });
+    }
   });
   const requests = [];
   const errors = [];
