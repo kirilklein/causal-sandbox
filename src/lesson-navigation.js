@@ -147,7 +147,7 @@ export function lessonNavigation({
       <a href="mediator-adjustment/">Mediator adjustment</a>
       <a href="tmle/">TMLE</a>
     </section>
-    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a>
+    <a class="sandbox-nav-link" href="?sandbox">Explore scenarios ↗</a>
     <a class="sandbox-nav-link" href="?sandbox=graph-lab">Build a graph ↗</a></div>
   </nav>`;
 }

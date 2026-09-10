@@ -762,7 +762,10 @@ try {
     .getByRole("link", { name: "A hidden common cause", exact: true })
     .tap();
   assert.equal(await result(), ninth);
-  await page.getByRole("link", { name: "Open full sandbox" }).click();
+  await page
+    .locator(".lesson-header")
+    .getByRole("link", { name: "Explore scenarios" })
+    .click();
   await page.getByRole("tab", { name: "World" }).click();
   await page.locator("#world-select").selectOption("both");
   await page.getByRole("tab", { name: "Analysis" }).click();
@@ -1173,7 +1176,7 @@ try {
   await page.reload();
   await page.locator(".lesson-recap").waitFor();
   assert.equal(await page.locator("h1").innerText(), "Leaving the sandbox");
-  await page.getByRole("link", { name: "Explore the full sandbox" }).tap();
+  await page.locator("#recap-exit").tap();
   await page.getByRole("tab", { name: "World" }).click();
   await page.locator("#world-select").selectOption("both");
   await page.getByRole("tab", { name: "Analysis" }).click();
@@ -1197,7 +1200,10 @@ try {
     );
   }
   // Contents and the forward journey agree, including after a sandbox visit.
-  await page.getByRole("link", { name: "Open full sandbox" }).click();
+  await page
+    .locator(".lesson-header")
+    .getByRole("link", { name: "Explore scenarios" })
+    .click();
   await page.getByRole("tab", { name: "World" }).click();
   await page.locator("#world-select").selectOption("both");
   await page.getByRole("tab", { name: "Analysis" }).click();

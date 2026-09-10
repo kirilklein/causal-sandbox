@@ -143,7 +143,7 @@ export function simulate(p, noise, world = worlds[0]) {
     };
   });
 }
-// C is a single variable in lessons and a covariate pair in the full sandbox.
+// C is a single variable in lessons and a covariate pair in the scenario sandbox.
 // Interaction features require the covariate pair in the adjustment set.
 function features(d, adjustment, interaction, quadratic) {
   return [

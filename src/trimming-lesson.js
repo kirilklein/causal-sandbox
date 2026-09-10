@@ -227,7 +227,7 @@ document.querySelector("#app").innerHTML =
       >.
     </p>
   </details>
-<nav class="chapter-nav" aria-label="Chapter navigation"><a href="propensity-score-clipping-trimming/">← Probability clipping</a><a href="positivity/">← Back to overlap</a><a href="?sandbox">Continue to the full sandbox ↗</a></nav>
+<nav class="chapter-nav" aria-label="Chapter navigation"><a href="propensity-score-clipping-trimming/">← Probability clipping</a><a href="positivity/">← Back to overlap</a><a href="?sandbox">Explore scenarios ↗</a></nav>
 </main>
 </div>`;
 setupLessonNavigation();

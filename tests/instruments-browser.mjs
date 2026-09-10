@@ -316,7 +316,9 @@ try {
   await page.goBack();
   await page.locator("#ipw").filter({ hasText: /\d/ }).waitFor();
   assert.equal(await results(), initial);
-  await page.getByRole("link", { name: "Full sandbox ↗", exact: true }).click();
+  await page
+    .getByRole("link", { name: "Explore scenarios ↗", exact: true })
+    .click();
   await page.locator("#effects").waitFor();
   assert.equal(await page.locator(".instrument-page").count(), 0);
   const touch = await browser.newPage({

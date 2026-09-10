@@ -227,7 +227,7 @@ document.querySelector("#app").innerHTML = `<div class="clipping-page">
     </p>
   </details>
 <aside class="trimming-preview" aria-label="Optional exploration"><small>Optional exploration</small><h2><a href="?lesson=trimming">Next: who remains after trimming? →</a></h2><p>See how excluding people changes the target population.</p></aside>
-<nav class="chapter-nav" aria-label="Chapter navigation"><a href="positivity/">← Back to overlap</a><a href="?sandbox">Continue to the full sandbox ↗</a></nav>
+<nav class="chapter-nav" aria-label="Chapter navigation"><a href="positivity/">← Back to overlap</a><a href="?sandbox">Explore scenarios ↗</a></nav>
 </main>
 </div>`;
 setupLessonNavigation();

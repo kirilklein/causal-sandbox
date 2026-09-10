@@ -1,4 +1,4 @@
-# Full sandbox: scenarios and comparisons
+# Scenario sandbox: scenarios and comparisons
 
 The sandbox offers multiple reproducible scenarios: randomization, observed or hidden
 confounding, collider, mediator, or instrument adjustment, four model-specification
@@ -44,9 +44,9 @@ Links of the form `?sandbox&scenario=both-models` open a scenario's starting set
 They do not serialize custom slider/model changes. Unknown scenario IDs fall back
 to observed confounding. Guided lessons remain a separate experiment.
 
-The optional [Graph lab](graph-lab.md) opens through **Build a graph**. It supports
+The optional [Graph sandbox](graph-lab.md) opens through **Build a graph**. It supports
 small editable graphs in a separate workspace. Entering through this link saves
-the full sandbox's current setup for the lab's return link; ordinary scenario
+the scenario sandbox's current setup for the lab's return link; ordinary scenario
 links still start at their defined baselines.
 
 ## Independent overlap experiment

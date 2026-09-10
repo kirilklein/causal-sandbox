@@ -7,7 +7,7 @@ import {
   setupLessonNavigation,
 } from "./lesson-navigation.js";
 document.querySelector("#app").innerHTML =
-  `<div class="instrument-page"><header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Full sandbox ↗</a>${themeControl()}</header>
+  `<div class="instrument-page"><header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${themeControl()}</header>
     <main>
       ${lessonNavigation({ currentOptional: "instrument" })}
       <p class="eyebrow" id="step"></p>
