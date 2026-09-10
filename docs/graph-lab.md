@@ -32,9 +32,7 @@ valid adjustment sets or guarantee that main-effect fitted models represent the
 relevant conditional relationships.
 
 The error axis remains at ±4 outcome units. Off-scale triangles retain exact
-numeric estimates and signed errors. Hollow marks show starting errors relative
-to the starting world's truth; solid marks show current errors relative to the
-current world's truth. Compact rows use the full sandbox's shared track and
+numeric estimates and signed errors. Marks show current errors relative to the current world's truth. Compact rows use the full sandbox's shared track and
 marker styling, with one common axis. Marks use the fixed 0–2 absolute-error scale.
 There are no confidence intervals or significance claims.
 

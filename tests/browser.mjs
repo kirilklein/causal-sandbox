@@ -321,21 +321,20 @@ try {
       el.dispatchEvent(new Event("input", { bubbles: true }));
     }, value);
   };
-  const startingMarks = () =>
-    page
-      .locator(".starting-dot")
-      .evaluateAll((els) => els.map((el) => [el.style.left, el.title]));
   const axis = await page.locator(".chart-axis").innerText();
-  const originalMarks = await startingMarks();
+  const initialEstimates = await values();
+  assert.equal(await page.locator(".estimate-dot").count(), 4);
   await page.locator('input[value="C"]').check();
   assert.ok(Math.abs((await values())[3] - 2) < 0.15);
   assert.equal(await page.locator("#scenario-status").innerText(), "Modified");
-  assert.deepEqual(await startingMarks(), originalMarks);
+  assert.equal(await page.locator(".starting-dot").count(), 0);
   await page.locator('input[value="C"]').uncheck();
   assert.equal(
     await page.locator("#scenario-status").innerText(),
     "Starting setup",
   );
+
+  assert.deepEqual(await values(), initialEstimates);
 
   // Every entry resets the complete experiment, even after unrelated changes.
   for (const scenario of scenarios.filter((s) => s.id !== "overlap")) {
@@ -402,7 +401,6 @@ try {
   // The instrument scenario isolates the new Z adjustment choice.
   await selectScenario("instrument");
   const instrumentStart = await values();
-  const instrumentMarks = await startingMarks();
   await page.locator('input[value="Z"]').check();
   const adjustedForInstrument = await values();
   for (let i = 1; i < adjustedForInstrument.length; i++)
@@ -410,7 +408,7 @@ try {
       Math.abs(adjustedForInstrument[i] - 2) > Math.abs(instrumentStart[i] - 2),
     );
   assert.match(await page.locator("#lesson").innerText(), /amplified/i);
-  assert.deepEqual(await startingMarks(), instrumentMarks);
+  assert.equal(await page.locator(".starting-dot").count(), 0);
   await page.locator("#reset").click();
   assert.deepEqual(await values(), instrumentStart);
   assert.equal(await page.locator('input[value="Z"]').isChecked(), false);
@@ -518,9 +516,8 @@ try {
 
   // Fixed error scale and explicit overflow retain meaning at supported extremes.
   await selectScenario("randomized");
-  const randomMarks = await startingMarks();
   for (const key of ["ca", "cy", "ua", "uy"]) await setArrow(key, 3);
-  assert.deepEqual(await startingMarks(), randomMarks);
+  assert.equal(await page.locator(".starting-dot").count(), 0);
   assert.equal(await page.locator(".chart-axis").innerText(), axis);
   assert.ok((await page.locator(".estimate-dot.off-scale").count()) > 0);
   assert.ok((await values()).every(Number.isFinite));

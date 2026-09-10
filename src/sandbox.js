@@ -32,7 +32,6 @@ let selectedScenario =
     (s) => s.id === new URLSearchParams(location.search).get("scenario"),
   ) || scenarios[1];
 let state = scenarioState(scenarios[1]);
-let startingErrors = [];
 let startingState;
 const estimatorIndices = [0, 2, 3, 4];
 const contextualGlossary = Object.entries(glossary).filter(
@@ -86,7 +85,7 @@ document.querySelector("#app").innerHTML = `
         <div class="adjust-row"><span class="choice-explanation"><b>${helpButton("adjustment", "Adjust for")}</b></span>${["C", "Z", "M", "K"].map((k) => `<div class="adjust-choice${k === "Z" ? " instrument-adjustment" : ""}"${k === "Z" ? " hidden" : ""}><label class="adjust-option"><input type="checkbox" value="${k}" aria-label="Adjust for ${k} (${{ C: "Confounder", Z: "Instrument", M: "Mediator", K: "Collider" }[k]})"><b>${k}</b></label>${k === "Z" ? "" : helpButton({ C: "confounder", M: "mediator", K: "collider" }[k])}</div>`).join("")}</div>
       <div class="effect-chart" id="effects"></div>
       <div class="estimate-key"><span>${helpButton("error", "Distance from truth")}</span><span>Redder = farther from truth</span></div>
-      <p class="comparison-key"><i class="start-key" aria-hidden="true"></i>Starting error <i class="now-key" aria-hidden="true"></i>Current error <span id="offscale-note" hidden>Arrows mark errors beyond ±4.</span></p>
+      <p id="offscale-note" class="comparison-key" hidden>Arrows mark errors beyond ±4.</p>
       <div id="lesson" class="lesson" aria-live="polite"></div>
       <div id="overlap" class="overlap"><p id="overlap-warning" role="status"></p><span class="overlap-help">${helpButton("overlap")}${helpButton("ess")}</span></div>
       <details class="data"><summary>Observed outcomes <span>n = 2,400</span></summary><div class="population-meta"><span><i class="dot untreated"></i>Untreated <b id="n0"></b></span><span><i class="dot treated"></i>Treated <b id="n1"></b></span><span class="axis-note">Outcome Y →</span></div><div class="canvas-wrap"><canvas id="population" role="img" aria-label="Outcome distributions"></canvas></div></details>
@@ -311,15 +310,13 @@ function update() {
     effectComparison(value, truth),
   );
   document.querySelector("#offscale-note").hidden = !latestResult.values.some(
-    (value, i) =>
-      Math.abs(value - truth) > 4 || Math.abs(startingErrors[i]) > 4,
+    (value) => Math.abs(value - truth) > 4,
   );
   const chartMarkup = `<div class="chart-axis"><span>ESTIMATOR</span><div><span>−4</span><b>TRUTH</b><span>+4</span></div><span>ESTIMATE</span></div>${estimatorIndices
     .map((i) => {
       const comparison = comparisons[i];
       const error = latestResult.values[i] - truth;
-      const start = startingErrors[i];
-      return `<div class="effect-row" data-estimator="${i}" style="--error-tint:${comparison.tint}%"><span class="estimator-label">${i ? helpButton(["", "", "regression", "ipw", "aipw"][i], names[i]) : names[i]}</span><div class="effect-track"><i class="truth-line"></i><i class="bias-line" style="left:${Math.min(50, pos(error))}%;width:${Math.abs(pos(error) - 50)}%"></i><i class="starting-dot ${Math.abs(start) > 4 ? "off-scale" : ""}" style="left:${pos(start)}%" title="Starting error: ${start.toFixed(2)} from truth">${Math.abs(start) > 4 ? (start < 0 ? "‹" : "›") : ""}</i><i class="estimate-dot ${Math.abs(error) > 4 ? "off-scale" : ""}" style="left:${pos(error)}%" title="${comparison.difference}">${Math.abs(error) > 4 ? (error < 0 ? "‹" : "›") : ""}</i></div><span class="effect-value"><strong>${comparison.value}</strong><small aria-label="${comparison.difference}">${comparison.difference.replace(" from truth", "")}</small></span></div>`;
+      return `<div class="effect-row" data-estimator="${i}" style="--error-tint:${comparison.tint}%"><span class="estimator-label">${i ? helpButton(["", "", "regression", "ipw", "aipw"][i], names[i]) : names[i]}</span><div class="effect-track"><i class="truth-line"></i><i class="bias-line" style="left:${Math.min(50, pos(error))}%;width:${Math.abs(pos(error) - 50)}%"></i><i class="estimate-dot ${Math.abs(error) > 4 ? "off-scale" : ""}" style="left:${pos(error)}%" title="${comparison.difference}">${Math.abs(error) > 4 ? (error < 0 ? "‹" : "›") : ""}</i></div><span class="effect-value"><strong>${comparison.value}</strong><small aria-label="${comparison.difference}">${comparison.difference.replace(" from truth", "")}</small></span></div>`;
     })
     .join("")}`;
   const effects = document.querySelector("#effects");
@@ -333,7 +330,7 @@ function update() {
         "--error-tint",
         `${comparisons[estimatorIndices[index]].tint}%`,
       );
-      for (const selector of [".bias-line", ".estimate-dot", ".starting-dot"]) {
+      for (const selector of [".bias-line", ".estimate-dot"]) {
         const el = row.querySelector(selector),
           target = next.querySelector(selector);
         el.style.cssText = target.style.cssText;
@@ -480,11 +477,6 @@ function enterScenario(scenario) {
   }
   state = scenarioState(scenario);
   startingState = experimentState();
-  const data = simulate(state.p, noise, state.world);
-  const truth = state.p.direct + state.p.am * state.p.my;
-  startingErrors = estimate(data, [...state.adjust], state.models).values.map(
-    (v) => v - truth,
-  );
   document.querySelector(".observed-controls").open =
     state.p.ca !== 0 || state.p.cy !== 0;
   const isInstrument = scenario.id === "instrument";
