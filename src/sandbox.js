@@ -1,3 +1,4 @@
+import { capture } from "./posthog.js";
 import { effectComparison } from "./effect-comparison.js";
 import { arrowStrength } from "./arrow-strength.js";
 import { sandboxOverlap } from "./sandbox-overlap.js";
@@ -500,20 +501,56 @@ function enterScenario(scenario) {
   );
   update();
 }
-document
-  .querySelector("#scenario-select")
-  .addEventListener("change", (e) =>
-    enterScenario(scenarios.find((s) => s.id === e.target.value)),
-  );
+document.querySelector("#scenario-select").addEventListener("change", (e) => {
+  const scenario = scenarios.find((s) => s.id === e.target.value);
+  capture("sandbox_scenario_selected", { scenario: scenario.id });
+  enterScenario(scenario);
+});
 document.querySelectorAll(".adjust-option input").forEach((el) =>
   el.addEventListener("change", () => {
     el.checked ? state.adjust.add(el.value) : state.adjust.delete(el.value);
+    capture("method_compared", {
+      sandbox: "full",
+      scenario: selectedScenario.id,
+      adjustment: el.value,
+      enabled: el.checked,
+    });
     update();
   }),
 );
+const trackedParameters = new Set();
+document.querySelector(".workspace").addEventListener("change", (event) => {
+  const control = event.target.closest(
+    "input[data-param], input[id], select[id]",
+  );
+  if (
+    !control ||
+    control.id === "scenario-select" ||
+    control.closest(".adjust-option")
+  )
+    return;
+  const name = control.dataset.param || control.id;
+  const key = `${selectedScenario.id}:${name}`;
+  if (trackedParameters.has(key)) return;
+  trackedParameters.add(key);
+  capture("sandbox_parameter_changed", {
+    scenario: selectedScenario.id,
+    control: name,
+  });
+});
 document.querySelector("#reset").addEventListener("click", () => {
+  capture("simulation_run", {
+    sandbox: "full",
+    scenario: selectedScenario.id,
+    action: "restart",
+  });
   enterScenario(selectedScenario);
 });
+document
+  .querySelector("#scenario-link")
+  .addEventListener("click", () =>
+    capture("share_clicked", { content: "sandbox_scenario" }),
+  );
 document
   .querySelector("#methods")
   .addEventListener("click", () =>

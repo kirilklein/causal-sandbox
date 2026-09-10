@@ -45,7 +45,7 @@ Choose a scenario, then customize its world and analysis in separate tabs. Each 
 - **Play analyst.** Choose adjustment variables and models, then compare unadjusted, regression, IPW, and AIPW estimates with the known true effect.
 - **Explore different scenarios.** Experiment with randomization, confounding, inappropriate adjustment, model misspecification, and poor overlap. Restart a scenario or share its setup with a link.
 
-The true effect is always known, so every estimate can be compared with it. All simulations run in the browser; the static site uses GoatCounter for visit analytics.
+The true effect is always known, so every estimate can be compared with it. All simulations run in the browser. The static site uses GoatCounter for visit counts and manual PostHog events to measure meaningful learning interactions. See the [analytics notes](docs/analytics.md).
 
 ## Graph lab
 

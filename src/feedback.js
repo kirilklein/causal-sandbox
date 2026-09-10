@@ -1,3 +1,4 @@
+import { capture } from "./posthog.js";
 import "./feedback.css";
 
 export function setupFeedback(footer) {
@@ -116,6 +117,7 @@ function createFeedbackDialog(button, endpoint) {
       });
       if (response.ok) {
         sent = true;
+        capture("feedback_submitted");
         form.reset();
         status.textContent = "Thanks! Your feedback has been sent.";
         dialog.querySelector(".feedback-close").focus();

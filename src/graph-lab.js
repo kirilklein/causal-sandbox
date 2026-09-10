@@ -1,3 +1,4 @@
+import { capture } from "./posthog.js";
 import "./graph-lab.css";
 import { automaticPositions, edgeGeometry } from "./graph-layout.js";
 import icon from "./brand.svg?raw";
@@ -26,6 +27,7 @@ let preset = graphPreset(new URLSearchParams(location.search).get("preset"));
 let graph = structuredClone(preset.graph),
   adjustment = [],
   nextId = 4;
+let graphModificationCaptured = false;
 let selection = { kind: "node", id: "A" },
   startingErrors,
   timer;
@@ -278,6 +280,10 @@ function commit(change) {
   );
   renderEditor();
   renderResults();
+  if (!graphModificationCaptured) {
+    graphModificationCaptured = true;
+    capture("graph_modified", { preset: preset.id });
+  }
   return true;
 }
 
@@ -327,6 +333,7 @@ $("#lab-add-variable").addEventListener("submit", (event) => {
   const id = `v${nextId++}`;
   const label = $("#lab-new-name").value.trim();
   if (commit((next) => next.nodes.push(graphNode(id, label)))) {
+    capture("graph_lab_variable_added");
     selection = { kind: "node", id };
     renderInspector();
     $("#lab-new-name").value = "";
