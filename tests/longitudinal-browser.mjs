@@ -41,6 +41,13 @@ try {
     randomized.unadjusted.toFixed(2),
   );
   await expect(page.locator("#ipw-card")).toBeHidden();
+  const twoCardWidth = (await page.locator("#regression-card").boundingBox())
+    .width;
+  const resultsWidth = (await page.locator(".results").boundingBox()).width;
+  assert.ok(twoCardWidth > resultsWidth * 0.45);
+  await page
+    .locator(".longitudinal-workspace")
+    .screenshot({ path: "/tmp/longitudinal-two-cards.png" });
   await expect(page.locator("#severity-treatment-path")).toHaveCSS(
     "visibility",
     "hidden",
@@ -65,6 +72,10 @@ try {
   );
   const graph = await page.locator("#history-graph").innerHTML();
   await page.locator('[data-stage="2"]').click();
+  const threeCardWidth = (await page.locator("#regression-card").boundingBox())
+    .width;
+  assert.ok(threeCardWidth < twoCardWidth);
+  assert.ok(threeCardWidth > resultsWidth * 0.3);
   await expect(page.locator("#ipw-value")).toHaveText(
     confounded.ipw.toFixed(2),
   );
@@ -77,11 +88,37 @@ try {
     confounded.weights[0].weight.toFixed(3),
   );
   await page.locator("#person").focus();
+  await page.keyboard.press("End");
+  await expect(page.locator("#person-number")).toHaveText("2400");
+  assert.equal(
+    await page
+      .locator("#person")
+      .evaluate((el) => el.style.getPropertyValue("--fill")),
+    "100%",
+  );
+  await page.keyboard.press("Home");
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("#person-number")).toHaveText("2");
   await expect(page.locator("#person-weight")).toContainText(
     confounded.weights[1].weight.toFixed(3),
   );
+  for (const [A1, A2] of [
+    [0, 0],
+    [1, 1],
+    [0, 1],
+    [1, 0],
+  ]) {
+    const i = confounded.data.findIndex((d) => d.A1 === A1 && d.A2 === A2);
+    await page.locator("#person").fill(String(i + 1));
+    await expect(page.locator("#person-weight")).toHaveText(
+      `Weight = 1 ÷ (0.500 × ${confounded.weights[i].observedP2.toFixed(3)}) = ${confounded.weights[i].weight.toFixed(3)}`,
+    );
+    await expect(page.locator("#person-role")).toContainText(
+      A1 === A2
+        ? `contributes to the weighted mean for ${A1 ? "both visits" : "neither visit"}`
+        : "contributes to neither strategy's outcome mean",
+    );
+  }
   await page.locator("#studies > summary").click();
   await page.locator("#repeat").click();
   await expect(page.locator("#study-status")).toHaveText(
@@ -109,6 +146,14 @@ try {
     randomized.unadjusted.toFixed(2),
   );
   await page.locator('[data-stage="2"]').click();
+  await page.locator("#weight-detail > summary").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".sequential-weight-formula")).toBeVisible();
+  await page
+    .getByText("Why does ordinary adjustment fail here?", { exact: true })
+    .click();
+  for (const id of ["simulation-detail", "models-detail", "assumptions-detail"])
+    await page.locator(`#${id} > summary`).click();
   await page.screenshot({
     path: "/tmp/longitudinal-desktop.png",
     fullPage: true,
@@ -120,6 +165,20 @@ try {
       await page.locator('[data-stage="1"]').tap();
       await page.locator('[data-stage="2"]').tap();
       await expect(page.locator("#ipw-card")).toBeVisible();
+      const slider = await page.locator("#person").evaluate((el) => ({
+        track: getComputedStyle(el).backgroundImage,
+        height: el.getBoundingClientRect().height,
+      }));
+      assert.notEqual(slider.track, "none");
+      assert.ok(slider.height >= 44);
+      const cards = await page
+        .locator(".result:not([hidden])")
+        .evaluateAll((els) =>
+          els.map((el) => el.getBoundingClientRect().width),
+        );
+      const mobileResultsWidth = (await page.locator(".results").boundingBox())
+        .width;
+      assert.ok(cards.every((width) => width >= mobileResultsWidth - 1));
       await expect(page.locator(".longitudinal-intro")).toHaveCSS(
         "display",
         "block",
@@ -136,9 +195,9 @@ try {
         ),
         `overflow at ${width} ${theme}`,
       );
-      if (width === 390 && theme === "light")
+      if (width === 390)
         await page.screenshot({
-          path: "/tmp/longitudinal-mobile.png",
+          path: `/tmp/longitudinal-mobile-${theme}.png`,
           fullPage: true,
         });
     }
