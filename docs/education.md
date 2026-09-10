@@ -67,7 +67,7 @@ Optional detail covers exchangeability, positivity, consistency, and interferenc
 without treating all assumptions as inevitably violated or empirically testable.
 It has no simulation,
 estimates, or restart button. Back returns to overlap; the forward link opens the
-existing advanced sandbox through `?sandbox` as level 13.
+existing scenario sandbox through `?sandbox` as level 13.
 
 An optional [clipping chapter](clipping-experiment.md) follows Poor overlap at
 `?lesson=clipping`. Compare estimates before and after probability clipping while
@@ -290,7 +290,7 @@ the learner simplifies either model and then both, with a short explanation of
 the current combination beside the estimates. There is no clickthrough sequence.
 Model changes never change the world or sample. Restarts restore both flexible
 models and the initial sample.
-The advanced sandbox retains its separate two-covariate interaction features.
+The scenario sandbox retains its separate two-covariate interaction features.
 
 Tests use 40 independent seeds (100–139), n=2400, for each world and each model
 combination. Mean bias with a correct relevant model is below 0.06 in absolute

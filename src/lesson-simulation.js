@@ -1,7 +1,7 @@
 import { makeNoise, estimate } from "./simulation.js";
 
 // Numeric lesson IDs are stable identities, not display positions (see lessons.js).
-// Complete lesson state; no advanced sandbox setting is shared with this world.
+// Complete lesson state; no scenario sandbox setting is shared with this world.
 export function lessonBaseline(level) {
   if (level === 11)
     return {
