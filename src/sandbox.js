@@ -40,7 +40,7 @@ const contextualGlossary = Object.entries(glossary).filter(
 document.querySelector("#app").innerHTML = `
 <header class="sandbox-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a class="lessons-link" href="./">Guided lessons</a><button id="methods" class="text-button">How this world works</button>${themeControl()}</header>
 <main class="sandbox">
-  <section class="intro"><div><div class="eyebrow">FULL SANDBOX</div><h1>Explore what makes an estimate credible.</h1><p>Start with a scenario. Change the world or the analysis, and compare with the known effect.</p><a id="open-graph-lab" href="?sandbox=graph-lab">Build a graph in the Graph lab →</a></div></section>
+  <section class="intro"><div><div class="eyebrow">SCENARIO SANDBOX</div><h1>Explore what makes an estimate credible.</h1><p>Start with a scenario. Change the world or the analysis, and compare with the known effect.</p><a id="open-graph-lab" href="?sandbox=graph-lab">Build a graph →</a></div></section>
   <section class="scenario-bar" aria-label="Scenario">
     <div class="scenario-picker"><label for="scenario-select">Choose a scenario</label><select id="scenario-select" aria-describedby="scenario-question scenario-action">${[
       ...new Set(scenarios.map((s) => s.group)),

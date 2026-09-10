@@ -12,7 +12,7 @@ import icon from "./brand.svg?raw";
 
 document.querySelector("#app").innerHTML = `
   <div class="instrument-page longitudinal-page">
-    <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Full sandbox ↗</a>${themeControl()}</header>
+    <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${themeControl()}</header>
     <main>
       ${lessonNavigation({ currentOptional: "time-varying-confounding" })}
       <p class="eyebrow">OPTIONAL · TIME-VARYING CONFOUNDING</p>

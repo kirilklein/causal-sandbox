@@ -179,7 +179,7 @@ lessons[9] = {
     "Compare moderate and strong treatment selection: look at the probabilities and weights, then redraw to explore how estimates vary.",
   explanation:
     "Overlap means people with similar risk scores can receive either treatment. Strong selection leaves few people receiving the less likely treatment for their profile. Weighting asks those few people to represent many others, concentrating information in a small part of each group. Outcome regression relies more on predictions where comparisons are sparse. AIPW does not create missing comparisons, even with correct models.",
-  next: "Before exploring the full sandbox, take stock of what changes when the causal world and true effect are unknown.",
+  next: "Before exploring the scenario sandbox, take stock of what changes when the causal world and true effect are unknown.",
 };
 // Numeric IDs retain the original simulation and ?level= link identities.
 // Only this order determines the displayed positions and navigation.
@@ -341,11 +341,11 @@ function enterIntroduction(focus = true, animate = false) {
         </a>
         <a class="intro-path" href="?sandbox" aria-label="Explore">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M6 10h52M6 30h52"/><circle cx="22" cy="10" r="5"/><circle cx="43" cy="30" r="5"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
-          <h2>Explore</h2><p>Change a simulated world and see how causal estimates respond.</p><span class="intro-path-detail">Open the full sandbox <span aria-hidden="true">→</span></span>
+          <h2>Explore</h2><p>Change a simulated world and see how causal estimates respond.</p><span class="intro-path-detail">Explore scenarios <span aria-hidden="true">→</span></span>
         </a>
         <a class="intro-path" href="?sandbox=graph-lab" aria-label="Build">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="m16 30 16-20 16 20M16 30h32"/><circle cx="16" cy="30" r="5"/><circle cx="32" cy="10" r="5"/><circle cx="48" cy="30" r="5"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
-          <h2>Build</h2><p>Draw a causal graph and explore what your assumptions imply.</p><span class="intro-path-detail">Enter the graph lab <span aria-hidden="true">→</span></span>
+          <h2>Build</h2><p>Draw a causal graph and explore what your assumptions imply.</p><span class="intro-path-detail">Build a graph <span aria-hidden="true">→</span></span>
         </a>
       </nav>
       ${filmPreview()}
@@ -384,7 +384,7 @@ function enter(level, focus = true, callback = false, restart = false) {
     });
   if (!revisiting) recordLessonStarted(lesson.slug);
   app.innerHTML = `
-    <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
+    <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
       ${lessonNavigation({ position, revisiting })}
       <div class="eyebrow">${recap ? "TAKEAWAYS" : "PREDICT · TRY · OBSERVE"}</div><h1 tabindex="-1">${lesson.title}</h1>
@@ -434,7 +434,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       `
       }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-exit" class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-exit" class="primary" href="?sandbox">Explore scenarios ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters

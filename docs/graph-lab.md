@@ -1,6 +1,6 @@
-# Graph lab
+# Graph sandbox
 
-Open `?sandbox=graph-lab` or use **Build a graph** in the full sandbox. The lab
+Open `?sandbox=graph-lab` or use **Build a graph** in the scenario sandbox. The lab
 is an optional, separate experiment. Its code loads only on that route. The
 timing lesson links to the P–K–R preset; K is the score shown as V in that lesson's
 diagram. The equations match that example, but the lab uses its own fixed draws.
@@ -32,7 +32,7 @@ valid adjustment sets or guarantee that main-effect fitted models represent the
 relevant conditional relationships.
 
 The error axis remains at ±4 outcome units. Off-scale triangles retain exact
-numeric estimates and signed errors. Marks show current errors relative to the current world's truth. Compact rows use the full sandbox's shared track and
+numeric estimates and signed errors. Marks show current errors relative to the current world's truth. Compact rows use the scenario sandbox's shared track and
 marker styling, with one common axis. Marks use the fixed 0–2 absolute-error scale.
 There are no confidence intervals or significance claims.
 
@@ -63,7 +63,7 @@ to improve conditioning along longer paths. The existing estimator's opt-in
 and logistic convergence. If a shared fit fails, all adjusted rows are marked
 unavailable with the reason; raw association remains when both arms exist.
 This conservatively withholds regression too if the treatment fit fails.
-Existing lesson and full-sandbox calls retain their previous fitting behavior.
+Existing lesson and scenario-sandbox calls retain their previous fitting behavior.
 
 Clipping and per-arm ESS use existing estimator diagnostics. Warn for any clipped
 score or arm ESS below 25% of that arm's size. These are display heuristics,
@@ -76,9 +76,9 @@ Theme and disclosure changes do not alter results. Custom lab edits are kept
 only while the page remains open; reload starts the preset named in the URL.
 Versioned custom share links and lab draft persistence are deferred.
 
-Entering through the full sandbox saves that sandbox's scenario, parameters,
+Entering through the scenario sandbox saves that sandbox's scenario, parameters,
 adjustment, model choices, selected tab, disclosures, and
-overlap setting in session storage. **Return to full sandbox** restores them.
+overlap setting in session storage. **Explore scenarios** restores them.
 The source history entry also holds a snapshot for Browser Back when storage
 is unavailable. A normal `?sandbox` entry still starts its scenario normally.
 
@@ -93,7 +93,7 @@ hidden-variable exclusion, numerical failures, independent covariance OLS,
 the analytic P–K–R population contrast across 40 seeds, and confounding/mediation
 across repeated studies. Browser checks cover the editable loop, invalid arrows,
 reset, numerical display, adjustment invariance of graph geometry, keyboard,
-themes, narrow-screen layout, timing entry, and full-sandbox restoration.
+themes, narrow-screen layout, timing entry, and scenario-sandbox restoration.
 
 No nonlinear equations, repeated treatment, binary outcomes, IV estimator,
 automatic adjustment checker, data upload, or causal discovery is included.
