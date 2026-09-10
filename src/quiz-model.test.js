@@ -131,6 +131,14 @@ test("the final answer counts even when the six-question limit prevents a follow
   assert.ok(!recommendLessons(recovery).assessed.includes("overlap"));
 });
 
+test("resubmitting an unchanged answer preserves subsequent answers", () => {
+  for (const answers of [main().slice(0, 4), main()]) {
+    for (const [index, answer] of answers.entries()) {
+      assert.deepEqual(answerQuestion(answers, index, answer.choice), answers);
+    }
+  }
+});
+
 test("editing an answer discards the superseded path", () => {
   const changed = answerQuestion(main(), 0, "unsure");
   assert.deepEqual(changed, [a("E", "unsure")]);

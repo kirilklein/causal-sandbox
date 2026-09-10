@@ -175,6 +175,50 @@ try {
     fullPage: true,
   });
 
+  // Unchanged submissions retain answers and advance one question at a time.
+  await fresh();
+  await answer("E", "confounded");
+  await answer("G", "c-only");
+  await answer("C", "all");
+  await answer("H", "agreement-only");
+  const savedAnswers = await page.evaluate(
+    (key) => JSON.parse(sessionStorage.getItem(key)).answers,
+    key,
+  );
+  await page.locator("#quiz-back").click();
+  await page.locator("#quiz-back").click();
+  await page.locator("#quiz-submit").click();
+  await expect(page.locator(".quiz-card")).toHaveAttribute(
+    "data-question",
+    "H",
+  );
+  await expect(page.locator('input[value="agreement-only"]')).toBeChecked();
+  assert.deepEqual(
+    await page.evaluate(
+      (key) => JSON.parse(sessionStorage.getItem(key)).answers,
+      key,
+    ),
+    savedAnswers,
+  );
+  await page.locator("#quiz-submit").click();
+  await expect(page.locator(".quiz-card")).toHaveAttribute(
+    "data-question",
+    "O",
+  );
+  await expect(page.locator("#quiz-submit")).toBeDisabled();
+  await answer("O", "unsupported-extrapolation");
+  await answer("D", "consistent");
+  await page.goBack();
+  await page.goBack();
+  await page.locator("#quiz-submit").click();
+  await expect(page.locator(".quiz-card")).toHaveAttribute(
+    "data-question",
+    "D",
+  );
+  await expect(page.locator('input[value="consistent"]')).toBeChecked();
+  await page.locator("#quiz-submit").click();
+  await expect(page.locator(".quiz-score")).toHaveText("6/6 correct");
+
   // Editing an earlier answer recomputes the path and discards later answers.
   await fresh();
   await answer("E", "confounded");

@@ -33,6 +33,7 @@ function storageError(error) {
 
 function freshState() {
   return {
+    attempt: crypto.randomUUID(),
     answers: [],
     index: 0,
     screen: "question",
@@ -48,6 +49,8 @@ function restore(value) {
       ? Math.min(value.index, answers.length)
       : answers.length;
   return {
+    attempt:
+      typeof value?.attempt === "string" ? value.attempt : crypto.randomUUID(),
     answers,
     index,
     screen:
@@ -110,7 +113,18 @@ window.addEventListener("popstate", (event) => {
     location.reload();
     return;
   }
-  state = restore(event.state.quiz);
+  const previous = restore(event.state.quiz);
+  if (
+    previous.attempt === state.attempt &&
+    previous.answers.length <= state.answers.length &&
+    previous.answers.every(
+      (answer, index) =>
+        answer.question === state.answers[index].question &&
+        answer.choice === state.answers[index].choice,
+    )
+  )
+    previous.answers = state.answers;
+  state = previous;
   save();
   render();
   document
@@ -187,13 +201,14 @@ function renderQuestion() {
     const chosen = form.querySelector("input:checked");
     if (!chosen) return;
     const answers = answerQuestion(state.answers, state.index, chosen.value);
+    const index = state.index + 1;
     // Keep the submitted selection when browser Back revisits this question.
     history.replaceState({ quiz: { ...state, answers } }, "");
     state = {
       ...state,
       answers,
-      index: answers.length,
-      screen: nextQuestion(answers) ? "question" : "results",
+      index,
+      screen: nextQuestion(answers.slice(0, index)) ? "question" : "results",
       practice: state.practice || seenExplanations,
     };
     show();

@@ -68,6 +68,7 @@ export function answerQuestion(answers, index, choice) {
   const question = nextQuestion(prefix);
   const updated = validAnswers([...prefix, { question, choice }]);
   if (updated.length !== index + 1) throw new Error("Invalid quiz answer");
+  if (answers[index]?.choice === choice) return answers;
   return updated;
 }
 
