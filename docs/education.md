@@ -47,7 +47,8 @@ legacy level, and sandbox links retain their destinations and numbering.
 On initial entry, a decorative causal graph connects and the three cards appear
 in an overlapping 1.55-second reveal. Keyboard focus cancels the reveal; reduced
 motion shows everything immediately. In-app return navigation does not replay
-it. There is no autoplay, completion gate, or stored learner progress.
+it. There is no autoplay or completion gate. Guided-lesson progress is stored
+only in the learner's browser.
 
 The optional [causal assumptions chapter](assumptions.md) makes exchangeability,
 positivity, consistency, and no interference tangible through four separate
@@ -178,8 +179,12 @@ future work.
    their interaction. Lesson settings are not transferred into this world.
 
 Only implemented lessons appear in contents. Levels 1–12 now form a continuous
-sequence; “Level N of 13” includes the final sandbox. No scores, lesson-completion gates, accounts or stored
-progress. Later chapters and confidence intervals are separate changes.
+sequence; “Level N of 13” includes the final sandbox. Continue marks a guided
+lesson complete, and the Introduction resumes the most recently opened lesson.
+Prediction history retains the first answer, later attempts, and eventual
+correctness. This state stays in local browser storage and can be reset from
+Contents. There are no scores, lesson-completion gates, accounts, or cross-device
+sync. Later chapters and confidence intervals are separate changes.
 
 ## Sampling variation (IV prerequisite, PR A)
 
