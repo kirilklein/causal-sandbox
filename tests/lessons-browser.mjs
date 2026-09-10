@@ -1204,6 +1204,9 @@ try {
   await page.locator('input[value="K"]').check();
   await page.getByRole("link", { name: "Guided lessons", exact: true }).click();
   await page.getByRole("link", { name: "Learn" }).click();
+  await page
+    .getByRole("link", { name: "Start from scratch", exact: false })
+    .click();
   await tryPrediction();
   assert.equal(await result(), first);
   const titles = [

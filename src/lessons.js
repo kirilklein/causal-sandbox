@@ -315,9 +315,9 @@ function enterIntroduction(focus = true, animate = false) {
         </svg>
       </section>
       <nav class="intro-paths" aria-label="Choose your way in">
-        <a class="intro-path" href="${lessonUrl(1)}" data-level="1" aria-label="Learn">
+        <a class="intro-path" href="${import.meta.env.BASE_URL}?lesson=learn" aria-label="Learn">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M8 30h16V20h16V10h16"/><circle cx="8" cy="30" r="3"/><circle cx="56" cy="10" r="3"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
-          <h2>Learn</h2><p>Build your intuition through guided experiments, one concept at a time.</p><span class="intro-path-detail">Start with the foundations <span aria-hidden="true">→</span></span>
+          <h2>Learn</h2><p>Build your intuition through guided experiments, one concept at a time.</p><span class="intro-path-detail">Choose your starting point <span aria-hidden="true">→</span></span>
         </a>
         <a class="intro-path" href="?sandbox" aria-label="Explore">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M6 10h52M6 30h52"/><circle cx="22" cy="10" r="5"/><circle cx="43" cy="30" r="5"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
