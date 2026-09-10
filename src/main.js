@@ -129,7 +129,10 @@ document
     }
     const href = event.currentTarget.href;
     event.preventDefault();
-    await capture("github_clicked", {}, { transport: "sendBeacon" });
+    await Promise.race([
+      capture("github_clicked", {}, { transport: "sendBeacon" }),
+      new Promise((resolve) => setTimeout(resolve, 250)),
+    ]);
     location.assign(href);
   });
 

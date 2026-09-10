@@ -520,19 +520,22 @@ document.querySelectorAll(".adjust-option input").forEach((el) =>
 );
 const trackedParameters = new Set();
 document.querySelector(".workspace").addEventListener("change", (event) => {
-  const control = event.target.closest("input[id], select[id]");
+  const control = event.target.closest(
+    "input[data-param], input[id], select[id]",
+  );
   if (
     !control ||
     control.id === "scenario-select" ||
     control.closest(".adjust-option")
   )
     return;
-  const key = `${selectedScenario.id}:${control.id}`;
+  const name = control.dataset.param || control.id;
+  const key = `${selectedScenario.id}:${name}`;
   if (trackedParameters.has(key)) return;
   trackedParameters.add(key);
   capture("sandbox_parameter_changed", {
     scenario: selectedScenario.id,
-    control: control.id,
+    control: name,
   });
 });
 document.querySelector("#reset").addEventListener("click", () => {

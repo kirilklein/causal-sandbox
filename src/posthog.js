@@ -7,6 +7,7 @@ function getClient() {
   clientPromise ??= import("posthog-js").then(({ default: posthog }) => {
     posthog.init(key, {
       api_host: host,
+      persistence: "localStorage",
       autocapture: false,
       capture_pageview: false,
       capture_pageleave: false,
@@ -42,23 +43,19 @@ function getClient() {
   return clientPromise;
 }
 
-const campaignParameters = [
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-  "utm_term",
-  "utm_content",
-];
+const arrival = new URLSearchParams(location.search);
+const campaign = Object.fromEntries(
+  Object.entries({
+    utm_source: ["linkedin", "github", "youtube", "google", "newsletter"],
+    utm_medium: ["social", "organic", "email", "referral", "video", "cpc"],
+  }).flatMap(([name, allowed]) => {
+    const value = arrival.get(name)?.toLowerCase();
+    return allowed.includes(value) ? [[name, value]] : [];
+  }),
+);
 
 export function capture(event, properties = {}, options) {
   if (!posthogEnabled) return Promise.resolve();
-  const params = new URLSearchParams(location.search);
-  const campaign = Object.fromEntries(
-    campaignParameters.flatMap((name) => {
-      const value = params.get(name);
-      return value ? [[name, value.slice(0, 100)]] : [];
-    }),
-  );
   const eventProperties = {
     ...campaign,
     ...properties,

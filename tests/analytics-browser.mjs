@@ -32,7 +32,7 @@ try {
   const requests = [];
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.route("https://eu.i.posthog.com/**", async (route) => {
+  await page.route("https://analytics.invalid/**", async (route) => {
     requests.push({
       url: route.request().url(),
       body: route.request().postDataBuffer(),
@@ -50,7 +50,9 @@ try {
     route.fulfill({ contentType: "application/javascript", body: "" }),
   );
 
-  await page.goto(`${appUrl}?private=do-not-send`);
+  await page.goto(
+    `${appUrl}?private=do-not-send&utm_source=linkedin&utm_medium=social&utm_term=private&utm_content=private`,
+  );
   await page.waitForTimeout(500);
   assert.equal(
     requests.length,
@@ -58,8 +60,8 @@ try {
     "the introduction should not contact PostHog",
   );
 
-  const eventRequest = page.waitForRequest("https://eu.i.posthog.com/**");
-  await page.goto(`${appUrl}?lesson=randomization&private=do-not-send`);
+  const eventRequest = page.waitForRequest("https://analytics.invalid/**");
+  await page.getByRole("link", { name: "Learn", exact: true }).click();
   await page.waitForFunction(() => document.querySelector("#try-prediction"));
   const request = await eventRequest;
   assert.deepEqual(errors, []);
@@ -69,17 +71,84 @@ try {
   assert.doesNotMatch(body, /private|do-not-send|current_url|referrer/);
   assert.equal(lessonEvent.event, "lesson_started");
   assert.equal(lessonEvent.properties.$geoip_disable, true);
+  assert.equal(lessonEvent.properties.utm_source, "linkedin");
+  assert.equal(lessonEvent.properties.utm_medium, "social");
+  assert.equal(
+    (await page.context().cookies()).filter((cookie) =>
+      cookie.name.startsWith("ph_"),
+    ).length,
+    0,
+  );
+  const startsBefore = requests.length;
+  await page.locator("#restart").click();
+  await page.waitForTimeout(300);
+  assert.equal(
+    requests.length,
+    startsBefore,
+    "restart should not count another start",
+  );
+
+  const advanced = page.waitForRequest("https://analytics.invalid/**");
+  await page.locator("#continue").click();
+  assert.equal(
+    JSON.parse(gunzipSync((await advanced).postDataBuffer()).toString())
+      .batch[0].event,
+    "lesson_advanced",
+  );
+  await page.goto(`${appUrl}?sandbox`);
+  await page.getByRole("tab", { name: "World", exact: true }).click();
+  const sliderEvent = page.waitForRequest("https://analytics.invalid/**");
+  await page.locator('[data-param="direct"]').evaluate((slider) => {
+    slider.value = "3";
+    slider.dispatchEvent(new Event("input", { bubbles: true }));
+    slider.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  const sliderPayload = JSON.parse(
+    gunzipSync((await sliderEvent).postDataBuffer()).toString(),
+  ).batch[0];
+  assert.equal(sliderPayload.event, "sandbox_parameter_changed");
+  assert.equal(sliderPayload.properties.control, "direct");
 
   await page.route("https://github.com/kirilklein/causal-sandbox", (route) =>
     route.fulfill({ contentType: "text/html", body: "GitHub" }),
   );
-  const githubEvent = page.waitForRequest("https://eu.i.posthog.com/**");
+  const githubEvent = page.waitForRequest("https://analytics.invalid/**");
   await page.getByRole("link", { name: "GitHub source" }).click();
   await page.waitForURL("https://github.com/kirilklein/causal-sandbox");
   const githubBody = gunzipSync(
     (await githubEvent).postDataBuffer(),
   ).toString();
   assert.match(githubBody, /github_clicked/);
+  const recapStart = page.waitForRequest("https://analytics.invalid/**");
+  await page.goto(`${appUrl}?lesson=leaving-the-sandbox`);
+  await recapStart;
+  const recapAdvance = page.waitForRequest("https://analytics.invalid/**");
+  await page.locator("#recap-exit").click();
+  const recapPayload = JSON.parse(
+    gunzipSync((await recapAdvance).postDataBuffer()).toString(),
+  ).batch[0];
+  assert.equal(recapPayload.event, "lesson_advanced");
+  assert.equal(recapPayload.properties.lesson, "leaving-the-sandbox");
+
+  const stalled = await browser.newPage();
+  let release;
+  const held = new Promise((resolve) => {
+    release = resolve;
+  });
+  await stalled.route("**/assets/module-*.js", async (route) => {
+    await held;
+    await route.abort();
+  });
+  await stalled.route("https://github.com/kirilklein/causal-sandbox", (route) =>
+    route.fulfill({ contentType: "text/html", body: "GitHub" }),
+  );
+  await stalled.goto(appUrl);
+  await stalled.getByRole("link", { name: "GitHub source" }).click();
+  await stalled.waitForURL("https://github.com/kirilklein/causal-sandbox", {
+    timeout: 5000,
+  });
+  release();
+  await stalled.close();
   console.log("PostHog lazy load and URL privacy checks passed.");
 } finally {
   await browser.close();

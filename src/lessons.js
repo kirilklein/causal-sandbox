@@ -336,7 +336,7 @@ function enterIntroduction(focus = true, animate = false) {
   if (focus) document.querySelector("h1").focus();
 }
 
-function enter(level, focus = true, callback = false) {
+function enter(level, focus = true, callback = false, restart = false) {
   document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
@@ -358,10 +358,11 @@ function enter(level, focus = true, callback = false) {
   revealed = false;
   const lesson = revisiting ? hiddenCallback : lessons[level - 1];
   const next = availableLevels[position + 1];
-  capture("lesson_started", {
-    lesson: lesson.slug,
-    is_revisit: revisiting,
-  });
+  if (!restart)
+    capture("lesson_started", {
+      lesson: lesson.slug,
+      is_revisit: revisiting,
+    });
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
@@ -413,7 +414,7 @@ function enter(level, focus = true, callback = false) {
       `
       }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-exit" class="primary" href="?sandbox">Explore the full sandbox ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters
@@ -504,7 +505,7 @@ function enter(level, focus = true, callback = false) {
     });
   document
     .querySelector("#restart")
-    ?.addEventListener("click", () => enter(level, true, revisiting));
+    ?.addEventListener("click", () => enter(level, true, revisiting, true));
   document
     .querySelector("#revisit-hidden")
     ?.addEventListener("click", () => navigate(6, true));
@@ -512,8 +513,15 @@ function enter(level, focus = true, callback = false) {
     .querySelector("#back")
     ?.addEventListener("click", () => navigate(previous));
   document.querySelector("#continue")?.addEventListener("click", () => {
-    capture("lesson_completed", { lesson: lesson.slug });
+    capture("lesson_advanced", { lesson: lesson.slug });
     navigate(next);
+  });
+  document.querySelector("#recap-exit")?.addEventListener("click", () => {
+    void capture(
+      "lesson_advanced",
+      { lesson: lesson.slug },
+      { transport: "sendBeacon" },
+    );
   });
   if (previousGraph)
     setupGraphComparison((open, view) => {
