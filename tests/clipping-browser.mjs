@@ -53,7 +53,7 @@ try {
   assert.ok(await page.locator("#lesson-menu").isVisible());
   assert.equal(
     await page.locator('.optional-menu a[aria-current="step"]').innerText(),
-    "Clipping and extreme weights\nLimiting extreme weights",
+    "Weight clipping",
   );
   await contents.click();
   const checkValues = async (threshold, selection = 3) => {
@@ -215,7 +215,7 @@ try {
   await page.goForward();
   await page.locator("#lesson-menu-toggle").click();
   await page
-    .getByRole("link", { name: "Clipping and extreme weights", exact: true })
+    .getByRole("link", { name: "Weight clipping", exact: true })
     .click();
   await page.locator('[data-method="ipw"]').waitFor();
   assert.equal(await table(), initial);

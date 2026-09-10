@@ -34,7 +34,7 @@ try {
   assert.ok(await page.locator("#lesson-menu").isVisible());
   assert.equal(
     await page.locator('.optional-menu a[aria-current="step"]').innerText(),
-    "Trimming and the target population\nWho remains after trimming",
+    "Population trimming",
   );
   await contents.click();
   const table = () => page.locator("#groups").innerText();
@@ -242,7 +242,7 @@ try {
   await page.locator("#lesson-menu-toggle").click();
   await page
     .getByRole("link", {
-      name: "Trimming and the target population",
+      name: "Population trimming",
       exact: true,
     })
     .click();

@@ -133,9 +133,3 @@
   color: var(--text-secondary);
   text-decoration: none;
 }
-.optional-menu small {
-  display: block;
-  margin-top: 3px;
-  color: var(--text-secondary);
-  font-size: 12px;
-}

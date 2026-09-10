@@ -33,7 +33,7 @@ try {
   assert.ok(await page.locator("#lesson-menu").isVisible());
   assert.equal(
     await page.locator('.optional-menu a[aria-current="step"]').innerText(),
-    "What timing tells us\nTiming and safe adjustment",
+    "Timing and adjustment",
   );
   await contents.click();
   const selectedWindow = () =>
@@ -312,7 +312,7 @@ try {
     .click();
   await page.locator("#lesson-menu-toggle").click();
   await page
-    .getByRole("link", { name: "What timing tells us", exact: true })
+    .getByRole("link", { name: "Timing and adjustment", exact: true })
     .click();
   await handle.waitFor();
   assert.deepEqual(errors, []);

@@ -47,7 +47,7 @@ try {
   assert.ok(await page.locator("#lesson-menu").isVisible());
   assert.equal(
     await page.locator('.optional-menu a[aria-current="step"]').innerText(),
-    "How strong is a causal arrow?\nWeak effects and cancelling paths",
+    "Causal arrow strength",
   );
   await contents.click();
   assert.equal(await page.locator(".intro a").count(), 2);

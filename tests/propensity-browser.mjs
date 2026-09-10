@@ -151,7 +151,7 @@ try {
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   assert.match(
     await page.locator('.optional-menu [aria-current="step"]').textContent(),
-    /Where do propensity scores come from/,
+    /Propensity scores/,
   );
   await page
     .getByRole("button", { name: "Contents", exact: true })
