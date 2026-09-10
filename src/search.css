@@ -1,0 +1,149 @@
+.search-open,
+.lesson-nav .search-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.search-open svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.search-open:hover,
+.lesson-nav .search-open:hover {
+  color: var(--accent);
+  background: var(--accent-surface);
+}
+body:has(.lesson-nav) header .search-open {
+  display: none;
+}
+.lesson-nav .search-open {
+  position: fixed;
+  top: 88px;
+  left: 142px;
+  z-index: 21;
+}
+.introduction .lesson-nav .search-open {
+  position: static;
+}
+.search-dialog {
+  width: min(620px, calc(100% - 32px));
+  max-height: calc(92dvh - 16px);
+  margin: 8dvh auto auto;
+  padding: 24px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 16px 48px var(--shadow);
+  font-size: 15px;
+  line-height: 1.5;
+  overscroll-behavior: contain;
+}
+.search-dialog::backdrop {
+  background: var(--backdrop);
+}
+.search-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.search-heading h2 {
+  font-family: Manrope, sans-serif;
+  font-size: 24px;
+  margin: 0;
+}
+.search-close {
+  min-height: 44px;
+  border: 0;
+  padding: 8px;
+  background: transparent;
+  text-decoration: underline;
+}
+.search-dialog label {
+  display: block;
+  margin-bottom: 6px;
+}
+.search-dialog input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--page);
+  color: var(--text);
+  font-size: 16px;
+}
+.search-dialog input::placeholder {
+  color: var(--text-secondary);
+}
+.search-status {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 12px 0;
+}
+#search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#search-results li + li {
+  border-top: 1px solid var(--border);
+}
+#search-results a {
+  display: block;
+  padding: 12px 8px;
+  color: var(--text);
+  border-radius: 6px;
+  text-decoration: none;
+}
+#search-results a:hover,
+#search-results a:focus-visible {
+  background: var(--accent-surface);
+}
+#search-results strong,
+.search-result-type {
+  display: block;
+}
+.search-result-type {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+#search-results p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+@media (max-width: 760px) {
+  .lesson-nav .lesson-nav-heading #lesson-menu-toggle,
+  .lesson-nav .search-open {
+    top: 124px;
+  }
+  .lesson-nav .search-open {
+    left: 64px;
+  }
+  .lesson-nav #lesson-menu {
+    top: 176px;
+    max-height: calc(100dvh - 196px);
+  }
+  .search-dialog {
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
+    margin-top: 8px;
+    padding: 16px;
+    border-radius: 12px;
+  }
+}

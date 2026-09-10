@@ -1,8 +1,10 @@
+import { searchButton } from "./search.js";
+
 const root = document.documentElement;
 const systemTheme = matchMedia("(prefers-color-scheme: dark)");
 
 export function themeControl() {
-  return `<label class="theme-control">Theme <select id="theme" aria-label="Color theme">${["system", "light", "dark"].map((value) => `<option value="${value}"${root.dataset.themePreference === value ? " selected" : ""}>${value[0].toUpperCase() + value.slice(1)}</option>`).join("")}</select></label>`;
+  return `${searchButton()}<label class="theme-control">Theme <select id="theme" aria-label="Color theme">${["system", "light", "dark"].map((value) => `<option value="${value}"${root.dataset.themePreference === value ? " selected" : ""}>${value[0].toUpperCase() + value.slice(1)}</option>`).join("")}</select></label>`;
 }
 
 function applyTheme() {
