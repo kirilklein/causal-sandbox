@@ -51,7 +51,7 @@ try {
   );
 
   await page.goto(
-    `${appUrl}?private=do-not-send&utm_source=linkedin&utm_medium=social&utm_term=private&utm_content=private`,
+    `${appUrl}?private=do-not-send&utm_source=linkedin&utm_medium=social&utm_term=private&utm_content=private%40example.com`,
   );
   await page.waitForTimeout(500);
   assert.equal(
@@ -95,6 +95,38 @@ try {
       .batch[0].event,
     "lesson_advanced",
   );
+  for (const [source, content, expectedContent] of [
+    ["reddit", "causal_inference", "causal_inference"],
+    ["reddit", "r_projects", "r_projects"],
+    ["reddit", "r_stats", "r_stats"],
+    ["linkedin", "LinkedIn_Post_2", "linkedin_post_2"],
+    ["linkedin", "a".repeat(64), "a".repeat(64)],
+    ["reddit", "a".repeat(65), undefined],
+    ["reddit", "invalid label", undefined],
+  ]) {
+    await page.goto(
+      `${appUrl}?utm_source=${source}&utm_medium=social&utm_campaign=launch&utm_content=${encodeURIComponent(content)}`,
+    );
+    const postStart = page.waitForRequest("https://analytics.invalid/**");
+    await page.getByRole("link", { name: "Learn", exact: true }).click();
+    const postPayload = JSON.parse(
+      gunzipSync((await postStart).postDataBuffer()).toString(),
+    ).batch[0];
+    assert.equal(postPayload.event, "lesson_started");
+    assert.equal(postPayload.properties.utm_source, source);
+    assert.equal(postPayload.properties.utm_medium, "social");
+    assert.equal(postPayload.properties.utm_content, expectedContent);
+    assert.equal(postPayload.properties.utm_campaign, undefined);
+
+    const postAdvance = page.waitForRequest("https://analytics.invalid/**");
+    await page.locator("#continue").click();
+    const advancePayload = JSON.parse(
+      gunzipSync((await postAdvance).postDataBuffer()).toString(),
+    ).batch[0];
+    assert.equal(advancePayload.event, "lesson_advanced");
+    assert.equal(advancePayload.properties.utm_source, source);
+    assert.equal(advancePayload.properties.utm_content, expectedContent);
+  }
   await page.goto(`${appUrl}?sandbox`);
   await page.getByRole("tab", { name: "World", exact: true }).click();
   const sliderEvent = page.waitForRequest("https://analytics.invalid/**");
