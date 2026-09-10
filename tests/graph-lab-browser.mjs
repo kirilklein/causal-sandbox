@@ -49,6 +49,8 @@ try {
       analyzeGraph(graph, sample.data, []).values[i].toFixed(2),
     ),
   );
+  assert.equal(await page.locator(".starting-dot").count(), 0);
+  assert.equal(await page.locator(".estimate-dot").count(), 4);
   const initial = await values();
   const initialPaths = await page
     .locator(".lab-edge")

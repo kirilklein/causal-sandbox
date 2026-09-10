@@ -23,9 +23,9 @@ export const scenarios = [
     ][i],
     action: [
       "Change A → Y and compare the estimates with the known effect.",
-      "Check C under Adjust for, then compare with the starting estimates.",
+      "Check and uncheck C under Adjust for to compare the estimates.",
       "Change U → A or U → Y. Adjusting for C cannot remove confounding through U.",
-      "Uncheck K under Adjust for and compare with the starting estimates.",
+      "Uncheck and check K under Adjust for to compare the estimates.",
       "Uncheck M under Adjust for, then change the mediator pathway.",
     ][i],
   })),

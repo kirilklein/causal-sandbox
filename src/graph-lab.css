@@ -320,16 +320,6 @@
   height: 40px;
   margin-inline: 7px;
 }
-.graph-lab .starting-dot {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--text-muted);
-  background: var(--surface);
-  border-radius: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
 .graph-lab .estimate-dot {
   top: 50%;
   transform: translate(-50%, -50%);
