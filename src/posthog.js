@@ -46,13 +46,24 @@ function getClient() {
 const arrival = new URLSearchParams(location.search);
 const campaign = Object.fromEntries(
   Object.entries({
-    utm_source: ["linkedin", "github", "youtube", "google", "newsletter"],
+    utm_source: [
+      "linkedin",
+      "github",
+      "youtube",
+      "google",
+      "newsletter",
+      "reddit",
+    ],
     utm_medium: ["social", "organic", "email", "referral", "video", "cpc"],
   }).flatMap(([name, allowed]) => {
     const value = arrival.get(name)?.toLowerCase();
     return allowed.includes(value) ? [[name, value]] : [];
   }),
 );
+const content = arrival.get("utm_content")?.toLowerCase();
+if (content && /^[a-z0-9_-]{1,64}$/.test(content)) {
+  campaign.utm_content = content;
+}
 
 export function capture(event, properties = {}, options) {
   if (!posthogEnabled) return Promise.resolve();

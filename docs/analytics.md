@@ -14,9 +14,16 @@ Feedback submissions are delivered through Formspree without an analytics event.
 Event properties use bounded identifiers such
 as lesson slugs, scenario IDs, and control IDs. They do not include simulation
 data, graph labels, feedback text, email addresses, full URLs, referrers, or
-other free text. Only allowlisted `utm_source` and `utm_medium` values are
-captured on arrival and retained during in-page navigation. Unknown values,
-`utm_campaign`, `utm_term`, and `utm_content` are discarded.
+other free text. Allowlisted `utm_source` and `utm_medium` values and validated
+`utm_content` labels are captured on arrival and retained during in-page
+navigation. Sources include `reddit` and `linkedin`. Content labels accept
+1–64 letters, numbers, underscores, or hyphens and are normalized to lowercase.
+Use labels such as `causal_inference`, `r_projects`, `r_stats`, or
+`linkedin_post_2` to distinguish communities or individual posts without a code
+change. Labels are sent to PostHog: use campaign identifiers, never personal or
+sensitive information. Break down events by `utm_content` to compare posts,
+optionally filtering by `utm_source`. Unknown sources or media, invalid content
+labels, `utm_campaign`, and `utm_term` are discarded.
 
 `lesson_started` counts lesson entries, excluding the Restart button.
 `lesson_advanced` means clicking Continue or the recap's Explore link; it does
