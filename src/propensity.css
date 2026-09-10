@@ -74,6 +74,9 @@
   max-width: 450px;
   margin: auto;
 }
+.ps-preview .ps-patient {
+  cursor: default;
+}
 .ps-page main {
   max-width: 1080px;
 }
