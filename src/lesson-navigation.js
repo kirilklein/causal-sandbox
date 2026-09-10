@@ -16,6 +16,7 @@ export function lessonNavigation({
   revisiting = false,
   currentOptional,
   introduction = false,
+  learningPage,
 } = {}) {
   const progress = readProgress();
   const completed = new Set(progress.completedLessons);
@@ -24,15 +25,23 @@ export function lessonNavigation({
   ).length;
   const hasSavedResults =
     completedCount > 0 || Object.keys(progress.answers).length > 0;
-  const status = introduction
-    ? "Introduction"
-    : currentOptional
-      ? "Optional chapter"
-      : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
+  const status = learningPage
+    ? {
+        learn: "Learning choices",
+        topics: "Topic browser",
+        quiz: "Starting-point quiz",
+      }[learningPage]
+    : introduction
+      ? "Introduction"
+      : currentOptional
+        ? ["propensity-score", "assumptions"].includes(currentOptional)
+          ? "Refresher"
+          : "Advanced lesson"
+        : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
   let number = 0;
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
     <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button>${searchButton()}<span>${status}</span></div>
-    <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a>
+    <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Learning choices</a>
     <div class="lesson-progress"><label for="lesson-progress">${completedCount} of ${coreLessons.length} guided lessons complete</label><progress id="lesson-progress" max="${coreLessons.length}" value="${completedCount}"></progress><span id="lesson-complete-description">Completed</span>${hasSavedResults ? '<button id="reset-progress" type="button">Reset progress</button>' : ""}</div>${coreGroups
       .map(
         ({ title, lessons }) =>
@@ -45,7 +54,7 @@ export function lessonNavigation({
             .join("")}</ol></section>`,
       )
       .join("")}
-    <section class="concept-menu optional-menu" aria-label="Optional chapters"><h2>Optional chapters</h2>
+    <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2>
       ${optionalChapters.map(({ id, menuTitle, href }) => `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`).join("")}
     </section>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
@@ -63,6 +72,20 @@ export function lessonNavigation({
   </nav>`;
 }
 
+function fitLessonMenu() {
+  if (
+    document
+      .querySelector("#lesson-menu-toggle")
+      ?.getAttribute("aria-expanded") !== "true"
+  )
+    return;
+  const menu = document.querySelector("#lesson-menu");
+  menu.style.setProperty(
+    "--menu-available-height",
+    `${Math.max(0, window.innerHeight - menu.getBoundingClientRect().top - 16)}px`,
+  );
+}
+
 export function setupLessonNavigation() {
   const app = document.querySelector("#app");
   const toggle = document.querySelector("#lesson-menu-toggle");
@@ -71,6 +94,7 @@ export function setupLessonNavigation() {
       "aria-expanded",
       String(toggle.getAttribute("aria-expanded") !== "true"),
     );
+    fitLessonMenu();
   });
   document.querySelector("#reset-progress")?.addEventListener("click", () => {
     if (!confirm("Reset your lesson progress and saved answers?")) return;
@@ -79,6 +103,8 @@ export function setupLessonNavigation() {
   });
   if (app.dataset.lessonNavigationSetup) return;
   app.dataset.lessonNavigationSetup = "true";
+  window.addEventListener("resize", fitLessonMenu);
+  window.addEventListener("scroll", fitLessonMenu, { passive: true });
   app.addEventListener("click", (event) => {
     if (!event.target.closest(".lesson-nav"))
       document

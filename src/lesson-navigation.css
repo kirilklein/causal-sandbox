@@ -52,7 +52,7 @@
   top: 44px;
   left: 0;
   width: min(280px, calc(100vw - 32px));
-  max-height: calc(100dvh - 240px);
+  max-height: min(calc(100dvh - 240px), var(--menu-available-height, 100dvh));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 18px;

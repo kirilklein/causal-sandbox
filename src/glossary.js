@@ -100,7 +100,7 @@ export const glossary = {
     detail: [
       "A path is a sequence of connected arrows. A backdoor path enters treatment through an incoming arrow and can create confounding; an appropriate pre-treatment adjustment set blocks such paths without opening new ones. The diagram records causal assumptions and cannot be established from associations alone.",
     ],
-    related: { label: "Open the full causal diagram", href: "?sandbox" },
+    related: { label: "Explore scenarios", href: "?sandbox" },
   },
   timing: {
     title: "Temporal ordering",

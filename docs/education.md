@@ -39,7 +39,8 @@ calculating scores alone adjust the outcome comparison?
 
 The homepage opens an unnumbered Introduction (`?lesson=introduction`) to the
 whole framework. Three entry cards each give one learning promise: **Learn**
-opens randomization, **Explore** opens the scenario sandbox, and **Build** opens
+opens a learning chooser for new visitors and resumes lessons when progress is
+saved, **Explore** opens the scenario sandbox, and **Build** opens
 the graph sandbox. The existing 22-second film is a secondary text button.
 Contents and lesson 1 offer a return to the introduction. Explicit lesson,
 legacy level, and sandbox links retain their destinations and numbering.
@@ -49,6 +50,12 @@ in an overlapping 1.55-second reveal. Keyboard focus cancels the reveal; reduced
 motion shows everything immediately. In-app return navigation does not replay
 it. There is no autoplay or completion gate. Guided-lesson progress is stored
 only in the learner's browser.
+
+The [learning entry and adaptive quiz](adaptive-quiz.md) offer starting from
+scratch, browsing refreshers/advanced topics, or answering up to six questions
+for suggested lessons. The quiz stores only its current attempt in the tab
+session; it does not track lesson completion. Explanations and sources follow
+the assessment, with separate practice that leaves the original answers intact.
 
 The optional [causal assumptions chapter](assumptions.md) makes exchangeability,
 positivity, consistency, and no interference tangible through four separate
@@ -67,7 +74,7 @@ Optional detail covers exchangeability, positivity, consistency, and interferenc
 without treating all assumptions as inevitably violated or empirically testable.
 It has no simulation,
 estimates, or restart button. Back returns to overlap; the forward link opens the
-existing advanced sandbox through `?sandbox` as level 13.
+existing scenario sandbox through `?sandbox` as level 13.
 
 An optional [clipping chapter](clipping-experiment.md) follows Poor overlap at
 `?lesson=clipping`. Compare estimates before and after probability clipping while
@@ -290,7 +297,7 @@ the learner simplifies either model and then both, with a short explanation of
 the current combination beside the estimates. There is no clickthrough sequence.
 Model changes never change the world or sample. Restarts restore both flexible
 models and the initial sample.
-The advanced sandbox retains its separate two-covariate interaction features.
+The scenario sandbox retains its separate two-covariate interaction features.
 
 Tests use 40 independent seeds (100–139), n=2400, for each world and each model
 combination. Mean bias with a correct relevant model is below 0.06 in absolute

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Causal teaching"
+  short_description: "Refine causal questions and learner-facing explanations"
+  default_prompt: "Use $causal-teaching to review this quiz or explanation for causal clarity and unnecessary reading burden."

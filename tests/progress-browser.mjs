@@ -17,10 +17,11 @@ try {
 
   assert.match(
     await page.locator(".intro-path").first().innerText(),
-    /Start with the foundations/,
+    /Choose your starting point/,
   );
 
   await page.locator(".intro-path").first().click();
+  await page.getByRole("link", { name: /Start from scratch/ }).click();
   await page.locator('input[name="prediction"]').first().check();
   await page.locator("#try-prediction").click();
   await page.locator("#continue").click();
@@ -76,7 +77,7 @@ try {
   await page.waitForLoadState();
   assert.match(
     await page.locator(".intro-path").first().innerText(),
-    /Start with the foundations/,
+    /Choose your starting point/,
   );
   assert.equal(
     await page.evaluate(() => localStorage.getItem("causal-sandbox-progress")),
