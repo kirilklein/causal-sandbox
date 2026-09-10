@@ -9,8 +9,9 @@ not initialize PostHog or create its anonymous identifier.
 The integration disables autocapture, automatic page views, page-leave events,
 session replay, user identification, and automatic exception capture. Manual
 events include lesson starts and advances, prediction submissions,
-simulation runs, sandbox changes, graph changes, sharing, GitHub visits, and
-successful feedback submissions. Event properties use bounded identifiers such
+simulation runs, sandbox changes, graph changes, sharing, and GitHub visits.
+Feedback submissions are delivered through Formspree without an analytics event.
+Event properties use bounded identifiers such
 as lesson slugs, scenario IDs, and control IDs. They do not include simulation
 data, graph labels, feedback text, email addresses, full URLs, referrers, or
 other free text. Only allowlisted `utm_source` and `utm_medium` values are
