@@ -1,4 +1,4 @@
-import { capture } from "./posthog.js";
+import { capture } from "./events.js";
 import { lessonGraph } from "./lesson-graph.js";
 import { graphComparison, setupGraphComparison } from "./graph-comparison.js";
 import { themeControl } from "./theme.js";

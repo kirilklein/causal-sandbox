@@ -1,4 +1,4 @@
-import { capture } from "./posthog.js";
+import { capture } from "./events.js";
 import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
 import { setupFeedback } from "./feedback.js";

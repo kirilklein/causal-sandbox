@@ -181,6 +181,32 @@ try {
   });
   release();
   await stalled.close();
+  const blocked = await browser.newPage();
+  const blockedErrors = [];
+  let blockedModules = 0;
+  blocked.on("pageerror", (error) => blockedErrors.push(error.message));
+  await blocked.route("**/assets/posthog-*.js", (route) => {
+    blockedModules += 1;
+    return route.abort("blockedbyclient");
+  });
+  await blocked.goto(appUrl);
+  await blocked.getByRole("link", { name: "Learn", exact: true }).click();
+  await blocked.locator("#try-prediction").waitFor();
+  await blocked.locator("#continue").click();
+  await blocked.waitForFunction(() =>
+    location.search.includes("lesson=confounding"),
+  );
+  await blocked.locator(".site-footer").waitFor();
+  assert.ok(
+    blockedModules > 0,
+    "the analytics module must actually be blocked",
+  );
+  assert.deepEqual(
+    blockedErrors,
+    [],
+    "blocked analytics must not crash the app",
+  );
+  await blocked.close();
   console.log("PostHog lazy load and URL privacy checks passed.");
 } finally {
   await browser.close();
