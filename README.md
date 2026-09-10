@@ -5,20 +5,38 @@
     <img src="docs/brand-mark-light.svg" alt="" width="86" height="72" align="left">
   </picture>
   Causal Sandbox<br>
-  <small>An Interactive Causal Inference Simulator</small>
+  <small>An Interactive Causal Lab</small>
 </h1>
 
-A free, browser-based causal inference simulator and teaching tool. Increase confounding, hide a confounder, condition on a collider, or break positivity, and watch regression adjustment, propensity score IPW, AIPW, and TMLE estimates succeed or fail against the known true effect. Start with guided lessons, then explore the scenario sandbox. Nothing to install.
+Learn causal inference through experiments. Free, in your browser, with nothing to install.
 
 [![Two possible futures reveal the causal effect that observed data cannot show directly](docs/intro.gif)](https://kirilklein.github.io/causal-sandbox/)
 
-## Guided lessons
+**[Learn](https://kirilklein.github.io/causal-sandbox/?lesson=learn) · [Explore scenarios](https://kirilklein.github.io/causal-sandbox/?sandbox) · [Build your own graph](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab)**
 
-**[Start the lessons →](https://kirilklein.github.io/causal-sandbox/?lesson=randomization)**
+## [Learn →](https://kirilklein.github.io/causal-sandbox/?lesson=learn)
 
-Start with randomization and introduce one concept at a time: confounding, adjustment, causal roles, and model assumptions. Change a setting and compare the estimate with the known effect.
+Build intuition through guided experiments, one concept at a time.
 
-[![Guided lesson: confounding moves the unadjusted estimate away from the known effect](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=confounding)
+[![A guided mediator lesson with a causal graph, an adjustment checkbox, and the estimated and true total effects](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=mediator)
+
+## [Explore scenarios →](https://kirilklein.github.io/causal-sandbox/?sandbox)
+
+Change a simulated world and compare estimates with the known effect.
+
+[![A scenario's causal world beside unadjusted, regression, IPW, and AIPW estimates compared with the true effect](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox&scenario=observed)
+
+## [Build your own graph →](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab)
+
+Draw causal relationships and explore what your adjustment choices imply.
+
+[![An editable causal graph with a pretreatment collider, arrow strengths, and controls for drawing and arranging arrows](docs/graph-lab.png)](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab&preset=pkr)
+
+## How it works
+
+The simulated world gives us a known causal effect. Change the world or the analysis to see when an estimate recovers that effect and when it fails. Lessons cover confounding, adjustment, regression, IPW, AIPW, TMLE, and their assumptions.
+
+All simulations run in your browser. See the [methodology](https://kirilklein.github.io/causal-sandbox/methodology/) for models and limitations, the [curriculum](docs/education.md) for the learning sequence, and the [analytics notes](docs/analytics.md) for visit and interaction tracking.
 
 ## Interactive concept guides
 
@@ -31,37 +49,14 @@ Start with randomization and introduce one concept at a time: confounding, adjus
 - [Targeted minimum loss-based estimation](https://kirilklein.github.io/causal-sandbox/tmle/)
 - [Propensity-score clipping and trimming](https://kirilklein.github.io/causal-sandbox/propensity-score-clipping-trimming/)
 
-Each guide opens a preconfigured experiment, gives specific actions to try, and explains the result against the known true effect.
+Each guide pairs an experiment with actions to try and an explanation of the result.
 
-## Scenario sandbox
+## References
 
-**[Explore scenarios →](https://kirilklein.github.io/causal-sandbox/?sandbox)**
+For deeper theoretical coverage:
 
-Choose a scenario, then customize its world and analysis in separate tabs. Each scenario restores a complete starting setup with two baseline covariates. “Guided lessons” in the header returns to the tutorial.
-
-[![Scenario sandbox: observed confounding and four estimates compared with the known effect](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox&scenario=observed)
-
-- **Edit the causal world.** Change relationships among treatment, outcome, observed covariates, hidden confounding, mediation, and collider bias.
-- **Play analyst.** Choose adjustment variables and models, then compare unadjusted, regression, IPW, and AIPW estimates with the known true effect.
-- **Explore different scenarios.** Experiment with randomization, confounding, inappropriate adjustment, model misspecification, and poor overlap. Restart a scenario or share its setup with a link.
-
-The true effect is always known, so every estimate can be compared with it. All simulations run in the browser. The static site uses GoatCounter for visit counts and manual PostHog events to measure meaningful learning interactions. See the [analytics notes](docs/analytics.md).
-
-## Graph sandbox
-
-**[Build a graph →](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab)**
-
-Start from a familiar causal graph or a blank canvas. Add, remove, and rearrange variables and arrows, then choose an adjustment set and compare each estimate with the known total effect.
-
-[![Graph sandbox: an editable pretreatment-collider graph beside estimates compared with the known effect](docs/graph-lab.png)](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab&preset=pkr)
-
-[Curriculum and learner walkthrough](docs/education.md).
-
-## For developers
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup and development. The
-[methodology notes](https://kirilklein.github.io/causal-sandbox/methodology/)
-describe the causal world, estimators, and important limitations.
+- Hernán and Robins, [_Causal Inference: What If_](https://miguelhernan.org/whatifbook).
+- van der Laan and Rose, _Targeted Learning_ (Springer, 2011).
 
 ## Acknowledgments
 
@@ -71,9 +66,7 @@ The treatment of TMLE draws on Katherine Hoffman’s [An Illustrated Guide to TM
 
 ## Contributing
 
-Ideas, corrections, and contributions are welcome. Open an [issue](https://github.com/kirilklein/causal-sandbox/issues/new/choose) to report a bug, correct an explanation, or propose a lesson, scenario, or estimator. For anything beyond a small fix, open an issue first so we can agree on scope before you write code. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and what a good PR looks like.
-
-To the theorists: apologies in advance. Here we lead with intuition, starting from simple settings. For a full and rigorous theoretical coverage, see van der Laan and Rose, _Targeted Learning_ (Springer, 2011), and Hernán and Robins, [_Causal Inference: What If_](https://miguelhernan.org/whatifbook).
+Ideas and corrections are welcome. [Open an issue](https://github.com/kirilklein/causal-sandbox/issues/new/choose) to report a bug or suggest a lesson, scenario, or estimator. For anything beyond a small fix, open an issue first to agree on scope. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and development.
 
 ## License
 
