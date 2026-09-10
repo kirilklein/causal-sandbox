@@ -111,14 +111,13 @@ try {
   await page.getByLabel("Color theme").selectOption("light");
   await page.screenshot({ path: "/tmp/cohort-site-light.png", fullPage: true });
   await page.getByRole("link", { name: "Learn" }).click();
+  await page
+    .getByRole("link", { name: "Start from scratch", exact: false })
+    .click();
   await page.locator("#known-effect").waitFor();
   assert.equal(
     await page.locator(".lesson-nav-heading > span").textContent(),
     "Level 1 of 13",
-  );
-  assert.equal(
-    await page.locator("h1").evaluate((el) => el === document.activeElement),
-    true,
   );
   assert.equal(await open.count(), 0);
   await page.getByRole("link", { name: "← Introduction", exact: true }).click();

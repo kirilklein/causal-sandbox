@@ -27,15 +27,6 @@
 body:has(.lesson-nav) header .search-open {
   display: none;
 }
-.lesson-nav .search-open {
-  position: fixed;
-  top: 88px;
-  left: 142px;
-  z-index: 21;
-}
-.introduction .lesson-nav .search-open {
-  position: static;
-}
 .search-dialog {
   width: min(620px, calc(100% - 32px));
   max-height: calc(92dvh - 16px);
@@ -128,17 +119,6 @@ body:has(.lesson-nav) header .search-open {
   margin: 4px 0 0;
 }
 @media (max-width: 760px) {
-  .lesson-nav .lesson-nav-heading #lesson-menu-toggle,
-  .lesson-nav .search-open {
-    top: 124px;
-  }
-  .lesson-nav .search-open {
-    left: 64px;
-  }
-  .lesson-nav #lesson-menu {
-    top: 176px;
-    max-height: calc(100dvh - 196px);
-  }
   .search-dialog {
     width: calc(100% - 16px);
     max-height: calc(100dvh - 16px);

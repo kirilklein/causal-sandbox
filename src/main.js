@@ -22,6 +22,11 @@ if (page === "glossary") {
     await import("./graph-lab.js");
   } else if (params.has("sandbox")) {
     await import("./sandbox.js");
+  } else if (params.has("quiz") || lesson === "quiz") {
+    await import("./quiz.js");
+  } else if (["learn", "topics"].includes(lesson)) {
+    const { renderLearning } = await import("./learning.js");
+    renderLearning(lesson);
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
   } else if (lesson === "propensity-score") {

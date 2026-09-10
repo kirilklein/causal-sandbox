@@ -16,7 +16,9 @@ as lesson slugs, scenario IDs, and control IDs. They do not include simulation
 data, graph labels, feedback text, email addresses, full URLs, referrers, or
 other free text. Allowlisted `utm_source` and `utm_medium` values and validated
 `utm_content` labels are captured on arrival and retained during in-page
-navigation. Sources include `reddit` and `linkedin`. Content labels accept
+navigation. Learning-chooser and topic links also carry these allowed fields
+across page loads; they do not copy other arrival parameters. Sources include
+`reddit` and `linkedin`. Content labels accept
 1–64 letters, numbers, underscores, or hyphens and are normalized to lowercase.
 Use labels such as `causal_inference`, `r_projects`, `r_stats`, or
 `linkedin_post_2` to distinguish communities or individual posts without a code

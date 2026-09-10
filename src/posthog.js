@@ -65,6 +65,14 @@ if (content && /^[a-z0-9_-]{1,64}$/.test(content)) {
   campaign.utm_content = content;
 }
 
+export function campaignHref(href) {
+  const url = new URL(href, location.href);
+  for (const [name, value] of Object.entries(campaign)) {
+    url.searchParams.set(name, value);
+  }
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export function capture(event, properties = {}, options) {
   if (!posthogEnabled) return Promise.resolve();
   const eventProperties = {
