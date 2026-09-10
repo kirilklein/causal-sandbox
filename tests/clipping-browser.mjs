@@ -185,10 +185,7 @@ try {
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 1100 });
       assert.ok(await contents.isVisible());
-      assert.equal(
-        await page.locator(".contents-label").isVisible(),
-        width > 760,
-      );
+      assert.equal(await page.locator(".contents-label").isVisible(), true);
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
