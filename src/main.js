@@ -1,3 +1,4 @@
+import { capture } from "./posthog.js";
 import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
 import { setupFeedback } from "./feedback.js";
@@ -98,7 +99,7 @@ footer.className = "site-footer";
 footer.innerHTML = `
   <div class="site-footer-links">
     <span class="site-author">Created by Kiril Klein, PhD</span>
-    <a href="https://github.com/kirilklein/causal-sandbox">GitHub source</a>
+    <a id="github-source" href="https://github.com/kirilklein/causal-sandbox">GitHub source</a>
     <a href="${import.meta.env.BASE_URL}methodology/">Methodology notes</a>
     <span id="site-visits" hidden></span>
   </div>
@@ -113,6 +114,24 @@ footer.innerHTML = `
   </details>`;
 document.body.append(footer);
 setupFeedback(footer);
+document
+  .querySelector("#github-source")
+  .addEventListener("click", async (event) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      void capture("github_clicked");
+      return;
+    }
+    const href = event.currentTarget.href;
+    event.preventDefault();
+    await capture("github_clicked", {}, { transport: "sendBeacon" });
+    location.assign(href);
+  });
 
 async function showSiteVisits() {
   const tracking = document.querySelector("script[data-goatcounter]");
