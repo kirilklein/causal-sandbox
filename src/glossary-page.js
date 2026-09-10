@@ -31,3 +31,6 @@ document.querySelector("#glossary-entries").innerHTML = terms
       </section>`,
   )
   .join("");
+
+// Entries are rendered after the browser first tries to follow the fragment.
+document.getElementById(location.hash.slice(1))?.scrollIntoView();
