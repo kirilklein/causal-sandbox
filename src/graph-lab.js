@@ -295,6 +295,14 @@ function reset(id) {
   preset = graphPreset(id);
   graph = structuredClone(preset.graph);
   arrangeGraph();
+  if (preset.id === "pkr")
+    nodePositions = {
+      v1: { x: 0.15, y: 0 },
+      v2: { x: 0.85, y: 0 },
+      v3: { x: 0.5, y: 0.4 },
+      A: { x: 0.15, y: 1 },
+      Y: { x: 0.85, y: 1 },
+    };
   setConnectMode(false);
   adjustment = [];
   nextId =
