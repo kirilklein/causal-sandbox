@@ -1,4 +1,4 @@
-import { capture } from "./posthog.js";
+import { capture } from "./events.js";
 import { effectComparison } from "./effect-comparison.js";
 import { arrowStrength } from "./arrow-strength.js";
 import { sandboxOverlap } from "./sandbox-overlap.js";

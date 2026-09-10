@@ -19,7 +19,7 @@
   position: absolute;
   top: 52px;
   left: 0;
-  max-height: min(65dvh, 600px);
+  max-height: min(65dvh, 600px, var(--menu-available-height, 100dvh));
 }
 .learning-entry > h1 {
   max-width: 800px;

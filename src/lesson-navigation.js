@@ -72,6 +72,20 @@ export function lessonNavigation({
   </nav>`;
 }
 
+function fitLessonMenu() {
+  if (
+    document
+      .querySelector("#lesson-menu-toggle")
+      ?.getAttribute("aria-expanded") !== "true"
+  )
+    return;
+  const menu = document.querySelector("#lesson-menu");
+  menu.style.setProperty(
+    "--menu-available-height",
+    `${Math.max(0, window.innerHeight - menu.getBoundingClientRect().top - 16)}px`,
+  );
+}
+
 export function setupLessonNavigation() {
   const app = document.querySelector("#app");
   const toggle = document.querySelector("#lesson-menu-toggle");
@@ -80,6 +94,7 @@ export function setupLessonNavigation() {
       "aria-expanded",
       String(toggle.getAttribute("aria-expanded") !== "true"),
     );
+    fitLessonMenu();
   });
   document.querySelector("#reset-progress")?.addEventListener("click", () => {
     if (!confirm("Reset your lesson progress and saved answers?")) return;
@@ -88,6 +103,8 @@ export function setupLessonNavigation() {
   });
   if (app.dataset.lessonNavigationSetup) return;
   app.dataset.lessonNavigationSetup = "true";
+  window.addEventListener("resize", fitLessonMenu);
+  window.addEventListener("scroll", fitLessonMenu, { passive: true });
   app.addEventListener("click", (event) => {
     if (!event.target.closest(".lesson-nav"))
       document

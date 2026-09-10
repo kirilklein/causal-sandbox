@@ -6,7 +6,7 @@ import {
   setupLessonNavigation,
 } from "./lesson-navigation.js";
 import { themeControl } from "./theme.js";
-import { campaignHref } from "./posthog.js";
+import { campaignHref } from "./events.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import "./learning.css";

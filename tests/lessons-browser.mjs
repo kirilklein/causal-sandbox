@@ -1376,7 +1376,10 @@ try {
     );
 
     assert.ok(panelBounds.x + panelBounds.width <= width);
-    assert.ok(panelBounds.y + panelBounds.height <= 900);
+    assert.ok(
+      panelBounds.y + panelBounds.height <= 900,
+      `Contents overflow at ${width}px: ${JSON.stringify(panelBounds)}`,
+    );
 
     assert.deepEqual(await page.locator("h1").boundingBox(), headingPosition);
     assert.deepEqual(

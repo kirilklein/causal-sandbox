@@ -1,4 +1,4 @@
-import { capture } from "./posthog.js";
+import { capture } from "./events.js";
 import "./graph-lab.css";
 import { automaticPositions, edgeGeometry } from "./graph-layout.js";
 import icon from "./brand.svg?raw";
