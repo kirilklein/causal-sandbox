@@ -1245,6 +1245,7 @@ try {
   assert.equal(await page.locator("#lesson-menu-toggle").isVisible(), true);
   assert.equal(await page.locator("#lesson-menu").isVisible(), false);
   const beforeContents = await result();
+  await page.locator("#lesson-menu-toggle").scrollIntoViewIfNeeded();
   const headingBeforeMenu = await page.locator("h1").boundingBox();
   const experimentBeforeMenu = await page.locator(".experiment").boundingBox();
   await page.locator("#lesson-menu-toggle").click();
@@ -1343,10 +1344,7 @@ try {
       await page.locator("#lesson-menu-toggle").getAttribute("aria-label"),
       "Contents",
     );
-    assert.equal(
-      await page.locator(".contents-label").isVisible(),
-      width > 760,
-    );
+    assert.equal(await page.locator(".contents-label").isVisible(), true);
     assert.equal(await page.locator("#lesson-menu").isVisible(), false);
     await page.locator("#lesson-menu-toggle").scrollIntoViewIfNeeded();
     const headingPosition = await page.locator("h1").boundingBox();
@@ -1354,15 +1352,16 @@ try {
     await page.locator("#lesson-menu-toggle").click();
     assert.equal(await page.locator("#lesson-menu").isVisible(), true);
     const panelBounds = await page.locator("#lesson-menu").boundingBox();
-    assert.equal(panelBounds.x, 16);
+    assert.equal(panelBounds.x, headingPosition.x);
     const toggleBounds = await page
       .locator("#lesson-menu-toggle")
       .boundingBox();
-    if (width <= 760) assert.equal(toggleBounds.width, 44);
     assert.equal(toggleBounds.x, panelBounds.x);
     assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
-    if (width >= 1050)
-      assert.ok(toggleBounds.x + toggleBounds.width < headingPosition.x);
+    assert.equal(
+      (await page.locator(".brand").boundingBox()).x,
+      headingPosition.x,
+    );
 
     assert.ok(panelBounds.x + panelBounds.width <= width);
     assert.ok(panelBounds.y + panelBounds.height <= 900);

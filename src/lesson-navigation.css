@@ -1,4 +1,5 @@
 .lesson-nav {
+  position: relative;
   margin-bottom: 28px;
   font-size: 13px;
 }
@@ -11,15 +12,15 @@
   color: var(--text-secondary);
 }
 .lesson-nav #lesson-menu-toggle {
-  position: fixed;
-  top: 88px;
-  left: 16px;
+  position: relative;
+  order: -1;
+  margin-right: auto;
   z-index: 21;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   border: 0;
-  padding: 10px 12px;
+  padding: 10px 0;
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
@@ -37,16 +38,6 @@
   transform: rotate(180deg);
   transform-origin: 12px 10px;
 }
-@media (max-width: 760px) {
-  .lesson-nav #lesson-menu-toggle {
-    width: 44px;
-    justify-content: center;
-    padding-inline: 0;
-  }
-  #lesson-menu-toggle .contents-label {
-    display: none;
-  }
-}
 .lesson-nav #lesson-menu-toggle:hover,
 .lesson-nav #lesson-menu-toggle[aria-expanded="true"] {
   color: var(--accent);
@@ -56,12 +47,12 @@
   display: none;
 }
 #lesson-menu {
-  position: fixed;
+  position: absolute;
   z-index: 20;
-  top: 140px;
-  left: 16px;
+  top: 44px;
+  left: 0;
   width: min(280px, calc(100vw - 32px));
-  max-height: calc(100dvh - 160px);
+  max-height: calc(100dvh - 240px);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 18px;
