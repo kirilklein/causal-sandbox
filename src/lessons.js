@@ -20,11 +20,18 @@ import {
   optionalChapters,
   setupLessonNavigation,
 } from "./lesson-navigation.js";
+import {
+  readProgress,
+  recordLessonCompleted,
+  recordLessonStarted,
+  recordPredictionAnswer,
+} from "./progress.js";
 import "./tmle-lesson.css";
 
 const lessons = [
   {
     prediction: {
+      id: "randomization-effect",
       question:
         "With random assignment, will the observed outcome difference equal the true effect?",
       choices: [
@@ -124,6 +131,7 @@ const lessons = [
       ],
     },
     prediction: {
+      id: "collider-adjustment",
       question:
         "We already adjust for C. What happens if we also adjust for the follow-up score?",
       choices: ["Removes bias", "Can introduce bias", "Has no effect"],
@@ -153,6 +161,7 @@ const lessons = [
 ];
 lessons[9] = {
   prediction: {
+    id: "overlap-weight-concentration",
     question:
       "As treatment becomes nearly determined by risk score, how will IPW distribute weight?",
     choices: ["More evenly", "More concentrated", "Unchanged"],
@@ -297,6 +306,14 @@ enterFromUrl(false);
 function enterIntroduction(focus = true, animate = false) {
   state = null;
   document.querySelector("#intro-film video")?.pause();
+  const progress = readProgress();
+  const completed = new Set(progress.completedLessons);
+  const resumeLesson =
+    coreLessons.find(([, slug]) => slug === progress.currentLesson) ||
+    coreLessons.find(([, slug]) => !completed.has(slug)) ||
+    coreLessons[0];
+  const hasProgress =
+    progress.completedLessons.length > 0 || progress.currentLesson;
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning introduction${animate ? " introduction-arriving" : ""}">
@@ -316,9 +333,9 @@ function enterIntroduction(focus = true, animate = false) {
         </svg>
       </section>
       <nav class="intro-paths" aria-label="Choose your way in">
-        <a class="intro-path" href="${lessonUrl(1)}" data-level="1" aria-label="Learn">
+        <a class="intro-path" href="${lessonHref(resumeLesson)}" data-level="${resumeLesson[0]}" aria-label="Learn">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M8 30h16V20h16V10h16"/><circle cx="8" cy="30" r="3"/><circle cx="56" cy="10" r="3"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
-          <h2>Learn</h2><p>Build your intuition through guided experiments, one concept at a time.</p><span class="intro-path-detail">Start with the foundations <span aria-hidden="true">→</span></span>
+          <h2>Learn</h2><p>Build your intuition through guided experiments, one concept at a time.</p><span class="intro-path-detail">${hasProgress ? `Continue with ${resumeLesson[2]}` : "Start with the foundations"} <span aria-hidden="true">→</span></span>
         </a>
         <a class="intro-path" href="?sandbox" aria-label="Explore">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M6 10h52M6 30h52"/><circle cx="22" cy="10" r="5"/><circle cx="43" cy="30" r="5"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>
@@ -363,6 +380,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       lesson: lesson.slug,
       is_revisit: revisiting,
     });
+  if (!revisiting) recordLessonStarted(lesson.slug);
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Open full sandbox ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
@@ -513,10 +531,12 @@ function enter(level, focus = true, callback = false, restart = false) {
     .querySelector("#back")
     ?.addEventListener("click", () => navigate(previous));
   document.querySelector("#continue")?.addEventListener("click", () => {
+    recordLessonCompleted(lesson.slug);
     capture("lesson_advanced", { lesson: lesson.slug });
     navigate(next);
   });
   document.querySelector("#recap-exit")?.addEventListener("click", () => {
+    recordLessonCompleted(lesson.slug);
     void capture(
       "lesson_advanced",
       { lesson: lesson.slug },
@@ -585,6 +605,12 @@ function setupPrediction(prediction) {
       element.hidden = false;
     });
     const correct = Number(selected.value) === prediction.correctChoice;
+    recordPredictionAnswer(
+      prediction.id,
+      lessons[state.level - 1].slug,
+      Number(selected.value),
+      correct,
+    );
     capture("lesson_prediction_submitted", {
       lesson: lessons[state.level - 1].slug,
       selected_choice_index: Number(selected.value),
