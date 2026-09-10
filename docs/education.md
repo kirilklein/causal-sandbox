@@ -583,3 +583,13 @@ on titles, aliases, keywords, and summaries, with up to eight results displayed.
 entries. When adding a lesson, include its search description and keywords.
 `tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
 themes, and mobile layouts.
+
+## Final course assessment
+
+The recap now offers **Take the final quiz**, with scenario exploration still
+available beside it. [The final quiz](final-quiz.md) at `?lesson=final-quiz`
+contains eight application questions for learners finishing the core course.
+It uses first-answer scoring, explanatory feedback, and separate practice retries;
+no optional chapters are required. Contents links directly to it without changing
+core lesson numbers. The entry quiz remains at `?lesson=quiz` and retains its
+separate saved attempt. Neither assessment gates the course or sandboxes.

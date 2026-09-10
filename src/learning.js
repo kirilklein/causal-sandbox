@@ -32,7 +32,7 @@ export function topicLesson(slug) {
 export function learningFrame(title, current, body) {
   document.title = `${title} — Causal Sandbox`;
   document.querySelector("#app").innerHTML =
-    `<header class="lesson-header"><a class="brand" href="${learningUrl("introduction")}">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
+    `<header class="lesson-header learning-entry-header"><a class="brand" href="${learningUrl("introduction")}">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning learning-entry">${lessonNavigation({ learningPage: current })}
     <p class="eyebrow">YOUR LEARNING PATH</p><h1 tabindex="-1">${title}</h1>${body}</main>`;
   setupLessonNavigation();
