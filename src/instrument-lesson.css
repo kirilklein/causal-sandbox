@@ -16,6 +16,9 @@
   padding: 24px;
 }
 .instrument-page header {
+  max-width: 912px;
+  width: calc(100% - 48px);
+  padding-inline: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -204,6 +207,10 @@
   .instrument-page header,
   .instrument-page main {
     padding: 16px;
+  }
+  .instrument-page header {
+    width: calc(100% - 32px);
+    padding-inline: 0;
   }
   .instrument-page .panel {
     padding: 16px;

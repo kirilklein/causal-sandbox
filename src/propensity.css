@@ -80,6 +80,9 @@
 .ps-page main {
   max-width: 1080px;
 }
+.ps-page header {
+  max-width: 1032px;
+}
 .ps-page .ps-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;

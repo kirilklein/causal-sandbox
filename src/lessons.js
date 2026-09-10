@@ -317,7 +317,7 @@ function enterIntroduction(focus = true, animate = false) {
   const hasProgress =
     progress.completedLessons.length > 0 || progress.currentLesson;
   app.innerHTML = `
-    <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
+    <header class="lesson-header introduction-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning introduction${animate ? " introduction-arriving" : ""}">
       ${lessonNavigation({ introduction: true })}
       <section class="intro-hero" aria-labelledby="intro-title">

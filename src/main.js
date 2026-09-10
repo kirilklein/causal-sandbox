@@ -2,8 +2,10 @@ import { capture } from "./posthog.js";
 import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
 import { setupFeedback } from "./feedback.js";
+import { setupSearch } from "./search.js";
 
 setupTheme();
+setupSearch();
 
 const params = new URLSearchParams(location.search);
 const lesson = params.get("lesson") || document.body.dataset.lesson;

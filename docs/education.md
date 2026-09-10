@@ -569,3 +569,17 @@ Controls and explanations become available after reveal. Correct predictions rec
 a brief acknowledgment; other choices receive a gentle correction. Feedback records the
 initial comparison and stays fixed during further exploration. Restart and lesson
 re-entry reset the checkpoint; nothing is stored across visits.
+
+## Topic search
+
+Search beside Contents finds lessons, glossary terms, guides, and sandboxes by
+name, abbreviation, related phrase, or word prefix. Reference pages and sandboxes
+place Search in the header. Results link to existing destinations; opening search
+does not change the current experiment or lesson progress. Matching runs locally
+on titles, aliases, keywords, and summaries, with up to eight results displayed.
+
+`src/lesson-catalog.js` supplies shared lesson titles and destinations;
+`src/search-index.js` adds search descriptions and keywords and reuses glossary
+entries. When adding a lesson, include its search description and keywords.
+`tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
+themes, and mobile layouts.
