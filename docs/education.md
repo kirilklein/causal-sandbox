@@ -39,8 +39,8 @@ calculating scores alone adjust the outcome comparison?
 
 The homepage opens an unnumbered Introduction (`?lesson=introduction`) to the
 whole framework. Three entry cards each give one learning promise: **Learn**
-opens randomization, **Explore** opens the full sandbox, and **Build** opens
-the graph lab. The existing 22-second film is a secondary text button.
+opens randomization, **Explore** opens the scenario sandbox, and **Build** opens
+the graph sandbox. The existing 22-second film is a secondary text button.
 Contents and lesson 1 offer a return to the introduction. Explicit lesson,
 legacy level, and sandbox links retain their destinations and numbering.
 
@@ -108,7 +108,7 @@ Optional chapters with short descriptions; clipping appears only once.
 Timing returns to hidden confounding or resumes at model misspecification. Its
 instrument link names double robustness as a prerequisite. Both instrument
 sections offer a return to double robustness and a route onward to TMLE.
-Clipping leads to trimming; both offer a return to overlap or entry to the full
+Clipping leads to trimming; both offer a return to overlap or entry to the scenario
 sandbox. The optional AIPW revisit remains a separate short reinforcement exercise.
 
 Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
@@ -174,7 +174,7 @@ future work.
    implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 11.
-4. **Full sandbox (level 13):** available at any time and after the recap. Entry
+4. **Scenario sandbox (level 13):** available at any time and after the recap. Entry
    starts a separate experiment and introduces its two measured covariates and
    their interaction. Lesson settings are not transferred into this world.
 
@@ -482,7 +482,7 @@ support a tendency across samples, not monotonic divergence in every sample.
 Browser checks cover the slider by keyboard and touch, fixed graph and result
 positions, explanation invariance, redraw, restart, direct/contents entry,
 history, sandbox isolation, and phone layout. Learner comprehension remains
-untested. The full sandbox link continues to start a separate experiment.
+untested. The scenario sandbox link continues to start a separate experiment.
 
 ## Poor-overlap contract
 

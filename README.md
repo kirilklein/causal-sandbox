@@ -8,7 +8,7 @@
   <small>An Interactive Causal Inference Simulator</small>
 </h1>
 
-A free, browser-based causal inference simulator and teaching tool. Increase confounding, hide a confounder, condition on a collider, or break positivity, and watch regression adjustment, propensity score IPW, AIPW, and TMLE estimates succeed or fail against the known true effect. Start with guided lessons, then explore the full sandbox. Nothing to install.
+A free, browser-based causal inference simulator and teaching tool. Increase confounding, hide a confounder, condition on a collider, or break positivity, and watch regression adjustment, propensity score IPW, AIPW, and TMLE estimates succeed or fail against the known true effect. Start with guided lessons, then explore the scenario sandbox. Nothing to install.
 
 [![Two possible futures reveal the causal effect that observed data cannot show directly](docs/intro.gif)](https://kirilklein.github.io/causal-sandbox/)
 
@@ -33,13 +33,13 @@ Start with randomization and introduce one concept at a time: confounding, adjus
 
 Each guide opens a preconfigured experiment, gives specific actions to try, and explains the result against the known true effect.
 
-## Full sandbox
+## Scenario sandbox
 
-**[Explore the full sandbox →](https://kirilklein.github.io/causal-sandbox/?sandbox)**
+**[Explore scenarios →](https://kirilklein.github.io/causal-sandbox/?sandbox)**
 
 Choose a scenario, then customize its world and analysis in separate tabs. Each scenario restores a complete starting setup with two baseline covariates. “Guided lessons” in the header returns to the tutorial.
 
-[![Full sandbox: observed confounding and four estimates compared with the known effect](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox&scenario=observed)
+[![Scenario sandbox: observed confounding and four estimates compared with the known effect](docs/screenshot.png)](https://kirilklein.github.io/causal-sandbox/?sandbox&scenario=observed)
 
 - **Edit the causal world.** Change relationships among treatment, outcome, observed covariates, hidden confounding, mediation, and collider bias.
 - **Play analyst.** Choose adjustment variables and models, then compare unadjusted, regression, IPW, and AIPW estimates with the known true effect.
@@ -47,13 +47,13 @@ Choose a scenario, then customize its world and analysis in separate tabs. Each 
 
 The true effect is always known, so every estimate can be compared with it. All simulations run in the browser. The static site uses GoatCounter for visit counts and manual PostHog events to measure meaningful learning interactions. See the [analytics notes](docs/analytics.md).
 
-## Graph lab
+## Graph sandbox
 
 **[Build a graph →](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab)**
 
 Start from a familiar causal graph or a blank canvas. Add, remove, and rearrange variables and arrows, then choose an adjustment set and compare each estimate with the known total effect.
 
-[![Graph lab: an editable pretreatment-collider graph beside estimates compared with the known effect](docs/graph-lab.png)](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab&preset=pkr)
+[![Graph sandbox: an editable pretreatment-collider graph beside estimates compared with the known effect](docs/graph-lab.png)](https://kirilklein.github.io/causal-sandbox/?sandbox=graph-lab&preset=pkr)
 
 [Curriculum and learner walkthrough](docs/education.md).
 

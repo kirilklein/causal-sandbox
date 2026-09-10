@@ -269,7 +269,7 @@ try {
   const sandboxValues = await page.locator("#effects").innerText();
   await page.locator("#open-graph-lab").click();
   await page
-    .getByRole("link", { name: "Return to full sandbox", exact: true })
+    .getByRole("link", { name: "Explore scenarios", exact: true })
     .click();
   assert.equal(await page.locator('[data-param="direct"]').inputValue(), "2.4");
   assert.equal(
@@ -286,7 +286,7 @@ try {
   await page.locator("#overlap-strength").fill("2");
   await page.locator("#open-graph-lab").click();
   await page
-    .getByRole("link", { name: "Return to full sandbox", exact: true })
+    .getByRole("link", { name: "Explore scenarios", exact: true })
     .click();
   assert.equal(await page.locator("#scenario-select").inputValue(), "overlap");
   assert.equal(await page.locator("#overlap-strength").inputValue(), "2");
@@ -320,14 +320,14 @@ try {
   await page.locator("#baseline-explanation summary").click();
   await page
     .getByRole("link", {
-      name: "Explore P–K–R in the Graph lab →",
+      name: "Explore P–K–R in the Graph sandbox →",
       exact: true,
     })
     .click();
   assert.equal(await page.locator("#lab-preset").inputValue(), "pkr");
   assert.deepEqual(errors, []);
   console.log(
-    "Graph lab browser checks passed: custom editing, estimates, invalid graphs, navigation, keyboard, themes and phone layout.",
+    "Graph sandbox browser checks passed: custom editing, estimates, invalid graphs, navigation, keyboard, themes and phone layout.",
   );
 } finally {
   await browser.close();

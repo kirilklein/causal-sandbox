@@ -117,7 +117,7 @@ function renderTopic(focus = false) {
     <section class="panel" aria-label="${term.title} experiment">${experiments[topic]}</section>
     <details><summary>The assumption in formal terms</summary><p>${term.formal}</p><a href="glossary/#${topic}">Read the glossary entry →</a></details>
     <details><summary>Sources and scope</summary><p>These are constructed teaching examples, not empirical evidence. Each isolates one assumption; satisfying it alone does not identify a causal effect.</p><ul>${term.sources.map(({ label, href: url }) => `<li><a href="${url}">${label}</a></li>`).join("")}<li><a href="https://doi.org/10.1177/0962280211398037">Hernán (2012), Beyond exchangeability</a></li></ul></details>
-    <nav class="actions" aria-label="Continue learning"><a href="?lesson=leaving-the-sandbox">← Leaving the sandbox</a>${topicIndex < topics.length - 1 ? `<a class="primary" href="${href(topics[topicIndex + 1][0])}">Next: ${glossary[topics[topicIndex + 1][0]].title} →</a>` : '<a class="primary" href="?sandbox">Explore the full sandbox →</a>'}</nav>
+    <nav class="actions" aria-label="Continue learning"><a href="?lesson=leaving-the-sandbox">← Leaving the sandbox</a>${topicIndex < topics.length - 1 ? `<a class="primary" href="${href(topics[topicIndex + 1][0])}">Next: ${glossary[topics[topicIndex + 1][0]].title} →</a>` : '<a class="primary" href="?sandbox">Explore scenarios →</a>'}</nav>
   `;
   const render = {
     exchangeability: renderExchangeability,

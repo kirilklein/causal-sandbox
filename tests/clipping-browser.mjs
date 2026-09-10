@@ -220,7 +220,7 @@ try {
   await page.locator('[data-method="ipw"]').waitFor();
   assert.equal(await table(), initial);
   await page
-    .getByRole("link", { name: "Continue to the full sandbox ↗", exact: true })
+    .getByRole("link", { name: "Explore scenarios ↗", exact: true })
     .click();
   assert.equal(new URL(page.url()).searchParams.has("sandbox"), true);
   assert.deepEqual(errors, []);

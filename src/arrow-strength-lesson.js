@@ -16,7 +16,7 @@ import {
 
 document.querySelector("#app").innerHTML = `
   <div class="instrument-page arrow-strength-page">
-    <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Full sandbox ↗</a>${themeControl()}</header>
+    <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${themeControl()}</header>
     <main>
       ${lessonNavigation({ currentOptional: "arrow-strength" })}
       <p class="eyebrow">OPTIONAL · CAUSAL ROLES</p>
