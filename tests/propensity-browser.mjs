@@ -33,17 +33,10 @@ try {
     await page.locator("#propensity-preview .ps-patient").count(),
     120,
   );
+  assert.equal(await page.locator("#propensity-preview select").count(), 0);
   assert.match(
-    await page.locator(".ps-preview-reading").innerText(),
-    /received no treatment/,
-  );
-  const previewSelect = page.locator("#propensity-preview select");
-  await previewSelect.focus();
-  await previewSelect.press("ArrowDown");
-  await previewSelect.press("Enter");
-  assert.match(
-    await page.locator(".ps-preview-reading").innerText(),
-    new RegExp(`Person ${await previewSelect.inputValue()} `),
+    await page.locator("#propensity-preview").innerText(),
+    /similar scores can receive either treatment/,
   );
   assert.equal(await page.locator("#ipw").textContent(), estimate);
   assert.equal(await page.locator("#sample-label").textContent(), sample);
