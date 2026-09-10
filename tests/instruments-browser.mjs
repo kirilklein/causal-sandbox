@@ -35,7 +35,7 @@ try {
   assert.ok(await page.locator("#lesson-menu").isVisible());
   assert.equal(
     await page.locator('.optional-menu a[aria-current="step"]').innerText(),
-    "Instruments and adjustment\nVariability and hidden-confounding bias",
+    "Instruments and adjustment",
   );
   await contents.click();
   assert.equal(

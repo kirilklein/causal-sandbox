@@ -1,4 +1,5 @@
 import "./lesson-navigation.css";
+import { clearProgress, readProgress } from "./progress.js";
 
 const coreGroups = [
   {
@@ -33,66 +34,66 @@ const coreGroups = [
 export const optionalChapters = [
   {
     id: "propensity-score",
+    menuTitle: "Propensity scores",
     after: 3,
     title: "Where do propensity scores come from?",
     href: "?lesson=propensity-score",
     description:
       "Fit treatment probabilities from age and severity, then connect one person's score to their IPW weight.",
-    summary: "From patient characteristics to treatment probability",
   },
   {
     id: "assumptions",
+    menuTitle: "Causal assumptions",
     after: 12,
     title: "Making causal assumptions tangible",
     href: "?lesson=assumptions",
     description:
       "Change treatment assignment, available options, treatment versions, and spillovers to see what each assumption means.",
-    summary: "Four visual experiments",
   },
   {
     id: "timing",
+    menuTitle: "Timing and adjustment",
     after: 9,
     title: "What timing tells us",
     href: "?lesson=timing",
     description:
       "See why measuring a variable before treatment does not make it safe to adjust for.",
-    summary: "Timing and safe adjustment",
   },
   {
     id: "time-varying-confounding",
+    menuTitle: "Longitudinal treatment",
     title: "When treatment changes the next treatment decision",
     href: "?lesson=time-varying-confounding",
-    summary: "Repeated treatment and time-varying confounding",
   },
   {
     id: "instrument",
+    menuTitle: "Instruments and adjustment",
     after: 6,
     title: "Instruments and adjustment",
     href: "?lesson=instrument",
     description:
       "See how adjusting for an instrument can increase variability and amplify hidden-confounding bias.",
-    summary: "Variability and hidden-confounding bias",
   },
   {
     id: "arrow-strength",
+    menuTitle: "Causal arrow strength",
     title: "How strong is a causal arrow?",
     href: "?lesson=arrow-strength",
-    summary: "Weak effects and cancelling paths",
   },
   {
     id: "clipping",
+    menuTitle: "Weight clipping",
     after: 10,
     title: "Clipping and extreme weights",
     href: "propensity-score-clipping-trimming/",
     description:
       "Explore the tradeoff from limiting extreme weights, then see how trimming changes the target population.",
-    summary: "Limiting extreme weights",
   },
   {
     id: "trimming",
+    menuTitle: "Population trimming",
     title: "Trimming and the target population",
     href: "?lesson=trimming",
-    summary: "Who remains after trimming",
   },
 ];
 
@@ -106,6 +107,13 @@ export function lessonNavigation({
   introduction = false,
   learningPage,
 } = {}) {
+  const progress = readProgress();
+  const completed = new Set(progress.completedLessons);
+  const completedCount = coreLessons.filter(([, slug]) =>
+    completed.has(slug),
+  ).length;
+  const hasSavedResults =
+    completedCount > 0 || Object.keys(progress.answers).length > 0;
   const status = learningPage
     ? {
         learn: "Learning choices",
@@ -122,19 +130,21 @@ export function lessonNavigation({
   let number = 0;
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
     <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button><span>${status}</span></div>
-    <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Learning choices</a>${coreGroups
+    <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Learning choices</a>
+    <div class="lesson-progress"><label for="lesson-progress">${completedCount} of ${coreLessons.length} guided lessons complete</label><progress id="lesson-progress" max="${coreLessons.length}" value="${completedCount}"></progress><span id="lesson-complete-description">Completed</span>${hasSavedResults ? '<button id="reset-progress" type="button">Reset progress</button>' : ""}</div>${coreGroups
       .map(
         ({ title, lessons }) =>
           `<section class="lesson-group" aria-label="${title}"><h2>${title}</h2><ol>${lessons
             .map((lesson) => {
               number += 1;
-              return `<li><a href="${lessonHref(lesson)}" data-level="${lesson[0]}" aria-label="${lesson[2]}" data-number="${number}" ${position === number - 1 ? 'aria-current="step"' : ""}>${lesson[2]}</a></li>`;
+              const isComplete = completed.has(lesson[1]);
+              return `<li><a href="${lessonHref(lesson)}" data-level="${lesson[0]}" aria-label="${lesson[2]}" ${isComplete ? 'aria-describedby="lesson-complete-description" data-complete="true"' : ""} data-number="${number}" ${position === number - 1 ? 'aria-current="step"' : ""}>${lesson[2]}</a></li>`;
             })
             .join("")}</ol></section>`,
       )
       .join("")}
     <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2>
-      ${optionalChapters.map(({ id, title, href, summary }) => `<a href="${href}" aria-label="${title}" ${currentOptional === id ? 'aria-current="step"' : ""}>${title}<small>${summary}</small></a>`).join("")}
+      ${optionalChapters.map(({ id, menuTitle, href }) => `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`).join("")}
     </section>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
       <a href="glossary/">Glossary</a>
@@ -146,7 +156,8 @@ export function lessonNavigation({
       <a href="mediator-adjustment/">Mediator adjustment</a>
       <a href="tmle/">TMLE</a>
     </section>
-    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a></div>
+    <a class="sandbox-nav-link" href="?sandbox">Full sandbox ↗</a>
+    <a class="sandbox-nav-link" href="?sandbox=graph-lab">Build a graph ↗</a></div>
   </nav>`;
 }
 
@@ -158,6 +169,11 @@ export function setupLessonNavigation() {
       "aria-expanded",
       String(toggle.getAttribute("aria-expanded") !== "true"),
     );
+  });
+  document.querySelector("#reset-progress")?.addEventListener("click", () => {
+    if (!confirm("Reset your lesson progress and saved answers?")) return;
+    clearProgress();
+    location.reload();
   });
   if (app.dataset.lessonNavigationSetup) return;
   app.dataset.lessonNavigationSetup = "true";

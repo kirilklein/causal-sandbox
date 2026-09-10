@@ -1202,8 +1202,12 @@ try {
   await page.locator("#world-select").selectOption("both");
   await page.getByRole("tab", { name: "Analysis" }).click();
   await page.locator('input[value="K"]').check();
+  await page.evaluate(() => localStorage.removeItem("causal-sandbox-progress"));
   await page.getByRole("link", { name: "Guided lessons", exact: true }).click();
-  await page.getByRole("link", { name: "Learn" }).click();
+  await page.locator("#lesson-menu-toggle").click();
+  await page
+    .getByRole("link", { name: "Learning choices", exact: true })
+    .click();
   await page
     .getByRole("link", { name: "Start from scratch", exact: false })
     .click();

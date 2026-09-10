@@ -6,25 +6,26 @@ import {
   setupLessonNavigation,
 } from "./lesson-navigation.js";
 import { themeControl } from "./theme.js";
+import { campaignHref } from "./posthog.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import "./learning.css";
 
 export const learningUrl = (topic) =>
-  `${import.meta.env.BASE_URL}?lesson=${topic}`;
+  campaignHref(`${import.meta.env.BASE_URL}?lesson=${topic}`);
 
 export function topicLesson(slug) {
   const core = coreLessons.find(([, topic]) => topic === slug);
   if (core)
     return {
       title: core[2],
-      href: `${import.meta.env.BASE_URL}${lessonHref(core)}`,
+      href: campaignHref(`${import.meta.env.BASE_URL}${lessonHref(core)}`),
     };
   const chapter = optionalChapters.find(({ id }) => id === slug);
   if (!chapter) throw new Error(`Unknown learning topic: ${slug}`);
   return {
     title: chapter.title,
-    href: `${import.meta.env.BASE_URL}${chapter.href}`,
+    href: campaignHref(`${import.meta.env.BASE_URL}${chapter.href}`),
   };
 }
 

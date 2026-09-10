@@ -166,9 +166,7 @@ try {
   await page.getByRole("link", { name: "Learn" }).focus();
   assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
   await page.keyboard.press("Enter");
-  await page
-    .getByRole("heading", { name: "Where would you like to begin?" })
-    .waitFor();
+  await page.locator("#known-effect").waitFor();
   await page.goBack();
   await open.waitFor();
   assert.equal(await page.locator(".introduction-arriving").count(), 0);

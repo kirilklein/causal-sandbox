@@ -39,7 +39,8 @@ calculating scores alone adjust the outcome comparison?
 
 The homepage opens an unnumbered Introduction (`?lesson=introduction`) to the
 whole framework. Three entry cards each give one learning promise: **Learn**
-opens a separate learning chooser, **Explore** opens the full sandbox, and **Build** opens
+opens a learning chooser for new visitors and resumes lessons when progress is
+saved, **Explore** opens the full sandbox, and **Build** opens
 the graph lab. The existing 22-second film is a secondary text button.
 Contents and lesson 1 offer a return to the introduction. Explicit lesson,
 legacy level, and sandbox links retain their destinations and numbering.
@@ -47,7 +48,8 @@ legacy level, and sandbox links retain their destinations and numbering.
 On initial entry, a decorative causal graph connects and the three cards appear
 in an overlapping 1.55-second reveal. Keyboard focus cancels the reveal; reduced
 motion shows everything immediately. In-app return navigation does not replay
-it. There is no autoplay, completion gate, or stored learner progress.
+it. There is no autoplay or completion gate. Guided-lesson progress is stored
+only in the learner's browser.
 
 The [learning entry and adaptive quiz](adaptive-quiz.md) offer starting from
 scratch, browsing refreshers/advanced topics, or answering up to six questions
@@ -184,8 +186,12 @@ future work.
    their interaction. Lesson settings are not transferred into this world.
 
 Only implemented lessons appear in contents. Levels 1–12 now form a continuous
-sequence; “Level N of 13” includes the final sandbox. No scores, lesson-completion gates, accounts or stored
-progress. Later chapters and confidence intervals are separate changes.
+sequence; “Level N of 13” includes the final sandbox. Continue marks a guided
+lesson complete, and the Introduction resumes the most recently opened lesson.
+Prediction history retains the first answer, later attempts, and eventual
+correctness. This state stays in local browser storage and can be reset from
+Contents. There are no scores, lesson-completion gates, accounts, or cross-device
+sync. Later chapters and confidence intervals are separate changes.
 
 ## Sampling variation (IV prerequisite, PR A)
 

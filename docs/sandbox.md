@@ -29,8 +29,7 @@ tracks. Tab navigation supports arrows, Home, and End without changing data.
 
 The four displayed rows are unadjusted, regression adjustment, IPW, and AIPW.
 Raw association and naive regression Y ~ A coincide for binary treatment and share
-one row. The error axis stays at ±4 outcome units around truth. Hollow marks retain
-each scenario's starting errors; solid marks show current errors. Off-scale errors
+one row. The error axis stays at ±4 outcome units around truth. Marks show current errors. Off-scale errors
 use arrows, while numeric estimates and signed errors remain visible. Error color
 retains the fixed 0–2 outcome-unit scale used by the lessons. The truth card shows
 the current total effect and its direct/mediated decomposition.

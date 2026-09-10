@@ -49,17 +49,27 @@ document.querySelector("#app").innerHTML = `
           </div>
           <div>
             <div class="results" aria-live="polite" aria-atomic="true">
-              <div class="result truth"><span>True total strategy effect</span><strong>−2.80</strong><small>Both visits − neither visit</small></div>
+              <div class="result truth"><span>True total effect</span><strong>−2.80</strong><small>Both visits − neither visit</small></div>
               <div class="result estimate" id="regression-card"><span>Outcome regression</span><strong id="regression-value"></strong><small id="regression-error"></small></div>
               <div class="result estimate" id="ipw-card" hidden><span>Sequential IPW</span><strong id="ipw-value"></strong><small id="ipw-error"></small></div>
             </div>
-            <p class="small">Red indicates distance from truth, on the shared 0–2 point error scale. One sample can land close to truth by chance.</p>
+            <p class="small">Stronger red means farther from truth in this sample. One sample can be close by chance.</p>
           </div>
         </div>
         <div id="weight-section" hidden>
           <p>Use severity to model the second treatment decision. Weight each observed treatment history, then compare the weighted outcomes for both visits versus neither. This lets severity retain its role in the first treatment's effect.</p>
           <details id="weight-detail"><summary>Follow one person's weight</summary>
-            <label for="person">Person <output id="person-number" for="person"></output></label>
+            <p>Weight both decisions together: multiply their inverse probabilities, using the history available at each visit.</p>
+            <div class="sequential-weight-formula">
+              <math display="block" aria-label="Weight equals one over q 1 times q 2, the probabilities of the decisions actually observed at visits one and two">
+                <mtext>Weight</mtext><mo>=</mo><mfrac><mn>1</mn><mrow><msub><mi>q</mi><mn>1</mn></msub><mo>×</mo><msub><mi>q</mi><mn>2</mn></msub></mrow></mfrac>
+              </math>
+              <div class="sequential-weight-factors">
+                <p><strong>q₁ · Visit 1</strong>Chance of the observed first decision.</p>
+                <p><strong>q₂ · Visit 2</strong>Chance of the observed second decision, given first treatment and updated severity.</p>
+              </div>
+            </div>
+            <label class="person-label" for="person"><span>Person <output id="person-number" for="person"></output></span><span class="small">of 2,400</span></label>
             <input id="person" type="range" min="1" max="2400" step="1" value="1"/>
             <p id="person-history"></p><p id="person-weight" class="weight-equation"></p><p id="person-role" class="small"></p>
             <p class="small">The first probability is known from randomization. The second is fitted from people with the same first treatment and severity. Use the probability of the treatment actually received, including no treatment. No weights are clipped.</p>
@@ -67,21 +77,49 @@ document.querySelector("#app").innerHTML = `
         </div>
         <div class="actions"><button id="redraw">Redraw sample</button><button id="restart">Restart lesson</button><span class="small" id="sample"></span></div>
         <details id="studies"><summary>Compare repeated studies</summary>
-          <p>Repeat this world 60 times. Compare the average estimate and its spread with truth; these are not confidence intervals.</p>
+          <p>Repeat this world 60 times. Compare the average estimate and its spread with truth. These are not confidence intervals.</p>
           <button id="repeat">Run 60 studies</button><p id="study-status" role="status" class="small"></p><div id="study-results"></div>
         </details>
       </section>
       <details><summary>Why does ordinary adjustment fail here?</summary>
-        <p>L carries part of A₁'s effect on Y. When it also guides A₂, it is a confounder for the second decision. Ignoring L leaves that confounding; holding L's distribution fixed in outcome regression removes the earlier treatment's benefit through severity.</p>
-        <p>This dual role is treatment–confounder feedback. Time-varying confounding can also occur without earlier treatment affecting the confounder. A measurement before today's dose can still be a consequence of yesterday's dose.</p>
-        <p>Regression itself is not the problem. The longitudinal g-formula uses outcome and severity models to let severity change under each strategy. That is a different operation from the ordinary adjustment shown here.</p>
+        <p>Updated severity L has two roles when it guides the second treatment:</p>
+        <dl class="longitudinal-facts">
+          <div><dt>A₁ → L → Y</dt><dd>L carries part of the first treatment's benefit. Holding its distribution fixed removes that benefit from our comparison.</dd></div>
+          <div><dt>A₂ ← L → Y</dt><dd>L affects the second treatment and the outcome. Ignoring it leaves the second decision confounded.</dd></div>
+        </dl>
+        <p>Sequential IPW accounts for L in the second treatment model while preserving the first treatment's effect through L. This dual role is called treatment–confounder feedback.</p>
       </details>
-      <details><summary>Models, truth, and assumptions</summary>
-        <p>The first treatment is randomized with probability 0.5. High severity occurs with probability 0.7 without first treatment and 0.3 with it. The second treatment is randomized in stage 1; in stages 2–3, its probability is 0.8 for high severity and 0.2 for low severity.</p>
-        <p>Y = 6 − A₁ − A₂ + 2L + independent noise. Treating at both visits lowers the average score by 2 points directly and 0.8 through severity: the total effect is −2.8. The observational treatment rule does not change that intervention contrast.</p>
-        <p>Both regressions fit a separate mean for each observed combination of their predictors, including treatment interactions. With L, predictions are averaged over the same observed severity distribution under both strategies. These models can represent the conditional means exactly; ordinary adjustment still targets the wrong contrast.</p>
-        <p>Sequential IPW multiplies inverse treatment probabilities across visits and normalizes weights within each strategy. This estimates two means of a saturated marginal structural model. All histories inform the second treatment model, including people treated at only one visit.</p>
-        <p>Identification requires no unmeasured confounding at either decision given the available history, positive probabilities for the strategies within relevant histories, well-defined treatments, and no interference between people. The fitted treatment probabilities must also be adequate. This simulation supplies those conditions; real data cannot establish them from balance alone.</p>
+      <details id="simulation-detail"><summary>Simulation and true effect</summary>
+        <table><caption>How the fictional study is generated</caption><thead><tr><th scope="col">Step</th><th scope="col">Probability</th></tr></thead><tbody>
+          <tr><th scope="row">Visit 1: treatment</th><td>50% for everyone</td></tr>
+          <tr><th scope="row">Between visits: high severity</th><td>30% after treatment<br>70% without treatment</td></tr>
+          <tr><th scope="row">Visit 2: treatment</th><td>Stage 1: 50% for everyone<br>Stages 2–3: 80% with high severity, 20% with low severity</td></tr>
+        </tbody></table>
+        <h3>Final symptom score</h3>
+        <math class="longitudinal-equation" display="block" aria-label="Y equals 6 minus A 1 minus A 2 plus 2 L plus noise"><mi>Y</mi><mo>=</mo><mn>6</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>+</mo><mn>2</mn><mi>L</mi><mo>+</mo><mi>ε</mi></math>
+        <p class="small">A₁ and A₂ are 1 for treatment, 0 otherwise. L is 1 for high severity, 0 for low. ε is independent noise with mean 0.</p>
+        <h3>Both visits − neither visit</h3>
+        <dl class="longitudinal-facts effect-breakdown">
+          <div><dt>−2.0 directly</dt><dd>Each treatment lowers the score by 1.</dd></div>
+          <div><dt>−0.8 through severity</dt><dd>High severity falls from 70% to 30%. Its contribution changes by 2 × (0.3 − 0.7).</dd></div>
+        </dl>
+        <math class="longitudinal-equation" display="block" aria-label="Total effect equals minus 2 minus 0.8 equals minus 2.8"><mtext>Total effect</mtext><mo>=</mo><mo>−</mo><mn>2</mn><mo>−</mo><mn>0.8</mn><mo>=</mo><mo>−</mo><mn>2.8</mn></math>
+      </details>
+      <details id="models-detail"><summary>How the estimates are calculated</summary>
+        <dl class="longitudinal-facts">
+          <div><dt>Outcome regression</dt><dd>Fit a mean outcome for each combination of included predictors. With L included, average both strategies' predictions over the same severity distribution. Even a flexible model then removes the benefit through L.</dd></div>
+          <div><dt>Sequential IPW</dt><dd>Compare weighted outcome means for the both-visit and neither-visit groups. Divide each group's weighted outcome sum by its own weight sum. Mixed treatment histories help fit the treatment model.</dd></div>
+        </dl>
+        <p class="small">Another approach, the longitudinal g-formula, models severity under each strategy before averaging outcome predictions. It allows severity to change with first treatment.</p>
+      </details>
+      <details id="assumptions-detail"><summary>What assumptions are needed?</summary>
+        <ul>
+          <li>No unmeasured confounding at either decision, given the available history.</li>
+          <li>Both treatment options remain possible within relevant histories.</li>
+          <li>Well-defined treatments, with observed outcomes matching the treatment history received.</li>
+          <li>No effects of one person's treatment on another person's outcome.</li>
+        </ul>
+        <p>Sequential IPW also needs adequate treatment probability models. This simulation supplies these conditions. Balance alone cannot establish them in real data.</p>
       </details>
       <details><summary>Check your understanding</summary>
         <p>Severity was measured before the second treatment. Why might adjusting for it remove part of the effect we want?</p>
@@ -109,13 +147,17 @@ function renderPerson() {
   const d = sample.data[i];
   const w = sample.weights[i];
   el("person-number").textContent = i + 1;
+  el("person").style.setProperty(
+    "--fill",
+    `${(100 * i) / (sample.data.length - 1)}%`,
+  );
   el("person-history").textContent =
     `Visit 1: ${d.A1 ? "treated" : "untreated"} → severity: ${d.L ? "high" : "low"} → visit 2: ${d.A2 ? "treated" : "untreated"}.`;
   el("person-weight").textContent =
     `Weight = 1 ÷ (0.500 × ${fmt(w.observedP2)}) = ${fmt(w.weight)}`;
   el("person-role").textContent =
     d.A1 === d.A2
-      ? `This person contributes to the weighted mean for ${d.A1 ? "both visits" : "neither visit"}. The displayed calculation is rounded; estimates use full precision.`
+      ? `This person contributes to the weighted mean for ${d.A1 ? "both visits" : "neither visit"}. The displayed calculation is rounded. Estimates use full precision.`
       : "This person informs the fitted treatment probabilities, but contributes to neither strategy's outcome mean because their treatment history matches neither.";
 }
 

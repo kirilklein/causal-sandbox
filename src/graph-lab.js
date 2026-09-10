@@ -1,3 +1,4 @@
+import { capture } from "./posthog.js";
 import "./graph-lab.css";
 import { automaticPositions, edgeGeometry } from "./graph-layout.js";
 import icon from "./brand.svg?raw";
@@ -26,8 +27,8 @@ let preset = graphPreset(new URLSearchParams(location.search).get("preset"));
 let graph = structuredClone(preset.graph),
   adjustment = [],
   nextId = 4;
+let graphModificationCaptured = false;
 let selection = { kind: "node", id: "A" },
-  startingErrors,
   timer;
 const indices = [0, 2, 3, 4],
   methods = ["Raw association", "Regression", "IPW", "AIPW"];
@@ -68,7 +69,7 @@ $("#app").innerHTML = `
       <fieldset class="lab-adjust-controls"><legend>Adjust for</legend><div id="lab-adjustment"></div></fieldset>
       <p id="lab-model-caption" class="lab-caption"></p>
       <div id="lab-estimates" aria-live="polite" aria-atomic="true"></div>
-      <p class="lab-caption">○ Starting error · ● Current error. Redder marks are farther from truth. Arrows indicate errors outside ±4.</p>
+      <p class="lab-caption">Redder marks are farther from truth. Arrows indicate errors outside ±4.</p>
       <p id="lab-fit-error" class="lab-note" role="status" hidden></p>
       <p id="lab-weight-warning" class="lab-note" role="status" hidden></p>
       <details><summary>Sample and weight diagnostics</summary><div id="lab-diagnostics"></div><p>Propensities are clipped to [0.02, 0.98]. Effective sample size (ESS) describes weight concentration, not regression precision. Clipping and ESS cannot establish causal validity.</p></details>
@@ -185,11 +186,11 @@ function renderEditor() {
   if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
 }
 
-function marker(error, starting = false) {
+function marker(error) {
   if (!Number.isFinite(error)) return "";
   const off = Math.abs(error) > 4,
     position = 50 + Math.max(-4, Math.min(4, error)) * 12.5;
-  return `<span class="${starting ? "starting-dot" : "estimate-dot"} ${off ? "off-scale" : ""}" style="left:${position}%" title="${starting ? "Starting" : "Current"} error ${error.toFixed(2)}">${off ? (error < 0 ? "‹" : "›") : ""}</span>`;
+  return `<span class="estimate-dot ${off ? "off-scale" : ""}" style="left:${position}%" title="Current error ${error.toFixed(2)}">${off ? (error < 0 ? "‹" : "›") : ""}</span>`;
 }
 
 function renderResults() {
@@ -197,7 +198,6 @@ function renderResults() {
   const sample = simulateGraph(graph),
     result = analyzeGraph(graph, sample.data, adjustment);
   const values = indices.map((i) => result.values[i]);
-  if (!startingErrors) startingErrors = values.map((v) => v - sample.truth);
   $("#lab-truth").textContent = sample.truth.toFixed(2);
   $("#lab-status").textContent =
     JSON.stringify(graph) === JSON.stringify(preset.graph) && !adjustment.length
@@ -213,7 +213,7 @@ function renderResults() {
         const bar = Number.isFinite(error)
           ? `<i class="bias-line" style="left:${Math.min(50, position)}%;width:${Math.abs(position - 50)}%"></i>`
           : "";
-        return `<div class="effect-row" data-method="${i}" style="--error-tint:${comparison.tint}%"><span class="estimator-label">${methods[i]}</span><div class="effect-track" aria-hidden="true"><i class="truth-line"></i>${bar}${marker(startingErrors[i], true)}${marker(error)}</div><span class="effect-value"><strong class="lab-estimate-value">${comparison.value}</strong><small aria-label="${comparison.difference}">${comparison.difference.replace(" from truth", "")}</small></span></div>`;
+        return `<div class="effect-row" data-method="${i}" style="--error-tint:${comparison.tint}%"><span class="estimator-label">${methods[i]}</span><div class="effect-track" aria-hidden="true"><i class="truth-line"></i>${bar}${marker(error)}</div><span class="effect-value"><strong class="lab-estimate-value">${comparison.value}</strong><small aria-label="${comparison.difference}">${comparison.difference.replace(" from truth", "")}</small></span></div>`;
       })
       .join("");
   $("#lab-fit-error").hidden = !result.error;
@@ -278,6 +278,10 @@ function commit(change) {
   );
   renderEditor();
   renderResults();
+  if (!graphModificationCaptured) {
+    graphModificationCaptured = true;
+    capture("graph_modified", { preset: preset.id });
+  }
   return true;
 }
 
@@ -295,6 +299,14 @@ function reset(id) {
   preset = graphPreset(id);
   graph = structuredClone(preset.graph);
   arrangeGraph();
+  if (preset.id === "pkr")
+    nodePositions = {
+      v1: { x: 0.15, y: 0 },
+      v2: { x: 0.85, y: 0 },
+      v3: { x: 0.5, y: 0.4 },
+      A: { x: 0.15, y: 1 },
+      Y: { x: 0.85, y: 1 },
+    };
   setConnectMode(false);
   adjustment = [];
   nextId =
@@ -305,7 +317,6 @@ function reset(id) {
         .map((n) => Number(n.id.slice(1))),
     ) + 1;
   selection = { kind: "node", id: "A" };
-  startingErrors = undefined;
   $("#lab-preset").value = preset.id;
   $("#lab-question").textContent = preset.question;
   $("#lab-action").textContent = preset.action;
@@ -327,6 +338,7 @@ $("#lab-add-variable").addEventListener("submit", (event) => {
   const id = `v${nextId++}`;
   const label = $("#lab-new-name").value.trim();
   if (commit((next) => next.nodes.push(graphNode(id, label)))) {
+    capture("graph_lab_variable_added");
     selection = { kind: "node", id };
     renderInspector();
     $("#lab-new-name").value = "";

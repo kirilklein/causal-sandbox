@@ -14,6 +14,7 @@
 - Apply these rules to the app, documentation, and plans. Useful text can still overwhelm when too much is shown at once.
 - Prefer the shortest explanation that preserves understanding. Cut repetition and filler, not the reasoning bridge a learner needs. Hard or counterintuitive concepts may justify more text, especially a concrete, detailed example that shows why the result occurs. Do not give every method the same amount of explanation or a worked example by default.
 - Optional detail must add meaning too. Remove redundant explanation rather than merely moving it behind another disclosure.
+- Use interaction only when changing or selecting something reveals a relationship the static view cannot. If a chart already carries the lesson, remove selectors and generated case narration; keep richer inspection in an optional chapter.
 
 ## Work order
 

@@ -33,3 +33,15 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
           npm run test:browser
       - run: node tests/trimming-study.mjs
+      - name: Build isolated analytics test site
+        run: npm run build -- --outDir dist-analytics
+        env:
+          VITE_POSTHOG_KEY: phc_ci_test_key
+          VITE_POSTHOG_HOST: https://analytics.invalid
+      - name: Analytics payload regression
+        run: |
+          npx vite preview --outDir dist-analytics --port 5174 --strictPort --host 127.0.0.1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5174/causal-sandbox/ >/dev/null && break; sleep 1; done
+          APP_URL=http://127.0.0.1:5174/causal-sandbox/ node tests/analytics-browser.mjs

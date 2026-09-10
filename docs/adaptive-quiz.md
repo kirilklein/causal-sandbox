@@ -1,7 +1,9 @@
 # Choosing a learning route
 
 The homepage keeps Learn / Explore / Build. Learn opens `?lesson=learn`, with
-Start from scratch, Refresh & go deeper, and Find my starting point.
+Start from scratch, Refresh & go deeper, and Find my starting point. When guided
+lesson progress is saved, Learn keeps resuming that lesson; the chooser remains
+available through Learning choices in Contents.
 The topic browser is `?lesson=topics`. The quiz opens at `?lesson=quiz`;
 `?quiz` is also accepted. Existing lesson, concept-page, and sandbox routes remain.
 

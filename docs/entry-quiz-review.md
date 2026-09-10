@@ -105,3 +105,9 @@ history, practice, and storage recovery. All eleven items were checked for
 horizontal overflow at 1280px and 320px; screenshots of the longer revised
 questions were inspected. The full browser suite was not rerun. The in-app
 browser was unavailable, so visual checks used local Chrome.
+
+Pre-PR integration with main at `24fb9f3` preserves saved-lesson resume behavior,
+compact Contents labels, and allowed campaign attribution through the chooser.
+All 139 unit tests and the production build passed. All browser-suite scripts
+passed across the production run and the targeted rerun after correcting the
+returning-learner test expectation; the isolated analytics regression also passed.
