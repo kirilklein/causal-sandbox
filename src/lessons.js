@@ -249,7 +249,7 @@ function controls(level) {
   if (level === 2)
     return '<label for="selection">Risk score’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Its influence on the outcome stays fixed.</p>';
   if (level === 3)
-    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><button id="reveal-ipw">Try IPW</button>';
+    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
     return '<p id="regression-explanation">We fit a model to predict the observed outcome from treatment received and risk score. For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
   if (level === 5)
