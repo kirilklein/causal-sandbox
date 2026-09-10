@@ -1,5 +1,7 @@
 .lesson-header {
-  max-width: 1000px;
+  max-width: 752px;
+  width: calc(100% - 48px);
+  padding-inline: 0;
   justify-content: space-between;
 }
 .lesson-header > a:not(.brand) {
@@ -15,6 +17,9 @@
 .introduction {
   max-width: 1060px;
   padding-top: 0;
+}
+.lesson-header.introduction-header {
+  max-width: 1012px;
 }
 .introduction .lesson-nav {
   margin-bottom: 0;
@@ -38,7 +43,7 @@
   grid-template-columns: 1.2fr 1fr;
   gap: 36px;
   align-items: center;
-  padding: 22px 0 48px;
+  padding: 12px 0 48px;
 }
 .intro-kicker {
   color: var(--text-secondary);
@@ -657,7 +662,8 @@
 }
 @media (max-width: 500px) {
   .lesson-header {
-    padding: 14px 20px;
+    width: calc(100% - 32px);
+    padding: 14px 0;
     gap: 16px;
   }
   .learning {
