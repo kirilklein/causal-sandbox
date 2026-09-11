@@ -1,4 +1,19 @@
+import "./tmle-robustness-preview.css";
+import { setupTheme, themeControl } from "./theme.js";
+import { setupSearch } from "./search.js";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 import { axis, grids, truth, colorLimits } from "./tmle-robustness.js";
+
+setupTheme();
+setupSearch();
+document.querySelector("#comparison-theme").outerHTML = themeControl();
+document.querySelector("#comparison-navigation").outerHTML = lessonNavigation({
+  currentOptional: "tmle-robustness",
+});
+setupLessonNavigation();
 
 let pattern = "shift",
   xi = 8,
@@ -11,10 +26,9 @@ const signed = (n) =>
 const tick = (n) =>
   Math.abs(n) < 0.001 ? "0" : `${n > 0 ? "+" : "−"}${Math.abs(n).toFixed(2)}`;
 function color(error) {
-  const a = [245, 245, 239],
-    b = error < 0 ? [52, 103, 131] : [182, 88, 63];
-  const t = Math.min(1, Math.abs(error) / colorLimits[pattern]);
-  return `rgb(${a.map((value, i) => Math.round(value + (b[i] - value) * t)).join(",")})`;
+  const endpoint = error < 0 ? "--heatmap-under" : "--heatmap-over";
+  const percent = 100 * Math.min(1, Math.abs(error) / colorLimits[pattern]);
+  return `color-mix(in srgb, var(--heatmap-zero), var(${endpoint}) ${percent}%)`;
 }
 function map(method) {
   const left = 49,
@@ -25,12 +39,12 @@ function map(method) {
     y = (i) => top + (10 - i) * cell;
   return `<svg viewBox="0 0 351 350" role="img" aria-label="${method.toUpperCase()} population error map. Horizontal axis: treatment-model distortion. Vertical axis: outcome-model distortion. Use the sliders below to select a cell.">
     ${grids[pattern].map((c) => `<rect class="cell" data-x="${c.xi}" data-y="${c.yi}" x="${x(c.xi)}" y="${y(c.yi)}" width="25" height="25" fill="${color(c[method] - truth)}"><title>Treatment ${tick(c.x)}, outcome ${tick(c.y)}: ${method.toUpperCase()} ${c[method].toFixed(3)}, error ${signed(c[method] - truth)}</title></rect>`).join("")}
-    <rect x="${left}" y="${top}" width="${size}" height="${size}" fill="none" stroke="#dfe4dc" stroke-width="0.7" pointer-events="none"/>
-    <path d="M${x(5) + 12.5} ${top}v${size} M${left} ${y(5) + 12.5}h${size}" fill="none" stroke="#617b69" stroke-dasharray="2 3" stroke-width=".8" opacity=".65" pointer-events="none"/>
+    <rect x="${left}" y="${top}" width="${size}" height="${size}" fill="none" stroke="var(--border-strong)" stroke-width="0.7" pointer-events="none"/>
+    <path d="M${x(5) + 12.5} ${top}v${size} M${left} ${y(5) + 12.5}h${size}" fill="none" stroke="var(--text-secondary)" stroke-dasharray="2 3" stroke-width=".8" opacity=".65" pointer-events="none"/>
     ${[0, 2, 5, 8, 10].map((i) => `<text x="${x(i) + 12.5}" y="312" text-anchor="middle" class="${i === 5 ? "zero-label" : ""}">${tick(axis[i])}</text><text x="39" y="${y(i) + 16}" text-anchor="end" class="${i === 5 ? "zero-label" : ""}">${tick(axis[i])}</text>`).join("")}
     <text class="axis-title" x="186" y="338" text-anchor="middle">Treatment-model distortion</text><text class="axis-title" transform="translate(12 158) rotate(-90)" text-anchor="middle">Outcome-model distortion</text>
-    <rect x="${x(xi) + 0.8}" y="${y(yi) + 0.8}" width="23.4" height="23.4" rx="1" fill="none" stroke="white" stroke-width="3" pointer-events="none"/><rect x="${x(xi) + 0.8}" y="${y(yi) + 0.8}" width="23.4" height="23.4" rx="1" fill="none" stroke="#193e34" stroke-width="1.5" pointer-events="none"/>
-    <circle cx="${x(xi) + 12.5}" cy="${y(yi) + 12.5}" r="2.5" fill="#193e34" stroke="white" stroke-width="1" pointer-events="none"/>
+    <rect x="${x(xi) + 0.8}" y="${y(yi) + 0.8}" width="23.4" height="23.4" rx="1" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="${x(xi) + 0.8}" y="${y(yi) + 0.8}" width="23.4" height="23.4" rx="1" fill="none" stroke="var(--text)" stroke-width="1.5" pointer-events="none"/>
+    <circle cx="${x(xi) + 12.5}" cy="${y(yi) + 12.5}" r="2.5" fill="var(--text)" stroke="var(--surface)" stroke-width="1" pointer-events="none"/>
   </svg>`;
 }
 

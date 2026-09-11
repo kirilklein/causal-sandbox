@@ -36,6 +36,9 @@
   --sampling-truth: #4e6381;
   --arm-0: #286648;
   --arm-1: #315d8c;
+  --heatmap-under: #346783;
+  --heatmap-zero: #f5f5ef;
+  --heatmap-over: #b6583f;
   --film-background: #0b141e;
   --film-ink: #dee8f0;
   --film-control: #0b141ed9;
@@ -64,6 +67,9 @@
   --fitted: #f0ad84;
   --error-surface: #654044;
   --error-mark: #e7968e;
+  --heatmap-under: #7daac7;
+  --heatmap-zero: #1c2c3a;
+  --heatmap-over: #df9680;
   --truth-surface: #2b3743;
   --shadow-soft: #00000026;
   --shadow: #00000066;

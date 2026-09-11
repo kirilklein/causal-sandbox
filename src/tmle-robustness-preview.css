@@ -1,3 +1,4 @@
+@import "./theme.css";
 :root {
   font-family:
     Inter,
@@ -6,8 +7,8 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: #233b38;
-  background: #f7f8f5;
+  color: var(--text);
+  background: var(--page);
   font-synthesis: none;
   font-size: 14px;
 }
@@ -25,10 +26,11 @@ button {
   cursor: pointer;
 }
 button:focus-visible,
+select:focus-visible,
 a:focus-visible,
 input:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #399185;
+  outline: 3px solid var(--accent);
   outline-offset: 4px;
 }
 button {
@@ -49,14 +51,20 @@ a {
   line-height: 1.6;
 }
 .site-header {
-  height: 76px;
+  min-height: 76px;
+  height: auto;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 1240px;
-  padding: 0 42px;
+  padding: 12px 42px;
   margin: auto;
-  border-bottom: 1px solid #dde4dd;
+  border-bottom: 1px solid var(--border);
+}
+.site-header .theme-control {
+  margin-left: auto;
 }
 .brand {
   display: flex;
@@ -68,17 +76,17 @@ a {
 }
 .brand svg {
   width: 29px;
-  fill: #f7f8f5;
-  stroke: #326c60;
+  fill: var(--page);
+  stroke: var(--accent);
   stroke-width: 1.7;
 }
 .preview-label {
   font-size: 10px;
   letter-spacing: 1.5px;
-  border: 1px solid #d5dfd5;
+  border: 1px solid var(--border);
   border-radius: 5px;
   padding: 7px 10px;
-  color: #64766b;
+  color: var(--text-secondary);
 }
 main {
   max-width: 1080px;
@@ -89,7 +97,7 @@ main {
   display: flex;
   gap: 12px;
   align-items: center;
-  color: #648073;
+  color: var(--text-secondary);
   font-size: 10px;
   letter-spacing: 1.5px;
   font-weight: 650;
@@ -97,7 +105,7 @@ main {
 .eyebrow-line {
   width: 24px;
   height: 1px;
-  background: #b9c8bc;
+  background: var(--border-strong);
 }
 h1 {
   font-size: clamp(29px, 4vw, 43px);
@@ -108,15 +116,15 @@ h1 {
 }
 .intro {
   font-size: 16px;
-  color: #6a7871;
+  color: var(--text-secondary);
   margin: 0 0 30px;
   line-height: 1.6;
 }
 .experiment {
-  background: #fff;
-  border: 1px solid #dce3db;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 5px 24px #213c3210;
+  box-shadow: 0 5px 24px var(--shadow-soft);
   overflow: hidden;
 }
 .experiment-toolbar {
@@ -124,7 +132,7 @@ h1 {
   align-items: center;
   gap: 20px;
   padding: 18px 24px;
-  border-bottom: 1px solid #e7ebe5;
+  border-bottom: 1px solid var(--border);
 }
 .pattern-control {
   display: flex;
@@ -139,8 +147,8 @@ h1 {
 .segmented {
   display: flex;
   padding: 3px;
-  background: #f0f3ee;
-  border: 1px solid #e5eae2;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
   border-radius: 7px;
 }
 .segmented button {
@@ -152,13 +160,13 @@ h1 {
   font-weight: 600;
 }
 .segmented [aria-pressed="true"] {
-  background: white;
-  box-shadow: 0 1px 4px #18372c20;
-  color: #245d4e;
+  background: var(--surface);
+  box-shadow: 0 1px 4px var(--shadow-soft);
+  color: var(--accent);
 }
 #pattern-description {
   font-size: 12px;
-  color: #738078;
+  color: var(--text-secondary);
   margin: 0;
 }
 .reset {
@@ -167,7 +175,7 @@ h1 {
   border: 0;
   font-size: 17px;
   padding: 8px;
-  color: #6f7d74;
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 .reset span {
@@ -197,14 +205,14 @@ h1 {
 }
 .map-heading p {
   font-size: 11px;
-  color: #79867c;
+  color: var(--text-secondary);
   margin: 0;
 }
 .method-label {
   font-size: 8px;
   letter-spacing: 1.25px;
-  color: #718076;
-  background: #f4f6f1;
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
   padding: 5px 7px;
   border-radius: 3px;
 }
@@ -216,15 +224,15 @@ h1 {
 }
 .map text {
   font-family: inherit;
-  fill: #708075;
+  fill: var(--text-secondary);
   font-size: 10px;
 }
 .map .axis-title {
-  fill: #607368;
+  fill: var(--text-secondary);
   font-size: 10px;
 }
 .map .zero-label {
-  fill: #284c40;
+  fill: var(--accent);
   font-weight: 700;
 }
 .map .cell {
@@ -249,7 +257,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   font-size: 9px;
-  color: #67796c;
+  color: var(--text-secondary);
 }
 .legend-labels {
   margin-bottom: 7px;
@@ -257,7 +265,12 @@ h1 {
 .legend-gradient {
   height: 9px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #346783, #f5f5ef 50%, #b6583f);
+  background: linear-gradient(
+    90deg,
+    var(--heatmap-under),
+    var(--heatmap-zero) 50%,
+    var(--heatmap-over)
+  );
 }
 .legend-numbers {
   margin-top: 4px;
@@ -267,14 +280,14 @@ h1 {
   font-size: 10px;
   line-height: 1.7;
   margin: 0;
-  color: #566d5d;
+  color: var(--text-secondary);
 }
 .legend-section p span {
-  color: #869087;
+  color: var(--text-secondary);
   font-size: 9px;
 }
 .controls {
-  border-top: 1px solid #e7ebe4;
+  border-top: 1px solid var(--border);
   margin: 0 24px;
   padding: 22px 4px 0;
   display: grid;
@@ -291,9 +304,9 @@ h1 {
 }
 .slider-control output {
   font-variant-numeric: tabular-nums;
-  color: #285e4b;
+  color: var(--accent);
   font-size: 11px;
-  background: #edf3ec;
+  background: var(--accent-surface);
   padding: 5px 8px;
   border-radius: 4px;
   min-width: 48px;
@@ -302,7 +315,7 @@ h1 {
 .slider-control input {
   width: 100%;
   height: 26px;
-  accent-color: #376e58;
+  accent-color: var(--accent);
   cursor: pointer;
   margin: 10px 0 1px;
 }
@@ -310,13 +323,13 @@ h1 {
   display: flex;
   justify-content: space-between;
   font-size: 9px;
-  color: #7c8a7d;
+  color: var(--text-secondary);
   gap: 5px;
 }
 .interaction-hint {
   font-size: 10px;
   text-align: center;
-  color: #829082;
+  color: var(--text-secondary);
   margin: 21px 15px 19px;
 }
 .selected-result {
@@ -324,8 +337,8 @@ h1 {
   grid-template-columns: 1.15fr 1fr;
   gap: 30px;
   margin: 25px 0 24px;
-  background: #edf2e9;
-  border: 1px solid #dce5d6;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 23px 26px;
 }
@@ -340,7 +353,7 @@ h1 {
   margin: 9px 0 7px;
 }
 .result-copy p {
-  color: #6b7b69;
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.65;
   margin: 0;
@@ -358,7 +371,7 @@ h1 {
 }
 .result-values span {
   font-size: 10px;
-  color: #6e7d69;
+  color: var(--text-secondary);
 }
 .result-values strong {
   display: block;
@@ -371,17 +384,17 @@ h1 {
 .result-values small {
   font-size: 10px;
   white-space: nowrap;
-  color: #63745f;
+  color: var(--text-secondary);
 }
 .truth-value {
-  border-right: 1px solid #d4dfcd;
+  border-right: 1px solid var(--border);
   padding-right: 16px;
 }
 .truth-value strong {
-  color: #557350;
+  color: var(--truth);
 }
 .model-details {
-  border-bottom: 1px solid #dbe2d8;
+  border-bottom: 1px solid var(--border);
   padding: 0 4px;
 }
 .model-details summary {
@@ -400,7 +413,7 @@ h1 {
 .model-details summary span {
   font-size: 20px;
   font-weight: 400;
-  color: #84917d;
+  color: var(--text-secondary);
 }
 .model-details[open] summary span {
   transform: rotate(45deg);
@@ -408,7 +421,7 @@ h1 {
 .model-details p {
   line-height: 1.75;
   font-size: 12px;
-  color: #647561;
+  color: var(--text-secondary);
   max-width: 840px;
   margin: 0 0 15px;
 }
@@ -426,28 +439,28 @@ table {
 th,
 td {
   padding: 12px 8px;
-  border-bottom: 1px solid #e1e7dc;
+  border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums;
 }
 th {
   font-weight: 550;
-  color: #576d52;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 th span {
   font-weight: 400;
-  color: #899582;
+  color: var(--text-secondary);
 }
 td {
-  color: #687960;
+  color: var(--text-secondary);
 }
 .model-details .detail-note {
   font-size: 11px;
-  color: #7a8773;
+  color: var(--text-secondary);
 }
 footer {
   font-size: 9px;
-  color: #87917f;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 7px;
@@ -458,7 +471,7 @@ footer {
   height: 5px;
   width: 5px;
   flex-shrink: 0;
-  background: #8fa388;
+  background: var(--text-muted);
   border-radius: 50%;
 }
 .footer-end {
@@ -473,10 +486,11 @@ footer {
 }
 @media (max-width: 720px) {
   .site-header {
-    height: 65px;
-    padding: 0 20px;
+    min-height: 65px;
+    padding: 12px 20px;
   }
   .brand {
+    flex-basis: 100%;
     font-size: 17px;
   }
   .preview-label {
@@ -595,7 +609,7 @@ footer {
   }
   .map-panel + .map-panel {
     padding-top: 17px;
-    border-top: 1px solid #edf0e9;
+    border-top: 1px solid var(--border);
   }
   .legend-section {
     margin-top: 6px;
