@@ -6,8 +6,8 @@ abstract: An interactive browser-based lab for learning causal inference through
 authors:
   - family-names: Klein
     given-names: Kiril
-version: 1.0.0
-date-released: 2026-09-09
+version: 1.1.0
+date-released: 2026-09-11
 license: MIT
 repository-code: "https://github.com/kirilklein/causal-sandbox"
 url: "https://github.com/kirilklein/causal-sandbox"
