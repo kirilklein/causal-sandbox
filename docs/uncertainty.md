@@ -16,6 +16,28 @@ Increasing sample size while introducing confounding shows precision without
 causal validity. Individual outcome spread, heterogeneity of effects, sampling
 uncertainty, and systematic error are explicitly distinguished.
 
+## Visual teaching flow
+
+ATE, randomization, and confounding are prerequisites, not recapped in the opening.
+The first panel starts with an annotated estimate and interval. Redraw moves
+both; revealing the truth adds independent-study interval rows and a coverage
+count. Increasing sample size compresses the spread. Adding the C → A edge in
+the small DAG moves the unadjusted comparison away from the causal truth.
+
+The optional bootstrap starts with a concrete resample. Six original participant
+IDs visibly become zero, one, or multiple copies, using their actual selection
+counts. These are the first six people, not a handpicked example; every resample
+still uses all 200 draws. Repeating the process reveals its histogram and SE.
+The first resample is marked on the histogram to connect the two views.
+
+The p-value lesson keeps the observed estimate → SE → z calculation, zero-effect
+reference curve, and shaded tails in one panel. The precision exercise pairs the
+outcome-scale interval with the standardized null curve; both respond to the same
+controls. Descriptions of assumptions, formulas, and interpretation limits stay
+in disclosures. The uncertainty interpretation check appears after precision
+and bias have been explored. Native controls and immediate updates are used;
+there is no autoplay.
+
 ## Statistical contract
 
 `src/uncertainty.js` reuses `simulateLesson` with the common-cause baseline:
@@ -65,7 +87,9 @@ the original study or changing the bootstrap world clears the previous results.
 The histogram shows resampled mean differences, the original estimate, and the
 simulator truth for comparison. The SD of the bootstrap estimates (divisor B−1)
 is compared with the analytic SE. An inspectable table gives each participant's
-selection count in the first resample. Optional percentile bounds use linear
+selection count in the first resample. Drawing once reveals that resample only;
+repeating reveals the 1,000-estimate batch containing it. Further batch clicks
+replace the batch; changing the source clears both views. Optional percentile bounds use linear
 interpolation at indices (B−1)×0.025 and (B−1)×0.975 of sorted estimates.
 This simple interval is approximate and can undercover in small or skewed samples.
 It does not replace the normal interval earlier in the lesson.
@@ -89,12 +113,13 @@ check, not a general coverage guarantee. Browser checks follow search → glossa
 
 ## Presentation and validation
 
-Interval charts share a fixed −1 to 5 outcome-unit axis, with off-scale bounds
+Uncertainty interval charts share a fixed −1 to 5 outcome-unit axis, with off-scale bounds
 marked by arrows and exact numeric bounds in tables. Truth uses the shared
 truth color and a dashed vertical line. Missed intervals use the shared error
 mark plus a broken horizontal line, with an explicit coverage legend.
 This encoding describes coverage, not a test of causal validity. Before truth
 is revealed, the first interval has no truth-dependent styling.
+The p-value precision interval uses a fixed −1.6 to 1.6 outcome-unit axis.
 Null plots span z=−4 to 4; their displayed range does not truncate the p-value.
 
 Both chapters use native controls and disclosures, keep answer retries and

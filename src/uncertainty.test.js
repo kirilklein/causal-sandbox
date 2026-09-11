@@ -10,7 +10,7 @@ import {
   uncertaintyStudy,
   coverageSummary,
 } from "./uncertainty.js";
-import { fmtBound, intervalPlot } from "./uncertainty-view.js";
+import { fmtBound, intervalPlot, estimatePlot } from "./uncertainty-view.js";
 
 const close = (actual, expected, tolerance = 1e-10) =>
   assert.ok(
@@ -145,7 +145,7 @@ test("larger studies narrow intervals without removing confounding bias", () => 
 
 test("the first interval plot does not reveal simulator truth", () => {
   const study = uncertaintyStudy();
-  const hidden = intervalPlot([study]);
+  const hidden = intervalPlot([study]) + estimatePlot(study);
   assert.doesNotMatch(
     hidden,
     /inference-truth|covers truth|misses truth|Truth:/,

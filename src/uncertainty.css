@@ -131,3 +131,217 @@
   fill: var(--estimate);
   opacity: 0.65;
 }
+
+.inference-page .experiment-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.inference-page .experiment-heading h2 {
+  margin: 0;
+}
+.experiment-tag,
+.plot-heading {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.inference-page .inference-prompt {
+  font-weight: 600;
+  margin: 18px 0 8px;
+}
+.plot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 12px 0;
+}
+.legend-truth {
+  color: var(--truth);
+}
+.legend-miss {
+  color: var(--error-mark);
+}
+.inference-chart .estimate-label {
+  font-size: 18px;
+  font-weight: 600;
+  fill: var(--text);
+}
+.coverage-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.coverage-readout strong,
+.p-readout strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.coverage-readout > span,
+.p-readout > span {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.coverage-bar {
+  width: 100%;
+  height: 7px;
+  background: var(--error-mark);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.coverage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--estimate);
+}
+.assignment-chart {
+  max-width: 330px;
+  margin: 0 auto;
+}
+.assignment-chart .assignment-edges {
+  stroke: var(--causal-path);
+  stroke-width: 2;
+}
+.assignment-chart marker path {
+  fill: var(--causal-path);
+}
+.assignment-chart .node-c {
+  fill: var(--node-C);
+}
+.assignment-chart .node-a {
+  fill: var(--node-A);
+}
+.assignment-chart .node-y {
+  fill: var(--node-Y);
+}
+.assignment-chart text {
+  fill: var(--text);
+}
+.resample-trace {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.resample-person {
+  padding: 10px;
+  background: var(--surface-subtle);
+  border-radius: 8px;
+}
+.person-copies {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+.person-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  border: 1.5px solid;
+  border-radius: 50%;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.person-token.arm-0 {
+  color: var(--arm-0);
+}
+.person-token.arm-1 {
+  color: var(--arm-1);
+  border-radius: 3px;
+}
+.resampled-copies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.person-omitted {
+  font-size: 22px;
+  color: var(--text-secondary);
+}
+.person-pending {
+  color: var(--text-secondary);
+}
+.observed-chain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 20px 0;
+}
+.observed-chain > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.observed-chain div span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.observed-chain strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.p-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.paired-inference {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 20px;
+}
+.inference-page .plot-heading {
+  margin-bottom: 8px;
+}
+@media (max-width: 560px) {
+  .resample-trace {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .resample-person {
+    padding: 8px;
+  }
+  .person-copies {
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .observed-chain {
+    gap: 5px;
+  }
+  .observed-chain strong {
+    font-size: 22px;
+  }
+  .paired-inference {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .observed-chain div span {
+    font-size: 11px;
+  }
+}
+
+.arm-key-0 {
+  color: var(--arm-0);
+}
+.arm-key-1 {
+  color: var(--arm-1);
+}
+.bootstrap-first {
+  fill: var(--text);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}

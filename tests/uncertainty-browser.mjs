@@ -27,6 +27,7 @@ try {
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 3 of 14/);
   assert.equal(await page.locator("#single-plot .inference-truth").count(), 0);
   assert.equal(await page.locator("#coverage-section").isVisible(), false);
+  assert.equal(await page.locator("#uncertainty-check").isVisible(), false);
   const baseline = uncertaintyStudy();
   assert.match(
     await page.locator("#single-result").innerText(),
@@ -38,7 +39,13 @@ try {
   await page.locator("#restart").click();
   await page.locator("#reveal-coverage").waitFor();
   assert.equal(await page.locator("#single-result").innerText(), first);
-
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page
+      .locator('section[aria-labelledby="single-title"]')
+      .screenshot({ path: `/tmp/uncertainty-single-visual-${width}.png` });
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.locator("#reveal-coverage").focus();
   await page.keyboard.press("Enter");
   assert.equal(
@@ -86,6 +93,9 @@ try {
     await page.locator("#bootstrap").evaluate((el) => el.open),
     true,
   );
+  assert.equal(await page.locator("#run-bootstrap").isDisabled(), true);
+  await page.locator("#draw-bootstrap").click();
+  assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
   await page.locator("#run-bootstrap").click();
   const boot = bootstrapDifference(uncertaintyRows());
   assert.ok(
@@ -94,6 +104,20 @@ try {
     ),
   );
   assert.equal(await page.locator("#bootstrap-people tbody tr").count(), 200);
+  const trace = await page
+    .locator("#bootstrap-trace .resample-person")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        person: Number(node.dataset.person),
+        count: Number(node.dataset.copies),
+        tokens: node.querySelectorAll(".resampled-copies .person-token").length,
+      })),
+    );
+  assert.equal(trace.length, 6);
+  for (const item of trace) {
+    assert.equal(item.count, boot.firstCounts[item.person - 1]);
+    assert.equal(item.tokens, item.count);
+  }
   const counts = await page
     .locator("#bootstrap-people tbody tr td:last-child")
     .allTextContents();
@@ -124,6 +148,8 @@ try {
   );
   await page.locator("#bootstrap-confounded").check();
   assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
+  assert.equal(await page.locator("#run-bootstrap").isDisabled(), true);
+  await page.locator("#draw-bootstrap").click();
   await page.locator("#run-bootstrap").click();
   assert.match(
     await page.locator("#bootstrap-takeaway").innerText(),
@@ -225,6 +251,27 @@ try {
     }
   }
   await page.locator("#p-estimate").fill("0.35");
+  await page.locator("#p-n").fill("200");
+  const point = page.locator("#precision-interval .inference-interval circle");
+  const intervalLine = page
+    .locator("#precision-interval .inference-interval path")
+    .first();
+  const wideInterval = await intervalLine.getAttribute("d");
+  const estimatePosition = await point.getAttribute("cx");
+  const oldTail = await page
+    .locator("#precision-null-plot .inference-tail")
+    .first()
+    .getAttribute("d");
+  await page.locator("#p-n").fill("3200");
+  assert.equal(await point.getAttribute("cx"), estimatePosition);
+  assert.notEqual(await intervalLine.getAttribute("d"), wideInterval);
+  assert.notEqual(
+    await page
+      .locator("#precision-null-plot .inference-tail")
+      .first()
+      .getAttribute("d"),
+    oldTail,
+  );
   await page.locator("#p-n").fill("450");
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -278,11 +325,16 @@ try {
       .evaluate((el) => el === document.activeElement),
     true,
   );
+  await page.locator("#draw-bootstrap").click();
   await page.locator("#run-bootstrap").click();
   assert.ok(await page.locator("#bootstrap-results").isVisible());
   await page.locator("#uncertainty-redraw").click();
   assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
-  assert.match(await page.locator("#bootstrap-source").innerText(), /4218/);
+  assert.ok(
+    (await page.locator("#single-result").innerText()).includes(
+      fmt(uncertaintyStudy({ seed: 4218 }).estimate),
+    ),
+  );
   for (const [key, destination] of [
     ["standard-error", "uncertainty"],
     ["confidence-interval", "uncertainty"],

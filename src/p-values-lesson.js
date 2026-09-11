@@ -13,7 +13,7 @@ import {
   uncertaintyStudy,
   normalInference,
 } from "./uncertainty.js";
-import { fmt, fmtBound, pLabel, nullPlot } from "./uncertainty-view.js";
+import { fmt, pLabel, nullPlot, estimatePlot } from "./uncertainty-view.js";
 
 document.title = "What does a p-value tell us? — Causal Sandbox";
 document.querySelector("#app").innerHTML =
@@ -23,43 +23,40 @@ document.querySelector("#app").innerHTML =
     ${lessonNavigation({ currentOptional: "p-values" })}
     <p class="eyebrow">OPTIONAL · AFTER UNCERTAINTY</p>
     <h1 tabindex="-1">What does a p-value tell us?</h1>
-    <p class="small">Definitions: <a href="glossary/#p-value">p-value</a> · <a href="glossary/#confidence-interval">confidence interval</a>.</p>
-    <p class="intro">If the effect were zero, how unusual would a result this extreme be? A p-value answers that question under the null hypothesis and the other analysis assumptions.</p>
-    <p class="small">Start with <a href="?lesson=uncertainty">confidence intervals and uncertainty</a> if <a href="glossary/#standard-error">standard errors</a> and repeated studies are new to you.</p>
     <section class="panel" aria-labelledby="null-title">
-      <h2 id="null-title">1. Build a zero-effect world</h2>
-      <p>Use the same study design as the uncertainty lesson: 200 independent people, randomized treatment, and a risk score that affects outcome. Now set the treatment effect to zero. This is our <strong>null hypothesis</strong>.</p>
-      <p>Repeat the study. Each sample can still have a nonzero outcome difference. Divide that difference by its estimated standard error to get <strong>z</strong>: how far the estimate is from zero in standard-error units.</p>
-      <div id="null-plot"></div>
-      <p id="observed-p" class="inference-takeaway" role="status" hidden></p>
-      <p class="small">The curve is the standard normal approximation to z under the null. The dots below it are actual simulated null-study statistics; vertical position only separates them. Values beyond ±4 are placed at the plot edge.</p>
-      <div class="actions"><button id="repeat-null" class="primary">Repeat 100 null studies</button></div>
-      <p id="null-summary" role="status"></p>
-      <details><summary>Inspect the null studies</summary><div id="null-values" class="table-wrap"></div></details>
-    </section>
-    <section class="panel" aria-labelledby="observed-title">
-      <h2 id="observed-title">2. Compare one observed result</h2>
-      <p>This separate simulated study has an unknown effect for the analyst. Estimate its outcome difference and standard error, then compare its z statistic with the zero-effect reference above.</p>
+      <div class="experiment-heading"><h2 id="null-title">1. How unusual if the effect were zero?</h2><span class="experiment-tag">Randomized · 200 people</span></div>
       <div id="observed-result" aria-live="polite"></div>
-      <div class="actions"><button id="compare-observed" class="primary">Locate this result in the null world</button><button id="redraw-observed">Redraw observed study</button></div>
-      <div id="p-interpretation" hidden>
-        <p>The two shaded tails contain z values at least as far from zero as the observed z, in either direction. Their combined area is the <strong>two-sided p-value</strong>.</p>
-        <p>We calculate this area from the normal approximation, not by counting a small batch of dots. A batch can contain no equally extreme dots even when p is positive.</p>
-        <p id="observed-interval-note"></p>
-      </div>
+      <div class="actions"><button id="compare-observed" class="primary">Place this result on the curve</button><button id="redraw-observed">Draw a new observed study</button></div>
+      <div id="null-plot"></div>
+      <div id="observed-p" class="p-readout" role="status" hidden></div>
+      <div class="actions"><button id="repeat-null">Draw 100 zero-effect studies</button></div>
+      <p id="null-summary" class="small" role="status"></p>
+      <div id="p-interpretation" hidden><p class="inference-prompt">Both tails: results at least this far from zero.</p><p id="observed-interval-note" class="small"></p></div>
+      <details><summary>Read the curve and dots</summary>
+        <p>The curve approximates the distribution of z under a zero mean difference. <strong>z = estimate ÷ standard error</strong>: distance from zero in standard-error units. Dots are simulated zero-effect studies; their height just separates them.</p>
+        <p>The <a href="glossary/#p-value">two-sided p-value</a> is the combined area beyond ±|observed z|. It comes from the normal curve, not the small batch of dots. Values beyond ±4 sit at the edge; the calculation includes the full tails.</p>
+        <p>A batch need not put exactly 5 of 100 dots beyond the p = 0.05 cutoff. Its long-run rate is approximately 5% under the assumptions.</p>
+        <div id="null-values" class="table-wrap"></div>
+      </details>
     </section>
     <section class="panel" aria-labelledby="precision-title">
-      <h2 id="precision-title">3. Same estimated effect, different precision</h2>
-      <p>This is an illustrative comparison of study summaries. Keep the estimated difference at +0.35 and increase the sample size. Outcome spread and treatment proportions are held fixed; the standard error scales as 1/√n. These summaries are not newly simulated data.</p>
+      <div class="experiment-heading"><h2 id="precision-title">2. Same estimate. Smaller p-value?</h2><span class="experiment-tag">Illustrative study summaries</span></div>
       <div class="inference-controls">
         <div><label for="p-n">People per study <output id="p-n-value" for="p-n"></output></label><input id="p-n" type="range" min="200" max="3200" step="50" value="200"></div>
         <div><label for="p-estimate">Estimated difference <output id="p-estimate-value" for="p-estimate"></output></label><input id="p-estimate" type="range" min="-1" max="1" step="0.01" value="0.35"></div>
       </div>
-      <div id="precision-result" aria-live="polite"></div>
-      <div id="precision-null-plot"></div>
-      <p id="precision-note" role="status"></p>
-      <p>Then move the estimate slowly through zero and across the p = 0.05 boundary. The evidence changes continuously. Nothing special happens to the magnitude or practical importance of the effect at that cutoff.</p>
-      <p class="inference-takeaway">A larger study can give a smaller p-value for the same estimated effect. A tiny effect can have a tiny p-value. Read the magnitude and interval together, then ask whether the effect matters.</p>
+      <div class="paired-inference">
+        <div><p class="plot-heading">Outcome units</p><div id="precision-interval"></div></div>
+        <div><p class="plot-heading">Distance from zero in SE units</p><div id="precision-null-plot"></div></div>
+      </div>
+      <div id="precision-result" class="p-readout" aria-live="polite"></div>
+      <p id="precision-note" class="small" role="status"></p>
+      <p class="inference-prompt">The interval narrows. The effect need not grow.</p>
+      <details><summary>What is held fixed?</summary>
+        <p>This compares illustrative study summaries, not newly simulated datasets. Outcome spread and treatment proportions stay fixed; the standard error scales as 1/√n. Moving the second slider changes the estimated difference.</p>
+        <p>Zero sits on the matching 95% interval boundary at p = 0.05. Moving past it changes neither the effect's magnitude nor its practical importance abruptly.</p>
+        <p><a href="glossary/#confidence-interval">Confidence intervals</a> and <a href="glossary/#standard-error">standard errors</a> are explored in the <a href="?lesson=uncertainty">uncertainty lesson</a>.</p>
+      </details>
     </section>
     <details id="p-caveats"><summary>What a p-value does not mean</summary>
       <ul><li>It is not the probability that the null hypothesis is true.</li><li>It is not the probability that the result happened “by chance.” It is a probability of results at least as extreme under a specified model.</li><li>A small p-value does not establish causality, practical importance, or which assumption is wrong.</li><li>A large p-value does not establish no effect. An imprecise study can leave substantial effects compatible with its data.</li><li>Trying many analyses and reporting the smallest p-value undermines its usual interpretation. The analysis and reporting choices matter.</li></ul>
@@ -94,11 +91,11 @@ let compared = false;
 
 function resultHtml(result) {
   return result.status === "ok"
-    ? `<div class="inference-result"><div><span>Estimated mean difference</span><strong>${fmt(result.estimate)}</strong></div><div><span>95% confidence interval</span><strong>${fmtBound(result.lower)} to ${fmtBound(result.upper)}</strong></div></div><p class="small">Standard error ${fmt(result.se)} · z = ${fmt(result.z)}</p>`
+    ? `<div class="observed-chain"><div><span>Observed estimate</span><strong>${fmt(result.estimate)}</strong></div><span aria-hidden="true">÷</span><div><span>Standard error</span><strong>${fmt(result.se)}</strong></div><span aria-label="approximately">≈</span><div><span>SEs from zero (z)</span><strong>${fmt(result.z)}</strong></div></div>`
     : `<p>Unavailable: ${result.reason}</p>`;
 }
 function intervalNote(result) {
-  return `The matching 95% interval ${result.lower <= 0 && result.upper >= 0 ? "includes" : "excludes"} zero. Two-sided p ${pLabel(result.p)}. This does not decide whether the effect is practically important.`;
+  return `95% interval ${result.lower <= 0 && result.upper >= 0 ? "includes" : "excludes"} zero · p ${pLabel(result.p)}.`;
 }
 function renderObserved() {
   const comparison = compared && observed.status === "ok" ? observed : null;
@@ -112,8 +109,8 @@ function renderObserved() {
   el("p-interpretation").hidden = !comparison;
   el("observed-p").hidden = !comparison;
   if (comparison) {
-    el("observed-p").textContent =
-      `Two-sided p ${pLabel(observed.p)}: the combined shaded tails. Under a zero difference and the other analysis assumptions, approximately ${(100 * observed.p).toFixed(2)}% of repeated-study z statistics would be at least this far from zero.${Math.abs(observed.z) > 4 ? " The statistic is beyond the plotted range; the p-value includes the full tails." : ""}`;
+    el("observed-p").innerHTML =
+      `<strong>p ${pLabel(observed.p)}</strong><span>Combined shaded tails</span>`;
     el("observed-interval-note").textContent = intervalNote(observed);
   }
 }
@@ -123,7 +120,12 @@ function renderPrecision() {
   const result = normalInference(estimate, referenceSE * Math.sqrt(200 / n));
   el("p-n-value").textContent = n;
   el("p-estimate-value").textContent = fmt(estimate);
-  el("precision-result").innerHTML = resultHtml(result);
+  el("precision-interval").innerHTML = estimatePlot(result, {
+    domain: [-1.6, 1.6],
+    width: width("precision-interval"),
+  });
+  el("precision-result").innerHTML =
+    `<strong>p ${pLabel(result.p)}</strong><span>Estimate ${fmt(estimate)} · SE ${fmt(result.se)}</span>`;
   el("precision-null-plot").innerHTML = nullPlot(
     [],
     result,
@@ -147,7 +149,7 @@ el("repeat-null").addEventListener("click", () => {
   const valid = nullStudies.filter((s) => s.status === "ok");
   const below = valid.filter((s) => s.p < 0.05).length;
   el("null-summary").textContent =
-    `${below} of ${valid.length} zero-effect studies have p < 0.05 in this batch. The long-run rate is approximately 5% under the assumptions; it is not fixed at five per batch. ${100 - valid.length} studies unavailable.`;
+    `${below} of ${valid.length} zero-effect studies have p < 0.05.${100 - valid.length ? ` ${100 - valid.length} unavailable.` : ""}`;
   el("null-values").innerHTML =
     `<table><caption>Latest 100 null studies</caption><thead><tr><th scope="col">Seed</th><th scope="col">Estimate</th><th scope="col">z</th><th scope="col">p</th></tr></thead><tbody>${nullStudies.map((s) => `<tr><th scope="row">${s.seed}</th>${s.status === "ok" ? `<td>${fmt(s.estimate)}</td><td>${fmt(s.z)}</td><td>${pLabel(s.p)}</td>` : '<td colspan="3">Unavailable</td>'}</tr>`).join("")}</tbody></table>`;
   el("repeat-null").textContent = "Run another 100 null studies";
@@ -157,7 +159,6 @@ el("repeat-null").addEventListener("click", () => {
 el("compare-observed").addEventListener("click", () => {
   compared = true;
   renderObserved();
-  el("null-title").scrollIntoView({ block: "start" });
 });
 el("redraw-observed").addEventListener("click", () => {
   observed = uncertaintyStudy({
