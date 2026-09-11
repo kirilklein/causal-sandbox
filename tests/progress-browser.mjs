@@ -29,7 +29,7 @@ try {
   await page.locator("#lesson-menu-toggle").click();
   assert.equal(
     await page.locator(".lesson-progress label").innerText(),
-    "1 of 12 guided lessons complete",
+    "1 of 13 guided lessons complete",
   );
   assert.equal(
     await page.locator('[data-level="1"]').getAttribute("aria-describedby"),

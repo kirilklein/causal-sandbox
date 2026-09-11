@@ -312,6 +312,9 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#ipw-result").isVisible(), false);
   await page.locator("#continue").click();
+  await page.locator("#reveal-coverage").waitFor();
+  assert.match(await page.locator("h1").innerText(), /How uncertain/);
+  await page.locator("#continue").click();
   const third = await result();
   assert.equal(await page.locator("#balance").isVisible(), false);
   const unweightedGraph = await page
@@ -410,8 +413,8 @@ try {
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), weighted);
   await page.locator("#back").click();
-  assert.equal(await result(), second);
-  assert.equal(await selection.inputValue(), "0");
+  await page.locator("#reveal-coverage").waitFor();
+  assert.match(await page.locator("h1").innerText(), /How uncertain/);
   await page.goBack();
   assert.equal(await result(), third);
   assert.equal(await page.locator("#balance").isVisible(), false);
@@ -554,7 +557,7 @@ try {
     assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${level - 2} of 13`),
+      new RegExp(`Level ${level - 1} of 14`),
     );
     roleBaselines.push([level, baseline]);
     assert.equal(await page.locator(".lesson-result:visible").count(), 2);
@@ -666,7 +669,7 @@ try {
   await page.locator("#continue").click();
   assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
   assert.equal(await page.locator(".lesson-intuition").count(), 0);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 7 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 14/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
   assert.equal(await page.locator("input").count(), 1);
@@ -774,7 +777,7 @@ try {
   assert.equal(await result(), ninth);
   await page.locator("#continue").tap();
   const fifth = await result();
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 14/);
   assert.doesNotMatch(
     await page.locator("#lesson-graph svg").textContent(),
     /Smoking|Intermediate response|Follow-up score/,
@@ -862,7 +865,7 @@ try {
     .check();
   await page.locator("#continue").tap();
   const sixth = await result();
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 14/);
   assert.equal(await page.locator("#aipw-result").isVisible(), true);
   assert.equal(await page.locator("#outcome-quadratic").isChecked(), true);
   assert.equal(await page.locator("#treatment-quadratic").isChecked(), true);
@@ -927,7 +930,7 @@ try {
   );
   assert.match(
     await page.locator(".lesson-nav").innerText(),
-    /Level 9 of 13.*Optional revisit/,
+    /Level 10 of 14.*Optional revisit/,
   );
   assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
   assert.equal(await page.locator("#aipw-result").isVisible(), true);
@@ -969,7 +972,7 @@ try {
   // TMLE follows AIPW and its callback, with its own complete baseline.
   await page.locator("#continue").click();
   assert.match(await page.locator("h1").innerText(), /Targeting with TMLE/);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 11 of 14/);
   const tmleBaseline = await result();
   const progress = page.getByRole("slider", {
     name: "Apply the fitted update",
@@ -1058,7 +1061,7 @@ try {
   // Overlap removes curvature and restores both simple, correctly specified models.
   await page.locator("#continue").click();
   assert.match(await page.locator("h1").innerText(), /Too little overlap/);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 11 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 12 of 14/);
   const tenth = await result();
   const diagnostics = () => page.locator("#overlap-summary").innerText();
   const moderateDiagnostics = await diagnostics();
@@ -1144,7 +1147,7 @@ try {
     await page.setViewportSize({ width, height: 900 });
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      /Level 12 of 13/,
+      /Level 13 of 14/,
     );
     assert.equal(
       await page.locator("input, #restart, .lesson-results, #redraw").count(),
@@ -1196,7 +1199,7 @@ try {
     assert.equal(await result(), expected);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${position} of 13`),
+      new RegExp(`Level ${position + 1} of 14`),
     );
   }
   // Contents and the forward journey agree, including after a sandbox visit.
@@ -1222,6 +1225,7 @@ try {
   const titles = [
     "A randomized experiment",
     "A common cause",
+    "How uncertain is this estimate?",
     "Adjustment with IPW",
     "Adjustment with an outcome model",
     "A mediator",
@@ -1238,12 +1242,15 @@ try {
     titles,
   );
   for (let i = 0; i < titles.length; i++) {
+    await page
+      .getByRole("heading", { level: 1, name: titles[i], exact: true })
+      .waitFor();
     assert.equal(await page.locator("h1").innerText(), titles[i]);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${i + 1} of 13`),
+      new RegExp(`Level ${i + 1} of 14`),
     );
-    if (i < 8)
+    if (i < 9)
       assert.doesNotMatch(
         await page.locator(".learning").textContent(),
         /AIPW/,

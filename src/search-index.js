@@ -2,6 +2,14 @@ import { coreLessons, lessonHref, optionalChapters } from "./lesson-catalog.js";
 import { glossary } from "./glossary.js";
 
 const lessonDetails = {
+  uncertainty: [
+    "Read confidence intervals, explore repeated-study coverage, and distinguish precision from bias.",
+    "uncertainty confidence interval CI standard error sampling variability coverage precision bias",
+  ],
+  "p-values": [
+    "Compare results with a zero-effect world and connect p-values to confidence intervals.",
+    "p value pvalue p-value significance hypothesis test null probability precision",
+  ],
   randomization: [
     "Compare treatment groups when treatment is assigned at random.",
     "randomized experiment RCT",

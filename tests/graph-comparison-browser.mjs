@@ -112,13 +112,15 @@ try {
     /and treatment/,
   );
   await page.locator("#continue").click();
+  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#continue").click();
   assert.equal(await toggle.getAttribute("aria-expanded"), "false");
   await toggle.click();
   await previous.click();
-  assert.match(await visibleView.innerText(), /As you left it/);
+  assert.match(await visibleView.innerText(), /Starting view/);
   assert.match(
     await visibleView.locator("svg").getAttribute("aria-label"),
-    /and treatment/,
+    /risk score causes outcome/,
   );
   await page.locator("#reveal-ipw").click();
   assert.equal(await previous.getAttribute("aria-pressed"), "true");
@@ -127,7 +129,8 @@ try {
   await page.locator("#restart").click();
   assert.equal(await toggle.getAttribute("aria-expanded"), "false");
   await page.goBack();
-  assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+  await page.locator("#reveal-coverage").waitFor();
+  assert.match(await page.locator("h1").innerText(), /How uncertain/);
 
   // Check every core comparison at phone width, including stable geometry and
   // a fixed graph position when lesson titles wrap to different heights.

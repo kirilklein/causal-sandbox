@@ -1,5 +1,13 @@
 # Progressive education delivery
 
+The core [uncertainty lesson](uncertainty.md) follows confounding and precedes
+IPW at `?lesson=uncertainty`. One study's interval leads into repeated-study
+coverage, then a precision-versus-confounding comparison. Its optional
+`?lesson=p-values` chapter connects a zero-effect reference distribution,
+two-sided tail probabilities, and matching confidence intervals. Both explain
+the assumptions and common misinterpretations. The new core lesson retains
+numeric ID 14; existing numeric IDs keep their identities.
+
 Lesson 3's Explain disclosure plots fitted treatment probabilities against C for
 120 actual patients, with treatment encoded by the existing arm symbols. The
 logistic fit uses all 2,400 patients and C, including before Try IPW; inspecting
@@ -61,9 +69,9 @@ The optional [causal assumptions chapter](assumptions.md) makes exchangeability,
 positivity, consistency, and no interference tangible through four separate
 experiments. It is linked from Contents and the recap without changing core order.
 
-The default experience is a sequence of small experiments. Levels 1–11 implement randomization → one common cause → inverse probability
+The default experience is a sequence of small experiments. The first twelve lessons implement randomization → one common cause → uncertainty → inverse probability
 weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → TMLE targeting → poor overlap.
-Level 12, **Leaving the sandbox** (`?lesson=leaving-the-sandbox`), is a quiet
+The thirteenth lesson, **Leaving the sandbox** (`?lesson=leaving-the-sandbox`), is a quiet
 recap after overlap: define the question, defend the causal story and adjustment,
 and distinguish estimator assumptions from diagnostic checks. One emphasized takeaway
 leads into five supporting reminders and a practical sensitivity-analysis section
@@ -74,7 +82,7 @@ Optional detail covers exchangeability, positivity, consistency, and interferenc
 without treating all assumptions as inevitably violated or empirically testable.
 It has no simulation,
 estimates, or restart button. Back returns to overlap; the forward link opens the
-existing scenario sandbox through `?sandbox` as level 13.
+existing scenario sandbox through `?sandbox` as displayed level 14.
 
 An optional [clipping chapter](clipping-experiment.md) follows Poor overlap at
 `?lesson=clipping`. Compare estimates before and after probability clipping while
@@ -122,12 +130,12 @@ Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
 `?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,
 mediator, collider, and hidden confounding, at their new displayed positions.
 Numeric simulator IDs retain these original identities too. TMLE uses the new
-ID 11 at displayed position 10; overlap retains ID 10 at position 11. The optional revisit
+ID 11 at displayed position 11; overlap retains ID 10 at position 12. The optional revisit
 uses `?lesson=double-robustness&revisit=hidden-confounding`.
 
 Linear progression through Continue is the default. A quiet Contents toggle stays
 closed on every screen size. When opened, it groups lesson links into Foundations
-(1–4), Causal roles (5–7), and Models and limitations (8–12), followed by the
+(1–5), Causal roles (6–8), and Models and limitations (9–13), followed by the
 sandbox. The Contents control sits in the left margin, aligned with its panel, and uses
 a panel icon whose chevron indicates opening/closing. The panel opens without
 moving the lesson, and
@@ -137,13 +145,14 @@ Selecting a lesson resets its baseline and focuses its heading. Opening Contents
 preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
-Core experiments after randomization offer **Compare with previous** above the
+Core causal experiments after randomization offer **Compare with previous** above the
 diagram. Clicking opens a persistent Previous / Current switch and a short
 explanation of the lesson change. Shared nodes stay aligned and both views reserve
 the same space. The preview uses the preceding lesson's settings when arriving
 from that lesson ("As you left it"); otherwise it uses its labelled "Starting view".
 Only the graph switches: controls, estimates, and the sample remain on the current
-lesson. Navigation and Restart close the comparison. The AIPW hidden-confounding
+lesson. Uncertainty has a separate interval view; IPW's **Compare with common
+cause** returns to the confounding graph's starting view. Navigation and Restart close the comparison. The AIPW hidden-confounding
 revisit compares with AIPW; other optional chapters and the recap have no comparison.
 
 The core target remains the population total effect. The mediator lesson teaches
@@ -181,17 +190,18 @@ future work.
    implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 11.
-4. **Scenario sandbox (level 13):** available at any time and after the recap. Entry
+4. **Scenario sandbox (displayed level 14):** available at any time and after the recap. Entry
    starts a separate experiment and introduces its two measured covariates and
    their interaction. Lesson settings are not transferred into this world.
 
-Only implemented lessons appear in contents. Levels 1–12 now form a continuous
-sequence; “Level N of 13” includes the final sandbox. Continue marks a guided
+Only implemented lessons appear in contents. The 13 guided lessons now form a continuous
+sequence; “Level N of 14” includes the final sandbox. Continue marks a guided
 lesson complete, and the Introduction resumes the most recently opened lesson.
 Prediction history retains the first answer, later attempts, and eventual
 correctness. This state stays in local browser storage and can be reset from
 Contents. There are no scores, lesson-completion gates, accounts, or cross-device
-sync. Later chapters and confidence intervals are separate changes.
+sync. Confidence intervals and the optional p-value chapter use the separate
+inference experiment described above.
 
 ## Sampling variation (IV prerequisite, PR A)
 
