@@ -13,6 +13,61 @@ try {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const base = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+  const experimentUrl = new URL("docs/tmle-robustness-preview.html", base).href;
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(new URL("tmle/", base).href);
+    await page
+      .locator(".optional-preview a")
+      .filter({ hasText: "TMLE vs IPW" })
+      .click();
+    await page.locator("#tmle-map .cell").first().waitFor();
+    assert.equal(page.url(), experimentUrl);
+    await page
+      .getByRole("link", { name: "Browse topics", exact: true })
+      .click();
+    await page
+      .locator("summary")
+      .filter({ hasText: "What can these methods establish?" })
+      .click();
+    await page
+      .locator(".learning-topic-group .learning-topic-list a")
+      .filter({ hasText: "TMLE vs IPW" })
+      .click();
+    await page.locator("#tmle-map .cell").first().waitFor();
+    assert.equal(page.url(), experimentUrl);
+    await page
+      .getByRole("link", { name: "Targeting with TMLE", exact: false })
+      .click();
+    await page.getByRole("button", { name: "Contents", exact: true }).click();
+    await page
+      .getByRole("link", { name: "TMLE vs IPW: model errors", exact: true })
+      .click();
+    await page.locator("#tmle-map .cell").first().waitFor();
+    assert.equal(page.url(), experimentUrl);
+    await page.screenshot({
+      path: `/tmp/tmle-discovery-${width}.png`,
+      fullPage: true,
+    });
+    await page
+      .getByRole("link", { name: "Browse topics", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    const search = page.getByRole("searchbox", {
+      name: "Find a lesson or concept",
+    });
+    await search.fill("TMLE IPW misspecification");
+    await search.press("Enter");
+    await page.locator("#tmle-map .cell").first().waitFor();
+    assert.equal(page.url(), experimentUrl);
+    await page
+      .getByRole("link", { name: "Continue: Too little overlap", exact: false })
+      .click();
+    await page
+      .getByRole("heading", { name: "Too little overlap", exact: true })
+      .waitFor();
+  }
+  await page.setViewportSize({ width: 1440, height: 1100 });
   await page.goto(new URL("docs/tmle-robustness-preview.html", base).href);
   await page.locator("#tmle-map .cell").first().waitFor();
   assert.equal(await page.locator(".cell").count(), 242);

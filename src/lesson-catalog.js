@@ -78,6 +78,15 @@ export const optionalChapters = [
     href: "?lesson=arrow-strength",
   },
   {
+    id: "tmle-robustness",
+    menuTitle: "TMLE vs IPW: model errors",
+    after: 11,
+    title: "TMLE vs IPW: when models are wrong",
+    href: "docs/tmle-robustness-preview.html",
+    description:
+      "Explore two heatmaps to see how treatment- and outcome-model errors affect TMLE and IPW.",
+  },
+  {
     id: "clipping",
     menuTitle: "Weight clipping",
     after: 10,
@@ -91,6 +100,42 @@ export const optionalChapters = [
     menuTitle: "Population trimming",
     title: "Trimming and the target population",
     href: "?lesson=trimming",
+  },
+];
+
+export const lessonExperiments = [
+  {
+    id: "sampling-variation",
+    title: "Repeated studies: sampling variation",
+    href: "?lesson=randomization#repeated-studies",
+    description:
+      "Repeat a randomized study and watch estimates vary around the true effect.",
+    keywords: "randomization sampling variation precision random error",
+  },
+  {
+    id: "repeated-bias",
+    title: "Repeated studies: confounding bias",
+    href: "?lesson=confounding#repeated-studies",
+    description:
+      "Repeat a confounded comparison to see why more studies do not remove systematic error.",
+    keywords: "sampling variation bias systematic error",
+  },
+  {
+    id: "instrument-hidden-confounding",
+    title: "Instrument bias amplification",
+    href: "?lesson=instrument-hidden-confounding",
+    description:
+      "Compare adjustment with and without an instrument when hidden confounding remains.",
+    keywords: "instrumental variable unmeasured confounding bias amplification",
+  },
+  {
+    id: "paths-cancel",
+    title: "When causal paths cancel",
+    href: "?lesson=arrow-strength&example=paths-cancel",
+    description:
+      "See a near-zero association even though two opposing causal paths are active.",
+    keywords:
+      "causal arrow strength cancellation faithfulness zero association",
   },
 ];
 
