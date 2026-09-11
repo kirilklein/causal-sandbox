@@ -18,6 +18,8 @@ Learn causal inference through experiments. Free, in your browser, with nothing 
 
 Build intuition through guided experiments, one concept at a time.
 
+Try [TMLE vs IPW: when models are wrong](https://kirilklein.github.io/causal-sandbox/docs/tmle-robustness-preview.html): explore how model errors interact across two heatmaps.
+
 [![A guided mediator lesson with a causal graph, an adjustment checkbox, and the estimated and true total effects](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=mediator)
 
 ## [Explore scenarios →](https://kirilklein.github.io/causal-sandbox/?sandbox)
@@ -50,6 +52,14 @@ All simulations run in your browser. See the [methodology](https://kirilklein.gi
 - [Propensity-score clipping and trimming](https://kirilklein.github.io/causal-sandbox/propensity-score-clipping-trimming/)
 
 Each guide pairs an experiment with actions to try and an explanation of the result.
+
+## Citation
+
+If you use Causal Sandbox in teaching or research, please cite the software:
+
+> Klein, K. (2026). _Causal Sandbox_ (Version 1.0.0) [Computer software]. https://github.com/kirilklein/causal-sandbox
+
+GitHub also provides APA and BibTeX formats from [CITATION.cff](CITATION.cff).
 
 ## References
 
