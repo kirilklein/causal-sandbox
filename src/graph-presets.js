@@ -1,3 +1,4 @@
+import { adjustmentScenarios } from "./adjustment-scenarios.js";
 export function graphNode(id, label = id, options = {}) {
   return {
     id,
@@ -14,6 +15,37 @@ const edge = (from, to, weight) => ({ from, to, weight });
 const endpoints = () => [graphNode("A"), graphNode("Y")];
 
 export const graphPresets = [
+  ...adjustmentScenarios.map((scenario) => {
+    const ids = Object.fromEntries(
+      scenario.graph.nodes.map(([id], i) => [
+        id,
+        ["A", "Y"].includes(id) ? id : `v${i + 1}`,
+      ]),
+    );
+    return {
+      id: scenario.id,
+      name: `Quiz: ${scenario.title}`,
+      question: scenario.context,
+      action: scenario.action,
+      definitions: scenario.facts,
+      positions: Object.fromEntries(
+        scenario.graph.nodes.map(([id, x, y]) => [
+          ids[id],
+          { x: (x - 40) / 420, y: (y - 35) / 220 },
+        ]),
+      ),
+      graph: {
+        nodes: scenario.graph.nodes.map(([id]) =>
+          graphNode(ids[id], id, {
+            observed: !scenario.unmeasured.includes(id),
+          }),
+        ),
+        edges: scenario.graph.edges.map(([a, b], i) =>
+          edge(ids[a], ids[b], scenario.weights[i]),
+        ),
+      },
+    };
+  }),
   {
     id: "pkr",
     name: "P–K–R: a pretreatment collider",
@@ -84,6 +116,7 @@ export const graphPresets = [
 
 export function graphPreset(id) {
   return structuredClone(
-    graphPresets.find((p) => p.id === id) || graphPresets[0],
+    graphPresets.find((p) => p.id === id) ||
+      graphPresets.find((p) => p.id === "pkr"),
   );
 }

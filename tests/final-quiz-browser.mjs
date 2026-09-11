@@ -1,7 +1,10 @@
 import { chromium, expect } from "@playwright/test";
 import assert from "node:assert/strict";
 import { finalQuestions } from "../src/final-quiz-questions.js";
-
+import {
+  adjustmentChoice,
+  validAdjustmentSets,
+} from "../src/adjustment-model.js";
 const browser = await chromium.launch({
   headless: true,
   channel: process.env.CI ? undefined : "chrome",
@@ -13,7 +16,13 @@ try {
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (e) => errors.push(e.message));
+  const select = async (choice) => {
+    if (choice.startsWith("set:")) {
+      for (const id of choice.slice(4).split(","))
+        await page.locator(`[data-adjust-node="${id}"]`).click();
+    } else await page.locator(`input[value="${choice}"]`).check();
+  };
   await page.goto(`${url}?lesson=quiz`);
   await expect(page.locator("#quiz-question")).toBeVisible();
   const entryBefore = await page.evaluate(() =>
@@ -22,85 +31,117 @@ try {
   await page.goto(`${url}?lesson=leaving-the-sandbox`);
   await page.locator("#recap-quiz").click();
   await expect(page).toHaveURL(/lesson=final-quiz/);
-  assert.ok(
-    await page.evaluate(() =>
-      JSON.parse(
-        localStorage.getItem("causal-sandbox-progress"),
-      ).completedLessons.includes("leaving-the-sandbox"),
-    ),
-  );
-  await expect(page.locator(".lesson-nav-heading")).toContainText("Final quiz");
-  await page.locator("#lesson-menu-toggle").click();
-  await expect(
-    page.locator('#lesson-menu a[href$="lesson=final-quiz"]'),
-  ).toHaveAttribute("aria-current", "step");
-  await page.keyboard.press("Escape");
-  await expect(page.locator("#lesson-menu-toggle")).toBeFocused();
-  for (const [index, question] of finalQuestions.entries()) {
-    await expect(page.locator("#final-question")).toHaveText(question.title);
-    await expect(page.locator("#final-feedback")).toBeHidden();
+  await expect(page.locator("#warmup-start")).toBeVisible();
+  await page.locator('[data-adjust-node="C"]').focus();
+  await page.keyboard.press("Space");
+  await page.locator("#warmup-check").click();
+  await expect(page.locator("#warmup-feedback")).toContainText("That’s right");
+  await page.locator("#warmup-start").click();
+  for (const [index, q] of finalQuestions.entries()) {
+    await expect(page.locator("#final-question")).toHaveText(q.title);
     await expect(page.locator("#final-submit")).toBeDisabled();
-    await expect(page.locator(".quiz-assumptions").first()).not.toHaveAttribute(
-      "open",
-      "",
-    );
-    assert.equal(await page.locator(".quiz-figure figcaption").count(), 0);
+    await expect(page.locator('a[href*="preset="]')).toHaveCount(0);
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
-        `${question.id}: overflow at ${width}`,
+        `${q.id} width ${width}`,
       );
-      if ([0, 2, 7].includes(index))
+      if (q.adjustment)
         await page.screenshot({
-          path: `/tmp/final-quiz-${question.id}-${width}.png`,
+          path: `/tmp/final-quiz-${q.id}-${width}.png`,
           fullPage: true,
         });
     }
     if (index === 0) {
-      const curveLength = await page
-        .locator('.quiz-figure path[d*="Q"]')
-        .evaluate((path) => path.getTotalLength());
-      assert.ok(
-        curveLength > 250 && curveLength < 400,
-        "Direct A to Y curve is visible and correctly formed",
-      );
-      await page.locator('input[value="c-cm"]').focus();
-      await page.keyboard.press("Space");
-      await page.locator("#final-submit").focus();
+      // Toggle, keyboard, immutable wrong first answer, then a valid alternative.
+      await page.locator('[data-adjust-node="C"]').focus();
       await page.keyboard.press("Enter");
-      await expect(page.locator("#final-feedback")).toBeFocused();
+      await page.keyboard.press("Space");
+      await expect(page.locator("#final-submit")).toBeDisabled();
+      await select("set:C,M");
+      await page.locator("#final-submit").click();
       await expect(page.locator("#final-feedback")).toContainText("0 points");
+      await expect(page.locator(".adjustment-path")).toHaveCount(2);
+      await expect(page.locator('[data-adjust-node="C"]')).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
       await page.locator("#final-retry").tap();
     }
-    await page
-      .locator(`input[value="${index === 1 ? "unsure" : question.answer}"]`)
-      .check();
+    const choice =
+      index === 0
+        ? "set:L"
+        : index === 1
+          ? "unsure"
+          : q.adjustment
+            ? validAdjustmentSets(q).length
+              ? adjustmentChoice(validAdjustmentSets(q)[0])
+              : "impossible"
+            : q.answer;
+    await select(choice);
     await page.locator("#final-submit").click();
-    await expect(page.locator("#final-feedback")).toBeVisible();
+    await expect(page.locator("#final-feedback")).toBeFocused();
+    await expect(page.locator('a[href*="preset="]')).toHaveCount(0);
     if (index === 0)
       await expect(page.locator("#final-feedback")).toContainText(
         "score stays the same",
       );
     if (index === 1) {
       await page.locator("#final-back").click();
-      await expect(page.locator('input[value="c-cm"]')).toBeChecked();
-      await expect(page.locator("fieldset input").first()).toBeDisabled();
+      await expect(page.locator('[data-adjust-node="M"]')).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
       await page.locator("#final-next").click();
       await expect(page.locator('input[value="unsure"]')).toBeChecked();
     }
     await page.locator("#final-next").click();
   }
   await expect(page.locator(".quiz-summary h2")).toHaveText(
-    "Your results: 6/8",
+    "Your results: 10/12",
   );
-  await expect(
-    page.locator('.quiz-summary > ul a[href$="mediator-adjustment/"]'),
-  ).toHaveCount(1);
   await expect(page.locator(".final-quiz-review > details[open]")).toHaveCount(
     0,
+  );
+  await expect(
+    page.locator('.final-quiz-review a[href*="preset="]'),
+  ).toHaveCount(5);
+  const [lab] = await Promise.all([
+    page.waitForEvent("popup"),
+    page.locator('.quiz-experiment a[href*="preset="]').click(),
+  ]);
+  lab.on("pageerror", (e) => errors.push(e.message));
+  await expect(lab.locator("#lab-preset")).toHaveValue("adjustment");
+  await expect(lab.locator("#lab-adjustment input:checked")).toHaveCount(2);
+  await expect(lab.locator("#lab-model-caption")).toContainText("C");
+  await expect(lab.locator("#lab-model-caption")).toContainText("M");
+  const before = await lab.locator("#lab-estimates").innerText();
+  const truth = await lab.locator("#lab-truth").innerText();
+  await lab.locator("#lab-redraw").click();
+  await expect(lab.locator("#lab-seed")).toHaveText("4218");
+  assert.notEqual(await lab.locator("#lab-estimates").innerText(), before);
+  await expect(lab.locator("#lab-truth")).toHaveText(truth);
+  for (const width of [1280, 320]) {
+    await lab.setViewportSize({ width, height: 900 });
+    assert.ok(
+      await lab.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    await lab.screenshot({
+      path: `/tmp/quiz-building-box-${width}.png`,
+      fullPage: true,
+    });
+  }
+  await lab.locator("#lab-reset").click();
+  await expect(lab.locator("#lab-adjustment input:checked")).toHaveCount(0);
+  await expect(lab.locator("#lab-seed")).toHaveText("4217");
+  await lab.close();
+  await expect(page.locator(".quiz-summary h2")).toHaveText(
+    "Your results: 10/12",
   );
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -108,25 +149,17 @@ try {
       path: `/tmp/final-quiz-results-${width}.png`,
       fullPage: true,
     });
-    assert.ok(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    );
   }
   await page.locator(".final-quiz-review > details > summary").first().click();
   await expect(
     page.locator(".final-quiz-review > details").first(),
-  ).toContainText("Your first answer: C alone; or C and M");
+  ).toContainText("Your first answer: Adjust for C, M");
   await page.locator('[data-practice="0"]').click();
-  await page.locator('input[value="c-l"]').check();
+  await select("set:C");
   await page.locator("#final-submit").click();
-  await page.locator("#final-retry").click();
-  await page
-    .getByRole("button", { name: "Back to results", exact: true })
-    .click();
+  await page.locator("#final-results").click();
   await expect(page.locator(".quiz-summary h2")).toHaveText(
-    "Your results: 6/8",
+    "Your results: 10/12",
   );
   assert.equal(
     await page.evaluate(() =>
@@ -136,24 +169,18 @@ try {
   );
   await page.locator("#final-restart").click();
   await expect(page.locator("#final-quiz-content")).toContainText(
-    "Practice · Question 1",
+    "Practice · Choose your adjustment set · Question 1",
   );
-  await expect(page.locator("#final-feedback")).toBeHidden();
-  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.getByLabel("Color theme").selectOption("dark");
   await page.screenshot({
     path: "/tmp/final-quiz-dark-mobile.png",
     fullPage: true,
   });
   await page.reload();
-  await expect(page.locator("#final-question")).toHaveText(
-    finalQuestions[0].title,
-  );
-  await expect(page.locator("#final-feedback")).toBeHidden();
-  await page.goto(`${url}?quiz`);
-  await expect(page.locator("#quiz-question")).toBeVisible();
+  await expect(page.locator("#warmup-start")).toBeVisible();
   assert.deepEqual(errors, []);
   console.log(
-    "Final quiz: eight items, immutable scoring, retries, review, entry isolation, recap/Contents, keyboard/touch, desktop/mobile, dark mode and reset passed.",
+    "Final quiz: 12 questions, keyboard/touch selection, alternative sets, deferred templates, popup transfer, redraw, first-answer scoring, mobile/dark and reset passed.",
   );
 } finally {
   await browser.close();

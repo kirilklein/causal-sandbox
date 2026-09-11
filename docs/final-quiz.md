@@ -1,6 +1,6 @@
 # Final course quiz
 
-`?lesson=final-quiz` opens eight fixed challenges after the core course, linked
+`?lesson=final-quiz` opens twelve fixed challenges after the core course, linked
 from the recap and Contents. The entry quiz stays at `?lesson=quiz` (and `?quiz`)
 with its existing saved attempts. The final quiz does not require optional
 chapters or gate any content.
@@ -14,13 +14,17 @@ or replace the entry quiz. Main's graph renderer is shared by both assessments.
 Apply the [entry quiz review](entry-quiz-review.md): concrete scenarios, an explicit
 target, concise facts, complete accessible graphs, optional assumptions, and
 plausible alternatives with misconception-specific feedback. Avoid repeating entry
-stems or relying on the longest, most cautious option as the answer. Graphs show
-relationships needed for the decision; they are not extra controls. No redundant
+stems or relying on the longest, most cautious option as the answer. Five graph questions use the diagram itself to select an adjustment set; the other
+questions retain their authored choices. No redundant
 visible arrow lists or invented completion-time estimates.
 
 | Item                        | Decision after the course                                                                   | Difference from entry assessment                                                    |
 | --------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | Alternative adjustment sets | Find two separate places to block the same backdoor path while preserving mediation.        | Multiple sufficient sets, not just confounder versus mediator.                      |
+| Two confounding paths       | Select both variables needed to close separate paths.                                       | Requires a joint adjustment choice.                                                 |
+| Confounding and mediation   | Close both backdoor paths without blocking mediation.                                       | Combines overlapping confounding paths and the total-effect target.                 |
+| Collider trap               | Avoid opening a path, or close it at another node.                                          | Accepts valid sets that contain a collider when the opened path is also blocked.    |
+| No valid measured set       | Recognize an unblocked path through unmeasured U.                                           | Distinguishes no adjustment needed from no measured set working.                    |
 | Selective follow-up         | Explain why dropping a collider column does not undo sample restriction.                    | Conditions on the sample after randomization, not just covariate inclusion.         |
 | Standardization             | Compute 2.5 for the population versus 3 using the treated mix.                              | A numerical target-population decision; all required group information is supplied. |
 | AIPW correction             | Recognize a persistent −2 correction when the outcome-model limit is 4 and the effect is 2. | Uses the estimator's correction, not naming which estimator is consistent.          |
@@ -30,7 +34,7 @@ visible arrow lists or invented completion-time estimates.
 | Competing stories           | Recognize no shared adjustment choice across confounder and mediator graphs.                | Tests causal uncertainty separately from estimator agreement.                       |
 
 These are original scenarios, not reproduced textbook exercises. Per-item sources
-are in `src/final-quiz-questions.js`, exposed after answering. Conceptual sources:
+are in `src/final-quiz-questions.js` and `src/adjustment-scenarios.js`, exposed after answering. Conceptual sources:
 [DAGitty's d-separation tutorial](https://dagitty.net/learn/dsep/index.html),
 [Hernán & Robins](https://miguelhernan.org/whatifbook),
 [Bang & Robins](https://pubmed.ncbi.nlm.nih.gov/16401269/),
@@ -39,6 +43,30 @@ are in `src/final-quiz-questions.js`, exposed after answering. Conceptual source
 DAGitty, Bang & Robins' abstract, and Petersen were checked for this revision;
 TMLE also follows the implemented course's targeting explanation. The DOI's
 full text was unavailable during this pass.
+
+## Graph questions and building-box experiments
+
+An optional unscored warm-up introduces node selection before the five scored
+graph questions. Click/tap, Enter, and Space toggle measured covariates; A, Y,
+and unmeasured U cannot be selected. A checkmark and outline supplement colour.
+Submission checks the entire set; every valid set is accepted, not just minimal
+sets. No adjustment, no valid measured set, and unsure are distinct choices.
+Feedback highlights an open backdoor path or a causal path blocked by adjustment.
+
+Each graph shares its nodes and edges with a building-box template. Links appear
+only on the results page, including one recommended experiment based on the first
+missed graph (or a collider experiment if all were correct). They open in a new
+tab, transferring the first selected set through the `adjust` URL parameter, so
+the quiz results remain available. All five templates are linked in answer review.
+The building box supports changing arrows, measurement and adjustment, comparing
+estimates to intervention truth, and drawing another sample.
+
+The rules follow [DAGitty's d-separation tutorial](https://dagitty.net/learn/dsep/index.html),
+checked September 11, 2026. The selection interaction is inspired by the
+[daggle app](https://doi.org/10.1093/ije/dyad038), linked in #229. These are original
+graph scenarios. The grading helper is scoped to the authored backdoor-adjustment
+questions, whose treatment descendants lie on causal paths; it is not a general
+identification engine for arbitrary building-box graphs.
 
 ## Attempt and feedback behavior
 
@@ -55,7 +83,7 @@ or reloading starts over. The entry quiz's session storage and course progress a
 separate. No new analytics events, environment variables, secrets, dependencies,
 or backend are introduced. Existing optional site integrations are unchanged.
 
-The score describes these eight decisions. It does not certify mastery, estimate
+The score describes these twelve decisions. It does not certify mastery, estimate
 an ability level, or provide an independent pre/post learning measure. Feedback
 can help with later questions, intentionally. A think-aloud pilot should check
 whether graph reading, numerical burden, or answer cues dominate the intended
@@ -63,7 +91,8 @@ reasoning; difficulty and educational effectiveness remain uncalibrated.
 
 ## Validation
 
-Unit tests exercise every choice and retry against immutable first-answer
+Unit tests exercise every measured subset against independently authored validity
+rules, check regression recovery across 20 samples per template, and exercise every choice and retry against immutable first-answer
 scoring, question metadata, and target versus treated-population averaging.
 `tests/final-quiz-browser.mjs` covers all items, recap and Contents navigation,
 entry-attempt isolation, feedback, back/retry/results behavior, reset, keyboard,

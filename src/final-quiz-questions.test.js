@@ -1,12 +1,18 @@
+import {
+  gradeAdjustment,
+  validAdjustmentSets,
+  adjustmentChoice,
+} from "./adjustment-model.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { finalQuestions, recordFinalAnswer } from "./final-quiz-questions.js";
 import { coreLessons } from "./lesson-catalog.js";
 
 test("final quiz items have one key, explained alternatives, core review links, and complete graphs", () => {
-  assert.equal(finalQuestions.length, 8);
-  assert.equal(new Set(finalQuestions.map(({ id }) => id)).size, 8);
+  assert.equal(finalQuestions.length, 12);
+  assert.equal(new Set(finalQuestions.map(({ id }) => id)).size, 12);
   for (const question of finalQuestions) {
+    if (question.adjustment) continue;
     assert.equal(
       question.choices.filter(([id]) => id === question.answer).length,
       1,
@@ -41,24 +47,36 @@ test("final quiz items have one key, explained alternatives, core review links, 
 
 test("first answers stay immutable through wrong, correct, and unsure practice submissions", () => {
   for (const question of finalQuestions) {
-    for (const choice of [...question.choices.map(([id]) => id), "unsure"]) {
+    const choices = question.adjustment
+      ? [
+          ...validAdjustmentSets(question).map(adjustmentChoice),
+          "none",
+          "impossible",
+          "unsure",
+        ]
+      : [...question.choices.map(([id]) => id), "unsure"];
+    const correct = (choice) =>
+      question.adjustment
+        ? gradeAdjustment(question, choice).correct
+        : choice === question.answer;
+    for (const choice of choices) {
       const attempts = new Map();
       assert.equal(
         recordFinalAnswer(attempts, question, choice),
-        choice === question.answer,
+        correct(choice),
       );
       const original = { ...attempts.get(question.id) };
-      for (const retry of [...question.choices.map(([id]) => id), "unsure"]) {
+      for (const retry of choices) {
         assert.equal(
           recordFinalAnswer(attempts, question, retry),
-          retry === question.answer,
+          correct(retry),
         );
         assert.deepEqual(attempts.get(question.id), original);
         assert.equal(attempts.size, 1);
       }
       assert.throws(
         () => recordFinalAnswer(attempts, question, "missing"),
-        /Unknown answer/,
+        /Unknown (adjustment )?answer/,
       );
       assert.deepEqual(attempts.get(question.id), original);
     }

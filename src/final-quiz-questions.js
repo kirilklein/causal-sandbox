@@ -1,3 +1,5 @@
+import { finalGraphScenarios } from "./adjustment-scenarios.js";
+import { gradeAdjustment, validAdjustmentChoice } from "./adjustment-model.js";
 const dagSource = [
   "DAGitty: d-separation",
   "https://dagitty.net/learn/dsep/index.html",
@@ -9,67 +11,7 @@ const whatIf = [
 
 // Original transfer questions for learners who have completed the core course.
 export const finalQuestions = [
-  {
-    id: "adjustment",
-    title: "Two analysts, two adjustment sets",
-    context:
-      "A study estimates the total effect of a training offer (A) on productivity (Y). The graph is complete; C and L precede the offer.",
-    facts: [
-      ["C", "Job grade"],
-      ["L", "Baseline workload"],
-      ["M", "Skills gained after the offer"],
-    ],
-    graph: {
-      nodes: [
-        ["C", 90, 50],
-        ["L", 410, 50],
-        ["A", 90, 230],
-        ["M", 250, 230],
-        ["Y", 410, 230],
-      ],
-      edges: [
-        ["C", "A"],
-        ["C", "L"],
-        ["L", "Y"],
-        ["A", "M"],
-        ["M", "Y"],
-        ["A", "Y", -145],
-      ],
-      description:
-        "C causes A and L; L causes Y. A causes M and Y; M causes Y. The direct A to Y arrow curves above M.",
-    },
-    assumptions:
-      "All variables are measured. Consistency, no interference, and treatment positivity hold. Compare valid adjustment sets with correctly specified estimation; do not rank their precision.",
-    prompt: "Which pair of sets can each identify the total effect?",
-    choices: [
-      [
-        "c-cm",
-        "C alone; or C and M",
-        "C alone works, but including M blocks part of the total effect.",
-      ],
-      [
-        "c-l",
-        "C alone; or L alone",
-        "Either C or L blocks A ← C → L → Y while leaving both causal paths intact.",
-      ],
-      [
-        "l-m",
-        "L alone; or M alone",
-        "L blocks the backdoor path. M leaves it open and blocks part of the effect.",
-      ],
-      [
-        "cm-lm",
-        "C and M; or L and M",
-        "Both sets block confounding, but both also block the mediated contribution through M.",
-      ],
-    ],
-    answer: "c-l",
-    reviewLessons: { "c-cm": "mediator", "cm-lm": "mediator" },
-    explanation:
-      "A valid adjustment set need not contain every baseline variable. Here C and L are alternative places to block the same backdoor path. Neither requires adjusting for M.",
-    lesson: "confounding",
-    sources: [dagSource],
-  },
+  ...finalGraphScenarios,
   {
     id: "selection",
     title: "A randomized study with selective follow-up",
@@ -416,9 +358,15 @@ export const finalQuestions = [
 ];
 
 export function recordFinalAnswer(attempts, question, choice) {
-  if (choice !== "unsure" && !question.choices.some(([id]) => id === choice))
+  if (
+    question.adjustment
+      ? !validAdjustmentChoice(question, choice)
+      : choice !== "unsure" && !question.choices.some(([id]) => id === choice)
+  )
     throw new Error(`Unknown answer for ${question.id}: ${choice}`);
-  const correct = choice === question.answer;
+  const correct = question.adjustment
+    ? gradeAdjustment(question, choice).correct
+    : choice === question.answer;
   if (!attempts.has(question.id))
     attempts.set(question.id, { choice, correct });
   return correct;

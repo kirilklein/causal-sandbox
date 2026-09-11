@@ -30,6 +30,7 @@ let graph = structuredClone(preset.graph),
 let graphModificationCaptured = false;
 let selection = { kind: "node", id: "A" },
   timer;
+let sampleSeed = 4217;
 const indices = [0, 2, 3, 4],
   methods = ["Raw association", "Regression", "IPW", "AIPW"];
 let nodePositions = {},
@@ -43,7 +44,7 @@ $("#app").innerHTML = `
 <header class="lab-header"><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a><a href="?sandbox&resume=graph-lab">Explore scenarios</a>${themeControl()}</header>
 <main class="graph-lab">
   <section class="lab-intro"><div class="eyebrow">GRAPH SANDBOX</div><h1>Build a world. Test an estimate.</h1><p>Start with a graph, change its relationships, and compare your analysis with the known effect.</p></section>
-  <section class="lab-preset-bar" aria-label="Starting graph"><label>Starting graph<select id="lab-preset">${graphPresets.map((p) => `<option value="${p.id}">${p.name}</option>`).join("")}</select></label><div><h2 id="lab-question"></h2><p id="lab-action"></p></div><button id="lab-reset">Reset graph</button></section>
+  <section class="lab-preset-bar" aria-label="Starting graph"><label>Starting graph<select id="lab-preset">${graphPresets.map((p) => `<option value="${p.id}">${p.name}</option>`).join("")}</select></label><div><h2 id="lab-question"></h2><p id="lab-action"></p><details id="lab-definitions" hidden><summary>Variable meanings</summary><dl id="lab-variable-meanings" class="quiz-facts"></dl></details></div><button id="lab-reset">Reset graph</button></section>
   <div class="lab-layout">
     <section class="lab-panel lab-editor" aria-label="Graph workspace">
       <div class="lab-panel-heading"><h2>Your causal world</h2><span id="lab-count"></span></div>
@@ -74,7 +75,7 @@ $("#app").innerHTML = `
       <p id="lab-weight-warning" class="lab-note" role="status" hidden></p>
       <details><summary>Sample and weight diagnostics</summary><div id="lab-diagnostics"></div><p>Propensities are clipped to [0.02, 0.98]. Effective sample size (ESS) describes weight concentration, not regression precision. Clipping and ESS cannot establish causal validity.</p></details>
       <details><summary>How this world generates data</summary><div id="lab-equations"></div><p>Each continuous variable equals its intercept plus its weighted parents plus independent noise. Noise is standard normal or uniform on [−√3, √3], multiplied by its noise scale. A is drawn from a logistic treatment probability; arrows into A change log odds.</p><p>Truth comes from paired interventions using the same noise. A zero-strength arrow has no numerical effect; it remains in the drawing until removed. The graph must remain acyclic even at zero strength.</p></details>
-      <p class="lab-sample-note">One fixed sample of 2,400 people · Seed 4217.<br>New graph edits reuse background draws. This is a separate experiment from the lessons and scenario sandbox.</p>
+      <button id="lab-redraw">Draw a new sample</button><p class="lab-caption">The graph determines valid adjustment. An invalid choice can look accurate when arrows are weak or biases cancel; one sample cannot establish validity.</p><p class="lab-sample-note">2,400 people · Seed <span id="lab-seed">4217</span>.<br>New graph edits reuse background draws. This is a separate experiment from the lessons and scenario sandbox.</p>
     </section>
   </div>
 </main>`;
@@ -195,7 +196,7 @@ function marker(error) {
 
 function renderResults() {
   clearTimeout(timer);
-  const sample = simulateGraph(graph),
+  const sample = simulateGraph(graph, { seed: sampleSeed }),
     result = analyzeGraph(graph, sample.data, adjustment);
   const values = indices.map((i) => result.values[i]);
   $("#lab-truth").textContent = sample.truth.toFixed(2);
@@ -298,7 +299,10 @@ function reset(id) {
   clearTimeout(timer);
   preset = graphPreset(id);
   graph = structuredClone(preset.graph);
+  sampleSeed = 4217;
+  $("#lab-seed").textContent = sampleSeed;
   arrangeGraph();
+  if (preset.positions) nodePositions = structuredClone(preset.positions);
   if (preset.id === "pkr")
     nodePositions = {
       v1: { x: 0.15, y: 0 },
@@ -320,9 +324,18 @@ function reset(id) {
   $("#lab-preset").value = preset.id;
   $("#lab-question").textContent = preset.question;
   $("#lab-action").textContent = preset.action;
+  $("#lab-definitions").hidden = !preset.definitions;
+  $("#lab-definitions").open = false;
+  $("#lab-variable-meanings").innerHTML = (preset.definitions || [])
+    .map(
+      ([id, label]) =>
+        `<div><dt>${escape(id)}</dt><dd>${escape(label)}</dd></div>`,
+    )
+    .join("");
   $("#lab-validation").textContent = "";
   const url = new URL(location.href);
   url.searchParams.set("preset", preset.id);
+  url.searchParams.delete("adjust");
   history.replaceState(null, "", url);
   showTab("world");
   renderEditor();
@@ -615,5 +628,24 @@ $(".lab-tabs").addEventListener("keydown", (event) => {
   showTab(tab);
   $(`#lab-${tab}-tab`).focus();
 });
+const startingSelection = new URLSearchParams(location.search).get("adjust");
 reset(preset.id);
+if (startingSelection !== null) {
+  const labels = startingSelection.split(",");
+  adjustment = graph.nodes
+    .filter(
+      (node) =>
+        node.observed &&
+        !["A", "Y"].includes(node.id) &&
+        labels.includes(node.label),
+    )
+    .map((node) => node.id);
+  renderEditor();
+  renderResults();
+}
+$("#lab-redraw").addEventListener("click", () => {
+  sampleSeed += 1;
+  $("#lab-seed").textContent = sampleSeed;
+  renderResults();
+});
 new ResizeObserver(renderGraph).observe($(".lab-graph-scroll"));
