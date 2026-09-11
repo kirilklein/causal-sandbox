@@ -62,7 +62,7 @@ const lessons = [
       "Increase how strongly the risk score influences treatment assignment. Compare the outcome difference with the true effect.",
     explanation:
       "When the risk score affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment, so their outcome difference mixes the treatment effect with the risk score's influence. Returning the slider to zero restores random assignment, though C still affects the outcome. With sampling variation, the estimate need not move steadily away from truth.",
-    next: "How can we compare the groups while accounting for their different risk scores?",
+    next: "Bias shifts the comparison; sampling variation makes estimates fluctuate. What can one study tell us about its precision?",
   },
   {
     question:
@@ -194,6 +194,8 @@ lessons[10] = {
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
 lessons[11] = {};
+// The uncertainty chapter has its own renderer and retains a stable numeric ID.
+lessons[13] = {};
 for (const [id, slug, title] of coreLessons)
   Object.assign(lessons[id - 1], { slug, title });
 const availableLevels = coreLessons.map(([id]) => id);
@@ -201,7 +203,7 @@ const hiddenCallback = {
   ...lessons[8],
   title: "Revisit hidden confounding with AIPW",
   transition:
-    "We return to the hidden-confounding experiment from level 7, with simple relationships and smoking’s influence reset to zero. Both models use C; neither can use smoking status. AIPW is now included in the comparison.",
+    "We return to the hidden-confounding experiment from the hidden-common-cause lesson, with simple relationships and smoking’s influence reset to zero. Both models use C; neither can use smoking status. AIPW is now included in the comparison.",
   explanation:
     "AIPW combines the same predictions and weights as before. A correct model for one part of an identified causal problem can protect against the other model being wrong; it cannot supply missing confounding information. As smoking’s influence grows, all three estimates can miss the true effect. Agreement between methods does not establish that confounding has been controlled.",
   next: "Return to the fixed model experiment, or continue to targeting: can we build the correction into the outcome predictions?",
@@ -234,7 +236,7 @@ function enterFromUrl(focus = true) {
     );
     return;
   }
-  const named = lessons.findIndex((lesson) => lesson.slug === topic) + 1;
+  const named = lessons.findIndex((lesson) => lesson?.slug === topic) + 1;
   const requested = topic ? named : Number(params.get("level"));
   const level = availableLevels.includes(requested) ? requested : 1;
   const callback =
@@ -356,17 +358,24 @@ function enterIntroduction(focus = true, animate = false) {
 }
 
 function enter(level, focus = true, callback = false, restart = false) {
+  if (level === 14) {
+    location.assign(lessonUrl(level));
+    return;
+  }
   document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
   const position = availableLevels.indexOf(revisiting ? 6 : level);
   const previous = revisiting ? 6 : availableLevels[position - 1];
+  const previousExperiment = previous === 14 ? 2 : previous;
   previousGraph =
-    !recap && previous
+    !recap && previousExperiment
       ? {
           state:
-            state?.level === previous ? { ...state } : lessonBaseline(previous),
-          visited: state?.level === previous,
+            state?.level === previousExperiment
+              ? { ...state }
+              : lessonBaseline(previousExperiment),
+          visited: state?.level === previousExperiment,
         }
       : null;
   comparisonOpen = false;
@@ -429,7 +438,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
       ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Here, the true relationship includes C² − 1. A linear model using only C cannot capture this curve. It needs a C² term and an intercept to represent the relationship correctly.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
-      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
+      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in the outcome-regression lesson, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       `
       }
@@ -663,6 +672,10 @@ function leavingTheSandbox() {
 }
 function navigate(level, callback = false) {
   const url = lessonUrl(level);
+  if (level === 14) {
+    location.assign(url);
+    return;
+  }
   history.pushState(
     null,
     "",

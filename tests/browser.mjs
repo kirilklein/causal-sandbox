@@ -46,7 +46,7 @@ try {
   );
   const references = sourceFooter.locator(".site-references");
   assert.equal(await references.getAttribute("open"), null);
-  assert.equal(await references.locator("li").count(), 10);
+  assert.equal(await references.locator("li").count(), 11);
   assert.ok(
     await references
       .locator("li")

@@ -4,6 +4,7 @@ export const coreGroups = [
     lessons: [
       [1, "randomization", "A randomized experiment"],
       [2, "confounding", "A common cause"],
+      [14, "uncertainty", "How uncertain is this estimate?"],
       [3, "ipw", "Adjustment with IPW", "inverse-probability-weighting/"],
       [4, "outcome-regression", "Adjustment with an outcome model"],
     ],
@@ -29,6 +30,15 @@ export const coreGroups = [
 ];
 
 export const optionalChapters = [
+  {
+    id: "p-values",
+    menuTitle: "P-values",
+    after: 14,
+    title: "What does a p-value tell us?",
+    href: "?lesson=p-values",
+    description:
+      "Compare a result with a zero-effect world, then connect its p-value to precision and confidence intervals.",
+  },
   {
     id: "propensity-score",
     menuTitle: "Propensity scores",

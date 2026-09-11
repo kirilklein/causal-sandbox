@@ -34,7 +34,9 @@ export function lessonNavigation({
     : introduction
       ? "Introduction"
       : currentOptional
-        ? ["propensity-score", "assumptions"].includes(currentOptional)
+        ? ["propensity-score", "assumptions", "p-values"].includes(
+            currentOptional,
+          )
           ? "Refresher"
           : "Advanced lesson"
         : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;

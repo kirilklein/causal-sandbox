@@ -27,6 +27,13 @@ if (page === "glossary") {
   } else if (["learn", "topics"].includes(lesson)) {
     const { renderLearning } = await import("./learning.js");
     renderLearning(lesson);
+  } else if (
+    lesson === "uncertainty" ||
+    (!lesson && params.get("level") === "14")
+  ) {
+    await import("./uncertainty-lesson.js");
+  } else if (lesson === "p-values") {
+    await import("./p-values-lesson.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
   } else if (lesson === "propensity-score") {
@@ -49,6 +56,11 @@ if (page === "glossary") {
 }
 
 const references = [
+  [
+    "Confidence intervals and p-values",
+    "Greenland et al. (2016), A guide to statistical misinterpretations",
+    "https://link.springer.com/article/10.1007/s10654-016-0149-3",
+  ],
   [
     "Randomization and outcome regression",
     "Hernán & Robins (2020), Causal Inference: What If",

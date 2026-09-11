@@ -164,7 +164,7 @@ try {
   assert.equal(await page.locator("#quiz-arrow-G").count(), 1);
   await page.getByRole("link", { name: /explore deeper topics/ }).click();
   await expect(page.locator("h1")).toHaveText("Refresh & go deeper");
-  assert.equal(await page.locator(".learning-topic-group").count(), 3);
+  assert.equal(await page.locator(".learning-topic-group").count(), 4);
   assert.equal(await page.locator(".learning-topic-group[open]").count(), 0);
   await page.locator(".learning-topic-group > summary").first().click();
   await expect(page.locator(".learning-topic-group[open]")).toContainText(

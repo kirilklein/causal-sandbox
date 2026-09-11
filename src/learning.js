@@ -39,6 +39,8 @@ export function learningFrame(title, current, body) {
 }
 
 const background = {
+  uncertainty: ["randomization", "confounding"],
+  "p-values": ["uncertainty"],
   "propensity-score": ["confounding", "ipw"],
   "outcome-regression": ["confounding"],
   mediator: ["confounding", "outcome-regression"],
@@ -79,6 +81,13 @@ export function backgroundLinks(topic) {
 }
 
 const groups = [
+  {
+    title: "How uncertain is the result?",
+    summary:
+      "Sampling uncertainty, confidence intervals, and interpreting p-values.",
+    refreshers: ["uncertainty"],
+    advanced: ["p-values"],
+  },
   {
     title: "What should I adjust for?",
     summary: "Common causes, causal pathways, and harmful adjustment.",

@@ -435,7 +435,7 @@ export const glossary = {
     summary:
       "Sampling variation moves estimates between repeated samples; bias is systematic average error relative to the target.",
     detail: [
-      "The difference from truth in one sample is not itself a measurement of statistical bias. Causal Sandbox uses repeated studies to separate random spread from persistent displacement. Its main plots show point estimates, not confidence intervals or significance tests.",
+      "The difference from truth in one sample is not itself a measurement of statistical bias. Causal Sandbox uses repeated studies to separate random spread from persistent displacement. The uncertainty lesson adds confidence intervals for an unadjusted mean difference; the estimator sandbox shows point estimates.",
     ],
     related: {
       label: "Compare repeated randomized studies",

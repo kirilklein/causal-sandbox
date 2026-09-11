@@ -1,0 +1,128 @@
+.inference-page .inference-result {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface-subtle);
+  border-radius: 10px;
+  margin: 18px 0;
+}
+.inference-result strong {
+  display: block;
+  font-size: clamp(23px, 4vw, 32px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.inference-result span {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.inference-page .inference-chart {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.inference-chart text {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+.inference-chart path {
+  fill: none;
+}
+.inference-chart .inference-grid {
+  stroke: var(--grid);
+}
+.inference-chart .inference-truth {
+  stroke: var(--truth);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.inference-interval {
+  stroke: var(--estimate);
+  fill: var(--estimate);
+  stroke-width: 2;
+}
+.inference-interval.missed {
+  stroke: var(--error-mark);
+  fill: var(--error-mark);
+}
+.inference-interval.missed > path {
+  stroke-dasharray: 3 2;
+}
+.inference-density {
+  stroke: var(--estimate);
+  stroke-width: 2;
+}
+.inference-chart .inference-tail {
+  fill: color-mix(in srgb, var(--accent) 35%, var(--surface));
+  stroke: var(--accent);
+}
+.inference-observed {
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.null-dot {
+  fill: var(--estimate);
+}
+.inference-page .inference-controls {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+.inference-controls label {
+  display: block;
+  font-weight: 600;
+}
+.inference-controls label output {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+.inference-controls input[type="range"] {
+  width: 100%;
+  margin-top: 14px;
+  accent-color: var(--accent);
+  background: var(--border-strong);
+  height: 6px;
+  margin-block: 18px;
+}
+.inference-controls input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+}
+.inference-controls input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+}
+.inference-controls input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+.inference-page .inference-takeaway {
+  border-left: 3px solid var(--truth);
+  background: var(--surface-subtle);
+  padding: 14px 18px;
+}
+.inference-page .inference-check button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  text-align: left;
+}
+.inference-page .inference-check button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
+.inference-page button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+@media (max-width: 560px) {
+  .inference-page .inference-result {
+    padding: 12px;
+    gap: 10px;
+  }
+  .inference-page .inference-chart text {
+    font-size: 11px;
+  }
+}
