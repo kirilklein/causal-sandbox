@@ -3,13 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" />
+    <base href="%BASE_URL%" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
     <title>TMLE vs IPW: when models are wrong · Causal Sandbox</title>
-    <link rel="stylesheet" href="../src/tmle-robustness-preview.css" />
+    <link rel="stylesheet" href="/src/tmle-robustness-preview.css" />
   </head>
-  <body>
+  <body id="app">
     <header class="site-header">
-      <a class="brand" href="../?lesson=introduction">
+      <a class="brand" href="?lesson=introduction">
         <svg viewBox="0 0 30 30" aria-hidden="true">
           <path d="M6 22 15 7l9 15M6 22h18" />
           <circle cx="15" cy="7" r="3" />
@@ -17,9 +34,11 @@
           <circle cx="24" cy="22" r="3" /></svg
         >Causal Sandbox
       </a>
-      <a class="preview-label" href="../?lesson=topics">Browse topics</a>
+      <a class="preview-label" href="?lesson=topics">Browse topics</a>
+      <span id="comparison-theme"></span>
     </header>
     <main>
+      <div id="comparison-navigation"></div>
       <div class="eyebrow">
         <span>MODELS &amp; LIMITATIONS</span><span class="eyebrow-line"></span
         ><span>AFTER TMLE TARGETING</span>
@@ -194,9 +213,9 @@
         </p>
       </details>
       <nav class="experiment-navigation" aria-label="Continue learning">
-        <a href="../tmle/">← Targeting with TMLE</a>
-        <a href="../?lesson=topics">Browse all topics</a>
-        <a href="../?lesson=overlap">Continue: Too little overlap →</a>
+        <a href="tmle/">← Targeting with TMLE</a>
+        <a href="?lesson=topics">Browse all topics</a>
+        <a href="?lesson=overlap">Continue: Too little overlap →</a>
       </nav>
       <footer>
         <span class="footer-dot"></span>Known population · fixed true effect ·
@@ -205,6 +224,6 @@
         >
       </footer>
     </main>
-    <script type="module" src="../src/tmle-robustness-preview.js"></script>
+    <script type="module" src="/src/tmle-robustness-preview.js"></script>
   </body>
 </html>

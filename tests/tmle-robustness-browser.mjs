@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chromium } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
 
 const browser = await chromium.launch({
   headless: true,
@@ -71,6 +71,64 @@ try {
   await page.goto(new URL("docs/tmle-robustness-preview.html", base).href);
   await page.locator("#tmle-map .cell").first().waitFor();
   assert.equal(await page.locator(".cell").count(), 242);
+  const theme = page.getByRole("combobox", { name: "Color theme" });
+  const contents = page.getByRole("button", { name: "Contents", exact: true });
+  const search = page.getByRole("button", { name: "Search", exact: true });
+  const comparisonUrl = page.url();
+  await theme.selectOption("dark");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  const darkCell = await page
+    .locator("#tmle-map .cell")
+    .first()
+    .evaluate((cell) => getComputedStyle(cell).fill);
+  const selected = await page.locator(".result-values").textContent();
+  await theme.selectOption("light");
+  assert.notEqual(
+    await page
+      .locator("#tmle-map .cell")
+      .first()
+      .evaluate((cell) => getComputedStyle(cell).fill),
+    darkCell,
+  );
+  assert.equal(await page.locator(".result-values").textContent(), selected);
+  await theme.selectOption("dark");
+  await page.reload();
+  await expect(theme).toHaveValue("dark");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await contents.focus();
+  await page.keyboard.press("Enter");
+  await expect(contents).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator('#lesson-menu [aria-current="step"]')).toHaveText(
+    "TMLE vs IPW: model errors",
+  );
+  await page.keyboard.press("Escape");
+  await expect(contents).toBeFocused();
+  await expect(contents).toHaveAttribute("aria-expanded", "false");
+  await search.click();
+  await page.getByRole("searchbox").fill("collider");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#collider")).toBeVisible();
+  assert.ok(page.url().startsWith(base));
+  await page.goto(comparisonUrl);
+  await page.getByRole("link", { name: "Browse topics", exact: true }).click();
+  await expect(page.locator("h1")).toHaveText("Refresh & go deeper");
+  assert.equal(page.url(), new URL("?lesson=topics", base).href);
+  await page
+    .getByRole("region", { name: "Experiments to try" })
+    .getByRole("link", { name: "TMLE vs IPW" })
+    .click();
+  await expect(page.locator("#tmle-map .cell")).toHaveCount(121);
+  await contents.click();
+  await page.locator('#lesson-menu a[href="?lesson=introduction"]').click();
+  await expect(page.locator("h1")).toBeVisible();
+  assert.equal(page.url(), new URL("?lesson=introduction", base).href);
+  await page.goto(comparisonUrl);
+  await theme.selectOption("system");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   const start = await page.locator("#tmle-value").textContent();
   await page.locator('#tmle-map [data-x="5"][data-y="10"]').click();
   assert.equal(await page.locator("#tmle-value").textContent(), "2.000");
@@ -111,6 +169,14 @@ try {
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
     await page.reload();
+    await theme.selectOption("dark");
+    await contents.click();
+    await expect(page.locator("#lesson-menu")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await search.click();
+    await expect(page.getByRole("searchbox")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(search).toBeFocused();
     await page.locator("#tmle-map .cell").first().waitFor();
     assert.ok(
       await page.evaluate(
@@ -132,6 +198,10 @@ try {
     await page.locator("#reset").tap();
     assert.equal(await page.locator("#tmle-value").textContent(), start);
   }
+  await page
+    .getByRole("link", { name: "Browse all topics", exact: true })
+    .click();
+  await expect(page.locator("h1")).toHaveText("Refresh & go deeper");
   assert.deepEqual(errors, []);
   console.log(
     "TMLE robustness preview: desktop, phone, keyboard, touch and built-page checks passed.",
