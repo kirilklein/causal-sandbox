@@ -412,7 +412,7 @@ function enter(level, focus = true, callback = false, restart = false) {
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
         ${
           level <= 2
-            ? `<details class="sampling-variation"><summary>Compare repeated studies</summary>
+            ? `<details class="sampling-variation" id="repeated-studies"><summary>Compare repeated studies</summary>
           <p>Repeat the study with another 2,400 people. Each dot is an unadjusted estimate; the dashed line marks the true effect. The filled dot is the latest study.</p>
           <button id="repeat-study">Repeat study</button>
           <p id="sampling-summary" class="sample-note" aria-live="polite"></p>
@@ -554,8 +554,14 @@ function enter(level, focus = true, callback = false, restart = false) {
       renderLessonGraph();
     });
   if (!recap) update();
-  if (lesson.prediction) setupPrediction(lesson.prediction);
-  if (focus) document.querySelector("h1").focus();
+  const repeatedStudies = level <= 2 && location.hash === "#repeated-studies";
+  if (lesson.prediction && !repeatedStudies) setupPrediction(lesson.prediction);
+  if (repeatedStudies) {
+    const panel = document.querySelector("#repeated-studies");
+    panel.open = true;
+    panel.querySelector("summary").focus();
+    panel.scrollIntoView();
+  } else if (focus) document.querySelector("h1").focus();
 }
 
 function setupPrediction(prediction) {
