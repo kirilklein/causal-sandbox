@@ -1,3 +1,4 @@
+import "./theme-control.css";
 import { searchButton } from "./search.js";
 
 const root = document.documentElement;
