@@ -9,6 +9,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "trajectory-landscape": [
+    "Unfold patient trajectories to see confounding by indication.",
+    "patient trajectory futures landscape confounding indication severity counterfactual",
+  ],
   randomization: [
     "Compare treatment groups when treatment is assigned at random.",
     "randomized experiment RCT",

@@ -349,6 +349,7 @@ function enterIntroduction(focus = true, animate = false) {
         </a>
       </nav>
       ${filmPreview()}
+      <p class="small"><a href="?lesson=trajectory-landscape">Explore patient trajectories: an interactive causal story →</a></p>
     </main>`;
   setupFilmPreview();
   setupLessonNavigation();

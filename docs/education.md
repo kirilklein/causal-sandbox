@@ -596,3 +596,46 @@ on titles, aliases, keywords, and summaries, with up to eight results displayed.
 entries. When adding a lesson, include its search description and keywords.
 `tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
 themes, and mobile layouts.
+
+## Patient trajectory story
+
+`?lesson=trajectory-landscape` is an optional cinematic introduction linked
+beside the existing film and after A common cause. It leaves the original film
+and core Continue sequence intact. Seven chapters progressively introduce one
+observed health trajectory, the missing alternative, baseline severity, the
+unfolded severity axis, treatment selection, pooled endpoints, and within-slice
+comparison. Readers control chapter transitions, pause, and replay. Reduced
+motion shows each chapter's final composition without camera or path animation.
+
+The separate continuous teaching model is in `src/trajectory-model.js`. One hundred
+people occupy ten equally sized severity slices, C = 0,…,9. Initial health is
+90 − 20C/9; untreated final health is 78 − 48C/9. Smooth interpolation and a common time
+fluctuation join them. Both treatment worlds share these fluctuations. Treatment
+starts at day 4 and adds a smooth response reaching +12 at day 12; histories and
+tangents agree before the fork. Higher health is better. Within-slice horizontal
+spread separates marks, not severity values. There is no outcome variation
+within a slice or claim of individual counterfactual identification from data.
+
+With u = 2C/9 − 1, treatment counts are 5 + sign(u) × round(4s|u|). This gives
+counts 1, 2, 3, 4, 5, 5, 6, 7, 8, 9 at full selection and 5 in every slice at
+zero. Each arm always contains 50 patients. Pooled final means are approximately
+58.53 treated versus 61.47 untreated at full selection, despite a +12 effect for
+everyone. Equal 10% slice weights give 66 versus 54. All supported settings
+preserve overlap.
+
+Canvas rendering reuses the film's interpolation helpers and treatment-world
+palette. Solid versus dashed paths encode observation; treatment color is
+independent of observation status. Grey is confined to the shared pre-treatment
+history. Faint dashed counterfactual paths are painted before bright factual
+paths, whose endpoints are filled. A selected slice persists through unfolding.
+The selected-slice strip shows ten patients, with filled markers identifying
+which treatment each received; changing selection switches factual branches.
+The final scene hides counterfactuals by default, with an optional reveal.
+Pointer dragging and arrow keys orbit the final view within limited angles;
+Reset view (or Home on the canvas) restores the camera. These controls do not
+change patients, assignment, or comparisons. Labels fit within the canvas.
+DOM captions and numeric comparisons describe the canvas for assistive tools.
+Model tests cover shared histories, final effects, selection, and composition.
+Focused browser checks cover controls, pause/resume, reduced motion, phone
+overflow, pointer/keyboard orbit, view reset, counterfactual display, treatment
+counts, and entry/return routes. Learner comprehension remains untested.

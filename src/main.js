@@ -29,6 +29,8 @@ if (page === "glossary") {
     renderLearning(lesson);
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
+  } else if (lesson === "trajectory-landscape") {
+    await import("./trajectory-landscape.js");
   } else if (lesson === "propensity-score") {
     await import("./propensity-lesson.js");
   } else if (lesson === "assumptions") {
