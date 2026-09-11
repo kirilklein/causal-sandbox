@@ -1,5 +1,18 @@
 # Progressive education delivery
 
+The TMLE/IPW model-error heatmaps are linked after TMLE targeting and listed in
+Contents, the methods topic group, search, and the README. Search includes
+misspecification and heatmap terms. The standalone experiment retains its
+existing URL (`docs/tmle-robustness-preview.html`) and visual design, with links
+back to TMLE, all topics, and onward to overlap.
+
+The topic browser also exposes repeated-study comparisons, instrument bias
+amplification, and causal-path cancellation as named experiments. Their search
+links open the relevant panel or starting example. Explicit repeated-study links
+skip the opening prediction without recording an answer or completion; ordinary
+lesson entry still shows it. Search also lists each existing sandbox scenario
+and graph preset by name, linking to its starting setup.
+
 Lesson 3's Explain disclosure plots fitted treatment probabilities against C for
 120 actual patients, with treatment encoded by the existing arm symbols. The
 logistic fit uses all 2,400 patients and C, including before Try IPW; inspecting

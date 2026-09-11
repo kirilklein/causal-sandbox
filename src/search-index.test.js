@@ -3,6 +3,40 @@ import test from "node:test";
 import { searchEntries, searchTopics } from "./search-index.js";
 import { coreLessons, lessonHref, optionalChapters } from "./lesson-catalog.js";
 import { glossary } from "./glossary.js";
+import { scenarios } from "./sandbox-scenarios.js";
+import { graphPresets } from "./graph-presets.js";
+
+test("finds named experiments and their specific starting states", () => {
+  for (const [query, href] of [
+    ["repeated studies sampling", "?lesson=randomization#repeated-studies"],
+    ["repeated studies bias", "?lesson=confounding#repeated-studies"],
+    ["bias amplification", "?lesson=instrument-hidden-confounding"],
+    ["paths cancel", "?lesson=arrow-strength&example=paths-cancel"],
+    ["TMLE IPW misspecification", "docs/tmle-robustness-preview.html"],
+  ])
+    assert.equal(searchTopics(query)[0].href, href, query);
+  assert.ok(
+    searchTopics("both models wrong").some(
+      ({ href }) => href === "docs/tmle-robustness-preview.html",
+    ),
+  );
+  for (const scenario of scenarios) {
+    assert.ok(
+      searchTopics(scenario.name).some(
+        ({ href }) => href === `?sandbox&scenario=${scenario.id}`,
+      ),
+      scenario.name,
+    );
+  }
+  for (const preset of graphPresets) {
+    assert.ok(
+      searchTopics(preset.name).some(
+        ({ href }) => href === `?sandbox=graph-lab&preset=${preset.id}`,
+      ),
+      preset.name,
+    );
+  }
+});
 
 test("finds concepts by abbreviation, related phrase, and word prefix", () => {
   assert.equal(searchTopics("  AiPw! ")[0].href, "glossary/#aipw");

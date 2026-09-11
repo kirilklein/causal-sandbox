@@ -4,20 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <title>When models are imperfect · Causal Sandbox</title>
+    <title>TMLE vs IPW: when models are wrong · Causal Sandbox</title>
     <link rel="stylesheet" href="../src/tmle-robustness-preview.css" />
   </head>
   <body>
     <header class="site-header">
-      <div class="brand">
+      <a class="brand" href="../?lesson=introduction">
         <svg viewBox="0 0 30 30" aria-hidden="true">
           <path d="M6 22 15 7l9 15M6 22h18" />
           <circle cx="15" cy="7" r="3" />
           <circle cx="6" cy="22" r="3" />
           <circle cx="24" cy="22" r="3" /></svg
         >Causal Sandbox
-      </div>
-      <span class="preview-label">LESSON PREVIEW</span>
+      </a>
+      <a class="preview-label" href="../?lesson=topics">Browse topics</a>
     </header>
     <main>
       <div class="eyebrow">
@@ -26,8 +26,7 @@
       </div>
       <h1>When both models are imperfect.</h1>
       <p class="intro">
-        Two imperfect models. One treatment effect. Explore how their errors
-        interact.
+        Compare TMLE and IPW as you change treatment- and outcome-model errors.
       </p>
 
       <section class="experiment" aria-label="Model distortion experiment">
@@ -194,6 +193,11 @@
           guarantee that TMLE is better in other populations.
         </p>
       </details>
+      <nav class="experiment-navigation" aria-label="Continue learning">
+        <a href="../tmle/">← Targeting with TMLE</a>
+        <a href="../?lesson=topics">Browse all topics</a>
+        <a href="../?lesson=overlap">Continue: Too little overlap →</a>
+      </nav>
       <footer>
         <span class="footer-dot"></span>Known population · fixed true effect ·
         live estimator calculations<span class="footer-end"

@@ -10,6 +10,7 @@ import { campaignHref } from "./events.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import "./learning.css";
+import { lessonExperiments } from "./lesson-catalog.js";
 
 export const learningUrl = (topic) =>
   campaignHref(`${import.meta.env.BASE_URL}?lesson=${topic}`);
@@ -21,7 +22,9 @@ export function topicLesson(slug) {
       title: core[2],
       href: campaignHref(`${import.meta.env.BASE_URL}${lessonHref(core)}`),
     };
-  const chapter = optionalChapters.find(({ id }) => id === slug);
+  const chapter = [...optionalChapters, ...lessonExperiments].find(
+    ({ id }) => id === slug,
+  );
   if (!chapter) throw new Error(`Unknown learning topic: ${slug}`);
   return {
     title: chapter.title,
@@ -61,6 +64,7 @@ const background = {
     "hidden-confounding",
   ],
   tmle: ["outcome-regression", "propensity-score", "double-robustness"],
+  "tmle-robustness": ["ipw", "double-robustness", "tmle"],
   overlap: ["ipw", "propensity-score"],
   clipping: ["ipw", "overlap"],
   trimming: ["ipw", "overlap", "clipping"],
@@ -104,6 +108,7 @@ const groups = [
       "misspecification",
       "double-robustness",
       "tmle",
+      "tmle-robustness",
       "leaving-the-sandbox",
     ],
   },
@@ -131,6 +136,7 @@ export function renderLearning(mode) {
       "Refresh & go deeper",
       "topics",
       `<p class="learning-lead">Choose the question you want to explore. Open a topic to find refreshers and advanced lessons.</p>
+      <section class="panel learning-experiments" aria-label="Experiments to try"><h2>Experiments to try</h2>${topicList(["tmle-robustness", ...lessonExperiments.map(({ id }) => id)])}</section>
       <div class="learning-topics">${groups
         .map(
           (
