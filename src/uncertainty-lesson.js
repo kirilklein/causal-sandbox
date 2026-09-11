@@ -16,9 +16,17 @@ import {
 import {
   uncertaintyBaseline,
   uncertaintyStudy,
+  uncertaintyRows,
+  bootstrapDifference,
   coverageSummary,
 } from "./uncertainty.js";
-import { fmt, intervalPlot, studyTable } from "./uncertainty-view.js";
+import {
+  fmt,
+  fmtBound,
+  intervalPlot,
+  studyTable,
+  bootstrapPlot,
+} from "./uncertainty-view.js";
 
 document.title = "How uncertain is this estimate? — Causal Sandbox";
 document.querySelector("#app").innerHTML =
@@ -35,9 +43,9 @@ document.querySelector("#app").innerHTML =
       <p>Our estimate is the treated group's mean outcome minus the untreated group's mean. We hide the true effect: a real study cannot look it up.</p>
       <div id="single-result" aria-live="polite"></div>
       <div id="single-plot"></div>
-      <p>A confidence interval adds a measure of precision to the point estimate. It describes sampling uncertainty under the analysis assumptions. It is not a range of individual outcomes or individual treatment effects.</p>
+      <p>A <a href="glossary/#confidence-interval">confidence interval</a> adds a measure of precision to the point estimate. It describes sampling uncertainty under the analysis assumptions. It is not a range of individual outcomes or individual treatment effects.</p>
       <details><summary>How can one sample give an interval?</summary>
-        <p>The variation of outcomes within each treatment group and the number of people in each group let us estimate how much the mean difference would fluctuate across studies. This estimated spread is the <strong>standard error</strong>.</p>
+        <p>The variation of outcomes within each treatment group and the number of people in each group let us estimate how much the mean difference would fluctuate across studies. This estimated spread is the <a href="glossary/#standard-error">standard error</a>.</p>
         <p><strong>95% interval ≈ estimate ± 1.96 × standard error.</strong> We use a large-sample normal approximation, not an exact finite-sample guarantee.</p>
         <p><code>SE = √(s₁²/n₁ + s₀²/n₀)</code>, where s₁ and s₀ are the outcome standard deviations and n₁ and n₀ are the group sizes. Outcome SD describes variation among people; SE describes uncertainty in the estimated mean difference.</p>
         <div id="single-values" class="table-wrap"></div>
@@ -69,6 +77,30 @@ document.querySelector("#app").innerHTML =
       <p>With confounding, a narrow interval can describe the wrong comparison very precisely. It can cover the population association while missing the causal effect. More observations do not remove the confounding.</p>
       <details><summary>Inspect this comparison</summary><div id="precision-values" class="table-wrap"></div></details>
     </section>
+    <details id="bootstrap" class="panel"><summary>Optional: estimate uncertainty with the bootstrap</summary>
+      <h2>Reuse one study instead of recruiting new people</h2>
+      <p>Earlier, the simulator generated fresh studies. In real life we usually cannot do that. The <a href="glossary/#bootstrap">bootstrap</a> treats the observed sample as a stand-in for the population and resamples it <strong>with replacement</strong>: after selecting a person, put them back so they can be selected again.</p>
+      <p>Here we draw separately within the treated and untreated groups, keeping each group’s size fixed. Each selected person keeps their observed treatment and outcome. Some people appear several times; others are left out.</p>
+      <div class="inference-controls"><label><input id="bootstrap-confounded" type="checkbox"> Use a confounded study</label></div>
+      <p id="bootstrap-source"></p>
+      <div class="actions"><button id="run-bootstrap">Resample this study 1,000 times</button></div>
+      <p id="bootstrap-error" role="status"></p>
+      <div id="bootstrap-results" hidden>
+        <div id="bootstrap-plot"></div>
+        <p class="small">Each bar counts resampled mean differences. Solid line: the observed estimate. Dashed line: the simulator’s causal effect of 2. The axis fits the batch.</p>
+        <div id="bootstrap-summary" aria-live="polite"></div>
+        <p>The spread of these estimates gives a bootstrap standard error. More resamples reduce the simulation noise in that calculation; they do not add participants or remove the study’s sampling uncertainty.</p>
+        <p id="bootstrap-takeaway" class="inference-takeaway"></p>
+        <details><summary>Who was selected in the first resample?</summary><p id="bootstrap-counts"></p><div id="bootstrap-people" class="table-wrap"></div></details>
+        <details><summary>A bootstrap confidence interval</summary>
+          <p id="bootstrap-interval"></p>
+          <p>This percentile method uses the 2.5th and 97.5th percentiles of the resampled estimates. It is an approximate confidence procedure, not a 95% probability for the fixed causal effect. It can miss its advertised coverage, especially with small samples or strongly skewed data.</p>
+        </details>
+      </div>
+      <p>Resampling cannot repair confounding or make a selected sample representative. Independent-person resampling also fails to preserve clustering or repeated measurements; the resampling scheme must match the study design.</p>
+      <p class="small">This distribution is centered near the observed estimate, not forced to a zero-effect null. Counting its estimates beyond zero is not the p-value calculation in the <a href="?lesson=p-values">optional p-value lesson</a>.</p>
+      <p class="small">Read more: <a href="https://arxiv.org/abs/1411.5279">Hesterberg, What Teachers Should Know about the Bootstrap</a>.</p>
+    </details>
     <details id="uncertainty-caveats"><summary>What this interval does—and does not—tell us</summary>
       <p>Its width measures precision for this target and method. It does not automatically account for unmeasured confounding, selection bias, measurement error, or choosing an analysis after seeing its results. A narrow interval does not establish causality.</p>
       <p>It is not an interval containing 95% of future study estimates, nor 95% of people's treatment effects. A Bayesian credible interval answers a different probability question using a model and prior distribution.</p>
@@ -165,9 +197,74 @@ function updatePrecision() {
   renderPrecision();
 }
 
+let bootstrapRows;
+let bootstrapResult;
+let bootstrapSeed = 7300;
+
+function resetBootstrap() {
+  const selection = el("bootstrap-confounded").checked ? 1.2 : 0;
+  bootstrapRows = uncertaintyRows({ selection, seed: state.seed });
+  bootstrapResult = null;
+  bootstrapSeed = 7300;
+  el("bootstrap-results").hidden = true;
+  el("bootstrap-error").textContent = "";
+  el("run-bootstrap").textContent = "Resample this study 1,000 times";
+  el("bootstrap-source").textContent =
+    `One study of 200 people · seed ${state.seed}. ${selection ? "Risk score influences treatment and outcome; the comparison is unadjusted." : "This is the randomized study at the top of the lesson."}`;
+}
+
+function renderBootstrap() {
+  if (!bootstrapResult) return;
+  const b = bootstrapResult;
+  el("bootstrap-plot").innerHTML = bootstrapPlot(b, width("bootstrap-plot"));
+  el("bootstrap-summary").innerHTML =
+    `<div class="inference-result"><div><span>Bootstrap standard error</span><strong>${fmt(b.se)}</strong></div><div><span>Formula standard error</span><strong>${fmt(b.observed.se)}</strong></div></div><p>Observed estimate: ${fmt(b.observed.estimate)}. Average of 1,000 resampled estimates: ${fmt(b.mean)}. All values are in outcome units.</p>`;
+  el("bootstrap-takeaway").textContent = el("bootstrap-confounded").checked
+    ? "The bootstrap stays near the confounded estimate. It reuses the imbalance in the observed data; it does not recover the causal effect of 2."
+    : "The bootstrap estimates sampling spread using this study’s data. Its center follows the observed estimate, which can differ from the true effect even after random assignment.";
+  const distinct = b.firstCounts.filter((count) => count > 0).length;
+  el("bootstrap-counts").textContent =
+    `200 selections, ${distinct} distinct people, ${200 - distinct} people omitted. Each treatment group retains its original number of selections.`;
+  el("bootstrap-people").innerHTML =
+    `<table><caption>First resample: selections of each original participant</caption><thead><tr><th scope="col">Person</th><th scope="col">Treatment</th><th scope="col">Outcome</th><th scope="col">Times selected</th></tr></thead><tbody>${bootstrapRows.map((row, i) => `<tr><th scope="row">${i + 1}</th><td>${row.A ? "Treated" : "Untreated"}</td><td>${fmt(row.Y)}</td><td>${b.firstCounts[i]}</td></tr>`).join("")}</tbody></table>`;
+  el("bootstrap-interval").textContent =
+    `95% percentile interval: ${fmtBound(b.lower)} to ${fmtBound(b.upper)} outcome units. For comparison, the normal interval is ${fmtBound(b.observed.lower)} to ${fmtBound(b.observed.upper)}.`;
+}
+
+el("bootstrap-confounded").addEventListener("change", resetBootstrap);
+el("run-bootstrap").addEventListener("click", () => {
+  bootstrapResult = bootstrapDifference(bootstrapRows, {
+    seed: bootstrapSeed++,
+  });
+  if (bootstrapResult.status !== "ok") {
+    el("bootstrap-error").textContent =
+      `Unavailable: ${bootstrapResult.reason}`;
+    bootstrapResult = null;
+    return;
+  }
+  el("bootstrap-results").hidden = false;
+  renderBootstrap();
+  el("run-bootstrap").textContent = "Replace with another 1,000 resamples";
+  capture("simulation_run", {
+    lesson: "uncertainty",
+    action: "bootstrap",
+    confounded: el("bootstrap-confounded").checked,
+  });
+});
+el("bootstrap").addEventListener("toggle", () => {
+  if (el("bootstrap").open) renderBootstrap();
+});
+// Fragment links from the glossary open the optional exploration directly.
+if (location.hash === "#bootstrap") {
+  el("bootstrap").open = true;
+  el("bootstrap").querySelector("summary").focus();
+}
+resetBootstrap();
+
 el("uncertainty-redraw").addEventListener("click", () => {
   single = uncertaintyStudy({ ...state, seed: ++state.seed });
   renderSingle();
+  resetBootstrap();
   capture("simulation_run", { lesson: "uncertainty", action: "redraw" });
 });
 function addStudies() {
@@ -236,5 +333,6 @@ window.addEventListener("resize", () => {
   renderSingle();
   renderCoverage();
   renderPrecision();
+  renderBootstrap();
 });
 renderSingle();

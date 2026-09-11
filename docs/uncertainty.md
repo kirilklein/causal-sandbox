@@ -53,6 +53,40 @@ magnitude, arm proportions, and outcome spread fixed while changing sample
 size: SE(n)=SE(200)√(200/n). Its sliders do not claim to generate new study data.
 Matching interval inclusion and p-values change continuously across 0.05.
 
+## Optional bootstrap exploration
+
+`?lesson=uncertainty#bootstrap` opens the optional disclosure directly. It uses
+the same observed randomized study as the first panel; changing to confounding
+regenerates a study with selection=1.2 and the same seed. Each batch draws 1,000
+resamples of observed people with replacement, separately within treatment arms,
+preserving the original arm sizes. The calculation uses only A and Y. Redrawing
+the original study or changing the bootstrap world clears the previous results.
+
+The histogram shows resampled mean differences, the original estimate, and the
+simulator truth for comparison. The SD of the bootstrap estimates (divisor B−1)
+is compared with the analytic SE. An inspectable table gives each participant's
+selection count in the first resample. Optional percentile bounds use linear
+interpolation at indices (B−1)×0.025 and (B−1)×0.975 of sorted estimates.
+This simple interval is approximate and can undercover in small or skewed samples.
+It does not replace the normal interval earlier in the lesson.
+
+The learning objective is to distinguish generating independent studies from
+resampling one observed study. More resamples reduce Monte Carlo noise without
+adding information about the population. Confounding remains in the resampled
+comparison; independent-row resampling does not handle dependent observations.
+The ordinary bootstrap distribution is not a zero-effect null distribution.
+
+The glossary defines sampling uncertainty, SE, CI, p-values, and bootstrap with
+links back to the relevant lessons. Search indexes the definitions automatically
+and includes bootstrap/resampling keywords for the uncertainty lesson.
+
+Validation covers preserved arm sizes, first-resample reconstruction, deterministic
+seeds, constant-effect shifts, and the exact conditional variance of resampled
+means. Another 800 independent studies check percentile coverage in this model
+and persistent confounding, each using 500 resamples. This is a model-specific
+check, not a general coverage guarantee. Browser checks follow search → glossary
+→ the expanded bootstrap disclosure and inspect desktop/mobile in both themes.
+
 ## Presentation and validation
 
 Interval charts share a fixed −1 to 5 outcome-unit axis, with off-scale bounds
@@ -81,3 +115,5 @@ and desktop/phone rendering. Human learner comprehension remains untested.
 - [Greenland et al. (2016)](https://link.springer.com/article/10.1007/s10654-016-0149-3): confidence-interval and p-value interpretations and misinterpretations.
 - [Altman & Bland (2005)](https://www.bmj.com/content/331/7521/903): outcome standard deviation versus standard error.
 - [Rafi & Greenland (2020)](https://link.springer.com/article/10.1186/s12874-020-01105-9): compatibility, analysis assumptions, and avoiding binary significance conclusions.
+
+- [Hesterberg, What Teachers Should Know about the Bootstrap](https://arxiv.org/abs/1411.5279): resampling mechanics, standard errors, and percentile-interval limitations.

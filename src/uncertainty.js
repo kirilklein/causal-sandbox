@@ -1,4 +1,5 @@
 import { lessonBaseline, simulateLesson } from "./lesson-simulation.js";
+import { random } from "./simulation.js";
 
 export const normalCritical = 1.959963984540054;
 export const uncertaintyBaseline = {
@@ -96,6 +97,17 @@ export function differenceInference(rows) {
 }
 
 export function uncertaintyStudy(settings = uncertaintyBaseline) {
+  const rows = uncertaintyRows(settings);
+  const result = differenceInference(rows);
+  return {
+    ...result,
+    seed: settings.seed ?? uncertaintyBaseline.seed,
+    truth: settings.effect ?? uncertaintyBaseline.effect,
+    n: rows.length,
+  };
+}
+
+export function uncertaintyRows(settings = uncertaintyBaseline) {
   const state = { ...lessonBaseline(2), ...uncertaintyBaseline, ...settings };
   if (
     !Number.isInteger(state.n) ||
@@ -105,8 +117,65 @@ export function uncertaintyStudy(settings = uncertaintyBaseline) {
     !Number.isFinite(state.effect)
   )
     throw new RangeError("Invalid study settings");
-  const result = differenceInference(simulateLesson(state));
-  return { ...result, seed: state.seed, truth: state.effect, n: state.n };
+  return simulateLesson(state);
+}
+
+// Resample independent people within treatment arms, holding arm sizes fixed.
+// Only observed treatment and outcome enter the calculation.
+export function bootstrapDifference(
+  rows,
+  { repetitions = 1000, seed = 7300 } = {},
+) {
+  if (
+    !Number.isInteger(repetitions) ||
+    repetitions < 2 ||
+    !Number.isInteger(seed)
+  )
+    throw new RangeError(
+      "Bootstrap needs at least two repetitions and an integer seed",
+    );
+  const observed = differenceInference(rows);
+  if (observed.status !== "ok") return observed;
+  const arms = [[], []];
+  rows.forEach((row, i) => arms[row.A].push(i));
+  const rng = random(seed);
+  const firstCounts = Array(rows.length).fill(0);
+  const estimates = Array.from({ length: repetitions }, (_, b) => {
+    const means = arms.map((arm) => {
+      let sum = 0;
+      for (let j = 0; j < arm.length; j++) {
+        const index = arm[Math.floor(rng() * arm.length)];
+        sum += rows[index].Y;
+        if (b === 0) firstCounts[index]++;
+      }
+      return sum / arm.length;
+    });
+    return means[1] - means[0];
+  });
+  const mean = estimates.reduce((sum, value) => sum + value, 0) / repetitions;
+  const se = Math.sqrt(
+    estimates.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+      (repetitions - 1),
+  );
+  const sorted = [...estimates].sort((a, b) => a - b);
+  const quantile = (p) => {
+    const index = (sorted.length - 1) * p;
+    const lower = Math.floor(index);
+    return (
+      sorted[lower] +
+      (index - lower) * (sorted[Math.ceil(index)] - sorted[lower])
+    );
+  };
+  return {
+    status: "ok",
+    observed,
+    estimates,
+    firstCounts,
+    mean,
+    se,
+    lower: quantile(0.025),
+    upper: quantile(0.975),
+  };
 }
 
 export function coverageSummary(studies) {

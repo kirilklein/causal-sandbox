@@ -92,3 +92,18 @@ test("indexes every current lesson and glossary anchor with one entry per URL", 
     assert.ok(!entry.href.startsWith("/"), entry.href);
   }
 });
+
+test("uncertainty searches connect definitions with the lessons that teach them", () => {
+  for (const [query, key, lesson] of [
+    ["uncertainty", "uncertainty", "uncertainty"],
+    ["standard error", "standard-error", "uncertainty"],
+    ["confidence interval", "confidence-interval", "uncertainty"],
+    ["p-value", "p-value", "p-values"],
+    ["bootstrap", "bootstrap", "uncertainty"],
+    ["resampling", "bootstrap", "uncertainty"],
+  ]) {
+    const destinations = searchTopics(query).map(({ href }) => href);
+    assert.ok(destinations.includes(`glossary/#${key}`), query);
+    assert.ok(destinations.includes(`?lesson=${lesson}`), query);
+  }
+});

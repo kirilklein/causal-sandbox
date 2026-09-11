@@ -6,6 +6,37 @@ export const fmtBound = (value) =>
   value !== 0 && Math.abs(value) < 0.005 ? value.toPrecision(2) : fmt(value);
 export const pLabel = (p) => (p < 0.0001 ? "< 0.0001" : p.toFixed(4));
 
+export function bootstrapPlot(result, width = 700) {
+  const minimum = Math.floor(Math.min(2, ...result.estimates));
+  const maximum = Math.ceil(Math.max(2, ...result.estimates));
+  const bins = Array(24).fill(0);
+  for (const estimate of result.estimates)
+    bins[
+      Math.min(
+        23,
+        Math.floor((24 * (estimate - minimum)) / (maximum - minimum)),
+      )
+    ]++;
+  const left = 30,
+    right = width - 18;
+  const x = (value) =>
+    left + ((value - minimum) / (maximum - minimum)) * (right - left);
+  const height = (count) => (120 * count) / Math.max(...bins);
+  return `<svg class="inference-chart" viewBox="0 0 ${width} 230" role="img" aria-label="Histogram of ${result.estimates.length} bootstrap mean differences from one observed study. Solid line: observed estimate ${fmt(result.observed.estimate)}. Dashed line: simulator causal effect 2. Numerical summaries follow.">
+    ${bins.map((count, i) => `<rect class="bootstrap-bar" x="${left + (i * (right - left)) / 24}" y="${170 - height(count)}" width="${(right - left) / 24 - 1}" height="${height(count)}"><title>${count} resamples: ${fmt(minimum + (i * (maximum - minimum)) / 24)} to ${fmt(minimum + ((i + 1) * (maximum - minimum)) / 24)}</title></rect>`).join("")}
+    <path class="inference-observed" d="M${x(result.observed.estimate)} 30V175"/>
+    <path class="inference-truth" d="M${x(2)} 30V175"/>
+    <text x="${left}" y="17">Count (tallest bar: ${Math.max(...bins)})</text>
+    ${Array.from({ length: maximum - minimum + 1 }, (_, i) => minimum + i)
+      .map(
+        (value) =>
+          `<text x="${x(value)}" y="197" text-anchor="middle">${value}</text>`,
+      )
+      .join("")}
+    <text x="${width / 2}" y="224" text-anchor="middle">Resampled mean difference</text>
+  </svg>`;
+}
+
 export function intervalPlot(studies, { truth = false, width = 700 } = {}) {
   const shown = studies.slice(-50);
   const left = 32,

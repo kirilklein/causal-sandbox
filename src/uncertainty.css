@@ -126,3 +126,8 @@
     font-size: 11px;
   }
 }
+
+.bootstrap-bar {
+  fill: var(--estimate);
+  opacity: 0.65;
+}

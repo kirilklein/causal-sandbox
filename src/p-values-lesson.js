@@ -23,8 +23,9 @@ document.querySelector("#app").innerHTML =
     ${lessonNavigation({ currentOptional: "p-values" })}
     <p class="eyebrow">OPTIONAL · AFTER UNCERTAINTY</p>
     <h1 tabindex="-1">What does a p-value tell us?</h1>
+    <p class="small">Definitions: <a href="glossary/#p-value">p-value</a> · <a href="glossary/#confidence-interval">confidence interval</a>.</p>
     <p class="intro">If the effect were zero, how unusual would a result this extreme be? A p-value answers that question under the null hypothesis and the other analysis assumptions.</p>
-    <p class="small">Start with <a href="?lesson=uncertainty">confidence intervals and uncertainty</a> if standard errors and repeated studies are new to you.</p>
+    <p class="small">Start with <a href="?lesson=uncertainty">confidence intervals and uncertainty</a> if <a href="glossary/#standard-error">standard errors</a> and repeated studies are new to you.</p>
     <section class="panel" aria-labelledby="null-title">
       <h2 id="null-title">1. Build a zero-effect world</h2>
       <p>Use the same study design as the uncertainty lesson: 200 independent people, randomized treatment, and a risk score that affects outcome. Now set the treatment effect to zero. This is our <strong>null hypothesis</strong>.</p>

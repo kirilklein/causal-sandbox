@@ -1,7 +1,9 @@
 # Progressive education delivery
 
 The core [uncertainty lesson](uncertainty.md) follows confounding and precedes
-IPW at `?lesson=uncertainty`. One study's interval leads into repeated-study
+IPW at `?lesson=uncertainty`. An optional bootstrap exploration at
+`?lesson=uncertainty#bootstrap` resamples one observed study; glossary definitions
+and search link to both the core lesson and the exploration. One study's interval leads into repeated-study
 coverage, then a precision-versus-confounding comparison. Its optional
 `?lesson=p-values` chapter connects a zero-effect reference distribution,
 two-sided tail probabilities, and matching confidence intervals. Both explain

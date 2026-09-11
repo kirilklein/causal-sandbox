@@ -2,6 +2,8 @@ import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import {
   uncertaintyStudy,
+  uncertaintyRows,
+  bootstrapDifference,
   coverageSummary,
   normalInference,
 } from "../src/uncertainty.js";
@@ -78,6 +80,69 @@ try {
   await page.locator("#uncertainty-confounded").check();
   assert.match(await page.locator("#precision-world").innerText(), /confounds/);
   assert.match(await page.locator("#precision-summary").innerText(), /0 of 50/);
+  await page.locator("#bootstrap > summary").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(
+    await page.locator("#bootstrap").evaluate((el) => el.open),
+    true,
+  );
+  await page.locator("#run-bootstrap").click();
+  const boot = bootstrapDifference(uncertaintyRows());
+  assert.ok(
+    (await page.locator("#bootstrap-summary").innerText()).includes(
+      fmt(boot.se),
+    ),
+  );
+  assert.equal(await page.locator("#bootstrap-people tbody tr").count(), 200);
+  const counts = await page
+    .locator("#bootstrap-people tbody tr td:last-child")
+    .allTextContents();
+  assert.deepEqual(counts.map(Number), boot.firstCounts);
+  await page
+    .locator("#bootstrap-results details")
+    .first()
+    .locator("summary")
+    .click();
+  await page.setViewportSize({ width: 320, height: 900 });
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page
+    .locator("#bootstrap-results details")
+    .first()
+    .locator("summary")
+    .click();
+  const source = await page.locator("#bootstrap-source").innerText();
+  const bootFirst = await page.locator("#bootstrap-summary").innerText();
+  await page.locator("#run-bootstrap").click();
+  assert.equal(await page.locator("#bootstrap-source").innerText(), source);
+  assert.notEqual(
+    await page.locator("#bootstrap-summary").innerText(),
+    bootFirst,
+  );
+  await page.locator("#bootstrap-confounded").check();
+  assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
+  await page.locator("#run-bootstrap").click();
+  assert.match(
+    await page.locator("#bootstrap-takeaway").innerText(),
+    /reuses the imbalance/,
+  );
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const colorScheme of ["light", "dark"]) {
+      await page.emulateMedia({ colorScheme });
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      );
+      await page
+        .locator("#bootstrap")
+        .screenshot({ path: `/tmp/bootstrap-${colorScheme}-${width}.png` });
+    }
+  }
   await page.locator('[data-answer="0"]').click();
   assert.match(
     await page.locator("#uncertainty-feedback").innerText(),
@@ -196,6 +261,41 @@ try {
   await page.locator("#lesson-menu-toggle").click();
   await page.locator('[data-level="14"]').click();
   await page.locator("#reveal-coverage").waitFor();
+  // Search -> glossary -> optional disclosure preserves both query and fragment.
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.getByRole("searchbox").fill("bootstrap");
+  await page.locator('#search-results a[href$="glossary/#bootstrap"]').click();
+  await page.locator("#bootstrap.glossary-entry").waitFor();
+  await page.locator("#bootstrap .glossary-related").click();
+  await page.locator("#run-bootstrap").waitFor();
+  assert.equal(
+    await page.locator("#bootstrap").evaluate((el) => el.open),
+    true,
+  );
+  assert.equal(
+    await page
+      .locator("#bootstrap > summary")
+      .evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.locator("#run-bootstrap").click();
+  assert.ok(await page.locator("#bootstrap-results").isVisible());
+  await page.locator("#uncertainty-redraw").click();
+  assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
+  assert.match(await page.locator("#bootstrap-source").innerText(), /4218/);
+  for (const [key, destination] of [
+    ["standard-error", "uncertainty"],
+    ["confidence-interval", "uncertainty"],
+    ["p-value", "p-values"],
+    ["uncertainty", "uncertainty"],
+  ]) {
+    await page.goto(`${url}glossary/#${key}`);
+    await page.locator(`#${key} .glossary-related`).click();
+    await page
+      .locator(destination === "p-values" ? "#repeat-null" : "#reveal-coverage")
+      .waitFor();
+    assert.equal(new URL(page.url()).searchParams.get("lesson"), destination);
+  }
   assert.deepEqual(errors, []);
   console.log("Uncertainty and p-value browser checks passed");
 } finally {

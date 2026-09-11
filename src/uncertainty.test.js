@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   differenceInference,
+  bootstrapDifference,
+  uncertaintyRows,
   normalInference,
   normalCritical,
   twoSidedP,
@@ -156,4 +158,78 @@ test("a nonzero confidence bound remains visibly nonzero near the test cutoff", 
   assert.equal(fmtBound(0), "0.00");
   assert.equal(Number(fmtBound(0.0037)), 0.0037);
   assert.equal(Number(fmtBound(-0.0002)), -0.0002);
+});
+
+test("bootstrap preserves observed people, treatment counts, and the first resampled estimate", () => {
+  const rows = uncertaintyRows();
+  const original = structuredClone(rows);
+  const b = bootstrapDifference(rows);
+  assert.deepEqual(rows, original);
+  assert.deepEqual(b, bootstrapDifference(rows));
+  assert.notDeepEqual(
+    b.estimates,
+    bootstrapDifference(rows, { seed: 7301 }).estimates,
+  );
+  for (const A of [0, 1]) {
+    const indices = rows.flatMap((row, i) => (row.A === A ? [i] : []));
+    assert.equal(
+      indices.reduce((sum, i) => sum + b.firstCounts[i], 0),
+      indices.length,
+    );
+  }
+  assert.ok(b.firstCounts.includes(0));
+  assert.ok(b.firstCounts.some((count) => count > 1));
+  const firstRows = rows.flatMap((row, i) => Array(b.firstCounts[i]).fill(row));
+  close(b.estimates[0], differenceInference(firstRows).estimate);
+  const shifted = bootstrapDifference(
+    rows.map((row) => ({ A: row.A, Y: row.Y + 4 * row.A })),
+  );
+  close(shifted.mean - b.mean, 4);
+  close(shifted.se, b.se);
+  close(shifted.lower - b.lower, 4);
+  close(shifted.upper - b.upper, 4);
+});
+
+test("bootstrap spread agrees with the exact conditional variance of resampled means", () => {
+  const rows = [1, 2, 3]
+    .map((Y) => ({ A: 0, Y }))
+    .concat([3, 5, 7].map((Y) => ({ A: 1, Y })));
+  const b = bootstrapDifference(rows, { repetitions: 40000 });
+  // Empirical arm variances are 2/3 and 8/3; each resampled mean averages three draws.
+  close(b.mean, 3, 0.02);
+  close(b.se, Math.sqrt(10 / 9), 0.015);
+  assert.equal(bootstrapDifference([]).status, "unavailable");
+  assert.throws(
+    () => bootstrapDifference(rows, { repetitions: 1 }),
+    RangeError,
+  );
+  assert.throws(() => bootstrapDifference([{ A: 2, Y: 1 }]), TypeError);
+});
+
+test("bootstrap percentile intervals have approximate coverage here but do not remove confounding", () => {
+  for (const selection of [0, 1.2]) {
+    let covered = 0,
+      mean = 0,
+      difference = 0;
+    for (let i = 0; i < 400; i++) {
+      const b = bootstrapDifference(
+        uncertaintyRows({ seed: 60000 + i, selection }),
+        { repetitions: 500, seed: 80000 + i },
+      );
+      covered += b.lower <= 2 && 2 <= b.upper;
+      mean += b.mean / 400;
+      difference += (b.mean - b.observed.estimate) / 400;
+    }
+    assert.ok(Math.abs(difference) < 0.01);
+    if (selection === 0) {
+      assert.ok(
+        covered / 400 > 0.9 && covered / 400 < 0.98,
+        `coverage: ${covered / 400}`,
+      );
+      assert.ok(Math.abs(mean - 2) < 0.05);
+    } else {
+      assert.ok(mean - 2 > 1);
+      assert.ok(covered / 400 < 0.05);
+    }
+  }
 });
