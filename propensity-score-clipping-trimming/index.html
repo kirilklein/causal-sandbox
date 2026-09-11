@@ -73,7 +73,8 @@
         <h1>Propensity-score clipping and trimming</h1>
         <p>
           Create extreme inverse-probability weights, constrain them, and
-          compare that operation with excluding people outside common support.
+          compare that operation with excluding people outside a chosen
+          propensity-score range.
         </p>
       </main>
     </div>
@@ -82,9 +83,9 @@
       <p class="concept-answer">
         Clipping moves fitted propensity scores away from zero and one when
         weights are calculated, retaining every person but modifying the
-        estimator. Trimming excludes observations under a stated support rule,
-        so the result targets the retained population rather than the original
-        full population.
+        estimator. Trimming excludes observations outside a chosen
+        propensity-score range. In this experiment, trimming changes the target
+        to the retained subset.
       </p>
       <h3>Try it in the experiment</h3>
       <ol>
@@ -97,9 +98,9 @@
       </ol>
       <p class="concept-note">
         Neither operation repairs a structural positivity violation. Clipping
-        trades sensitivity to extreme weights for bias; trimming changes both
-        the sample and the population described by the estimate. Report the rule
-        and examine sensitivity rather than presenting either as automatic.
+        reduces sensitivity to extreme weights but can introduce bias. A defined
+        trimming rule can specify a population target. Report the rule and
+        examine sensitivity rather than presenting either as automatic.
       </p>
       <nav class="concept-links" aria-label="Related causal inference concepts">
         <h3>Continue exploring</h3>
