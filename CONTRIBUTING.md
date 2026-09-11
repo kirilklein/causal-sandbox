@@ -26,7 +26,27 @@ npm run test:browser   # needs a running server; see Browser checks below
 
 CI runs the same checks, plus a build.
 
-Pushes to `main` deploy to GitHub Pages.
+Pushes to `main` or `dev` build both branches and publish one GitHub Pages site:
+
+- `main`: https://kirilklein.github.io/causal-sandbox/
+- `dev`: https://kirilklein.github.io/causal-sandbox/dev/
+
+Merge approved PRs into `dev` to update the development site, then merge `dev`
+into `main` to release. Both builds must pass before either site is updated.
+PostHog is enabled only for the production build. The existing GoatCounter page
+counter runs on both versions.
+
+The deployment workflow must be present on both branches. In repository Settings
+→ Environments → `github-pages`, allow deployments from both `main` and `dev`.
+Pages must use GitHub Actions as its source. No additional secrets are needed;
+production retains the existing optional `VITE_POSTHOG_KEY` secret.
+
+To check the development URL prefix locally:
+
+```sh
+npm run build -- --base=/causal-sandbox/dev/
+npm run preview -- --base=/causal-sandbox/dev/
+```
 
 ### Browser checks
 
