@@ -51,6 +51,14 @@ All simulations run in your browser. See the [methodology](https://kirilklein.gi
 
 Each guide pairs an experiment with actions to try and an explanation of the result.
 
+## Citation
+
+If you use Causal Sandbox in teaching or research, please cite the software:
+
+> Klein, K. (2026). _Causal Sandbox_ (Version 1.0.0) [Computer software]. https://github.com/kirilklein/causal-sandbox
+
+GitHub also provides APA and BibTeX formats from [CITATION.cff](CITATION.cff).
+
 ## References
 
 For deeper theoretical coverage:
