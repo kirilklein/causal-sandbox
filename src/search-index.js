@@ -1,5 +1,12 @@
-import { coreLessons, lessonHref, optionalChapters } from "./lesson-catalog.js";
+import {
+  coreLessons,
+  lessonHref,
+  optionalChapters,
+  lessonExperiments,
+} from "./lesson-catalog.js";
 import { glossary } from "./glossary.js";
+import { scenarios } from "./sandbox-scenarios.js";
+import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
   randomization: [
@@ -41,6 +48,10 @@ const lessonDetails = {
   tmle: [
     "Update outcome predictions using treatment probabilities.",
     "targeted maximum likelihood estimation targeted learning",
+  ],
+  "tmle-robustness": [
+    "Compare TMLE and IPW across treatment- and outcome-model errors in two interactive heatmaps.",
+    "TMLE vs IPW model misspecification misspecifications double robustness heatmap visual comparison both models wrong imperfect models shift scale",
   ],
   overlap: [
     "Explore what happens when treatment groups have little common support.",
@@ -113,6 +124,24 @@ const guides = [
 
 // Pages that also host lessons use the lesson's single canonical destination.
 export const searchEntries = [
+  ...lessonExperiments.map((experiment) => ({
+    ...experiment,
+    type: "Experiment",
+  })),
+  ...scenarios.map((scenario) => ({
+    title: scenario.name,
+    type: "Scenario",
+    href: `?sandbox&scenario=${scenario.id}`,
+    description: `${scenario.question} ${scenario.action}`,
+    keywords: `scenario sandbox ${scenario.group} ${scenario.id.includes("model") ? "model misspecification wrong models" : ""}`,
+  })),
+  ...graphPresets.map((preset) => ({
+    title: preset.name,
+    type: "Graph preset",
+    href: `?sandbox=graph-lab&preset=${preset.id}`,
+    description: `${preset.question} ${preset.action}`,
+    keywords: `graph DAG preset ${preset.id}`,
+  })),
   ...coreLessons.map((lesson) => ({
     title: lesson[2],
     type: "Lesson",
