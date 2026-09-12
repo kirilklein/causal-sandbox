@@ -2,3 +2,7 @@ node_modules
 dist/
 test-results/
 .env.local
+
+# Local chart previews; published assets live on the site-views data branch.
+docs/site-views.json
+docs/site-views.svg
