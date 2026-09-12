@@ -1,0 +1,56 @@
+.adjustment-input .quiz-figure {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+.adjustment-input [data-adjust-node] {
+  cursor: pointer;
+  outline: none;
+}
+.adjustment-input [data-adjust-node] circle {
+  stroke-width: 2;
+}
+.adjustment-input [data-adjust-node][aria-pressed="true"] circle {
+  stroke: var(--accent);
+  fill: var(--accent-surface);
+  stroke-width: 5;
+}
+.adjustment-input [data-adjust-node]:focus-visible circle {
+  stroke: var(--text);
+  stroke-width: 5;
+  stroke-dasharray: 4 3;
+}
+.adjustment-input .adjustment-check {
+  display: none;
+  font-size: 15px;
+  font-weight: 800;
+}
+.adjustment-input [aria-pressed="true"] .adjustment-check {
+  display: block;
+}
+.adjustment-input [aria-disabled="true"] {
+  cursor: default;
+}
+.quiz-figure .adjustment-path {
+  stroke: var(--error-mark);
+  stroke-width: 4;
+}
+.adjustment-summary {
+  font-weight: 600;
+}
+.quiz-experiment {
+  margin-block: 1.25rem;
+}
+.adjustment-input .quiz-diagram {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+@media (max-width: 700px) {
+  .adjustment-input .quiz-diagram {
+    grid-template-columns: 1fr;
+  }
+  .adjustment-input .quiz-facts {
+    font-size: 13px;
+  }
+  .adjustment-input .quiz-facts > div {
+    padding-block: 4px;
+  }
+}

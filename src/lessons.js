@@ -437,7 +437,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       `
       }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-exit" class="primary" href="?sandbox">Explore scenarios ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-quiz" class="primary" href="?lesson=final-quiz">Take the final quiz →</a><a id="recap-exit" href="?sandbox">Explore scenarios ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters
@@ -540,14 +540,16 @@ function enter(level, focus = true, callback = false, restart = false) {
     capture("lesson_advanced", { lesson: lesson.slug });
     navigate(next);
   });
-  document.querySelector("#recap-exit")?.addEventListener("click", () => {
-    recordLessonCompleted(lesson.slug);
-    void capture(
-      "lesson_advanced",
-      { lesson: lesson.slug },
-      { transport: "sendBeacon" },
-    );
-  });
+  document.querySelectorAll("#recap-exit, #recap-quiz").forEach((link) =>
+    link.addEventListener("click", () => {
+      recordLessonCompleted(lesson.slug);
+      void capture(
+        "lesson_advanced",
+        { lesson: lesson.slug },
+        { transport: "sendBeacon" },
+      );
+    }),
+  );
   if (previousGraph)
     setupGraphComparison((open, view) => {
       comparisonOpen = open;

@@ -15,11 +15,25 @@ try {
   });
   page.on("pageerror", (error) => errors.push(error.message));
   async function answer(id, choice) {
+    if (
+      id === "C" &&
+      (await page.locator('.quiz-card[data-question="J"]').count())
+    )
+      await answer("J", "set:C");
     await expect(page.locator(".quiz-card")).toHaveAttribute(
       "data-question",
       id,
     );
-    await page.locator(`#quiz-form input[value="${choice}"]`).check();
+    if (choice.startsWith("set:")) {
+      const ids = choice.slice(4).split(",");
+      for (const node of await page.locator("[data-adjust-node]").all()) {
+        const selected = (await node.getAttribute("aria-pressed")) === "true";
+        if (
+          selected !== ids.includes(await node.getAttribute("data-adjust-node"))
+        )
+          await node.click();
+      }
+    } else await page.locator(`#quiz-form input[value="${choice}"]`).check();
     await page.locator("#quiz-submit").click();
   }
   async function fresh() {
@@ -139,18 +153,21 @@ try {
     path: "/tmp/adaptive-quiz-graph-desktop.png",
     fullPage: true,
   });
-  await answer("G", "c-only");
+  await answer("G", "set:C");
   await answer("C", "all");
   await answer("H", "agreement-only");
   await answer("O", "unsupported-extrapolation");
-  await expect(page.locator(".quiz-progress")).toHaveText("6/6");
+  await expect(page.locator(".quiz-progress")).toHaveText("7/7");
   await answer("D", "consistent");
-  await expect(page.locator(".quiz-score")).toHaveText("6/6 correct");
+  await expect(page.locator(".quiz-score")).toHaveText("7/7 correct");
   await expect(page.locator("h1")).toHaveText(
     "Looks like we have an expert here.",
   );
   assert.equal(await page.locator(".quiz-suggestion").count(), 0);
   await expect(page.locator(".quiz-answer-review:visible")).toHaveCount(0);
+  await expect(
+    page.locator('.quiz-experiment a[href*="preset=entry-challenge"]'),
+  ).toBeVisible();
   await page.locator("#quiz-toggle-G").click();
   await page
     .locator("#quiz-review-G")
@@ -178,7 +195,7 @@ try {
   // Unchanged submissions retain answers and advance one question at a time.
   await fresh();
   await answer("E", "confounded");
-  await answer("G", "c-only");
+  await answer("G", "set:C");
   await answer("C", "all");
   await answer("H", "agreement-only");
   const savedAnswers = await page.evaluate(
@@ -217,19 +234,22 @@ try {
   );
   await expect(page.locator('input[value="consistent"]')).toBeChecked();
   await page.locator("#quiz-submit").click();
-  await expect(page.locator(".quiz-score")).toHaveText("6/6 correct");
+  await expect(page.locator(".quiz-score")).toHaveText("7/7 correct");
 
   // Editing an earlier answer recomputes the path and discards later answers.
   await fresh();
   await answer("E", "confounded");
-  await answer("G", "c-only");
+  await answer("G", "set:C");
   await page.goBack();
   await expect(page.locator(".quiz-card")).toHaveAttribute(
     "data-question",
     "G",
   );
-  await expect(page.locator('input[value="c-only"]')).toBeChecked();
-  await answer("G", "both");
+  await expect(page.locator('[data-adjust-node="C"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await answer("G", "set:C,M");
   await expect(page.locator(".quiz-card")).toHaveAttribute(
     "data-question",
     "M",
@@ -249,11 +269,11 @@ try {
     [{ question: "E", choice: "unsure" }],
   );
 
-  // Final answer at the cap adds the prerequisite review, without a seventh question.
+  // Final answer at the cap adds the prerequisite review.
   await fresh();
   for (const [id, choice] of [
     ["E", "confounded"],
-    ["G", "c-only"],
+    ["G", "set:C"],
     ["C", "all"],
     ["H", "agreement-only"],
     ["O", "remove-severity"],
@@ -366,7 +386,7 @@ try {
   // Scores describe submitted answers, keeping uncertainty and practice separate.
   await fresh();
   await answer("E", "confounded");
-  await answer("G", "both");
+  await answer("G", "set:C,M");
   await answer("M", "unsure");
   await expect(page.locator(".quiz-score")).toHaveText("1/3 correct");
   await expect(page.locator(".quiz-score-counts")).toHaveText(

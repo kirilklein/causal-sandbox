@@ -3,6 +3,7 @@ import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
 import { setupFeedback } from "./feedback.js";
 import { setupSearch } from "./search.js";
+import icon from "./brand.svg?raw";
 
 setupTheme();
 setupSearch();
@@ -13,7 +14,10 @@ const page = document.body.dataset.page;
 const staticPageTheme = document.querySelector(
   "#methodology-theme, #glossary-theme",
 );
-if (staticPageTheme) staticPageTheme.outerHTML = themeControl();
+if (staticPageTheme) {
+  staticPageTheme.outerHTML = themeControl();
+  document.querySelector(".methodology-header .brand img").outerHTML = icon;
+}
 
 if (page === "glossary") {
   await import("./glossary-page.js");
@@ -22,6 +26,8 @@ if (page === "glossary") {
     await import("./graph-lab.js");
   } else if (params.has("sandbox")) {
     await import("./sandbox.js");
+  } else if (lesson === "final-quiz") {
+    await import("./final-quiz.js");
   } else if (params.has("quiz") || lesson === "quiz") {
     await import("./quiz.js");
   } else if (["learn", "topics"].includes(lesson)) {
