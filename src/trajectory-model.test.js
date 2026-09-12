@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   health,
   cohort,
+  profiles,
+  treatmentProbability,
   comparison,
   BENEFIT,
   SEVERITIES,
@@ -46,4 +48,54 @@ test("every selection setting preserves people, balanced arm counts, overlap and
     );
   }
   close(comparison(0).difference, 12);
+});
+
+test("ten retained profiles preserve identities and use only their factual outcomes in the pool", () => {
+  const baseline = profiles();
+  assert.equal(baseline.length, 10);
+  assert.deepEqual(
+    baseline.map((p) => p.severity),
+    SEVERITIES,
+  );
+  // Hand calculation: treated severities 2,6,7,8,9; untreated 0,1,3,4,5.
+  const result = comparison(1, 1, baseline);
+  assert.deepEqual(
+    baseline.filter((p) => p.treatment).map((p) => p.severity),
+    [2, 6, 7, 8, 9],
+  );
+  close(result.means[1], 90 - (48 / 9) * (32 / 5));
+  close(result.means[0], 78 - (48 / 9) * (13 / 5));
+  close(result.difference, -124 / 15);
+  for (const strength of [0, 0.25, 0.5, 0.75, 1]) {
+    const retained = profiles(strength);
+    assert.deepEqual(
+      retained.map((p) => p.id),
+      baseline.map((p) => p.id),
+    );
+    const summary = comparison(strength, 1, retained);
+    assert.equal(
+      summary.armCounts.reduce((a, b) => a + b),
+      10,
+    );
+    assert.ok(summary.armCounts.every((n) => n > 0));
+    for (const patient of retained) {
+      assert.deepEqual(
+        cohort(strength).find((p) => p.id === patient.id),
+        patient,
+      );
+      close(
+        health(patient.severity, 12, 1) - health(patient.severity, 12, 0),
+        12,
+      );
+      const group = cohort(strength).filter(
+        (p) => p.severity === patient.severity,
+      );
+      close(
+        group.filter((p) => p.treatment).length / 10,
+        treatmentProbability(patient.severity, strength),
+      );
+    }
+  }
+  // Equal assignment probability does not force balance in the ten retained people.
+  close(comparison(0, 1, profiles(0)).difference, 128 / 9);
 });

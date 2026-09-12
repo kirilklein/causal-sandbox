@@ -373,54 +373,10 @@
   color: var(--trajectory-untreated);
 }
 #trajectory-receipt {
-  max-width: 720px;
-  margin: 0 auto 24px;
-  padding: 14px 18px;
-  border: 1px solid var(--trajectory-faint);
-  border-radius: 6px;
-}
-.trajectory-receipt-heading {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 6px 20px;
-  font-size: 12px;
-}
-#trajectory-receipt-note {
-  color: var(--trajectory-muted);
-  font-size: 11px;
-}
-#trajectory-receipt-patients {
-  display: grid;
-  grid-template-columns: 72px repeat(10, 1fr);
-  margin-top: 12px;
-  gap: 3px;
-}
-.trajectory-receipt-labels,
-.trajectory-receipt-person {
-  display: grid;
-  grid-template-rows: 20px 20px;
-  row-gap: 10px;
-  align-items: center;
-  font-size: 11px;
-}
-.receipt-dot {
-  width: 10px;
-  height: 10px;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  justify-self: center;
-}
-.receipt-dot.is-factual {
-  background: currentColor;
-  box-shadow: 0 0 7px currentColor;
-}
-.receipt-dot.is-counterfactual {
-  border-style: dashed;
-  opacity: 0.25;
-}
-.receipt-dot.is-unobserved {
-  visibility: hidden;
+  text-align: center;
+  margin: 10px 0 0;
+  color: var(--film-ink);
+  font-size: 14px;
 }
 #trajectory-orbit-controls {
   display: flex;
@@ -428,9 +384,15 @@
   justify-content: center;
   align-items: center;
   gap: 12px 24px;
-  margin: 0 0 24px;
+  margin: 6px 0 0;
   color: var(--trajectory-muted);
   font-size: 12px;
+}
+#trajectory-probability {
+  text-align: center;
+  color: var(--film-ink);
+  font-size: 13px;
+  margin: 6px 0 16px;
 }
 #trajectory-orbit-controls button {
   padding: 6px 10px;
@@ -460,15 +422,8 @@
   outline-offset: 3px;
 }
 @media (max-width: 700px) {
-  #trajectory-receipt {
-    padding: 12px;
-  }
-  #trajectory-receipt-patients {
-    grid-template-columns: 56px repeat(10, 1fr);
-  }
-  .receipt-dot {
-    width: 8px;
-    height: 8px;
+  #trajectory-canvas.is-frequency {
+    height: 670px;
   }
   #trajectory-orbit-hint {
     text-align: center;

@@ -6,6 +6,24 @@ export const BENEFIT = 12;
 export const SLICE_COUNT = 10;
 export const PATIENTS_PER_SLICE = 10;
 export const SEVERITIES = Array.from({ length: SLICE_COUNT }, (_, i) => i);
+// One fixed patient from each ten-person group; IDs survive unfolding and pooling.
+const PROFILE_RANKS = [4, 6, 1, 7, 8, 9, 4, 5, 6, 4];
+
+export function treatmentProbability(severity, selection = 1) {
+  const centered = (2 * severity) / (SLICE_COUNT - 1) - 1;
+  return (
+    (5 + Math.sign(centered) * Math.round(4 * selection * Math.abs(centered))) /
+    10
+  );
+}
+
+export function isProfile(patient) {
+  return patient.rank === PROFILE_RANKS[patient.severity];
+}
+
+export function profiles(selection = 1) {
+  return cohort(selection).filter(isProfile);
+}
 
 export function health(severity, day, treatment, prognosis = 1) {
   const t = clamp(day / FINAL_DAY);
@@ -26,16 +44,17 @@ export function cohort(selection = 1) {
   return Array.from({ length: SLICE_COUNT * PATIENTS_PER_SLICE }, (_, id) => {
     const severity = Math.floor(id / PATIENTS_PER_SLICE);
     const rank = id % PATIENTS_PER_SLICE;
-    const centered = (2 * severity) / (SLICE_COUNT - 1) - 1;
     const count =
-      PATIENTS_PER_SLICE / 2 +
-      Math.sign(centered) * Math.round(4 * selection * Math.abs(centered));
+      PATIENTS_PER_SLICE * treatmentProbability(severity, selection);
     return { id, severity, rank, treatment: Number(rank < count) };
   });
 }
 
-export function comparison(selection = 1, prognosis = 1) {
-  const people = cohort(selection);
+export function comparison(
+  selection = 1,
+  prognosis = 1,
+  people = cohort(selection),
+) {
   const mean = (rows) =>
     rows.reduce(
       (sum, p) => sum + health(p.severity, FINAL_DAY, p.treatment, prognosis),

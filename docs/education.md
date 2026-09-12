@@ -600,42 +600,56 @@ themes, and mobile layouts.
 ## Patient trajectory story
 
 `?lesson=trajectory-landscape` is an optional cinematic introduction linked
-beside the existing film and after A common cause. It leaves the original film
-and core Continue sequence intact. Seven chapters progressively introduce one
-observed health trajectory, the missing alternative, baseline severity, the
-unfolded severity axis, treatment selection, pooled endpoints, and within-slice
-comparison. Readers control chapter transitions, pause, and replay. Reduced
-motion shows each chapter's final composition without camera or path animation.
+beside the existing film and after A common cause. It leaves the film and core
+Continue sequence intact. Seven chapters introduce one observed health course,
+its counterfactual, ten patients at one severity, a return to one highlighted
+patient, ten profiles across severity, pooled factual endpoints, and a return
+to paired potential outcomes. Readers control transitions, pause and replay.
+Reduced motion shows each chapter's final composition without animation.
 
-The separate continuous teaching model is in `src/trajectory-model.js`. One hundred
-people occupy ten equally sized severity slices, C = 0,…,9. Initial health is
-90 − 20C/9; untreated final health is 78 − 48C/9. Smooth interpolation and a common time
-fluctuation join them. Both treatment worlds share these fluctuations. Treatment
-starts at day 4 and adds a smooth response reaching +12 at day 12; histories and
-tangents agree before the fork. Higher health is better. Within-slice horizontal
-spread separates marks, not severity values. There is no outcome variation
-within a slice or claim of individual counterfactual identification from data.
+The continuous teaching model lives in `src/trajectory-model.js`. Severity
+C = 0,…,9 sets initial health to 90 − 20C/9 and untreated final health to
+78 − 48C/9. Smooth interpolation and a shared time fluctuation connect them.
+Treatment starts on day 4 and adds a smooth response reaching +12 at day 12.
+Paired histories coincide before treatment. Higher health is better.
 
-With u = 2C/9 − 1, treatment counts are 5 + sign(u) × round(4s|u|). This gives
-counts 1, 2, 3, 4, 5, 5, 6, 7, 8, 9 at full selection and 5 in every slice at
-zero. Each arm always contains 50 patients. Pooled final means are approximately
-58.53 treated versus 61.47 untreated at full selection, despite a +12 effect for
-everyone. Equal 10% slice weights give 66 versus 54. All supported settings
-preserve overlap.
+The frequency chapter introduces ten patients at the selected severity in
+separate charts with identical health and time scales. Their potential health
+courses are identical; treatment assignment varies. One chart is highlighted
+and retained when the group collapses. A treatment-probability readout survives
+the collapse. The landscape then unfolds one fixed patient at each of ten
+equally spaced severities. No additional patients appear during pooling.
+
+With u = 2C/9 − 1, teaching counts are 5 + sign(u) × round(4s|u|), giving
+1, 2, 3, 4, 5, 5, 6, 7, 8, 9 at full selection and 5 everywhere at zero.
+Dividing by ten defines the model assignment probabilities. These are fixed
+illustrative assignments, not a fresh random sample: ten independent draws
+would not always reproduce the displayed counts. The retained patient ranks
+are fixed across selection settings, and each is present in their severity's
+frequency view. At full selection, treated severities are 2,6,7,8,9 and untreated
+severities are 0,1,3,4,5. Their pooled difference is −8.27 despite the +12 benefit.
+At equal probabilities, a ten-person example need not have balanced severity
+mixes; its observed difference is +14.22, not exactly +12.
+
+The final chapter reveals each retained patient's own counterfactual, enabled
+by default with an optional hide control. It does not claim an adjusted estimate
+from observed within-severity groups: there is only one observed patient at each
+severity. The +12 gaps are known inside this simulator; real individual
+counterfactuals are not generally recoverable from observed data.
 
 Canvas rendering reuses the film's interpolation helpers and treatment-world
-palette. Solid versus dashed paths encode observation; treatment color is
-independent of observation status. Grey is confined to the shared pre-treatment
-history. Faint dashed counterfactual paths are painted before bright factual
-paths, whose endpoints are filled. A selected slice persists through unfolding.
-The selected-slice strip shows ten patients, with filled markers identifying
-which treatment each received; changing selection switches factual branches.
-The final scene hides counterfactuals by default, with an optional reveal.
-Pointer dragging and arrow keys orbit the final view within limited angles;
-Reset view (or Home on the canvas) restores the camera. These controls do not
-change patients, assignment, or comparisons. Labels fit within the canvas.
-DOM captions and numeric comparisons describe the canvas for assistive tools.
-Model tests cover shared histories, final effects, selection, and composition.
-Focused browser checks cover controls, pause/resume, reduced motion, phone
-overflow, pointer/keyboard orbit, view reset, counterfactual display, treatment
-counts, and entry/return routes. Learner comprehension remains untested.
+palette. Solid versus dashed paths encode observation, independently of color.
+Grey is confined to shared pretreatment history. Counterfactuals are faint and
+painted first; factual endpoints are filled. The highlighted patient persists
+through collapse and unfolding. The health scale moves onto that patient's
+day-12 plane as severity unfolds, so its ticks align with the endpoint values.
+Endpoint labels describe individual outcomes, not group means.
+
+Mouse/touch dragging and arrow keys rotate both landscape chapters. The hint
+and reset control appear above the canvas; Home also resets the view. Rotation
+changes no patients, assignments or comparisons. DOM captions and numeric
+readouts describe the canvas for assistive tools. Focused tests cover shared
+histories, fixed effects, counts versus probabilities, retained identities,
+pooled means, expansion/collapse, rotation, label bounds, counterfactual display,
+playback, reduced motion, mobile layouts and entry/return routes. Learner
+comprehension remains untested.

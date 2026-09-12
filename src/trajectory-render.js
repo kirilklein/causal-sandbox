@@ -1,6 +1,8 @@
 import {
   health,
   cohort,
+  profiles,
+  isProfile,
   comparison,
   TREATMENT_DAY,
   FINAL_DAY,
@@ -112,7 +114,7 @@ export function createTrajectoryRenderer(canvas) {
       unfold,
       pool,
       twins,
-      population,
+      frequency,
       severity,
       selection,
       prognosis,
@@ -125,8 +127,8 @@ export function createTrajectoryRenderer(canvas) {
     const small = width < 600;
     const yaw = mix(-Math.PI / 2, -0.34 + orbitYaw, unfold);
     const pitch = mix(0, 0.28 + orbitPitch, unfold);
-    const rawProject = (c, outcome, time, jitter = 0) => {
-      const x = (c / (SLICE_COUNT - 1) - 0.5) * 9 + jitter;
+    const rawProject = (c, outcome, time) => {
+      const x = (c / (SLICE_COUNT - 1) - 0.5) * 9;
       const z = (time / FINAL_DAY - 0.5) * 10;
       const y = (outcome - 58) / 10;
       const depth = Math.sin(yaw) * x + Math.cos(yaw) * z;
@@ -143,64 +145,140 @@ export function createTrajectoryRenderer(canvas) {
       maxX = Math.max(...corners.map((p) => p.x));
     const minY = Math.min(...corners.map((p) => p.y)),
       maxY = Math.max(...corners.map((p) => p.y));
-    const project = (c, outcome, time, jitter = 0) => {
-      const p = rawProject(c, outcome, time, jitter);
+    const project = (c, outcome, time) => {
+      const p = rawProject(c, outcome, time);
       return {
         x: 54 + ((p.x - minX) / (maxX - minX)) * (width - 94),
         y: 74 + ((maxY - p.y) / (maxY - minY)) * (height - 146),
       };
     };
-    const point = (p, d, a) =>
-      project(
-        p.severity,
-        health(p.severity, d, a, prognosis),
-        d,
-        (p.rank - 4.5) * 0.065 * population,
-      );
+    const card = (rank) => {
+      const cols = small ? 2 : 5;
+      const rows = 10 / cols;
+      const w = (width - 24) / cols;
+      const h = (height - 48) / rows;
+      return {
+        x: 12 + (rank % cols) * w,
+        y: 30 + Math.floor(rank / cols) * h,
+        w,
+        h,
+      };
+    };
+    const point = (p, d, a) => {
+      const outcome = health(p.severity, d, a, prognosis);
+      const base = project(p.severity, outcome, d);
+      const box = card(p.rank);
+      return {
+        x: mix(base.x, box.x + 14 + (d / 12) * (box.w - 38), frequency),
+        y: mix(
+          base.y,
+          box.y + 32 + ((95 - outcome) / 75) * (box.h - 62),
+          frequency,
+        ),
+      };
+    };
     const plotAlpha = 1 - pool;
+    const axisAlpha = plotAlpha * (1 - frequency);
+    if (frequency > 0.001) {
+      label(
+        "Same severity · same health and time scales",
+        { x: width / 2, y: 18 },
+        frequency,
+        "center",
+        colors.silver,
+        small ? 11 : 12,
+      );
+      for (const patient of cohort(selection).filter(
+        (p) => p.severity === severity,
+      )) {
+        const box = card(patient.rank);
+        const selected = isProfile(patient);
+        const color = patient.treatment ? colors.treated : colors.untreated;
+        line(
+          [
+            { x: box.x + 3, y: box.y },
+            { x: box.x + box.w - 6, y: box.y },
+            { x: box.x + box.w - 6, y: box.y + box.h - 7 },
+            { x: box.x + 3, y: box.y + box.h - 7 },
+            { x: box.x + 3, y: box.y },
+          ],
+          colors.silver,
+          frequency * (selected ? 0.8 : 0.12),
+          selected ? 1.5 : 0.7,
+        );
+        label(
+          `Patient ${patient.rank + 1}${selected ? " · keep" : ""}`,
+          { x: box.x + 12, y: box.y + 18 },
+          frequency,
+          "left",
+          colors.ink,
+          small ? 10 : 11,
+        );
+        label(
+          patient.treatment ? "Treated" : "Untreated",
+          { x: box.x + 12, y: box.y + box.h - 18 },
+          frequency,
+          "left",
+          color,
+          10,
+        );
+        label(
+          "0 → 12 days",
+          { x: box.x + box.w - 14, y: box.y + box.h - 18 },
+          frequency * 0.7,
+          "right",
+          colors.silver,
+          9,
+        );
+      }
+    }
     // Ground grid and treatment plane turn with the same coordinate system as patients.
     for (const c of SEVERITIES) {
       line(
         [project(c, 20, 0), project(c, 20, 12)],
         colors.silver,
-        0.1 * unfold * plotAlpha,
+        0.1 * unfold * axisAlpha,
       );
     }
     for (const t of [0, 4, 8, 12]) {
       line(
         [project(0, 20, t), project(SLICE_COUNT - 1, 20, t)],
         colors.silver,
-        0.1 * unfold * plotAlpha,
+        0.1 * unfold * axisAlpha,
       );
     }
     const axisC = mix(severity, 0, unfold);
     line(
-      [project(axisC, 20, 0), project(axisC, 95, 0)],
+      [project(severity, 20, 12 * unfold), project(severity, 95, 12 * unfold)],
       colors.silver,
-      0.3 * plotAlpha,
+      0.3 * axisAlpha,
     );
     line(
       [project(axisC, 20, 0), project(axisC, 20, 12)],
       colors.silver,
-      0.35 * plotAlpha,
+      0.35 * axisAlpha,
     );
     for (const h of [20, 40, 60, 80]) {
-      const p = project(axisC, h, 0);
-      line([{ x: p.x - 3, y: p.y }, p], colors.silver, 0.5 * plotAlpha);
+      const p = project(severity, h, 12 * unfold);
+      line([{ x: p.x - 3, y: p.y }, p], colors.silver, 0.5 * axisAlpha);
       label(
         String(h),
         { x: p.x - 8, y: p.y + 4 },
-        0.65 * plotAlpha,
+        0.65 * axisAlpha,
         "right",
         colors.silver,
         small ? 10 : 11,
       );
     }
-    label("Health score ↑", { x: 22, y: 26 }, plotAlpha * 0.8);
+    label(
+      unfold > 0.8 ? "Day-12 health ↑ · selected patient" : "Health score ↑",
+      { x: 22, y: 26 },
+      axisAlpha * 0.8,
+    );
     label(
       "Higher is better",
       { x: 22, y: 44 },
-      plotAlpha * 0.5,
+      axisAlpha * 0.5,
       "left",
       colors.silver,
       11,
@@ -210,7 +288,7 @@ export function createTrajectoryRenderer(canvas) {
       label(
         `Day ${t}`,
         { x: p.x - 14 * unfold, y: p.y + 20 },
-        plotAlpha * 0.65,
+        axisAlpha * 0.65,
         unfold > 0.5 ? "right" : "center",
         colors.silver,
         small ? 10 : 12,
@@ -223,7 +301,7 @@ export function createTrajectoryRenderer(canvas) {
         label(
           String(c),
           { x: p.x, y: p.y + 19 },
-          unfold * plotAlpha * 0.8,
+          unfold * axisAlpha * 0.8,
           "center",
         );
       }
@@ -231,7 +309,7 @@ export function createTrajectoryRenderer(canvas) {
       label(
         "Baseline severity →",
         { x: p.x, y: p.y + 38 },
-        unfold * plotAlpha * 0.8,
+        unfold * axisAlpha * 0.8,
         "center",
       );
       const corners = [
@@ -241,7 +319,7 @@ export function createTrajectoryRenderer(canvas) {
         project(severity, 20, 12),
       ];
       ctx.save();
-      ctx.globalAlpha = 0.035 * unfold * plotAlpha;
+      ctx.globalAlpha = 0.035 * unfold * axisAlpha;
       ctx.fillStyle = colors.ink;
       ctx.beginPath();
       corners.forEach((p, i) =>
@@ -253,7 +331,7 @@ export function createTrajectoryRenderer(canvas) {
       line(
         corners.concat([corners[0]]),
         colors.silver,
-        0.13 * unfold * plotAlpha,
+        0.13 * unfold * axisAlpha,
       );
     }
     const treatmentPoint = project(
@@ -264,7 +342,7 @@ export function createTrajectoryRenderer(canvas) {
     line(
       [project(severity, 20, 4), project(severity, 95, 4)],
       colors.silver,
-      0.22 * plotAlpha,
+      0.22 * axisAlpha,
       1,
       true,
     );
@@ -272,26 +350,33 @@ export function createTrajectoryRenderer(canvas) {
       label(
         "Treatment starts",
         { x: treatmentPoint.x + 10, y: treatmentPoint.y - 29 },
-        (1 - unfold) * plotAlpha * 0.8,
+        (1 - unfold) * axisAlpha * 0.8,
         "left",
         colors.silver,
         small ? 11 : 12,
       );
 
     const data = cohort(selection);
-    const summary = comparison(selection, prognosis);
+    const retained = profiles(selection);
+    const summary = comparison(selection, prognosis, retained);
     const endpoints = [];
     const ordinals = new Map();
     for (const arm of [0, 1])
-      data
+      retained
         .filter((p) => p.treatment === arm)
         .forEach((p, i) => ordinals.set(p.id, i));
     // Paint counterfactuals first so faint alternatives never obscure factual paths.
     for (const factual of [false, true])
       for (const patient of data) {
-        const focal = patient.severity === severity && patient.rank === 4;
-        const representative = patient.rank === 4;
-        const visibility = focal ? 1 : representative ? unfold : population;
+        const representative = isProfile(patient);
+        const focal = patient.severity === severity && representative;
+        const visibility = focal
+          ? 1
+          : representative
+            ? Math.max(unfold, patient.severity === severity ? frequency : 0)
+            : patient.severity === severity
+              ? frequency
+              : 0;
         if (visibility < 0.001) continue;
         const isSlice = patient.severity === severity;
         const alpha = visibility * (focal ? 1 : isSlice ? 0.9 : 0.55);
@@ -302,12 +387,12 @@ export function createTrajectoryRenderer(canvas) {
           line(
             history,
             colors.silver,
-            alpha * (population > 0.5 ? 0.2 : 0.65) * plotAlpha,
+            alpha * 0.65 * plotAlpha,
             focal ? 1.6 : 0.7,
           );
         }
         const a = factual ? patient.treatment : 1 - patient.treatment;
-        const opacity = alpha * (factual ? 1 : twins * (isSlice ? 0.22 : 0.12));
+        const opacity = alpha * (factual ? 1 : twins * (isSlice ? 0.35 : 0.24));
         if (opacity < 0.001 || (day < 4 && !factual)) continue;
         const color = a ? colors.treated : colors.untreated;
         if (day >= 4) {
@@ -325,10 +410,12 @@ export function createTrajectoryRenderer(canvas) {
           );
         }
         const end = point(patient, day, a);
-        const ordinal = ordinals.get(patient.id);
+        const ordinal = ordinals.get(patient.id) ?? 0;
         const groupX = width * (a ? 0.69 : 0.31);
         const pooledPoint = {
-          x: groupX + ((ordinal % 10) - 4.5) * (small ? 5 : 9),
+          x:
+            groupX +
+            (ordinal - (summary.armCounts[a] - 1) / 2) * (small ? 14 : 23),
           y:
             height * 0.77 -
             ((health(patient.severity, FINAL_DAY, a, prognosis) - 20) / 80) *
@@ -343,18 +430,22 @@ export function createTrajectoryRenderer(canvas) {
           color: day < 4 ? colors.silver : color,
           alpha: opacity * (factual ? 1 : 1 - pool),
           ghost: !factual,
-          radius: focal ? mix(5.5, 2.7, pool) : factual ? 2.1 : 1.7,
+          radius: focal
+            ? mix(5.5, 4, Math.max(pool, frequency))
+            : factual
+              ? mix(3, 4, pool)
+              : 2,
         });
       }
     endpoints.forEach(({ target, color, alpha, ghost, radius }) =>
       pearl(target, color, alpha, ghost, radius),
     );
-    const focal = data.find((p) => p.severity === severity && p.rank === 4);
-    if (day >= 11.99 && (population < 0.5 || step === 6) && pool < 0.01) {
+    const focal = retained.find((p) => p.severity === severity);
+    if (day >= 11.99 && frequency < 0.01 && pool < 0.01) {
       for (const a of [0, 1]) {
-        if (step !== 6 && a !== focal.treatment && twins < 0.8) continue;
+        if (a !== focal.treatment && twins < 0.8) continue;
         const p = point(focal, 12, a);
-        const text = `${step === 6 ? "Mean " : ""}${a ? "Treated" : "Untreated"} · ${health(severity, 12, a, prognosis).toFixed(1)}`;
+        const text = `${a ? "Treated" : "Untreated"} · ${health(severity, 12, a, prognosis).toFixed(1)}`;
         const size = small ? 11 : 13;
         ctx.font = `400 ${size}px "Avenir Next", system-ui, sans-serif`;
         const onLeft = small || p.x + ctx.measureText(text).width + 24 > width;
@@ -368,7 +459,7 @@ export function createTrajectoryRenderer(canvas) {
           true,
         );
       }
-      if (twins > 0.8 || step === 6) {
+      if (twins > 0.8) {
         const a = point(focal, 12, 0),
           b = point(focal, 12, 1);
         line(
