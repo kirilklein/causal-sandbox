@@ -75,6 +75,7 @@ const initial = {
   step: 0,
   severity: 7,
   selection: 1,
+  prognosis: 1,
   orbitYaw: 0,
   orbitPitch: 0,
   showCounterfactuals: 0,
@@ -117,16 +118,16 @@ document.querySelector("#app").innerHTML = `<div class="trajectory-experience">
     <div class="trajectory-controls">
       <div id="trajectory-severity-control" class="trajectory-control" hidden><label for="trajectory-severity">BASELINE SEVERITY <output id="trajectory-severity-value"></output></label><input type="range" id="trajectory-severity" min="0" max="9" step="1" value="7"/><div class="trajectory-control-ends"><span>Lower</span><span>Higher</span></div></div>
       <div id="trajectory-selection-control" class="trajectory-control" hidden><label for="trajectory-selection">SEVERITY → TREATMENT <output id="trajectory-selection-value"></output></label><input type="range" id="trajectory-selection" min="0" max="100" step="25" value="100"/><div class="trajectory-control-ends"><span>Equal treatment rates</span><span>Favor higher severity</span></div></div>
+      <div id="trajectory-prognosis-control" class="trajectory-control" hidden><label for="trajectory-prognosis">SEVERITY → OUTCOME <output id="trajectory-prognosis-value"></output></label><input type="range" id="trajectory-prognosis" min="0" max="100" step="25" value="100" aria-describedby="trajectory-prognosis-note"/><div class="trajectory-control-ends"><span>No severity effect</span><span>Worse health</span></div><p id="trajectory-prognosis-note" class="trajectory-control-note">Changes both health paths. Treatment benefit stays +12.</p></div>
     </div>
     <div class="trajectory-story"><div class="trajectory-caption"><p id="trajectory-description"></p><p id="trajectory-reading" role="status"></p></div><div class="trajectory-navigation"><button id="trajectory-back" aria-label="Previous scene">←</button><button id="trajectory-next"></button></div></div>
-    <footer class="trajectory-footnote"><span>FICTIONAL PATIENTS · COUNTERFACTUALS ARE KNOWN ONLY INSIDE THIS MODEL</span><details><summary>Read the model & assumptions</summary><p>Baseline severity C takes ten equally spaced values, 0–9. The frequency scene shows ten patients at one severity in separate charts with identical health and time scales. Patients at the same severity share both potential health courses. We then retain one fixed patient per severity and follow those same ten into the pooled comparison.</p><p>Initial health is 90 − 20C/9. Untreated day-12 health is 78 − 48C/9. A smooth curve and a shared time fluctuation join them. Treatment begins on day 4 and smoothly adds 12 points by day 12, with no effect before treatment. This is an illustrative health score, not a clinical prediction or a risk of a binary event.</p><p>At full selection, treated counts rise from 1, 2, 3, 4, 5, 5, 6, 7, 8, and 9 across the slices. The slider moves these symmetrically toward 5, rounded to whole people. Dividing these teaching counts by ten defines the model treatment probabilities. Assignments are fixed examples, not a fresh random sample: ten independent draws would not always reproduce these exact counts. Treatment probability can be nonzero for both arms even though the landscape contains only one observed patient per severity.</p><p>The pooled difference compares observed group averages for the ten retained patients at day 12. Their assignment ranks stay fixed when selection changes. Even at equal treatment probabilities, this small example can have different severity mixes by chance. The final comparison pairs each patient with their own simulated counterfactual; it is not an adjusted estimate from observed groups. Severity is the only common cause here. In real data, comparable groups and adequate overlap require substantive assumptions; missing individual counterfactuals generally cannot be recovered. <a href="https://arxiv.org/abs/2301.09031">Counterfactual identifiability ↗</a></p><p><a href="?lesson=ipw">Continue with adjustment using IPW →</a></p></details></footer>
+    <footer class="trajectory-footnote"><span>FICTIONAL PATIENTS · COUNTERFACTUALS ARE KNOWN ONLY INSIDE THIS MODEL</span><details><summary>Read the model & assumptions</summary><p>Baseline severity C takes ten equally spaced values, 0–9. The frequency scene shows ten patients at one severity in separate charts with identical health and time scales. Patients at the same severity share both potential health courses. We then retain one fixed patient per severity and follow those same ten into the pooled comparison.</p><p>Let r be the Severity → Outcome slider value divided by 100. Initial health is 90 − 20rC/9. Untreated day-12 health is 78 − 48rC/9. At zero, severity no longer changes either potential health course. This slider changes prognosis, not the treatment benefit or treatment assignments. A smooth curve and a shared time fluctuation join them. Treatment begins on day 4 and smoothly adds 12 points by day 12, with no effect before treatment. This is an illustrative health score, not a clinical prediction or a risk of a binary event.</p><p>At full selection, treated counts rise from 1, 2, 3, 4, 5, 5, 6, 7, 8, and 9 across the slices. The slider moves these symmetrically toward 5, rounded to whole people. Dividing these teaching counts by ten defines the model treatment probabilities. Assignments are fixed examples, not a fresh random sample: ten independent draws would not always reproduce these exact counts. Treatment probability can be nonzero for both arms even though the landscape contains only one observed patient per severity.</p><p>The pooled difference compares observed group averages for the ten retained patients at day 12. Their assignment ranks stay fixed when selection changes. Even at equal treatment probabilities, this small example can have different severity mixes by chance. The final comparison pairs each patient with their own simulated counterfactual; it is not an adjusted estimate from observed groups. Severity is the only common cause here. In real data, comparable groups and adequate overlap require substantive assumptions; missing individual counterfactuals generally cannot be recovered. <a href="https://arxiv.org/abs/2301.09031">Counterfactual identifiability ↗</a></p><p><a href="?lesson=ipw">Continue with adjustment using IPW →</a></p></details></footer>
   </main>
 </div>`;
 const renderer = createTrajectoryRenderer($("trajectory-canvas"));
 function target() {
   return {
     ...state,
-    prognosis: 1,
     day: 12,
     twins:
       state.step >= 1 && state.step <= 4
@@ -201,6 +202,7 @@ function updateCopy() {
   $("trajectory-back").disabled = state.step === 0;
   $("trajectory-severity-control").hidden = state.step < 2 || state.step === 5;
   $("trajectory-selection-control").hidden = state.step < 2;
+  $("trajectory-prognosis-control").hidden = state.step < 3;
   $("trajectory-canvas").classList.toggle("is-frequency", state.step === 2);
   $("trajectory-ghost").hidden =
     state.step === 0 ||
@@ -219,22 +221,26 @@ function updateCopy() {
   $("trajectory-untreated").hidden = state.step === 0;
   $("trajectory-severity-value").textContent =
     `${state.severity} / ${SLICE_COUNT - 1}`;
-  $("trajectory-selection-value").textContent =
-    `${Math.round(state.selection * 100)}%`;
+  for (const key of ["selection", "prognosis"]) {
+    $("trajectory-" + key + "-value").textContent =
+      `${Math.round(state[key] * 100)}%`;
+    $("trajectory-" + key).style.setProperty("--fill", `${state[key] * 100}%`);
+  }
   $("trajectory-severity").style.setProperty(
     "--fill",
     `${(state.severity / (SLICE_COUNT - 1)) * 100}%`,
   );
-  $("trajectory-selection").style.setProperty(
-    "--fill",
-    `${state.selection * 100}%`,
-  );
+
   document.querySelectorAll("[data-chapter]").forEach((button) => {
     if (Number(button.dataset.chapter) === state.step)
       button.setAttribute("aria-current", "step");
     else button.removeAttribute("aria-current");
   });
-  const summary = comparison(state.selection, 1, profiles(state.selection));
+  const summary = comparison(
+    state.selection,
+    state.prognosis,
+    profiles(state.selection),
+  );
   const people = cohort(state.selection);
   const selected = people.filter((p) => p.severity === state.severity);
   $("trajectory-receipt-count").textContent =
@@ -265,11 +271,24 @@ function updateCopy() {
             : state.showCounterfactuals
               ? "Each +12 gap compares the same patient's two simulated outcomes, not two observed patients."
               : "Only factual paths are visible. Reveal counterfactuals to compare each patient's two possible outcomes.";
-  if (state.step === 5 && summary.difference >= 0) {
-    $("trajectory-heading").innerHTML =
-      "Change selection.<em>Change the comparison.</em>";
+  if (state.step === 3) {
     $("trajectory-description").textContent =
-      `The pooled comparison now favors treatment. ${state.selection === 0 ? "Treatment probability is 50% at every severity, but ten patients can still have different severity mixes in the two groups." : "Selection changes the observed groups; the benefit for each patient remains +12."} Increase selection to see the reversal return.`;
+      `Keep the highlighted patient and their treatment chance. Move severity to visit another profile. ${state.prognosis === 0 ? "Severity currently has no effect on either health path." : "Higher severity worsens both health paths."} Use Severity → Outcome to change this relationship; the treatment gap stays +12.`;
+  }
+  if (state.step === 4) {
+    $("trajectory-description").textContent =
+      `One patient at each severity is now visible. Solid paths show their actual treatment; dashed paths show their alternatives. ${state.selection === 0 ? "Treatment probability is the same at every severity." : "Higher severity makes treatment more likely, not certain."} ${state.prognosis === 0 ? "Severity currently has no effect on health." : "Severity also worsens health under either treatment."} What happens when we pool these ten?`;
+  }
+  if (state.step === 5 && state.prognosis === 0) {
+    $("trajectory-heading").innerHTML =
+      "Remove severity’s effect.<em>The comparison agrees.</em>";
+    $("trajectory-description").textContent =
+      "With severity’s outcome effect switched off, all profiles have the same two health courses. The pooled difference is +12, regardless of who receives treatment. Restore both severity connections to see the misleading comparison return.";
+  } else if (state.step === 5 && summary.difference >= 0) {
+    $("trajectory-heading").innerHTML =
+      "Change the connections.<em>Change the comparison.</em>";
+    $("trajectory-description").textContent =
+      `The pooled comparison now favors treatment. ${state.selection === 0 ? "Treatment probability is 50% at every severity, but ten patients can still have different severity mixes in the two groups." : "The severity connections change the observed comparison; the benefit for each patient remains +12."} Increase both severity connections to see the reversal return.`;
   }
   $("trajectory-canvas").setAttribute(
     "aria-label",
@@ -289,6 +308,7 @@ function enter(step, focus = true) {
     view = { ...target(), day: 0 };
     $("trajectory-severity").value = initial.severity;
     $("trajectory-selection").value = 100;
+    $("trajectory-prognosis").value = 100;
   }
   updateCopy();
   animate(scenes[step].time, step === 1 && previous <= 1 ? 1 : null);
@@ -335,9 +355,9 @@ $("trajectory-pause").addEventListener("click", () => {
     paused ? "Resume animation" : "Pause animation",
   );
 });
-for (const key of ["severity", "selection"])
+for (const key of ["severity", "selection", "prognosis"])
   $("trajectory-" + key).addEventListener("input", (event) => {
-    state[key] = Number(event.target.value) / (key === "selection" ? 100 : 1);
+    state[key] = Number(event.target.value) / (key === "severity" ? 1 : 100);
     updateCopy();
     // Severity changes select discrete profiles, not intermediate invented patients.
     view[key] = state[key];

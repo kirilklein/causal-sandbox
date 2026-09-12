@@ -43,7 +43,7 @@ export function createTrajectoryRenderer(canvas) {
     ctx.strokeStyle = color;
     ctx.globalAlpha = clamp(alpha);
     ctx.lineWidth = weight;
-    ctx.setLineDash(dashed ? [4, 9] : []);
+    ctx.setLineDash(dashed ? [6, 6] : []);
     ctx.beginPath();
     points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
     ctx.stroke();
@@ -392,7 +392,7 @@ export function createTrajectoryRenderer(canvas) {
           );
         }
         const a = factual ? patient.treatment : 1 - patient.treatment;
-        const opacity = alpha * (factual ? 1 : twins * (isSlice ? 0.35 : 0.24));
+        const opacity = alpha * (factual ? 1 : twins * (isSlice ? 0.65 : 0.55));
         if (opacity < 0.001 || (day < 4 && !factual)) continue;
         const color = a ? colors.treated : colors.untreated;
         if (day >= 4) {
@@ -405,7 +405,7 @@ export function createTrajectoryRenderer(canvas) {
             trail,
             color,
             opacity * plotAlpha,
-            factual ? (focal ? 2.7 : small ? 0.8 : 1.3) : 0.85,
+            factual ? (focal ? 2.7 : 1.5) : focal ? 1.5 : 1.05,
             !factual,
           );
         }
@@ -434,7 +434,7 @@ export function createTrajectoryRenderer(canvas) {
             ? mix(5.5, 4, Math.max(pool, frequency))
             : factual
               ? mix(3, 4, pool)
-              : 2,
+              : 2.7,
         });
       }
     endpoints.forEach(({ target, color, alpha, ghost, radius }) =>

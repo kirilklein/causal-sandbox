@@ -203,6 +203,12 @@
   color: var(--trajectory-muted);
   font-size: 10px;
 }
+.trajectory-control-note {
+  margin: 10px 0 0;
+  color: var(--trajectory-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
 .trajectory-story {
   border-top: 1px solid var(--trajectory-faint);
   padding-top: 23px;
@@ -360,8 +366,8 @@
   border-top: 2px solid var(--film-ink);
 }
 .counterfactual-key {
-  border-top: 1px dashed var(--film-ink);
-  opacity: 0.5;
+  border-top: 1.5px dashed var(--film-ink);
+  opacity: 0.7;
 }
 #trajectory-observed {
   color: var(--film-ink);

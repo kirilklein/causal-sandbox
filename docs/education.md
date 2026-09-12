@@ -613,6 +613,13 @@ C = 0,…,9 sets initial health to 90 − 20C/9 and untreated final health to
 Treatment starts on day 4 and adds a smooth response reaching +12 at day 12.
 Paired histories coincide before treatment. Higher health is better.
 
+The Severity → Outcome slider, introduced on returning to one profile, scales
+both severity terms by r ∈ [0,1]. At r = 0, severity has no effect on either
+health course, and the factual pooled difference is +12 at every treatment
+selection setting. Treatment assignments and the +12 benefit remain fixed when
+r changes. This is a prognostic effect, not treatment-effect modification.
+The two severity-connection sliders separately change selection and prognosis.
+
 The frequency chapter introduces ten patients at the selected severity in
 separate charts with identical health and time scales. Their potential health
 courses are identical; treatment assignment varies. One chart is highlighted
@@ -639,8 +646,8 @@ counterfactuals are not generally recoverable from observed data.
 
 Canvas rendering reuses the film's interpolation helpers and treatment-world
 palette. Solid versus dashed paths encode observation, independently of color.
-Grey is confined to shared pretreatment history. Counterfactuals are faint and
-painted first; factual endpoints are filled. The highlighted patient persists
+Grey is confined to shared pretreatment history. Counterfactuals use lighter, thinner dashed strokes and hollow endpoints,
+and are painted first; factual endpoints are filled. The highlighted patient persists
 through collapse and unfolding. The health scale moves onto that patient's
 day-12 plane as severity unfolds, so its ticks align with the endpoint values.
 Endpoint labels describe individual outcomes, not group means.

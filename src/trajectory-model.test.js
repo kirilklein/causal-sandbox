@@ -99,3 +99,39 @@ test("ten retained profiles preserve identities and use only their factual outco
   // Equal assignment probability does not force balance in the ten retained people.
   close(comparison(0, 1, profiles(0)).difference, 128 / 9);
 });
+
+test("prognostic strength changes both outcomes but preserves the paired benefit", () => {
+  for (const prognosis of [0, 0.25, 0.5, 0.75, 1]) {
+    for (const severity of SEVERITIES) {
+      close(
+        health(severity, 0, 0, prognosis),
+        90 - (20 * prognosis * severity) / 9,
+      );
+      close(
+        health(severity, 12, 0, prognosis),
+        78 - (48 * prognosis * severity) / 9,
+      );
+      for (let day = 0; day <= 12; day += 0.5) {
+        close(
+          health(severity, day, 1, prognosis) -
+            health(severity, day, 0, prognosis),
+          health(0, day, 1) - health(0, day, 0),
+        );
+        if (prognosis === 0) {
+          for (const treatment of [0, 1])
+            close(
+              health(severity, day, treatment, prognosis),
+              health(0, day, treatment),
+            );
+        }
+      }
+    }
+    // The ten retained profiles have treated mean severity 6.4 vs untreated 2.6.
+    close(
+      comparison(1, prognosis, profiles(1)).difference,
+      12 - (48 * prognosis * 3.8) / 9,
+    );
+  }
+  for (const selection of [0, 0.25, 0.5, 0.75, 1])
+    close(comparison(selection, 0, profiles(selection)).difference, 12);
+});
