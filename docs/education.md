@@ -65,7 +65,7 @@ it. There is no autoplay or completion gate. Guided-lesson progress is stored
 only in the learner's browser.
 
 The [learning entry and adaptive quiz](adaptive-quiz.md) offer starting from
-scratch, browsing refreshers/advanced topics, or answering up to six questions
+scratch, browsing refreshers/advanced topics, or answering up to seven questions
 for suggested lessons. The quiz stores only its current attempt in the tab
 session; it does not track lesson completion. Explanations and sources follow
 the assessment, with separate practice that leaves the original answers intact.
@@ -596,3 +596,20 @@ on titles, aliases, keywords, and summaries, with up to eight results displayed.
 entries. When adding a lesson, include its search description and keywords.
 `tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
 themes, and mobile layouts.
+
+## Final course assessment
+
+The recap now offers **Take the final quiz**, with scenario exploration still
+available beside it. [The final quiz](final-quiz.md) at `?lesson=final-quiz`
+contains twelve application questions for learners finishing the core course.
+It uses first-answer scoring, explanatory feedback, and separate practice retries;
+no optional chapters are required. Contents links directly to it without changing
+core lesson numbers. The entry quiz remains at `?lesson=quiz` and retains its
+separate saved attempt. Neither assessment gates the course or sandboxes.
+
+Five final-quiz adjustment questions and two conditional entry graph questions
+share scenarios with the building box. Results link to matched experiments with
+the learner's selected variables; experiments open in another tab to preserve
+quiz progress. Final-question feedback remains immediate, while experiment links
+and entry-question explanations follow assessment. See [final quiz](final-quiz.md)
+and [entry quiz](adaptive-quiz.md) for routing, scoring and scientific constraints.

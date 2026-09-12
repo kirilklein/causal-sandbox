@@ -1,12 +1,19 @@
+import {
+  gradeAdjustment,
+  validAdjustmentChoice,
+  selectedNodes,
+} from "./adjustment-model.js";
 import { quizQuestions, unsureChoice } from "./quiz-questions.js";
 
-export const questionLimit = 6;
+export const questionLimit = 7;
 const questions = new Map(
   quizQuestions.map((question) => [question.id, question]),
 );
 export const questionById = (id) => questions.get(id);
 export const isCorrect = ({ question, choice }) =>
-  questionById(question).correct === choice;
+  questionById(question).adjustment
+    ? gradeAdjustment(questionById(question), choice).correct
+    : questionById(question).correct === choice;
 
 export function nextQuestion(answers) {
   if (!answers.length) return "E";
@@ -22,9 +29,11 @@ export function nextQuestion(answers) {
     case "B":
       return correct ? (seen("G") ? "C" : "G") : null;
     case "G":
-      if (correct) return "C";
-      if (["both", "m-only"].includes(last.choice)) return "M";
+      if (correct) return "J";
+      if (selectedNodes(last.choice).includes("M")) return "M";
       return seen("B") ? null : "B";
+    case "J":
+      return "C";
     case "M":
       return correct ? "C" : null;
     case "C":
@@ -52,8 +61,10 @@ export function validAnswers(value) {
     if (!id || entry?.question !== id) break;
     const question = questionById(id);
     if (
-      entry.choice !== unsureChoice.id &&
-      !question.choices.some(({ id }) => id === entry.choice)
+      question.adjustment
+        ? !validAdjustmentChoice(question, entry.choice)
+        : entry.choice !== unsureChoice.id &&
+          !question.choices.some(({ id }) => id === entry.choice)
     )
       break;
     answers.push({ question: id, choice: entry.choice });
@@ -77,6 +88,7 @@ const topics = {
   F: "randomization",
   B: "confounding",
   G: "confounding",
+  J: "collider",
   M: "mediator",
   C: "collider",
   K: "collider",
@@ -133,10 +145,21 @@ export function recommendLessons(answers) {
   for (const answer of answers) {
     if (isCorrect(answer)) continue;
     if (answer.question === "G") {
-      if (["m-only", "neither", "unsure"].includes(answer.choice))
+      if (!selectedNodes(answer.choice).includes("C"))
         add("confounding", answer, passed("B"));
-      if (["both", "m-only"].includes(answer.choice))
+      if (selectedNodes(answer.choice).includes("M"))
         add("mediator", answer, passed("M"));
+    } else if (answer.question === "J") {
+      const selected = selectedNodes(answer.choice);
+      if (!selected.includes("C") && !selected.includes("L"))
+        add("confounding", answer);
+      if (
+        ["unsure", "impossible"].includes(answer.choice) ||
+        (selected.includes("K") &&
+          !selected.includes("P") &&
+          !selected.includes("R"))
+      )
+        add("collider", answer);
     } else {
       add(
         topics[answer.question],
@@ -164,7 +187,7 @@ export function recommendLessons(answers) {
   items.sort(
     (a, b) => reviewOrder.indexOf(a.topic) - reviewOrder.indexOf(b.topic),
   );
-  const mainPath = ["E", "G", "C", "H", "O", "D"];
+  const mainPath = ["E", "G", "J", "C", "H", "O", "D"];
   const advanced =
     answers.length === mainPath.length &&
     answers.every(
