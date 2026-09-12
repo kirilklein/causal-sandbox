@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400" role="img" aria-labelledby="title description">
+  <title id="title">Causal Sandbox · Site views</title>
+  <desc id="description">305 cumulative site views at the 12 Sept 2026 UTC cutoff (including the midnight hour). Daily snapshots from 6 Sept 2026, connected with a monotone curve. GoatCounter counts site visits, not lifetime unique people.</desc>
+  <style>
+    @media (max-width: 480px) {
+      .secondary { display: none; }
+      .heading { font-size: 30px; }
+      .total { font-size: 48px; }
+      .tick, .cumulative { font-size: 26px; }
+      .date, .footer { font-size: 24px; }
+    }
+  </style>
+  <defs>
+    <!-- Palette and endpoint lighting follow film/render.js. -->
+    <radialGradient id="background" cx="50%" cy="45%" r="75%">
+      <stop stop-color="#1c2c3a"/><stop offset=".58" stop-color="#101c28"/><stop offset="1" stop-color="#080f18"/>
+    </radialGradient>
+    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#ff8174" stop-opacity=".13"/><stop offset="1" stop-color="#ff8174" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="pearl" cx="32%" cy="28%" r="80%">
+      <stop stop-color="#ffeae7"/><stop offset=".3" stop-color="#ffa79e"/><stop offset=".7" stop-color="#ff8174"/><stop offset="1" stop-color="#702f32"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="400" rx="16" fill="url(#background)"/>
+  <g font-family="Avenir Next, Avenir, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" fill="#dee8f0">
+    <text class="heading" x="40" y="43" font-size="18" font-weight="500">Site views</text>
+    <text class="total" x="40" y="88" font-size="36" font-weight="500">305<tspan class="cumulative" dx="12" font-size="15" fill="#afbecc">cumulative</tspan></text>
+    <text class="secondary" x="760" y="43" text-anchor="end" font-size="14" fill="#afbecc">Causal Sandbox</text>
+    <path d="M 64 314 H 744" stroke="#394e60" stroke-opacity=".45"/>
+    <text class="tick" x="50" y="319" text-anchor="end" font-size="14" fill="#afbecc">0</text>
+    <path d="M 64 267 H 744" stroke="#394e60" stroke-opacity=".45"/>
+    <text class="tick" x="50" y="272" text-anchor="end" font-size="14" fill="#afbecc">80</text>
+    <path d="M 64 220 H 744" stroke="#394e60" stroke-opacity=".45"/>
+    <text class="tick" x="50" y="225" text-anchor="end" font-size="14" fill="#afbecc">160</text>
+    <path d="M 64 173 H 744" stroke="#394e60" stroke-opacity=".45"/>
+    <text class="tick" x="50" y="178" text-anchor="end" font-size="14" fill="#afbecc">240</text>
+    <path d="M 64 126 H 744" stroke="#394e60" stroke-opacity=".45"/>
+    <text class="tick" x="50" y="131" text-anchor="end" font-size="14" fill="#afbecc">320</text>
+    <path d="M 64.00 312.24 C 101.78 311.26, 139.56 310.85, 177.33 309.30 C 215.11 307.75, 252.89 300.53, 290.67 298.14 C 328.44 295.75, 366.22 295.28, 404.00 292.85 C 441.78 290.42, 479.56 285.45, 517.33 281.10 C 555.11 276.75, 592.89 275.22, 630.67 266.41 C 668.44 257.60, 706.22 178.68, 744.00 134.81 L 744 314 L 64 314 Z" fill="url(#area)"/>
+    <path d="M 64.00 312.24 C 101.78 311.26, 139.56 310.85, 177.33 309.30 C 215.11 307.75, 252.89 300.53, 290.67 298.14 C 328.44 295.75, 366.22 295.28, 404.00 292.85 C 441.78 290.42, 479.56 285.45, 517.33 281.10 C 555.11 276.75, 592.89 275.22, 630.67 266.41 C 668.44 257.60, 706.22 178.68, 744.00 134.81" fill="none" stroke="#ff8174" stroke-width="8" stroke-opacity=".06" stroke-linecap="round"/>
+    <path d="M 64.00 312.24 C 101.78 311.26, 139.56 310.85, 177.33 309.30 C 215.11 307.75, 252.89 300.53, 290.67 298.14 C 328.44 295.75, 366.22 295.28, 404.00 292.85 C 441.78 290.42, 479.56 285.45, 517.33 281.10 C 555.11 276.75, 592.89 275.22, 630.67 266.41 C 668.44 257.60, 706.22 178.68, 744.00 134.81" fill="none" stroke="#ff8174" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="744.00" cy="134.81" r="13" fill="#ff8174" fill-opacity=".08"/>
+    <circle cx="744.00" cy="134.81" r="5" fill="url(#pearl)"/>
+    <text class="date" x="64" y="342" font-size="14" fill="#afbecc">6 Sept 2026</text>
+    <text class="date" x="744" y="342" text-anchor="end" font-size="14" fill="#afbecc">12 Sept 2026</text>
+    <text class="footer" x="40" y="378" font-size="13" fill="#afbecc">GoatCounter<tspan class="secondary"> · daily snapshots</tspan></text>
+    <text class="footer" x="760" y="378" text-anchor="end" font-size="13" fill="#afbecc">Updated 12 Sept 2026</text>
+  </g>
+</svg>
