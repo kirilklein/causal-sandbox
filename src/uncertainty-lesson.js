@@ -24,7 +24,6 @@ import {
   fmt,
   intervalPlot,
   bootstrapPlot,
-  estimatePlot,
   resampleTrace,
   assignmentGraph,
   openingPlot,
@@ -47,36 +46,36 @@ document.querySelector("#app").innerHTML =
       <div id="opening-conclusion" hidden>
         <p><strong>A excludes zero. B is compatible with zero.</strong> Distance from zero alone was not enough; we needed the uncertainty interval.</p>
         <p class="small">Including zero does not prove no effect. These interpretations depend on the analysis assumptions.</p>
-        <a href="#single-title">Where does the interval come from? ↓</a>
+        <a href="#single-title">What does 95% confidence mean? ↓</a>
       </div>
     </section>
     <section id="single-section" class="panel" aria-labelledby="single-title" hidden>
-      <div class="experiment-heading"><h2 id="single-title" tabindex="-1">1. Same world. New sample.</h2><span class="experiment-tag">Randomized · 200 people</span></div>
-      <div id="single-plot"></div>
-      <div class="actions"><button id="uncertainty-redraw">Draw a new sample</button><span id="single-result" class="small" aria-live="polite"></span></div>
-      <p class="inference-prompt">The dot moves. The interval moves with it.</p>
+      <div class="experiment-heading"><h2 id="single-title" tabindex="-1">1. What does 95% confidence mean?</h2><span class="experiment-tag">Randomized · 200 people per sample</span></div>
+      <div class="plot-legend"><span>● Estimate + 95% interval</span><span class="legend-truth">┊ True effect: 2</span><span class="legend-miss">╌ Misses the true effect</span></div>
+      <div class="sampling-stage">
+        <div id="single-plot"></div>
+        <p id="sampling-prompt"><span>New sample. New estimate.<br>Does its interval cross the line?</span></p>
+      </div>
+      <div class="actions"><button id="reveal-coverage" class="primary">Repeat to 100 samples →</button><button id="uncertainty-redraw">Start with a new sample</button></div>
+      <p id="sampling-progress" class="small"></p>
+      <div id="coverage-section" hidden>
+        <div id="coverage-summary" role="status"></div>
+        <p class="inference-prompt">About 95% in the long run—under the assumptions.</p>
+        <div class="actions"><button id="show-precision" class="primary">Make the studies bigger →</button></div>
+      </div>
       <details><summary>Where does the interval come from?</summary>
         <p>A <a href="glossary/#standard-error">standard error</a> estimates how much this estimate would vary across samples. It uses outcome variation and the number of people in each group.</p>
         <p><strong>95% interval ≈ estimate ± 1.96 × standard error.</strong> This is a large-sample normal approximation. <code>SE = √(s₁²/n₁ + s₀²/n₀)</code>, where s is each group's outcome SD and n its size.</p>
         <p>Outcome SD describes differences among people; SE describes sampling uncertainty in an estimate. A <a href="glossary/#confidence-interval">confidence interval</a> is not a range of individual outcomes or treatment effects.</p>
-        <p id="uncertainty-sample" class="small"></p>
+        <p id="single-result" class="small"></p><p id="uncertainty-sample" class="small"></p>
       </details>
-      <div class="actions"><button id="reveal-coverage" class="primary">Reveal truth & draw 50 studies →</button></div>
-    </section>
-    <section id="coverage-section" class="panel" aria-labelledby="coverage-title" hidden>
-      <h2 id="coverage-title" tabindex="-1">2. Does the interval catch the truth?</h2>
-      <div class="plot-legend"><span>● Estimate + interval</span><span class="legend-truth">┊ Fixed truth</span><span class="legend-miss">╌ Misses truth</span></div>
-      <div id="coverage-plot"></div>
-      <div id="coverage-summary" role="status"></div>
-      <div class="actions"><button id="repeat-coverage">Add 50 studies</button><button id="show-precision" class="primary">Make the studies bigger →</button></div>
-      <p class="inference-prompt">About 95% coverage across studies—under the assumptions.</p>
       <details><summary>Why not exactly 95%?</summary>
         <p>The percentage varies from batch to batch. The 95% describes the interval procedure's long-run coverage, not the probability that the fixed effect lies inside one observed interval.</p>
-        <p>Each row uses a fresh study and its own standard error. The chart shows the latest 50; the count includes all studies. Arrows mark bounds beyond the fixed axis.</p>
+        <p>Each row is a fresh population sample with its own standard error. All 100 intervals remain on the graph. Arrows mark bounds beyond the fixed axis. We know the true effect here because this is a simulation.</p>
       </details>
     </section>
     <section id="precision-section" class="panel" aria-labelledby="precision-title" hidden>
-      <h2 id="precision-title" tabindex="-1">3. Narrower. But closer?</h2>
+      <h2 id="precision-title" tabindex="-1">2. Narrower. But closer?</h2>
       <div class="inference-controls">
         <div><label for="uncertainty-n">People per study <output id="uncertainty-n-value" for="uncertainty-n">200</output></label><input id="uncertainty-n" type="range" min="200" max="3200" step="200" value="200"></div>
         <label><input id="uncertainty-confounded" type="checkbox"> Add confounding: risk score also affects treatment</label>
@@ -147,9 +146,12 @@ const el = (id) => document.getElementById(id);
 const width = (id) => Math.max(230, el(id).clientWidth);
 let state = { ...uncertaintyBaseline };
 let single = uncertaintyStudy(state);
-let studies = [];
+let studies = [single];
+let samplingFrame;
+let samplingRunning = false;
+let nextStudySeed = 12000;
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let precisionStudies = [];
-let revealed = false;
 
 let openingStage = 0;
 function renderOpening() {
@@ -185,10 +187,19 @@ function renderSingle() {
     single.status === "ok"
       ? `Estimate ${fmt(single.estimate)} · SE ${fmt(single.se)} · outcome units`
       : `Unavailable: ${single.reason}`;
-  el("single-plot").innerHTML = estimatePlot(single, {
-    truth: revealed,
+  el("single-plot").innerHTML = intervalPlot(studies, {
+    truth: true,
     width: width("single-plot"),
+    rowGap: 3.5,
+    maxRows: 100,
+    fixedRows: 100,
   });
+  const summary = coverageSummary(studies);
+  el("sampling-progress").textContent =
+    `${studies.length} / 100 samples · ${summary.covered} ${summary.covered === 1 ? "crosses" : "cross"} the line${summary.unavailable ? ` · ${summary.unavailable} unavailable` : ""}`;
+  el("sampling-prompt").hidden = studies.length > 1 || samplingRunning;
+  el("sampling-progress").hidden = studies.length === 100 && !samplingRunning;
+  el("single-plot").setAttribute("aria-busy", String(samplingRunning));
   el("uncertainty-sample").textContent =
     `200 people · sample seed ${single.seed}`;
 }
@@ -198,19 +209,57 @@ function coverageReadout(summary) {
   return `<div class="coverage-readout"><strong>${summary.covered} of ${summary.valid}</strong><span>cover truth · ${summary.valid - summary.covered} miss${summary.unavailable ? ` · ${summary.unavailable} unavailable` : ""}</span><div class="coverage-bar" aria-hidden="true"><span style="width:${rate}%"></span></div></div>`;
 }
 
-function renderCoverage() {
-  if (!revealed) return;
+function finishSampling() {
+  samplingRunning = false;
+  cancelAnimationFrame(samplingFrame);
+  renderSingle();
   const summary = coverageSummary(studies);
-  el("coverage-plot").innerHTML = intervalPlot(studies, {
-    truth: true,
-    width: width("coverage-plot"),
+  const rate = summary.valid
+    ? Math.round((100 * summary.covered) / summary.valid)
+    : 0;
+  el("coverage-summary").innerHTML =
+    `<div class="coverage-readout"><strong>${rate}%</strong><span>${summary.covered} of ${summary.valid} intervals crossed the line${summary.unavailable ? ` · ${summary.unavailable} unavailable` : ""}.</span><div class="coverage-bar" aria-hidden="true"><span style="width:${rate}%"></span></div></div>`;
+  el("coverage-section").hidden = false;
+  el("reveal-coverage").textContent = "Run another 100 samples";
+  el("reveal-coverage").disabled = false;
+  el("uncertainty-redraw").disabled = false;
+}
+
+function repeatSamples() {
+  if (samplingRunning) return;
+  // Keep the observed sample as the first interval in each batch.
+  studies = [single];
+  const batch = [
+    single,
+    ...Array.from({ length: 99 }, () =>
+      uncertaintyStudy({ ...uncertaintyBaseline, seed: nextStudySeed++ }),
+    ),
+  ];
+  samplingRunning = true;
+  el("coverage-section").hidden = true;
+  el("reveal-coverage").hidden = false;
+  el("reveal-coverage").disabled = true;
+  el("reveal-coverage").textContent = "Drawing samples…";
+  el("uncertainty-redraw").disabled = true;
+  renderSingle();
+  const start = performance.now();
+  function frame(now) {
+    const fraction = Math.min(1, (now - start) / 2800);
+    const count = reducedMotion.matches
+      ? 100
+      : 1 + Math.floor(99 * fraction ** 3);
+    if (count !== studies.length) {
+      studies = batch.slice(0, count);
+      renderSingle();
+    }
+    if (count === 100) finishSampling();
+    else samplingFrame = requestAnimationFrame(frame);
+  }
+  samplingFrame = requestAnimationFrame(frame);
+  capture("simulation_run", {
+    lesson: "uncertainty",
+    action: "repeat-studies",
   });
-  el("coverage-summary").innerHTML = coverageReadout(summary);
-  el("repeat-coverage").disabled = studies.length >= 500;
-  el("repeat-coverage").textContent =
-    studies.length >= 500
-      ? "500 studies complete · restart for a new batch"
-      : "Add 50 studies";
 }
 
 function renderPrecision() {
@@ -348,32 +397,14 @@ resetBootstrap();
 
 el("uncertainty-redraw").addEventListener("click", () => {
   single = uncertaintyStudy({ ...state, seed: ++state.seed });
+  studies = [single];
+  el("coverage-section").hidden = true;
+  el("reveal-coverage").textContent = "Repeat to 100 samples →";
   renderSingle();
   resetBootstrap();
   capture("simulation_run", { lesson: "uncertainty", action: "redraw" });
 });
-function addStudies() {
-  const firstSeed = 12000 + studies.length;
-  studies.push(
-    ...Array.from({ length: 50 }, (_, i) =>
-      uncertaintyStudy({ ...uncertaintyBaseline, seed: firstSeed + i }),
-    ),
-  );
-  renderCoverage();
-  capture("simulation_run", {
-    lesson: "uncertainty",
-    action: "repeat-studies",
-  });
-}
-el("reveal-coverage").addEventListener("click", () => {
-  revealed = true;
-  el("coverage-section").hidden = false;
-  el("reveal-coverage").hidden = true;
-  renderSingle();
-  addStudies();
-  el("coverage-title").focus();
-});
-el("repeat-coverage").addEventListener("click", addStudies);
+el("reveal-coverage").addEventListener("click", repeatSamples);
 el("show-precision").addEventListener("click", () => {
   el("precision-section").hidden = false;
   el("uncertainty-check").hidden = false;
@@ -418,7 +449,6 @@ for (const button of document.querySelectorAll("[data-answer]"))
 window.addEventListener("resize", () => {
   renderOpening();
   renderSingle();
-  renderCoverage();
   renderPrecision();
   renderBootstrap();
 });

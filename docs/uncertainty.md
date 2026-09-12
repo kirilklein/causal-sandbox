@@ -9,8 +9,7 @@ Both are in Contents, the topic browser, and search.
 
 The learner question is: how precise is one study's estimate, and what could
 still make it wrong? A point estimate alone cannot show the interval procedure's
-coverage; repeated interval rows make the distinction visible. The first study
-hides truth until the learner reveals it. Independent repeated studies calculate
+coverage; repeated interval rows make the distinction visible. The true-effect line is visible before sampling begins. Independent repeated studies calculate
 their own intervals; the observed coverage count is not scripted to 95%.
 Increasing sample size while introducing confounding shows precision without
 causal validity. Individual outcome spread, heterogeneity of effects, sampling
@@ -25,10 +24,17 @@ normal intervals (SE 0.05 and 0.70) shows that A excludes zero while B includes 
 Dots do not move when intervals appear. Compatibility with zero is not proof of
 no effect. The subsequent sampling experiment appears after this reveal.
 
-That experiment redraws an estimate and interval from one fixed world. Revealing
-truth adds independent-study interval rows and coverage counts. Increasing sample
-size compresses the spread; adding C → A moves the unadjusted comparison away
-from the causal truth.
+The sampling experiment keeps the true-effect line fixed from the start. One
+estimate and its interval begin a 100-row plot inside the same card. Repeat
+adds 99 fresh population samples, slowly at first then accelerating, over 2.8
+seconds. All intervals remain visible; fixed plot dimensions and x-axis bounds
+preserve their positions. Misses are marked as they appear. A live count tracks
+crossings, then the completed batch reveals its measured percentage alongside
+"about 95% over many repetitions, under the assumptions." Reduced-motion mode
+reveals the whole batch immediately. Running another batch keeps the initial
+observed sample and draws 99 new ones. Starting with a new sample clears the batch.
+Increasing sample size compresses the spread; adding C → A moves the unadjusted
+comparison away from the causal truth.
 
 The optional bootstrap starts with a concrete resample. Six original participant
 IDs visibly become zero, one, or multiple copies, using their actual selection
@@ -41,8 +47,7 @@ reference curve, and shaded tails in one panel. The precision exercise pairs the
 outcome-scale interval with the standardized null curve; both respond to the same
 controls. Descriptions of assumptions, formulas, and interpretation limits stay
 in disclosures. The uncertainty interpretation check appears after precision
-and bias have been explored. Native controls and immediate updates are used;
-there is no autoplay.
+and bias have been explored. Animation starts only after a button press.
 
 ## Statistical contract
 
@@ -66,9 +71,9 @@ error-function approximation evaluates small tails directly; displayed small
 p-values use an inequality instead of rounding to zero.
 
 The uncertainty lesson starts with n=200, effect=2, seed=4217. Redraw advances
-that study's seed. Coverage uses successive seeds starting at 12000, adds 50
-studies per action, and stops at 500; all rows enter the coverage count,
-while the chart shows the latest 50. The precision comparison uses seeds
+that study's seed. Each coverage batch retains that sample plus 99 new studies,
+using successive seeds starting at 12000. The graph and count include all 100.
+The precision comparison uses seeds
 9000–9049 at each setting (n=200–3200). Each interval estimates uncertainty from
 its own sample; the across-study spread is never substituted for its SE.
 

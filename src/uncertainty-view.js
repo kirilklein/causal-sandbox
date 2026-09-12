@@ -118,15 +118,15 @@ export function bootstrapPlot(result, width = 700) {
 
 export function intervalPlot(
   studies,
-  { truth = false, width = 700, rowGap = 9 } = {},
+  { truth = false, width = 700, rowGap = 9, maxRows = 50, fixedRows } = {},
 ) {
-  const shown = studies.slice(-50);
+  const shown = studies.slice(-maxRows);
   const left = 32,
     right = width - 18;
   const x = (v) =>
     left + ((Math.max(-1, Math.min(5, v)) + 1) / 6) * (right - left);
-  const bottom = 38 + shown.length * rowGap;
-  return `<svg class="inference-chart" viewBox="0 0 ${width} ${bottom + 50}" role="img" aria-label="${shown.length === 1 ? "Estimate and 95% confidence interval" : "Latest study estimates and their 95% confidence intervals"}, in outcome units${truth ? "; dashed line is the true effect" : ""}. Each mark has its study values.">
+  const bottom = 38 + (fixedRows ?? shown.length) * rowGap;
+  return `<svg class="inference-chart" viewBox="0 0 ${width} ${bottom + 50}" role="img" aria-label="${shown.length === 1 ? "Estimate and 95% confidence interval" : `${shown.length} study estimates and their 95% confidence intervals`}, in outcome units${truth ? "; dashed line is the true effect" : ""}. Each mark has its study values.">
     ${[-1, 0, 1, 2, 3, 4, 5].map((v) => `<path class="inference-grid" d="M${x(v)} 28V${bottom}"/><text x="${x(v)}" y="${bottom + 20}" text-anchor="middle">${v}</text>`).join("")}
     ${truth ? `<path class="inference-truth" d="M${x(shown[0].truth)} 24V${bottom}"/><text x="${x(shown[0].truth)}" y="16" text-anchor="middle">Truth: ${fmt(shown[0].truth)}</text>` : ""}
     ${shown
@@ -134,7 +134,7 @@ export function intervalPlot(
         if (s.status !== "ok") return "";
         const y = 33 + i * rowGap;
         const missed = truth && (s.lower > s.truth || s.upper < s.truth);
-        return `<g class="inference-interval${missed ? " missed" : ""}" data-covered="${truth ? !missed : "unknown"}"><title>Study ${s.seed}: ${fmt(s.estimate)}, interval ${fmt(s.lower)} to ${fmt(s.upper)}${truth ? (missed ? "; misses truth" : "; covers truth") : ""}</title><path d="M${x(s.lower)} ${y}H${x(s.upper)}"/><circle cx="${x(s.estimate)}" cy="${y}" r="${shown.length === 1 ? 4 : Math.min(2.5, rowGap / 2 - 0.5)}"/>${s.lower < -1 ? `<path d="m${left + 5} ${y - 4}-5 4 5 4"/>` : ""}${s.upper > 5 ? `<path d="m${right - 5} ${y - 4}5 4-5 4"/>` : ""}</g>`;
+        return `<g class="inference-interval${missed ? " missed" : ""}" data-seed="${s.seed}" data-covered="${truth ? !missed : "unknown"}"><title>Study ${s.seed}: ${fmt(s.estimate)}, interval ${fmt(s.lower)} to ${fmt(s.upper)}${truth ? (missed ? "; misses truth" : "; covers truth") : ""}</title><path d="M${x(s.lower)} ${y}H${x(s.upper)}"/><circle cx="${x(s.estimate)}" cy="${y}" r="${shown.length === 1 ? 4 : Math.min(2.5, rowGap / 2 - 0.5)}"/>${s.lower < -1 ? `<path d="m${left + 5} ${y - 4}-5 4 5 4"/>` : ""}${s.upper > 5 ? `<path d="m${right - 5} ${y - 4}5 4-5 4"/>` : ""}</g>`;
       })
       .join("")}
     <text x="${width / 2}" y="${bottom + 43}" text-anchor="middle">Outcome difference (treated − untreated)</text>
