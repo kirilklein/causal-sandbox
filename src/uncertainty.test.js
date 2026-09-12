@@ -10,7 +10,14 @@ import {
   uncertaintyStudy,
   coverageSummary,
 } from "./uncertainty.js";
-import { fmtBound, intervalPlot, estimatePlot } from "./uncertainty-view.js";
+import {
+  fmtBound,
+  intervalPlot,
+  estimatePlot,
+  openingExamples,
+  openingPlot,
+  bootstrapPlot,
+} from "./uncertainty-view.js";
 
 const close = (actual, expected, tolerance = 1e-10) =>
   assert.ok(
@@ -186,8 +193,6 @@ test("bootstrap preserves observed people, treatment counts, and the first resam
   );
   close(shifted.mean - b.mean, 4);
   close(shifted.se, b.se);
-  close(shifted.lower - b.lower, 4);
-  close(shifted.upper - b.upper, 4);
 });
 
 test("bootstrap spread agrees with the exact conditional variance of resampled means", () => {
@@ -200,36 +205,87 @@ test("bootstrap spread agrees with the exact conditional variance of resampled m
   close(b.se, Math.sqrt(10 / 9), 0.015);
   assert.equal(bootstrapDifference([]).status, "unavailable");
   assert.throws(
-    () => bootstrapDifference(rows, { repetitions: 1 }),
+    () => bootstrapDifference(rows, { repetitions: 0 }),
     RangeError,
   );
   assert.throws(() => bootstrapDifference([{ A: 2, Y: 1 }]), TypeError);
 });
 
-test("bootstrap percentile intervals have approximate coverage here but do not remove confounding", () => {
+test("bootstrap estimates sampling spread without removing confounding", () => {
   for (const selection of [0, 1.2]) {
-    let covered = 0,
-      mean = 0,
-      difference = 0;
+    const observed = [];
+    let mean = 0,
+      difference = 0,
+      meanSE = 0;
     for (let i = 0; i < 400; i++) {
       const b = bootstrapDifference(
         uncertaintyRows({ seed: 60000 + i, selection }),
         { repetitions: 500, seed: 80000 + i },
       );
-      covered += b.lower <= 2 && 2 <= b.upper;
+      observed.push(b.observed.estimate);
       mean += b.mean / 400;
+      meanSE += b.se / 400;
       difference += (b.mean - b.observed.estimate) / 400;
     }
+    const observedMean =
+      observed.reduce((sum, value) => sum + value, 0) / observed.length;
+    const observedSD = Math.sqrt(
+      observed.reduce((sum, value) => sum + (value - observedMean) ** 2, 0) /
+        (observed.length - 1),
+    );
+    assert.ok(Math.abs(meanSE / observedSD - 1) < 0.1);
     assert.ok(Math.abs(difference) < 0.01);
-    if (selection === 0) {
-      assert.ok(
-        covered / 400 > 0.9 && covered / 400 < 0.98,
-        `coverage: ${covered / 400}`,
-      );
-      assert.ok(Math.abs(mean - 2) < 0.05);
-    } else {
-      assert.ok(mean - 2 > 1);
-      assert.ok(covered / 400 < 0.05);
-    }
+    if (selection === 0) assert.ok(Math.abs(mean - 2) < 0.05);
+    else assert.ok(mean - 2 > 1);
   }
+});
+
+test("adding bootstrap draws preserves the earlier draws and estimates spread only after repetition", () => {
+  const rows = uncertaintyRows();
+  const batches = [1, 10, 20, 1000].map((repetitions) =>
+    bootstrapDifference(rows, { repetitions }),
+  );
+  assert.equal(batches[0].se, null);
+  assert.equal(batches[0].estimates.length, 1);
+  for (let i = 1; i < batches.length; i++) {
+    assert.deepEqual(
+      batches[i].estimates.slice(0, batches[i - 1].estimates.length),
+      batches[i - 1].estimates,
+    );
+    assert.deepEqual(batches[i].firstCounts, batches[0].firstCounts);
+    assert.ok(batches[i].se > 0);
+  }
+});
+
+test("two-estimate opening distinguishes distance from zero from interval compatibility", () => {
+  const [near, far] = openingExamples;
+  assert.ok(near.estimate < far.estimate && near.se < far.se);
+  assert.ok(near.lower > 0);
+  assert.ok(far.lower < 0 && far.upper > 0);
+  assert.doesNotMatch(openingPlot(0), /opening-interval|Study B|95% CI/);
+  assert.doesNotMatch(openingPlot(1), /opening-interval|95% CI/);
+  assert.match(openingPlot(2), /data-zero="excluded"/);
+  assert.match(openingPlot(2), /data-zero="included"/);
+});
+
+test("bootstrap histogram keeps fixed bins and reports draws beyond its fixed axis", () => {
+  const base = bootstrapDifference(uncertaintyRows(), { repetitions: 10 });
+  const plot = bootstrapPlot(base);
+  const shifted = bootstrapPlot({
+    ...base,
+    estimates: [-2, ...base.estimates, 7],
+  });
+  const positions = (svg) =>
+    [...svg.matchAll(/class="bootstrap-bar"[^>]*x="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+  assert.deepEqual(positions(plot), positions(shifted));
+  assert.match(shifted, /2 outside axis; included in SE/);
+  assert.equal(
+    [...shifted.matchAll(/class="bootstrap-bar" data-count="(\d+)"/g)].reduce(
+      (sum, match) => sum + Number(match[1]),
+      0,
+    ),
+    10,
+  );
 });

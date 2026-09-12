@@ -345,3 +345,16 @@
   stroke: var(--surface);
   stroke-width: 1.5;
 }
+
+.inference-zero {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.opening-estimate {
+  fill: var(--estimate);
+}
+.opening-interval {
+  stroke: var(--estimate);
+  stroke-width: 2.5;
+}

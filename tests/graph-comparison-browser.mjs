@@ -112,7 +112,7 @@ try {
     /and treatment/,
   );
   await page.locator("#continue").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   await page.locator("#continue").click();
   assert.equal(await toggle.getAttribute("aria-expanded"), "false");
   await toggle.click();
@@ -129,7 +129,7 @@ try {
   await page.locator("#restart").click();
   assert.equal(await toggle.getAttribute("aria-expanded"), "false");
   await page.goBack();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   assert.match(await page.locator("h1").innerText(), /How uncertain/);
 
   // Check every core comparison at phone width, including stable geometry and

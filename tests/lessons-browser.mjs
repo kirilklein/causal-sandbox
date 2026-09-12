@@ -312,7 +312,7 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#ipw-result").isVisible(), false);
   await page.locator("#continue").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   assert.match(await page.locator("h1").innerText(), /How uncertain/);
   await page.locator("#continue").click();
   const third = await result();
@@ -413,7 +413,7 @@ try {
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), weighted);
   await page.locator("#back").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   assert.match(await page.locator("h1").innerText(), /How uncertain/);
   await page.goBack();
   assert.equal(await result(), third);

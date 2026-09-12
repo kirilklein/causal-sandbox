@@ -18,11 +18,17 @@ uncertainty, and systematic error are explicitly distinguished.
 
 ## Visual teaching flow
 
-ATE, randomization, and confounding are prerequisites, not recapped in the opening.
-The first panel starts with an annotated estimate and interval. Redraw moves
-both; revealing the truth adds independent-study interval rows and a coverage
-count. Increasing sample size compresses the spread. Adding the C → A edge in
-the small DAG moves the unadjusted comparison away from the causal truth.
+ATE, randomization, and confounding are prerequisites. A central question frames
+the opening: can an effect estimate be distinguished from zero? Illustrative
+study A starts at +0.20, followed by B at +1.00 on the same axis. Revealing their
+normal intervals (SE 0.05 and 0.70) shows that A excludes zero while B includes it.
+Dots do not move when intervals appear. Compatibility with zero is not proof of
+no effect. The subsequent sampling experiment appears after this reveal.
+
+That experiment redraws an estimate and interval from one fixed world. Revealing
+truth adds independent-study interval rows and coverage counts. Increasing sample
+size compresses the spread; adding C → A moves the unadjusted comparison away
+from the causal truth.
 
 The optional bootstrap starts with a concrete resample. Six original participant
 IDs visibly become zero, one, or multiple copies, using their actual selection
@@ -61,7 +67,7 @@ p-values use an inequality instead of rounding to zero.
 
 The uncertainty lesson starts with n=200, effect=2, seed=4217. Redraw advances
 that study's seed. Coverage uses successive seeds starting at 12000, adds 50
-studies per action, and stops at 500; all rows enter the count and exact table,
+studies per action, and stops at 500; all rows enter the coverage count,
 while the chart shows the latest 50. The precision comparison uses seeds
 9000–9049 at each setting (n=200–3200). Each interval estimates uncertainty from
 its own sample; the across-study spread is never substituted for its SE.
@@ -78,21 +84,26 @@ Matching interval inclusion and p-values change continuously across 0.05.
 ## Optional bootstrap exploration
 
 `?lesson=uncertainty#bootstrap` opens the optional disclosure directly. It uses
-the same observed randomized study as the first panel; changing to confounding
-regenerates a study with selection=1.2 and the same seed. Each batch draws 1,000
+the observed randomized study from the sampling experiment; changing to confounding
+regenerates a study with selection=1.2 and the same seed. Each batch draws
 resamples of observed people with replacement, separately within treatment arms,
 preserving the original arm sizes. The calculation uses only A and Y. Redrawing
 the original study or changing the bootstrap world clears the previous results.
 
-The histogram shows resampled mean differences, the original estimate, and the
-simulator truth for comparison. The SD of the bootstrap estimates (divisor B−1)
-is compared with the analytic SE. An inspectable table gives each participant's
-selection count in the first resample. Drawing once reveals that resample only;
-repeating reveals the 1,000-estimate batch containing it. Further batch clicks
-replace the batch; changing the source clears both views. Optional percentile bounds use linear
-interpolation at indices (B−1)×0.025 and (B−1)×0.975 of sorted estimates.
-This simple interval is approximate and can undercover in small or skewed samples.
-It does not replace the normal interval earlier in the lesson.
+The histogram uses fixed −1 to 5 x-axis bounds and 24 fixed bins. Out-of-range
+draws are reported separately and still enter the SE. Bar heights use the current
+maximum count; the x positions and bin boundaries do not change. The observed
+estimate and truth remain fixed anchors when adding resamples.
+
+Draw once shows its participant copies. Show 10 includes that first draw, then
+Add 10 extends the same sequence to 20, 30, and onward. After 20, Build to 1,000
+provides a shortcut. Reusing the seed preserves all earlier draws. Starting a new
+resample resets the sequence with a new seed; changing the source resets both
+views. SE is unavailable for a single resample and uses divisor B−1 thereafter.
+
+The inspection table and percentile-interval disclosure have been removed.
+Participant copies and interval/null-study graphs carry the patterns; long
+learner-facing data tables are prohibited in AGENTS.md.
 
 The learning objective is to distinguish generating independent studies from
 resampling one observed study. More resamples reduce Monte Carlo noise without
@@ -106,15 +117,14 @@ and includes bootstrap/resampling keywords for the uncertainty lesson.
 
 Validation covers preserved arm sizes, first-resample reconstruction, deterministic
 seeds, constant-effect shifts, and the exact conditional variance of resampled
-means. Another 800 independent studies check percentile coverage in this model
-and persistent confounding, each using 500 resamples. This is a model-specific
-check, not a general coverage guarantee. Browser checks follow search → glossary
+means. Another 800 independent studies compare bootstrap SE with empirical
+sampling spread and check persistent confounding, each using 500 resamples. Browser checks follow search → glossary
 → the expanded bootstrap disclosure and inspect desktop/mobile in both themes.
 
 ## Presentation and validation
 
 Uncertainty interval charts share a fixed −1 to 5 outcome-unit axis, with off-scale bounds
-marked by arrows and exact numeric bounds in tables. Truth uses the shared
+marked by arrows and numeric bounds attached to the plotted marks. Truth uses the shared
 truth color and a dashed vertical line. Missed intervals use the shared error
 mark plus a broken horizontal line, with an explicit coverage legend.
 This encoding describes coverage, not a test of causal validity. Before truth
@@ -141,4 +151,4 @@ and desktop/phone rendering. Human learner comprehension remains untested.
 - [Altman & Bland (2005)](https://www.bmj.com/content/331/7521/903): outcome standard deviation versus standard error.
 - [Rafi & Greenland (2020)](https://link.springer.com/article/10.1186/s12874-020-01105-9): compatibility, analysis assumptions, and avoiding binary significance conclusions.
 
-- [Hesterberg, What Teachers Should Know about the Bootstrap](https://arxiv.org/abs/1411.5279): resampling mechanics, standard errors, and percentile-interval limitations.
+- [Hesterberg, What Teachers Should Know about the Bootstrap](https://arxiv.org/abs/1411.5279): resampling mechanics, standard errors, and limitations.

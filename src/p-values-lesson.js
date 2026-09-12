@@ -36,7 +36,6 @@ document.querySelector("#app").innerHTML =
         <p>The curve approximates the distribution of z under a zero mean difference. <strong>z = estimate ÷ standard error</strong>: distance from zero in standard-error units. Dots are simulated zero-effect studies; their height just separates them.</p>
         <p>The <a href="glossary/#p-value">two-sided p-value</a> is the combined area beyond ±|observed z|. It comes from the normal curve, not the small batch of dots. Values beyond ±4 sit at the edge; the calculation includes the full tails.</p>
         <p>A batch need not put exactly 5 of 100 dots beyond the p = 0.05 cutoff. Its long-run rate is approximately 5% under the assumptions.</p>
-        <div id="null-values" class="table-wrap"></div>
       </details>
     </section>
     <section class="panel" aria-labelledby="precision-title">
@@ -150,8 +149,6 @@ el("repeat-null").addEventListener("click", () => {
   const below = valid.filter((s) => s.p < 0.05).length;
   el("null-summary").textContent =
     `${below} of ${valid.length} zero-effect studies have p < 0.05.${100 - valid.length ? ` ${100 - valid.length} unavailable.` : ""}`;
-  el("null-values").innerHTML =
-    `<table><caption>Latest 100 null studies</caption><thead><tr><th scope="col">Seed</th><th scope="col">Estimate</th><th scope="col">z</th><th scope="col">p</th></tr></thead><tbody>${nullStudies.map((s) => `<tr><th scope="row">${s.seed}</th>${s.status === "ok" ? `<td>${fmt(s.estimate)}</td><td>${fmt(s.z)}</td><td>${pLabel(s.p)}</td>` : '<td colspan="3">Unavailable</td>'}</tr>`).join("")}</tbody></table>`;
   el("repeat-null").textContent = "Run another 100 null studies";
   renderObserved();
   capture("simulation_run", { lesson: "p-values", action: "repeat-null" });

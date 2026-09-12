@@ -128,11 +128,11 @@ export function bootstrapDifference(
 ) {
   if (
     !Number.isInteger(repetitions) ||
-    repetitions < 2 ||
+    repetitions < 1 ||
     !Number.isInteger(seed)
   )
     throw new RangeError(
-      "Bootstrap needs at least two repetitions and an integer seed",
+      "Bootstrap needs at least one repetition and an integer seed",
     );
   const observed = differenceInference(rows);
   if (observed.status !== "ok") return observed;
@@ -153,19 +153,13 @@ export function bootstrapDifference(
     return means[1] - means[0];
   });
   const mean = estimates.reduce((sum, value) => sum + value, 0) / repetitions;
-  const se = Math.sqrt(
-    estimates.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
-      (repetitions - 1),
-  );
-  const sorted = [...estimates].sort((a, b) => a - b);
-  const quantile = (p) => {
-    const index = (sorted.length - 1) * p;
-    const lower = Math.floor(index);
-    return (
-      sorted[lower] +
-      (index - lower) * (sorted[Math.ceil(index)] - sorted[lower])
-    );
-  };
+  const se =
+    repetitions > 1
+      ? Math.sqrt(
+          estimates.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+            (repetitions - 1),
+        )
+      : null;
   return {
     status: "ok",
     observed,
@@ -173,8 +167,6 @@ export function bootstrapDifference(
     firstCounts,
     mean,
     se,
-    lower: quantile(0.025),
-    upper: quantile(0.975),
   };
 }
 

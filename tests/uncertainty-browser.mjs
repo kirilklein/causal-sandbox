@@ -23,11 +23,67 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(`${url}?lesson=confounding`);
   await page.locator("#continue").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 3 of 14/);
   assert.equal(await page.locator("#single-plot .inference-truth").count(), 0);
   assert.equal(await page.locator("#coverage-section").isVisible(), false);
   assert.equal(await page.locator("#uncertainty-check").isVisible(), false);
+  assert.equal(
+    await page.locator("#opening-plot .opening-estimate").count(),
+    1,
+  );
+  assert.equal(
+    await page.locator("#opening-plot .opening-interval").count(),
+    0,
+  );
+  assert.equal(await page.locator("#single-section").isVisible(), false);
+  const openingDot = await page
+    .locator("#opening-plot .opening-estimate")
+    .getAttribute("cx");
+  await page.locator("#opening-next").click();
+  assert.equal(
+    await page.locator("#opening-plot .opening-estimate").count(),
+    2,
+  );
+  assert.equal(
+    await page
+      .locator("#opening-plot .opening-estimate")
+      .first()
+      .getAttribute("cx"),
+    openingDot,
+  );
+  assert.equal(
+    await page.locator("#opening-plot .opening-interval").count(),
+    0,
+  );
+  await page.locator("#opening-next").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(
+    await page.locator("#opening-plot .opening-interval").count(),
+    2,
+  );
+  assert.equal(
+    await page.locator('[data-study="0"]').getAttribute("data-zero"),
+    "excluded",
+  );
+  assert.equal(
+    await page.locator('[data-study="1"]').getAttribute("data-zero"),
+    "included",
+  );
+  assert.equal(
+    await page
+      .locator("#opening-plot .opening-estimate")
+      .first()
+      .getAttribute("cx"),
+    openingDot,
+  );
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page
+      .locator("#opening-section")
+      .screenshot({ path: `/tmp/uncertainty-opening-${width}.png` });
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
   const baseline = uncertaintyStudy();
   assert.match(
     await page.locator("#single-result").innerText(),
@@ -37,7 +93,9 @@ try {
   await page.locator("#uncertainty-redraw").click();
   assert.notEqual(await page.locator("#single-result").innerText(), first);
   await page.locator("#restart").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
+  await page.locator("#opening-next").click();
+  await page.locator("#opening-next").click();
   assert.equal(await page.locator("#single-result").innerText(), first);
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -73,7 +131,7 @@ try {
   assert.equal(await page.locator("#single-plot .inference-truth").count(), 1);
   await page.locator("#repeat-coverage").click();
   assert.match(await page.locator("#coverage-summary").innerText(), /of 100/);
-  assert.equal(await page.locator("#coverage-values tbody tr").count(), 100);
+  assert.equal(await page.locator(".inference-page table").count(), 0);
   assert.equal(
     await page.locator("#coverage-plot .inference-interval").count(),
     50,
@@ -97,13 +155,16 @@ try {
   await page.locator("#draw-bootstrap").click();
   assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
   await page.locator("#run-bootstrap").click();
-  const boot = bootstrapDifference(uncertaintyRows());
+  const boot = bootstrapDifference(uncertaintyRows(), { repetitions: 10 });
+  assert.equal(
+    await page.locator("#bootstrap-plot svg").getAttribute("data-count"),
+    "10",
+  );
   assert.ok(
     (await page.locator("#bootstrap-summary").innerText()).includes(
       fmt(boot.se),
     ),
   );
-  assert.equal(await page.locator("#bootstrap-people tbody tr").count(), 200);
   const trace = await page
     .locator("#bootstrap-trace .resample-person")
     .evaluateAll((nodes) =>
@@ -113,48 +174,71 @@ try {
         tokens: node.querySelectorAll(".resampled-copies .person-token").length,
       })),
     );
-  assert.equal(trace.length, 6);
   for (const item of trace) {
     assert.equal(item.count, boot.firstCounts[item.person - 1]);
     assert.equal(item.tokens, item.count);
   }
-  const counts = await page
-    .locator("#bootstrap-people tbody tr td:last-child")
-    .allTextContents();
-  assert.deepEqual(counts.map(Number), boot.firstCounts);
-  await page
-    .locator("#bootstrap-results details")
-    .first()
-    .locator("summary")
-    .click();
-  await page.setViewportSize({ width: 320, height: 900 });
-  assert.ok(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  );
-  await page
-    .locator("#bootstrap-results details")
-    .first()
-    .locator("summary")
-    .click();
-  const source = await page.locator("#bootstrap-source").innerText();
-  const bootFirst = await page.locator("#bootstrap-summary").innerText();
+  assert.equal(trace.length, 6);
+  const truthPosition = await page
+    .locator("#bootstrap-plot .inference-truth")
+    .getAttribute("d");
+  const firstPosition = await page
+    .locator("#bootstrap-plot .bootstrap-first")
+    .getAttribute("cx");
+  const firstBars = await page
+    .locator("#bootstrap-plot .bootstrap-bar")
+    .evaluateAll((nodes) => nodes.map((node) => Number(node.dataset.count)));
   await page.locator("#run-bootstrap").click();
-  assert.equal(await page.locator("#bootstrap-source").innerText(), source);
-  assert.notEqual(
-    await page.locator("#bootstrap-summary").innerText(),
-    bootFirst,
+  assert.equal(
+    await page.locator("#bootstrap-plot svg").getAttribute("data-count"),
+    "20",
+  );
+  const nextBars = await page
+    .locator("#bootstrap-plot .bootstrap-bar")
+    .evaluateAll((nodes) => nodes.map((node) => Number(node.dataset.count)));
+  assert.equal(
+    nextBars.reduce((sum, value) => sum + value, 0),
+    20,
+  );
+  nextBars.forEach((count, i) => assert.ok(count >= firstBars[i]));
+  assert.equal(
+    await page.locator("#bootstrap-plot .inference-truth").getAttribute("d"),
+    truthPosition,
+  );
+  assert.equal(
+    await page.locator("#bootstrap-plot .bootstrap-first").getAttribute("cx"),
+    firstPosition,
+  );
+  await page.locator("#run-bootstrap").click();
+  assert.equal(
+    await page.locator("#bootstrap-plot svg").getAttribute("data-count"),
+    "30",
+  );
+  await page.locator("#finish-bootstrap").click();
+  assert.equal(
+    await page.locator("#bootstrap-plot svg").getAttribute("data-count"),
+    "1000",
+  );
+  assert.equal(await page.locator("#run-bootstrap").isDisabled(), true);
+  assert.equal(
+    await page.locator("#bootstrap-plot .inference-truth").getAttribute("d"),
+    truthPosition,
   );
   await page.locator("#bootstrap-confounded").check();
   assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
-  assert.equal(await page.locator("#run-bootstrap").isDisabled(), true);
   await page.locator("#draw-bootstrap").click();
   await page.locator("#run-bootstrap").click();
+  assert.equal(
+    await page.locator("#bootstrap-plot .inference-truth").getAttribute("d"),
+    truthPosition,
+  );
+  await page.locator("#run-bootstrap").click();
+  await page.locator("#finish-bootstrap").click();
   assert.match(
     await page.locator("#bootstrap-takeaway").innerText(),
     /reuses the imbalance/,
   );
+  assert.equal(await page.locator(".inference-page table").count(), 0);
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const colorScheme of ["light", "dark"]) {
@@ -211,7 +295,9 @@ try {
   await page.locator("#continue").click();
   await page.locator("#reveal-ipw").waitFor();
   await page.locator("#back").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
+  await page.locator("#opening-next").click();
+  await page.locator("#opening-next").click();
   assert.equal(await page.locator("#single-result").innerText(), first);
   assert.equal(await page.locator("#coverage-section").isVisible(), false);
   await page.locator("#p-values-link").click();
@@ -303,11 +389,11 @@ try {
   assert.equal(await page.locator("#null-plot .null-dot").count(), 0);
   assert.equal(await page.locator("#p-interpretation").isVisible(), false);
   await page.goto(`${url}?level=14`);
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   await page.goto(`${url}?lesson=ipw`);
   await page.locator("#lesson-menu-toggle").click();
   await page.locator('[data-level="14"]').click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   // Search -> glossary -> optional disclosure preserves both query and fragment.
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByRole("searchbox").fill("bootstrap");
@@ -328,6 +414,8 @@ try {
   await page.locator("#draw-bootstrap").click();
   await page.locator("#run-bootstrap").click();
   assert.ok(await page.locator("#bootstrap-results").isVisible());
+  await page.locator("#opening-next").click();
+  await page.locator("#opening-next").click();
   await page.locator("#uncertainty-redraw").click();
   assert.equal(await page.locator("#bootstrap-results").isVisible(), false);
   assert.ok(
@@ -344,7 +432,7 @@ try {
     await page.goto(`${url}glossary/#${key}`);
     await page.locator(`#${key} .glossary-related`).click();
     await page
-      .locator(destination === "p-values" ? "#repeat-null" : "#reveal-coverage")
+      .locator(destination === "p-values" ? "#repeat-null" : "#opening-next")
       .waitFor();
     assert.equal(new URL(page.url()).searchParams.get("lesson"), destination);
   }

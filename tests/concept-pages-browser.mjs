@@ -319,7 +319,7 @@ try {
   await page.locator("#selection").fill("1.2");
   assert.equal(await page.locator("#selection-output").innerText(), "1.2");
   await page.locator("#continue").click();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   assert.equal(page.url(), new URL("?lesson=uncertainty", root).href);
   await page.locator("#continue").click();
   await page.locator("#reveal-ipw").waitFor();
@@ -329,7 +329,7 @@ try {
   );
   assert.equal(await page.locator("h1").innerText(), "Adjustment with IPW");
   await page.goBack();
-  await page.locator("#reveal-coverage").waitFor();
+  await page.locator("#opening-next").waitFor();
   assert.equal(
     await page.locator("h1").innerText(),
     "How uncertain is this estimate?",

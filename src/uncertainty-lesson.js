@@ -22,13 +22,12 @@ import {
 } from "./uncertainty.js";
 import {
   fmt,
-  fmtBound,
   intervalPlot,
-  studyTable,
   bootstrapPlot,
   estimatePlot,
   resampleTrace,
   assignmentGraph,
+  openingPlot,
 } from "./uncertainty-view.js";
 
 document.title = "How uncertain is this estimate? — Causal Sandbox";
@@ -39,8 +38,20 @@ document.querySelector("#app").innerHTML =
     ${lessonNavigation({ position: coreLessons.findIndex(([, slug]) => slug === "uncertainty") })}
     <p class="eyebrow">ONE STUDY · REPEATED STUDIES · LIMITS</p>
     <h1 tabindex="-1">How uncertain is this estimate?</h1>
-    <section class="panel" aria-labelledby="single-title">
-      <div class="experiment-heading"><h2 id="single-title">1. New sample. New estimate.</h2><span class="experiment-tag">Randomized · 200 people</span></div>
+    <p class="intro">A study estimates an effect—but is it distinguishable from zero?</p>
+    <section id="opening-section" class="panel" aria-labelledby="opening-title">
+      <div class="experiment-heading"><h2 id="opening-title">Is there an effect?</h2><span class="experiment-tag">Illustrative study summaries</span></div>
+      <div id="opening-plot"></div>
+      <p id="opening-prompt" class="inference-prompt" role="status"></p>
+      <div class="actions"><button id="opening-next">Compare a larger estimate →</button></div>
+      <div id="opening-conclusion" hidden>
+        <p><strong>A excludes zero. B is compatible with zero.</strong> Distance from zero alone was not enough; we needed the uncertainty interval.</p>
+        <p class="small">Including zero does not prove no effect. These interpretations depend on the analysis assumptions.</p>
+        <a href="#single-title">Where does the interval come from? ↓</a>
+      </div>
+    </section>
+    <section id="single-section" class="panel" aria-labelledby="single-title" hidden>
+      <div class="experiment-heading"><h2 id="single-title" tabindex="-1">1. Same world. New sample.</h2><span class="experiment-tag">Randomized · 200 people</span></div>
       <div id="single-plot"></div>
       <div class="actions"><button id="uncertainty-redraw">Draw a new sample</button><span id="single-result" class="small" aria-live="polite"></span></div>
       <p class="inference-prompt">The dot moves. The interval moves with it.</p>
@@ -48,7 +59,7 @@ document.querySelector("#app").innerHTML =
         <p>A <a href="glossary/#standard-error">standard error</a> estimates how much this estimate would vary across samples. It uses outcome variation and the number of people in each group.</p>
         <p><strong>95% interval ≈ estimate ± 1.96 × standard error.</strong> This is a large-sample normal approximation. <code>SE = √(s₁²/n₁ + s₀²/n₀)</code>, where s is each group's outcome SD and n its size.</p>
         <p>Outcome SD describes differences among people; SE describes sampling uncertainty in an estimate. A <a href="glossary/#confidence-interval">confidence interval</a> is not a range of individual outcomes or treatment effects.</p>
-        <p id="uncertainty-sample" class="small"></p><div id="single-values" class="table-wrap"></div>
+        <p id="uncertainty-sample" class="small"></p>
       </details>
       <div class="actions"><button id="reveal-coverage" class="primary">Reveal truth & draw 50 studies →</button></div>
     </section>
@@ -62,7 +73,6 @@ document.querySelector("#app").innerHTML =
       <details><summary>Why not exactly 95%?</summary>
         <p>The percentage varies from batch to batch. The 95% describes the interval procedure's long-run coverage, not the probability that the fixed effect lies inside one observed interval.</p>
         <p>Each row uses a fresh study and its own standard error. The chart shows the latest 50; the count includes all studies. Arrows mark bounds beyond the fixed axis.</p>
-        <div id="coverage-values" class="table-wrap"></div>
       </details>
     </section>
     <section id="precision-section" class="panel" aria-labelledby="precision-title" hidden>
@@ -78,7 +88,6 @@ document.querySelector("#app").innerHTML =
       <details><summary>What changes—and what stays fixed?</summary>
         <p>Each setting uses the same 50 study seeds and a true effect of 2. The analysis remains an unadjusted mean difference. Larger samples usually narrow intervals; they do not remove confounding.</p>
         <p>Under confounding, these intervals describe the population association and can miss the causal effect. An interval's width measures precision, not causal validity.</p>
-        <div id="precision-values" class="table-wrap"></div>
       </details>
     </section>
     <details id="bootstrap" class="panel"><summary>Optional: reuse the people you already have</summary>
@@ -88,24 +97,20 @@ document.querySelector("#app").innerHTML =
       <p id="bootstrap-source" class="small"></p>
       <div class="plot-legend"><span>Original → resample</span><span>First 6 of 200 people</span><span class="arm-key-0">○ Untreated</span><span class="arm-key-1">□ Treated</span></div>
       <div id="bootstrap-trace"></div>
-      <div class="actions"><button id="draw-bootstrap">Draw one resample</button><button id="run-bootstrap" class="primary" disabled>Repeat 1,000 times →</button></div>
+      <div class="actions"><button id="draw-bootstrap">Draw one resample</button><button id="run-bootstrap" class="primary" disabled>Show 10 resamples →</button><button id="finish-bootstrap" hidden>Build to 1,000</button></div>
       <p id="bootstrap-counts" class="small" role="status"></p><p id="bootstrap-error" role="status"></p>
       <div id="bootstrap-results" hidden>
         <div id="bootstrap-plot"></div>
         <div class="plot-legend"><span>│ Observed estimate</span><span class="legend-truth">┊ Causal effect: 2</span><span>● First resample</span></div>
         <div id="bootstrap-summary" aria-live="polite"></div>
         <p id="bootstrap-takeaway" class="inference-prompt"></p>
-        <details><summary>Inspect the resample and interval</summary>
-          <p id="bootstrap-interval"></p>
-          <p>The percentile interval uses the 2.5th and 97.5th percentiles of these estimates. It is approximate and can undercover, especially in small or strongly skewed samples. It does not assign a 95% probability to the fixed causal effect.</p>
-          <div id="bootstrap-people" class="table-wrap"></div>
-        </details>
       </div>
-      <details><summary>What the bootstrap can—and cannot—do</summary>
-        <p>Repeated copies retain their observed treatment and outcome. Each group keeps its original size. The spread of the resampled mean differences estimates a standard error.</p>
-        <p>More resamples reduce simulation noise, not sampling uncertainty. They add no new participants. Resampling cannot repair confounding or make a selected sample representative.</p>
-        <p>This assumes independent people; clustered or repeated observations need a resampling scheme that preserves their dependence. The sample must adequately represent the population.</p>
-        <p>The bootstrap distribution follows the observed estimate. It is not the zero-effect null distribution used in the <a href="?lesson=p-values">p-value lesson</a>.</p>
+      <details><summary>What the bootstrap tells us</summary>
+        <ul>
+          <li>The spread estimates sampling uncertainty. More resamples stabilize that estimate; they add no new people.</li>
+          <li>Resampling does not repair confounding or selection bias. It must preserve dependence, such as clusters or repeated observations.</li>
+          <li>This distribution follows the observed estimate. The <a href="?lesson=p-values">p-value lesson</a> uses a zero-effect null distribution.</li>
+        </ul>
         <p><a href="https://arxiv.org/abs/1411.5279">Hesterberg: What Teachers Should Know about the Bootstrap</a>.</p>
       </details>
     </details>
@@ -146,6 +151,35 @@ let studies = [];
 let precisionStudies = [];
 let revealed = false;
 
+let openingStage = 0;
+function renderOpening() {
+  el("opening-plot").innerHTML = openingPlot(
+    openingStage,
+    width("opening-plot"),
+  );
+  el("opening-prompt").textContent = [
+    "Close to zero. Is that enough to say there is no effect?",
+    "Farther from zero. Is that enough to say there is an effect?",
+    "Now include uncertainty: which interval crosses zero?",
+  ][openingStage];
+  el("opening-next").textContent =
+    openingStage === 0
+      ? "Compare a larger estimate →"
+      : "Reveal 95% intervals →";
+  el("opening-next").hidden = openingStage === 2;
+  el("opening-conclusion").hidden = openingStage !== 2;
+  el("single-section").hidden = openingStage !== 2;
+}
+el("opening-next").addEventListener("click", () => {
+  openingStage++;
+  renderOpening();
+  renderSingle();
+  capture("simulation_run", {
+    lesson: "uncertainty",
+    action: openingStage === 1 ? "compare-estimates" : "reveal-intervals",
+  });
+});
+
 function renderSingle() {
   el("single-result").textContent =
     single.status === "ok"
@@ -155,7 +189,6 @@ function renderSingle() {
     truth: revealed,
     width: width("single-plot"),
   });
-  el("single-values").innerHTML = studyTable([single], revealed);
   el("uncertainty-sample").textContent =
     `200 people · sample seed ${single.seed}`;
 }
@@ -173,7 +206,6 @@ function renderCoverage() {
     width: width("coverage-plot"),
   });
   el("coverage-summary").innerHTML = coverageReadout(summary);
-  el("coverage-values").innerHTML = studyTable(studies, true);
   el("repeat-coverage").disabled = studies.length >= 500;
   el("repeat-coverage").textContent =
     studies.length >= 500
@@ -197,7 +229,6 @@ function renderPrecision() {
   el("precision-takeaway").textContent = el("uncertainty-confounded").checked
     ? "More people. Narrow intervals. Confounding stays."
     : "More people → less sampling spread.";
-  el("precision-values").innerHTML = studyTable(precisionStudies, true);
 }
 
 function updatePrecision() {
@@ -216,21 +247,22 @@ function updatePrecision() {
 
 let bootstrapRows;
 let bootstrapResult;
+let bootstrapCount = 0;
 let bootstrapSeed = 7300;
-let bootstrapBatch = false;
 
 function resetBootstrap() {
   const selection = el("bootstrap-confounded").checked ? 1.2 : 0;
   bootstrapRows = uncertaintyRows({ selection, seed: state.seed });
   bootstrapResult = null;
+  bootstrapCount = 0;
   bootstrapSeed = 7300;
-  bootstrapBatch = false;
   el("bootstrap-results").hidden = true;
   el("bootstrap-error").textContent = "";
   el("bootstrap-counts").textContent = "";
   el("draw-bootstrap").textContent = "Draw one resample";
   el("run-bootstrap").disabled = true;
-  el("run-bootstrap").textContent = "Repeat 1,000 times →";
+  el("run-bootstrap").textContent = "Show 10 resamples →";
+  el("finish-bootstrap").hidden = true;
   const treated = bootstrapRows.filter((row) => row.A === 1).length;
   el("bootstrap-source").textContent =
     `200 people · ${treated} treated · ${200 - treated} untreated`;
@@ -243,24 +275,30 @@ function renderBootstrap() {
   el("bootstrap-trace").innerHTML = resampleTrace(bootstrapRows, b.firstCounts);
   const distinct = b.firstCounts.filter((count) => count > 0).length;
   el("bootstrap-counts").textContent =
-    `200 draws · ${distinct} different people · ${200 - distinct} omitted. First resampled estimate: ${fmt(b.estimates[0])}.`;
-  el("bootstrap-results").hidden = !bootstrapBatch;
-  if (!bootstrapBatch) return;
+    `First resample: 200 draws · ${distinct} different people · ${200 - distinct} omitted · estimate ${fmt(b.estimates[0])}.`;
+  el("bootstrap-results").hidden = bootstrapCount < 10;
+  el("run-bootstrap").disabled = bootstrapCount >= 1000;
+  el("run-bootstrap").textContent =
+    bootstrapCount < 10
+      ? "Show 10 resamples →"
+      : bootstrapCount >= 1000
+        ? "1,000 resamples complete"
+        : "Add 10 resamples";
+  el("finish-bootstrap").hidden = bootstrapCount < 20 || bootstrapCount >= 1000;
+  if (bootstrapCount < 10) return;
   el("bootstrap-plot").innerHTML = bootstrapPlot(b, width("bootstrap-plot"));
   el("bootstrap-summary").innerHTML =
-    `<div class="inference-result"><div><span>Spread of 1,000 estimates<br>Bootstrap SE</span><strong>${fmt(b.se)}</strong></div><div><span>Formula SE<br>Same observed study</span><strong>${fmt(b.observed.se)}</strong></div></div><p class="small">Observed: ${fmt(b.observed.estimate)} · Resample average: ${fmt(b.mean)}</p>`;
+    `<div class="inference-result"><div><span>Spread of ${bootstrapCount.toLocaleString("en-US")} estimates<br>Bootstrap SE</span><strong>${fmt(b.se)}</strong></div><div><span>Formula SE<br>Same observed study</span><strong>${fmt(b.observed.se)}</strong></div></div><p class="small">Same 200 people · fixed −1 to 5 axis</p>`;
   el("bootstrap-takeaway").textContent = el("bootstrap-confounded").checked
-    ? "Resampling reuses the imbalance. The estimate stays far from the causal effect."
-    : "More resamples. The same 200 people. No new information.";
-  el("bootstrap-people").innerHTML =
-    `<table><caption>First resample: selections of each original participant</caption><thead><tr><th scope="col">Person</th><th scope="col">Treatment</th><th scope="col">Outcome</th><th scope="col">Times selected</th></tr></thead><tbody>${bootstrapRows.map((row, i) => `<tr><th scope="row">${i + 1}</th><td>${row.A ? "Treated" : "Untreated"}</td><td>${fmt(row.Y)}</td><td>${b.firstCounts[i]}</td></tr>`).join("")}</tbody></table>`;
-  el("bootstrap-interval").textContent =
-    `95% percentile interval: ${fmtBound(b.lower)} to ${fmtBound(b.upper)}. Normal interval: ${fmtBound(b.observed.lower)} to ${fmtBound(b.observed.upper)}.`;
+    ? "Resampling reuses the imbalance."
+    : "More resamples stabilize the shape. They do not add new people.";
 }
 
-function drawBootstrap() {
+function updateBootstrap(count) {
+  // Reusing the seed preserves every earlier draw when extending the batch.
   bootstrapResult = bootstrapDifference(bootstrapRows, {
-    seed: bootstrapSeed++,
+    seed: bootstrapSeed,
+    repetitions: count,
   });
   if (bootstrapResult.status !== "ok") {
     el("bootstrap-error").textContent =
@@ -268,24 +306,31 @@ function drawBootstrap() {
     bootstrapResult = null;
     return;
   }
-  el("draw-bootstrap").textContent = "Draw another resample";
+  bootstrapCount = count;
+  el("draw-bootstrap").textContent = "Start with a new resample";
   el("run-bootstrap").disabled = false;
   renderBootstrap();
 }
 el("bootstrap-confounded").addEventListener("change", resetBootstrap);
 el("draw-bootstrap").addEventListener("click", () => {
-  bootstrapBatch = false;
-  drawBootstrap();
+  if (bootstrapCount) bootstrapSeed++;
+  updateBootstrap(1);
   capture("simulation_run", {
     lesson: "uncertainty",
     action: "bootstrap-draw",
   });
 });
 el("run-bootstrap").addEventListener("click", () => {
-  if (bootstrapBatch) drawBootstrap();
-  bootstrapBatch = true;
-  renderBootstrap();
-  el("run-bootstrap").textContent = "Repeat another 1,000 times";
+  updateBootstrap(
+    Math.min(1000, bootstrapCount < 10 ? 10 : bootstrapCount + 10),
+  );
+  capture("simulation_run", {
+    lesson: "uncertainty",
+    action: "bootstrap-add-ten",
+  });
+});
+el("finish-bootstrap").addEventListener("click", () => {
+  updateBootstrap(1000);
   capture("simulation_run", {
     lesson: "uncertainty",
     action: "bootstrap",
@@ -371,9 +416,11 @@ for (const button of document.querySelectorAll("[data-answer]"))
     });
   });
 window.addEventListener("resize", () => {
+  renderOpening();
   renderSingle();
   renderCoverage();
   renderPrecision();
   renderBootstrap();
 });
+renderOpening();
 renderSingle();
