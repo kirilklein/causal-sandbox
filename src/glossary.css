@@ -1,13 +1,9 @@
 @import "./methodology.css";
 
-.glossary-page {
-  max-width: 1080px;
-}
 .glossary-hero {
   max-width: 720px;
 }
 .glossary-assumptions {
-  max-width: 940px;
   margin: 0 0 72px;
   padding: 28px 30px;
   border: 1px solid var(--border);
@@ -55,7 +51,7 @@
   line-height: 1.5;
 }
 .glossary-layout {
-  grid-template-columns: 230px minmax(0, 700px);
+  grid-template-columns: 230px minmax(0, 1fr);
   gap: 70px;
 }
 #glossary-contents-list {
