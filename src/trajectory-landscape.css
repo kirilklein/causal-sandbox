@@ -1,0 +1,431 @@
+.trajectory-mode {
+  background: var(--film-background);
+  color: var(--film-ink);
+}
+.trajectory-experience {
+  --trajectory-treated: var(--film-treated);
+  --trajectory-untreated: var(--film-untreated);
+  --trajectory-silver: var(--film-silver);
+  --trajectory-faint: color-mix(in srgb, var(--film-silver) 20%, transparent);
+  --trajectory-muted: color-mix(in srgb, var(--film-silver) 70%, transparent);
+  min-height: 100svh;
+  background: radial-gradient(
+    ellipse at 55% 42%,
+    var(--film-glow) 0,
+    transparent 66%
+  );
+  font:
+    15px/1.55 "Avenir Next",
+    Avenir,
+    system-ui,
+    sans-serif;
+}
+.trajectory-experience * {
+  box-sizing: border-box;
+}
+.trajectory-experience a {
+  color: inherit;
+}
+.trajectory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 5vw;
+  font-size: 12px;
+  color: var(--trajectory-muted);
+  border-bottom: 1px solid var(--trajectory-faint);
+}
+.trajectory-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  letter-spacing: 2px;
+  font-weight: 650;
+}
+.trajectory-brand svg {
+  width: 29px;
+  height: 29px;
+}
+.trajectory-header-note {
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+.trajectory-experience main {
+  max-width: 1280px;
+  padding: 0 36px 35px;
+  margin: auto;
+}
+.trajectory-chapters {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding-top: 22px;
+}
+.trajectory-chapters button {
+  display: flex;
+  gap: 6px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--trajectory-muted);
+  background: transparent;
+  padding: 8px 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+}
+.trajectory-chapters button span:first-child {
+  opacity: 0.45;
+}
+.trajectory-chapters [aria-current] {
+  color: var(--film-ink);
+  border-color: var(--film-ink);
+}
+.trajectory-title {
+  text-align: center;
+  min-height: 151px;
+  padding-top: 24px;
+}
+#trajectory-kicker {
+  color: var(--trajectory-muted);
+  letter-spacing: 2.2px;
+  font-size: 10px;
+  margin: 0 0 10px;
+}
+.trajectory-title h1 {
+  font-weight: 400;
+  font-size: clamp(30px, 3.8vw, 49px);
+  line-height: 1.12;
+  letter-spacing: -1.5px;
+  margin: 0;
+}
+.trajectory-title em {
+  display: block;
+  font:
+    normal 1.06em/1.15 Georgia,
+    serif;
+  letter-spacing: -1.1px;
+}
+.trajectory-stage {
+  position: relative;
+}
+.trajectory-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 22px;
+  min-height: 30px;
+  font-size: 11px;
+  color: var(--trajectory-muted);
+}
+.trajectory-legend .world-treated {
+  color: var(--trajectory-treated);
+}
+.trajectory-legend .world-untreated {
+  color: var(--trajectory-untreated);
+}
+#trajectory-canvas {
+  display: block;
+  width: 100%;
+  height: clamp(360px, 45vh, 510px);
+}
+.trajectory-playback {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  min-height: 30px;
+  margin-bottom: 12px;
+  color: var(--trajectory-muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.trajectory-playback span {
+  margin-right: auto;
+}
+.trajectory-experience button {
+  cursor: pointer;
+}
+.trajectory-playback button {
+  border: 0;
+  background: transparent;
+  color: var(--trajectory-muted);
+  font: inherit;
+  font-size: 11px;
+  padding: 6px;
+}
+.trajectory-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 60px;
+}
+.trajectory-control {
+  width: 330px;
+  margin: 8px 0 18px;
+}
+.trajectory-control label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 1.1px;
+}
+.trajectory-control output {
+  color: var(--film-ink);
+}
+.trajectory-control input[type="range"] {
+  background: linear-gradient(
+    to right,
+    var(--trajectory-silver) var(--fill),
+    var(--trajectory-faint) var(--fill)
+  );
+  margin: 14px 0 10px;
+  height: 3px;
+}
+.trajectory-control input::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--film-ink);
+  border: 3px solid var(--film-background);
+  box-shadow:
+    0 0 0 1px var(--trajectory-silver),
+    0 0 12px var(--trajectory-faint);
+}
+.trajectory-control input::-moz-range-thumb {
+  background: var(--film-ink);
+  border-color: var(--film-background);
+}
+.trajectory-control-ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--trajectory-muted);
+  font-size: 10px;
+}
+.trajectory-story {
+  border-top: 1px solid var(--trajectory-faint);
+  padding-top: 23px;
+  display: flex;
+  align-items: center;
+  gap: 45px;
+}
+.trajectory-caption {
+  flex: 1;
+  max-width: 720px;
+}
+#trajectory-description {
+  margin: 0;
+  font-size: 15px;
+  color: var(--film-ink);
+}
+#trajectory-reading {
+  margin: 10px 0 0;
+  color: var(--trajectory-muted);
+  font-size: 12px;
+}
+#trajectory-reading:empty {
+  display: none;
+}
+.trajectory-navigation {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-left: auto;
+}
+.trajectory-navigation button {
+  border: 1px solid var(--trajectory-faint);
+  background: transparent;
+  color: var(--film-ink);
+  padding: 13px 15px;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 12px;
+}
+.trajectory-navigation #trajectory-next {
+  background: var(--film-ink);
+  color: var(--film-background);
+  border-color: var(--film-ink);
+}
+.trajectory-navigation button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.trajectory-experience :is(button, a, input, summary):focus-visible {
+  outline: 2px solid var(--film-ink);
+  outline-offset: 5px;
+}
+.trajectory-footnote {
+  margin-top: 30px;
+  color: var(--trajectory-muted);
+  font-size: 11px;
+}
+.trajectory-footnote > span {
+  font-size: 9px;
+  letter-spacing: 1.4px;
+}
+.trajectory-footnote details {
+  margin-top: 12px;
+  max-width: 760px;
+}
+.trajectory-footnote summary {
+  cursor: pointer;
+}
+.trajectory-footnote p {
+  font-size: 13px;
+}
+.trajectory-mode .site-footer {
+  display: none;
+}
+.trajectory-experience [hidden] {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  .trajectory-experience main {
+    padding: 0 18px 28px;
+  }
+  .trajectory-header {
+    padding: 18px;
+    font-size: 10px;
+  }
+  .trajectory-brand {
+    font-size: 10px;
+    letter-spacing: 1px;
+    gap: 7px;
+  }
+  .trajectory-header-note,
+  .chapter-name {
+    display: none;
+  }
+  .trajectory-chapters {
+    gap: 0;
+    justify-content: space-between;
+    padding-top: 12px;
+  }
+  .trajectory-chapters button {
+    min-width: 35px;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .trajectory-title {
+    min-height: 152px;
+    padding-top: 25px;
+  }
+  .trajectory-title h1 {
+    font-size: 32px;
+  }
+  #trajectory-kicker {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .trajectory-legend {
+    gap: 9px;
+    font-size: 10px;
+  }
+  #trajectory-canvas {
+    height: 335px;
+  }
+  .trajectory-controls {
+    gap: 5px;
+  }
+  .trajectory-control {
+    width: 100%;
+    max-width: 350px;
+  }
+  .trajectory-story {
+    display: block;
+    padding-top: 20px;
+  }
+  #trajectory-description {
+    font-size: 14px;
+  }
+  .trajectory-navigation {
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .trajectory-navigation #trajectory-next {
+    flex: 1;
+  }
+  .trajectory-footnote > span {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+}
+
+.trajectory-style-key {
+  display: inline-block;
+  width: 23px;
+  margin-right: 5px;
+  vertical-align: middle;
+  border-top: 2px solid var(--film-ink);
+}
+.counterfactual-key {
+  border-top: 1px dashed var(--film-ink);
+  opacity: 0.5;
+}
+#trajectory-observed {
+  color: var(--film-ink);
+}
+.world-treated {
+  color: var(--trajectory-treated);
+}
+.world-untreated {
+  color: var(--trajectory-untreated);
+}
+#trajectory-receipt {
+  text-align: center;
+  margin: 10px 0 0;
+  color: var(--film-ink);
+  font-size: 14px;
+}
+#trajectory-orbit-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px 24px;
+  margin: 6px 0 0;
+  color: var(--trajectory-muted);
+  font-size: 12px;
+}
+#trajectory-probability {
+  text-align: center;
+  color: var(--film-ink);
+  font-size: 13px;
+  margin: 6px 0 16px;
+}
+#trajectory-orbit-controls button {
+  padding: 6px 10px;
+  border: 1px solid var(--trajectory-faint);
+  border-radius: 4px;
+  color: var(--film-ink);
+  background: transparent;
+  font: inherit;
+}
+#trajectory-orbit-controls label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+#trajectory-orbit-controls input {
+  accent-color: var(--trajectory-treated);
+}
+#trajectory-canvas.is-rotatable {
+  cursor: grab;
+  touch-action: none;
+}
+#trajectory-canvas.is-dragging {
+  cursor: grabbing;
+}
+#trajectory-canvas:focus-visible {
+  outline: 1px solid var(--trajectory-silver);
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  #trajectory-canvas.is-frequency {
+    height: 670px;
+  }
+  #trajectory-orbit-hint {
+    text-align: center;
+  }
+}

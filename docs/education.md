@@ -596,3 +596,60 @@ on titles, aliases, keywords, and summaries, with up to eight results displayed.
 entries. When adding a lesson, include its search description and keywords.
 `tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
 themes, and mobile layouts.
+
+## Patient trajectory story
+
+`?lesson=trajectory-landscape` is an optional cinematic introduction linked
+beside the existing film and after A common cause. It leaves the film and core
+Continue sequence intact. Seven chapters introduce one observed health course,
+its counterfactual, ten patients at one severity, a return to one highlighted
+patient, ten profiles across severity, pooled factual endpoints, and a return
+to paired potential outcomes. Readers control transitions, pause and replay.
+Reduced motion shows each chapter's final composition without animation.
+
+The continuous teaching model lives in `src/trajectory-model.js`. Severity
+C = 0,…,9 sets initial health to 90 − 20C/9 and untreated final health to
+78 − 48C/9. Smooth interpolation and a shared time fluctuation connect them.
+Treatment starts on day 4 and adds a smooth response reaching +12 at day 12.
+Paired histories coincide before treatment. Higher health is better.
+
+The frequency chapter introduces ten patients at the selected severity in
+separate charts with identical health and time scales. Their potential health
+courses are identical; treatment assignment varies. One chart is highlighted
+and retained when the group collapses. A treatment-probability readout survives
+the collapse. The landscape then unfolds one fixed patient at each of ten
+equally spaced severities. No additional patients appear during pooling.
+
+With u = 2C/9 − 1, teaching counts are 5 + sign(u) × round(4s|u|), giving
+1, 2, 3, 4, 5, 5, 6, 7, 8, 9 at full selection and 5 everywhere at zero.
+Dividing by ten defines the model assignment probabilities. These are fixed
+illustrative assignments, not a fresh random sample: ten independent draws
+would not always reproduce the displayed counts. The retained patient ranks
+are fixed across selection settings, and each is present in their severity's
+frequency view. At full selection, treated severities are 2,6,7,8,9 and untreated
+severities are 0,1,3,4,5. Their pooled difference is −8.27 despite the +12 benefit.
+At equal probabilities, a ten-person example need not have balanced severity
+mixes; its observed difference is +14.22, not exactly +12.
+
+The final chapter reveals each retained patient's own counterfactual, enabled
+by default with an optional hide control. It does not claim an adjusted estimate
+from observed within-severity groups: there is only one observed patient at each
+severity. The +12 gaps are known inside this simulator; real individual
+counterfactuals are not generally recoverable from observed data.
+
+Canvas rendering reuses the film's interpolation helpers and treatment-world
+palette. Solid versus dashed paths encode observation, independently of color.
+Grey is confined to shared pretreatment history. Counterfactuals are faint and
+painted first; factual endpoints are filled. The highlighted patient persists
+through collapse and unfolding. The health scale moves onto that patient's
+day-12 plane as severity unfolds, so its ticks align with the endpoint values.
+Endpoint labels describe individual outcomes, not group means.
+
+Mouse/touch dragging and arrow keys rotate both landscape chapters. The hint
+and reset control appear above the canvas; Home also resets the view. Rotation
+changes no patients, assignments or comparisons. DOM captions and numeric
+readouts describe the canvas for assistive tools. Focused tests cover shared
+histories, fixed effects, counts versus probabilities, retained identities,
+pooled means, expansion/collapse, rotation, label bounds, counterfactual display,
+playback, reduced motion, mobile layouts and entry/return routes. Learner
+comprehension remains untested.

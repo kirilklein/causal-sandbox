@@ -30,6 +30,15 @@ export const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "trajectory-landscape",
+    menuTitle: "Patient trajectories",
+    after: 2,
+    title: "One patient, a whole landscape",
+    href: "?lesson=trajectory-landscape",
+    description:
+      "Follow two possible futures, unfold severity, and see how a helpful treatment can look harmful.",
+  },
+  {
     id: "propensity-score",
     menuTitle: "Propensity scores",
     after: 3,
