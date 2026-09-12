@@ -54,7 +54,7 @@ document.querySelector("#app").innerHTML =
         <p>The model learns an intercept and a coefficient for each characteristic. It chooses them to make the observed yes/no treatments more likely under the model. A logistic transformation converts their combined value into a probability between 0 and 1.</p>
         <p>The assignment sliders define this fictional world; the fitted coefficients are estimated from its data. They will usually differ slightly. With both influences at zero, the true probability is constant, but a finite sample can still give small fitted slopes.</p>
         <p><code>p̂ = 1 / (1 + exp(−(b₀ + b₁C₁ + b₂C₂)))</code></p>
-        <p class="small">For fitting, age and severity are centered and scaled. This changes the coefficient units, not the profiles or probabilities. Logistic regression is one way to estimate a propensity score; more complex relationships can require a different model.</p>
+        <p class="small">For fitting, age and severity are centered and scaled. This changes the coefficient units, not the profiles or probabilities. This additive logistic model matches the assignment mechanism here. If age’s influence on log odds depended on severity, it would need an age × severity interaction.</p>
       </details>
       <section id="ps-score-section" class="ps-score-section" aria-labelledby="ps-score-heading" hidden>
         <h2 id="ps-score-heading">Two characteristics → one estimated probability</h2>
@@ -71,6 +71,7 @@ document.querySelector("#app").innerHTML =
       <p>Using scores for causal adjustment requires a defensible adjustment set and adequate overlap. A fitted-score plot cannot show that confounding has been controlled. The <a href="?lesson=overlap">overlap lesson</a> examines sparse comparisons and extreme weights.</p>
       <p><a href="https://academic.oup.com/biomet/article-abstract/70/1/41/240879">Rosenbaum & Rubin (1983), The central role of the propensity score</a></p>
     </details>
+    <p>Choosing the right covariates is only one step. <a href="?lesson=misspecification">When a model is too simple</a> explores what happens when a fitted model misses the shape of their relationship.</p>
     <nav class="actions" aria-label="Continue learning"><a class="primary" href="?lesson=ipw">← Return to IPW</a><a href="?lesson=outcome-regression">Continue: Outcome regression →</a></nav>
   </main>
 </div>`;

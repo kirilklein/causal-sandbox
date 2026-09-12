@@ -284,6 +284,16 @@ keyboard and touch, mobile width, and explanation invariance.
 
 ## Model-reasoning contract
 
+The misspecification lesson introduces causal specification (target effect, graph,
+and adjustment set) separately from statistical model specification before the
+experiment. Functional-form misspecification names the omitted curve or
+interaction. Its model details distinguish the guided lesson’s missing C² term
+in the logistic predictor from the scenario sandbox’s missing C₁ × C₂ interaction
+in log odds; neither calls logistic probabilities linear. The propensity-score
+primer links forward to this lesson while keeping its Continue route to outcome
+regression. AIPW remains the following lesson, with double robustness explicitly
+limited to statistical model specification under the causal assumptions.
+
 Level 4 reuses the level-3 confounded world with both models correctly specified.
 It shows standardized outcome regression, IPW, and the familiar unadjusted
 comparison beside truth immediately, with a short explanation of the predictions.

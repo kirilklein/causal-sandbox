@@ -15,7 +15,7 @@ export const glossary = {
     summary:
       "The simple sandbox model includes C₁ + C₂; the more flexible model also includes C₁ × C₂, so one covariate’s influence can depend on the other.",
     detail: [
-      "For treatment assignment, the terms describe log odds that are converted to probabilities.",
+      "For treatment assignment, these terms enter the logistic linear predictor (log odds), which is converted to a probability. Logistic regression already gives nonlinear probabilities. Omitting an active C₁ × C₂ interaction in the log odds is the functional-form mismatch in the treatment-model scenario.",
       "The sandbox feedback checks only whether a model can capture the world’s measured C relationships. Extra flexibility is unnecessary when the interaction is absent or inactive. It cannot repair hidden confounding or invalid adjustment, and it does not guarantee an estimate equal to truth.",
     ],
     related: {
@@ -283,11 +283,12 @@ export const glossary = {
   },
   misspecification: {
     title: "Model misspecification",
-    aliases: ["Model mismatch"],
+    aliases: ["Model mismatch", "Functional-form misspecification"],
     summary:
       "A model is misspecified when the relationships it can represent do not include the relevant relationship in the data-generating process.",
     detail: [
-      "For example, a model with only a straight-line term cannot represent a curved relationship. Outcome regression is vulnerable to a wrong outcome model and IPW to a wrong treatment model. Misspecification is distinct from random sampling error and from missing confounders.",
+      "Functional-form misspecification is one type: the model omits a needed curve or interaction among the chosen variables. The simple models omit C² in the guided lesson and C₁ × C₂ in the scenario sandbox. Outcome regression relies on the outcome model and IPW on the treatment model.",
+      "Causal specification concerns the target effect, causal graph, and adjustment set. Statistical model specification concerns how the fitted models represent relationships among the selected variables. A more flexible fit cannot repair invalid adjustment, unmeasured confounding, or absent overlap. Neither kind of misspecification is random sampling error.",
     ],
     related: {
       label: "Make a model too simple",

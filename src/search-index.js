@@ -38,8 +38,8 @@ const lessonDetails = {
     "unmeasured confounding exchangeability",
   ],
   misspecification: [
-    "Compare models that can and cannot capture the outcome pattern.",
-    "model specification flexibility interaction",
+    "Separate causal assumptions from how models represent outcome and treatment relationships.",
+    "causal statistical model specification functional form misspecification flexibility quadratic interaction",
   ],
   "double-robustness": [
     "Combine treatment and outcome models to see how double robustness works.",
