@@ -744,7 +744,7 @@
   font-size: 12px;
 }
 .model-legend span:first-child {
-  color: var(--accent);
+  color: var(--truth);
 }
 .model-legend span:last-child {
   color: var(--fitted);

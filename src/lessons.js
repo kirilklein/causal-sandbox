@@ -89,12 +89,14 @@ const lessons = [
   {
     question: "Which relationship does each method need to model?",
     transition:
-      "Here, we explore what happens when one of the models is misspecified. We return to the simple scenario with one measured confounder, a risk score (C).",
+      "We return to one measured confounder, a risk score (C). Both models adjust for it. Is choosing the right variable enough?",
     instruction:
       "Make the outcome relationship more complex, then make treatment assignment more complex. Compare which estimates are affected.",
-    explanation:
-      "A model is misspecified when it cannot represent the true relationship in the data. Here, making treatment assignment more complex misspecifies the simple propensity-score model, while making the outcome relationship more complex misspecifies the simple outcome model. A more flexible model is needed to capture either relationship correctly.",
-    next: "We may not know which model is adequate. Can we combine the two approaches?",
+    explanation: [
+      "Outcome regression relies on the outcome model; IPW relies on the treatment model. Each experiment adds a pattern that the corresponding fitted model cannot represent, while leaving the other relationship correctly specified. Compare the true and fitted curves, then the estimates. One sample cannot establish a method’s bias.",
+      "A more flexible model can capture the measured relationship. It cannot repair an invalid adjustment set, unmeasured confounding, or absent overlap. Those require revisiting the causal design or available data.",
+    ],
+    next: "Next, combine both models and test what happens when only one is correctly specified.",
   },
   {
     question: "Can combining the models help when one is too simple?",
@@ -103,7 +105,7 @@ const lessons = [
     instruction:
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
-      "With confounding controlled and overlap—people with similar risk scores can receive either treatment—AIPW can approach the true effect as samples grow if either model is correctly specified. It need not be exact or closest to truth in this sample. If both models are wrong, that protection is lost. Double robustness does not repair missing confounders or invalid adjustment.",
+      "With confounding controlled and overlap—people with similar risk scores can receive either treatment—AIPW can approach the true effect as samples grow if either model is correctly specified. It need not be exact or closest to truth in this sample. If both models are wrong, that protection is lost. For AIPW and TMLE, double robustness concerns statistical model specification; it does not repair causal misspecification, such as missing confounders or invalid adjustment.",
     next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to see how TMLE builds the correction into the predictions.",
   },
   {
@@ -393,6 +395,7 @@ function enter(level, focus = true, callback = false, restart = false) {
           ? leavingTheSandbox()
           : `
       <p class="lesson-transition">${lesson.transition}</p>
+      ${level === 5 ? '<div id="model-specification"><p><strong>Causal specification:</strong> define the effect you want, the causal graph, and a valid adjustment set. Leaving out a confounder or adjusting for a mediator or collider can change what the comparison means.</p><p><strong>Statistical model specification:</strong> choose how the fitted models represent relationships among those variables. Missing a curve or interaction is <strong>functional-form misspecification</strong>, one type of statistical model misspecification.</p></div>' : ""}
       ${level === 1 ? "<p><strong>Observed outcome difference:</strong> In our study, each person receives only one treatment option. We calculate the average outcome among those treated minus the average among those untreated.</p><p>Here, we know the true effect because we set the simulation’s rules. In a real study, we would need to estimate it.</p>" : ""}
       ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
       <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
@@ -428,7 +431,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
-      ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Here, the true relationship includes C² − 1. A linear model using only C cannot capture this curve. It needs a C² term and an intercept to represent the relationship correctly.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
+      ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>The simple outcome model uses treatment and C. The more complex outcome relationship adds C² − 1; including C² and an intercept lets the fitted model represent that curve.</p><p>The treatment model is logistic: it converts a linear predictor (log odds) into a probability. Even with only an intercept and C, its probability curve is nonlinear. The more complex treatment assignment adds C² − 1 to the log odds. The simple model misses this quadratic term, not the logistic transformation.</p>${level === 5 ? '<p>The separate <a href="?sandbox&scenario=treatment-model">treatment-model scenario</a> uses two covariates, C₁ and C₂. There, an additive logistic model omits the C₁ × C₂ interaction in the true log odds: one covariate’s influence on log odds depends on the other. Adding the interaction addresses this functional-form mismatch without changing the adjustment set.</p>' : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       `
