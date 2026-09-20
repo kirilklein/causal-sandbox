@@ -170,6 +170,22 @@ export function bootstrapDifference(
   };
 }
 
+// Each point uses only the first B resampled estimates, with variance divisor B−1.
+export function bootstrapSEHistory(estimates) {
+  let mean = 0;
+  let squaredDeviations = 0;
+  const history = [];
+  estimates.forEach((estimate, i) => {
+    const count = i + 1;
+    const delta = estimate - mean;
+    mean += delta / count;
+    squaredDeviations += delta * (estimate - mean);
+    if (count > 1)
+      history.push({ count, se: Math.sqrt(squaredDeviations / (count - 1)) });
+  });
+  return history;
+}
+
 export function coverageSummary(studies) {
   const valid = studies.filter((study) => study.status === "ok");
   return {
