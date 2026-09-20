@@ -1,12 +1,13 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { coreAssumptionKeys, glossary } from "../src/glossary.js";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const root = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const root = getAppUrl();
 const pages = [
   {
     path: "confounding/",
@@ -84,7 +85,7 @@ try {
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
 
   await page.goto(root);
   const structuredData = JSON.parse(

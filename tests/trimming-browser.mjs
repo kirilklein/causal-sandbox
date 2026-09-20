@@ -1,13 +1,15 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { trimmingSample, trimmingResult } from "../src/trimming-experiment.js";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const appUrl = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const appUrl = getAppUrl();
 const url = `${appUrl}?lesson=trimming`;
 try {
   const page = await browser.newPage({
@@ -15,13 +17,8 @@ try {
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await page.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  collectPageErrors(page, errors);
+  await stubGoatCounter(page);
   await page.goto(`${appUrl}?lesson=clipping`);
   await page
     .getByRole("link", { name: "Next: who remains after trimming? →" })

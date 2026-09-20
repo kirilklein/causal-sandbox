@@ -1,15 +1,17 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import {
   arrowStrengthSimulation,
   cancellationDirectEffect,
 } from "../src/arrow-strength-simulation.js";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 
 try {
   const page = await browser.newPage({
@@ -17,16 +19,8 @@ try {
     colorScheme: "light",
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ count: "0" }),
-    }),
-  );
-  await page.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  collectPageErrors(page, errors);
+  await stubGoatCounter(page);
 
   await page.goto(`${url}?lesson=instrument-hidden-confounding`);
   await page
