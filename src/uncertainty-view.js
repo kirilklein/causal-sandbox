@@ -1,4 +1,8 @@
-import { normalDensity, normalInference } from "./uncertainty.js";
+import {
+  normalDensity,
+  normalInference,
+  bootstrapSEHistory,
+} from "./uncertainty.js";
 
 export const fmt = (value) => value.toFixed(2).replace(/^-0\.00$/, "0.00");
 // Keep a small nonzero bound visibly distinct from zero when reading a test.
@@ -113,6 +117,34 @@ export function bootstrapPlot(result, width = 700) {
     ${[-1, 0, 1, 2, 3, 4, 5].map((value) => `<text x="${x(value)}" y="197" text-anchor="middle">${value}</text>`).join("")}
     <text x="${width / 2}" y="224" text-anchor="middle">Resampled mean difference</text>
     ${outside ? `<text x="${width / 2}" y="248" text-anchor="middle">${outside} outside axis; included in SE</text>` : ""}
+  </svg>`;
+}
+
+export function bootstrapSEPlot(result, width = 700) {
+  const history = bootstrapSEHistory(result.estimates);
+  if (!history.length)
+    return "<p>At least two resamples are needed to estimate SE.</p>";
+  const last = history.at(-1);
+  const left = 44,
+    right = width - 22,
+    top = 32,
+    bottom = 190;
+  const maxCount = Math.max(100, last.count);
+  const maxSE =
+    Math.max(result.observed.se * 2, ...history.map((point) => point.se)) * 1.1;
+  const x = (count) => left + (count / maxCount) * (right - left);
+  const y = (se) => bottom - (se / maxSE) * (bottom - top);
+  const path = history
+    .map((point, i) => `${i ? "L" : "M"}${x(point.count)} ${y(point.se)}`)
+    .join(" ");
+  return `<svg class="inference-chart" viewBox="0 0 ${width} 245" data-count="${last.count}" role="img" aria-label="Bootstrap standard error using the first 2 through ${last.count} resamples. Current SE ${fmt(last.se)}; formula SE reference ${fmt(result.observed.se)}. More resamples stabilize the SE estimate, not the study's precision.">
+    <text x="${left}" y="17">SE · outcome units</text>
+    ${[0, maxSE / 2, maxSE].map((se) => `<path class="inference-grid" d="M${left} ${y(se)}H${right}"/><text x="${left - 8}" y="${y(se) + 4}" text-anchor="end">${fmt(se)}</text>`).join("")}
+    <path class="bootstrap-se-reference" d="M${left} ${y(result.observed.se)}H${right}"><title>Formula SE: ${fmt(result.observed.se)}</title></path>
+    <path class="bootstrap-se-path" d="${path}"/>
+    <circle class="bootstrap-se-current" cx="${x(last.count)}" cy="${y(last.se)}" r="4" data-se="${last.se}"><title>${last.count} resamples: SE ${fmt(last.se)}</title></circle>
+    ${[0, maxCount / 2, maxCount].map((count) => `<text x="${x(count)}" y="214" text-anchor="middle">${count.toLocaleString("en-US")}</text>`).join("")}
+    <text x="${width / 2}" y="239" text-anchor="middle">Number of resamples</text>
   </svg>`;
 }
 
