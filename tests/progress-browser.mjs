@@ -33,7 +33,9 @@ try {
     "1 of 13 guided lessons complete",
   );
   assert.equal(
-    await page.locator('[data-level="1"]').getAttribute("aria-describedby"),
+    await page
+      .locator('#lesson-menu [data-level="1"]')
+      .getAttribute("aria-describedby"),
     "lesson-complete-description",
   );
   await page.screenshot({ path: "/tmp/learning-progress-desktop.png" });

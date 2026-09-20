@@ -604,7 +604,7 @@ try {
   await page.locator("#opening-next").waitFor();
   await page.goto(`${url}?lesson=ipw`);
   await page.locator("#lesson-menu-toggle").click();
-  await page.locator('[data-level="14"]').click();
+  await page.locator('#lesson-menu [data-level="14"]').click();
   await page.locator("#opening-next").waitFor();
   // Search -> glossary -> optional disclosure preserves both query and fragment.
   await page.getByRole("button", { name: "Search", exact: true }).click();
