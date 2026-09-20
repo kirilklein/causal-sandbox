@@ -40,6 +40,10 @@
   --heatmap-zero: #f5f5ef;
   --heatmap-over: #b6583f;
   --film-background: #0b141e;
+  --film-treated: #ff8174;
+  --film-untreated: #69b2f7;
+  --film-silver: #bccbd8;
+  --film-glow: #1d303e80;
   --film-ink: #dee8f0;
   --film-control: #0b141ed9;
   --film-control-border: #aebdce80;

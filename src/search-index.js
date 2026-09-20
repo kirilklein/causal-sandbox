@@ -1,4 +1,5 @@
 import {
+  openingLesson,
   coreLessons,
   lessonHref,
   optionalChapters,
@@ -9,6 +10,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "trajectory-landscape": [
+    "Unfold patient trajectories to see confounding by indication.",
+    "patient trajectory futures landscape confounding indication severity counterfactual",
+  ],
   uncertainty: [
     "Read confidence intervals, explore repeated-study coverage, and distinguish precision from bias.",
     "uncertainty confidence interval CI standard error sampling variability coverage precision bias bootstrap bootstrapping resampling",
@@ -132,6 +137,7 @@ const guides = [
 
 // Pages that also host lessons use the lesson's single canonical destination.
 export const searchEntries = [
+  { ...openingLesson, type: "Opening lesson" },
   ...lessonExperiments.map((experiment) => ({
     ...experiment,
     type: "Experiment",

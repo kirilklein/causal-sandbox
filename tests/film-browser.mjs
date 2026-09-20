@@ -114,13 +114,21 @@ try {
   await page
     .getByRole("link", { name: "Start from scratch", exact: false })
     .click();
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await page.locator("#known-effect").waitFor();
   assert.equal(
     await page.locator(".lesson-nav-heading > span").textContent(),
     "Level 1 of 14",
   );
   assert.equal(await open.count(), 0);
-  await page.getByRole("link", { name: "← Introduction", exact: true }).click();
+  await page.getByRole("button", { name: "Contents", exact: true }).click();
+  await page
+    .locator("#lesson-menu")
+    .getByRole("link", { name: "Introduction", exact: true })
+    .click();
   assert.equal(await open.count(), 1);
   assert.equal(await video.getAttribute("src"), null);
   assert.equal(await page.locator(".introduction-arriving").count(), 0);
