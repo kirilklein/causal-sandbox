@@ -1,6 +1,7 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { instrumentAdjustment } from "../src/instrument-simulation.js";
+import { effectComparison } from "../src/effect-comparison.js";
 
 const browser = await chromium.launch({
   headless: true,
@@ -188,7 +189,9 @@ try {
         const error = Math.abs(f.values[index] - 2);
         const other = Math.abs(fits[1 - j].values[index] - 2);
         assert.ok(
-          Math.abs(cells[2 * k + j].tint - Math.min(error / 2, 1) * 100) < 1e-9,
+          Math.abs(
+            cells[2 * k + j].tint - effectComparison(f.values[index], 2).tint,
+          ) < 1e-9,
         );
         assert.ok(
           Math.abs(
