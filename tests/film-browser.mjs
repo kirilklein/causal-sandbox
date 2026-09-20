@@ -1,11 +1,12 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 1000 },
@@ -14,7 +15,7 @@ try {
   });
   const errors = [];
   const requests = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   page.on("request", (request) => {
     // Vite serves an asset URL as a tiny JS import in development, not video bytes.
     if (request.resourceType() === "media") requests.push(request.url());
@@ -189,7 +190,7 @@ try {
     await open.waitFor();
     assert.equal(await page.locator(".introduction-arriving").count(), 0);
   }
-  failure.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(failure, errors);
   await failure.route("**/*.mp4", (route) => route.abort());
   await failure.goto(url);
   const retry = failure.getByRole("button", { name: /Watch the introduction/ });

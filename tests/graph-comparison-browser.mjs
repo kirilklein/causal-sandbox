@@ -1,18 +1,19 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   const toggle = page.locator("#compare-graph");
   const previous = page.getByRole("button", { name: "Previous", exact: true });
   const current = page.getByRole("button", { name: "Current", exact: true });

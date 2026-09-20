@@ -1,4 +1,9 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { fitPropensity } from "../src/simulation.js";
 import {
@@ -6,23 +11,15 @@ import {
   propensityCohort,
 } from "../src/propensity-experiment.js";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 1000 },
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await page.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  collectPageErrors(page, errors);
+  await stubGoatCounter(page);
 
   await page.goto(`${url}?lesson=ipw`);
   await page.locator("#reveal-ipw").click();
@@ -173,12 +170,7 @@ try {
     isMobile: true,
     reducedMotion: "reduce",
   });
-  await touch.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await touch.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  await stubGoatCounter(touch);
   await touch.goto(`${url}?lesson=propensity-score`);
   await touch.locator("#ps-fit").tap();
   await touch.locator("#ps-age").tap({ position: { x: 20, y: 2 } });
