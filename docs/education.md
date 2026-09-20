@@ -719,6 +719,11 @@ pooled means, expansion/collapse, rotation, label bounds, counterfactual display
 playback, reduced motion, mobile layouts and entry/return routes. Learner
 comprehension remains untested.
 
+The rotatable scenes can be bookmarked at
+`?lesson=trajectory-landscape#unfold` and `?lesson=trajectory-landscape#compare`.
+The [trajectory reuse guide](trajectory-components.md) documents the shared
+simulation, renderer, removable input controls, and a minimal embedding example.
+
 ## Final course assessment
 
 The recap now offers **Take the final quiz**, with scenario exploration still
