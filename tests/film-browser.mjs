@@ -117,7 +117,7 @@ try {
   await page.locator("#known-effect").waitFor();
   assert.equal(
     await page.locator(".lesson-nav-heading > span").textContent(),
-    "Level 1 of 13",
+    "Level 1 of 14",
   );
   assert.equal(await open.count(), 0);
   await page.getByRole("link", { name: "← Introduction", exact: true }).click();

@@ -16,7 +16,7 @@ export function graphComparison(level, revisiting) {
     ? "We return to the graph with unmeasured U, now comparing AIPW too. U’s influence starts at zero."
     : changes[level];
   return `<div class="graph-comparison">
-    <button id="compare-graph" aria-expanded="false" aria-controls="graph-comparison-options">Compare with previous</button>
+    <button id="compare-graph" aria-expanded="false" aria-controls="graph-comparison-options">${level === 3 ? "Compare with common cause" : "Compare with previous"}</button>
     <div id="graph-comparison-options" hidden>
       <p>${change}</p>
       <div class="graph-comparison-switch" role="group" aria-label="Diagram view">

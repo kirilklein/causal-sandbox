@@ -9,6 +9,14 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  uncertainty: [
+    "Read confidence intervals, explore repeated-study coverage, and distinguish precision from bias.",
+    "uncertainty confidence interval CI standard error sampling variability coverage precision bias bootstrap bootstrapping resampling",
+  ],
+  "p-values": [
+    "Compare results with a zero-effect world and connect p-values to confidence intervals.",
+    "p value pvalue p-value significance hypothesis test null probability precision",
+  ],
   randomization: [
     "Compare treatment groups when treatment is assigned at random.",
     "randomized experiment RCT",
