@@ -503,9 +503,13 @@
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
-.aipw-calculation math {
+.aipw-calculation math,
+.model-specification-details math {
   margin: 0;
   font-family: "STIX Two Math", "Cambria Math", math;
+}
+.model-specification-details math {
+  white-space: nowrap;
 }
 .aipw-formula {
   display: flex;
@@ -721,6 +725,20 @@
   font-weight: 600;
   margin-bottom: 8px;
 }
+.model-experiment-option {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+.model-experiment-option .lesson-switch {
+  margin: 0;
+}
+.model-experiment-option input {
+  margin: 0;
+}
+.model-experiment-option .sample-note {
+  margin: 0 0 0 34px;
+}
 .model-preview {
   margin: 16px 0;
   max-width: 440px;
@@ -744,7 +762,7 @@
   font-size: 12px;
 }
 .model-legend span:first-child {
-  color: var(--accent);
+  color: var(--truth);
 }
 .model-legend span:last-child {
   color: var(--fitted);

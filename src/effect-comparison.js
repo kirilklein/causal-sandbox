@@ -11,7 +11,7 @@ export function effectComparison(estimate, truth) {
   return {
     value: estimate.toFixed(2),
     difference: `${rounded > 0 ? "+" : ""}${rounded.toFixed(2)} from truth`,
-    // The same 0–2 outcome-unit scale applies to every lesson and sample.
-    tint: Math.min(Math.abs(error) / 2, 1) * 100,
+    // A gentle power curve reveals modest errors; all views saturate at 2.
+    tint: Math.min(Math.abs(error) / 2, 1) ** 0.75 * 100,
   };
 }
