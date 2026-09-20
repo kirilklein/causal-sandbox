@@ -346,6 +346,19 @@
   stroke-width: 1.5;
 }
 
+.bootstrap-se-path {
+  stroke: var(--estimate);
+  stroke-width: 2;
+}
+.bootstrap-se-reference {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+.bootstrap-se-current {
+  fill: var(--estimate);
+}
+
 .inference-zero {
   stroke: var(--text-secondary);
   stroke-width: 1.5;
