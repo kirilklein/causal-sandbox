@@ -1,13 +1,19 @@
 .trajectory-mode {
-  background: var(--film-background);
-  color: var(--film-ink);
+  background: var(--page);
+  color: var(--text);
 }
 .trajectory-experience {
+  --film-background: var(--page);
+  --film-ink: var(--text);
+  --film-silver: var(--text-secondary);
+  --film-treated: var(--arm-1);
+  --film-untreated: var(--arm-0);
+  --film-glow: var(--accent-surface);
   --trajectory-treated: var(--film-treated);
   --trajectory-untreated: var(--film-untreated);
   --trajectory-silver: var(--film-silver);
   --trajectory-faint: color-mix(in srgb, var(--film-silver) 20%, transparent);
-  --trajectory-muted: color-mix(in srgb, var(--film-silver) 70%, transparent);
+  --trajectory-muted: var(--text-secondary);
   min-height: 100svh;
   background: radial-gradient(
     ellipse at 55% 42%,
@@ -31,6 +37,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  flex-wrap: wrap;
   padding: 24px 5vw;
   font-size: 12px;
   color: var(--trajectory-muted);
@@ -262,6 +269,7 @@
   outline-offset: 5px;
 }
 .trajectory-footnote {
+  display: block;
   margin-top: 30px;
   color: var(--trajectory-muted);
   font-size: 11px;
@@ -434,4 +442,11 @@
   #trajectory-orbit-hint {
     text-align: center;
   }
+}
+
+.trajectory-header .search-open {
+  margin-left: auto;
+}
+.trajectory-experience #lesson-menu a {
+  color: var(--text);
 }

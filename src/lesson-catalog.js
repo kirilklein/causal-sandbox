@@ -1,9 +1,20 @@
+export const openingLesson = {
+  id: "what-if",
+  title: "What if?",
+  href: "?lesson=what-if",
+  description:
+    "Follow one patient’s two possible futures, then ask what treatment changes on average.",
+  keywords:
+    "counterfactual potential outcomes average treatment effect patient trajectory introduction start",
+};
+
 export const coreGroups = [
   {
     title: "Foundations",
     lessons: [
       [1, "randomization", "A randomized experiment"],
       [2, "confounding", "A common cause"],
+      [14, "uncertainty", "How uncertain is this estimate?"],
       [3, "ipw", "Adjustment with IPW", "inverse-probability-weighting/"],
       [4, "outcome-regression", "Adjustment with an outcome model"],
     ],
@@ -33,10 +44,19 @@ export const optionalChapters = [
     id: "trajectory-landscape",
     menuTitle: "Patient trajectories",
     after: 2,
-    title: "One patient, a whole landscape",
+    title: "Why a helpful treatment can look harmful",
     href: "?lesson=trajectory-landscape",
     description:
       "Follow two possible futures, unfold severity, and see how a helpful treatment can look harmful.",
+  },
+  {
+    id: "p-values",
+    menuTitle: "P-values",
+    after: 14,
+    title: "What does a p-value tell us?",
+    href: "?lesson=p-values",
+    description:
+      "Compare a result with a zero-effect world, then connect its p-value to precision and confidence intervals.",
   },
   {
     id: "propensity-score",

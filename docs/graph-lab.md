@@ -7,7 +7,7 @@ diagram. The equations match that example, but the lab uses its own fixed draws.
 
 ## Edit and analyze
 
-Start with P–K–R, observed confounding, hidden confounding, mediation, or a blank
+Start with one of seven quiz templates, P–K–R, observed confounding, hidden confounding, mediation, or a blank
 A/Y graph. Enter a name and choose **Add variable** to create an observed continuous
 variable. Choose **Draw arrow**, then click its source and destination; Escape
 cancels. The optional **Connect using menus** disclosure offers the same operation.
@@ -47,7 +47,7 @@ There are no confidence intervals or significance claims.
 - Graph validation rejects cycles (including zero-strength cycles), duplicate
   arrows, self-loops, invalid coefficients, and missing endpoints. Descendants
   of Y are allowed, including the post-outcome collider A → K ← Y.
-- Topological evaluation generates 2,400 records at seed 4217. Each variable
+- Topological evaluation generates 2,400 records, initially at seed 4217. Each variable
   has its own stream derived from its stable ID. Renaming, reordering, adding
   unrelated nodes, changing measured status, and changing adjustment do not
   reshuffle existing variables' noise. New IDs are not reused after deletion
@@ -68,6 +68,24 @@ Existing lesson and scenario-sandbox calls retain their previous fitting behavio
 Clipping and per-arm ESS use existing estimator diagnostics. Warn for any clipped
 score or arm ESS below 25% of that arm's size. These are display heuristics,
 not tests of exchangeability or positivity.
+
+## Quiz templates
+
+Five final-quiz graphs and two entry-quiz graphs share authored definitions with
+this lab in `src/adjustment-scenarios.js`. Variable letters, edges, measured status
+and starting layout match the quiz; a variable-meanings disclosure retains each
+scenario's context. Quiz result links open a new tab with `preset=<scenario-id>`
+and `adjust=C,L` (for example). Only measured covariates from that preset can be
+selected through the URL; unrelated, duplicate and unmeasured labels are ignored.
+Reset/preset changes clear the transferred selection and remove `adjust` from the URL.
+
+**Draw a new sample** increments the seed, preserving the graph, selection and
+known total effect. Graph edits then reuse that sample's background draws.
+Reset/preset changes restore seed 4217. The graph determines adjustment validity;
+weak arrows, bias cancellation or sampling variation can make an invalid choice
+look accurate. Main-effect logistic fits need not be correctly specified for
+every valid adjustment set; repeated-sample checks therefore verify regression
+recovery separately from the structural adjustment rules.
 
 ## State and navigation
 

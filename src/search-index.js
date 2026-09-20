@@ -1,4 +1,5 @@
 import {
+  openingLesson,
   coreLessons,
   lessonHref,
   optionalChapters,
@@ -12,6 +13,14 @@ const lessonDetails = {
   "trajectory-landscape": [
     "Unfold patient trajectories to see confounding by indication.",
     "patient trajectory futures landscape confounding indication severity counterfactual",
+  ],
+  uncertainty: [
+    "Read confidence intervals, explore repeated-study coverage, and distinguish precision from bias.",
+    "uncertainty confidence interval CI standard error sampling variability coverage precision bias bootstrap bootstrapping resampling",
+  ],
+  "p-values": [
+    "Compare results with a zero-effect world and connect p-values to confidence intervals.",
+    "p value pvalue p-value significance hypothesis test null probability precision",
   ],
   randomization: [
     "Compare treatment groups when treatment is assigned at random.",
@@ -128,6 +137,7 @@ const guides = [
 
 // Pages that also host lessons use the lesson's single canonical destination.
 export const searchEntries = [
+  { ...openingLesson, type: "Opening lesson" },
   ...lessonExperiments.map((experiment) => ({
     ...experiment,
     type: "Experiment",

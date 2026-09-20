@@ -1,5 +1,15 @@
 # Progressive education delivery
 
+The core [uncertainty lesson](uncertainty.md) follows confounding and precedes
+IPW at `?lesson=uncertainty`. An optional bootstrap exploration at
+`?lesson=uncertainty#bootstrap` resamples one observed study; glossary definitions
+and search link to both the core lesson and the exploration. One study's interval leads into repeated-study
+coverage, then a precision-versus-confounding comparison. Its optional
+`?lesson=p-values` chapter connects a zero-effect reference distribution,
+two-sided tail probabilities, and matching confidence intervals. Both explain
+the assumptions and common misinterpretations. The new core lesson retains
+numeric ID 14; existing numeric IDs keep their identities.
+
 The TMLE/IPW model-error heatmaps are linked after TMLE targeting and listed in
 Contents, the methods topic group, search, and the README. Search includes
 misspecification and heatmap terms. The standalone experiment retains its
@@ -55,7 +65,7 @@ whole framework. Three entry cards each give one learning promise: **Learn**
 opens a learning chooser for new visitors and resumes lessons when progress is
 saved, **Explore** opens the scenario sandbox, and **Build** opens
 the graph sandbox. The existing 22-second film is a secondary text button.
-Contents and lesson 1 offer a return to the introduction. Explicit lesson,
+Contents offers a return to the introduction; lesson 1 links back to What if?. Explicit lesson,
 legacy level, and sandbox links retain their destinations and numbering.
 
 On initial entry, a decorative causal graph connects and the three cards appear
@@ -65,7 +75,7 @@ it. There is no autoplay or completion gate. Guided-lesson progress is stored
 only in the learner's browser.
 
 The [learning entry and adaptive quiz](adaptive-quiz.md) offer starting from
-scratch, browsing refreshers/advanced topics, or answering up to six questions
+scratch, browsing refreshers/advanced topics, or answering up to seven questions
 for suggested lessons. The quiz stores only its current attempt in the tab
 session; it does not track lesson completion. Explanations and sources follow
 the assessment, with separate practice that leaves the original answers intact.
@@ -74,9 +84,9 @@ The optional [causal assumptions chapter](assumptions.md) makes exchangeability,
 positivity, consistency, and no interference tangible through four separate
 experiments. It is linked from Contents and the recap without changing core order.
 
-The default experience is a sequence of small experiments. Levels 1–11 implement randomization → one common cause → inverse probability
+The default experience is a sequence of small experiments. The first twelve lessons implement randomization → one common cause → uncertainty → inverse probability
 weighting → outcome regression → mediator → collider → hidden confounding → model failure → double robustness → TMLE targeting → poor overlap.
-Level 12, **Leaving the sandbox** (`?lesson=leaving-the-sandbox`), is a quiet
+The thirteenth lesson, **Leaving the sandbox** (`?lesson=leaving-the-sandbox`), is a quiet
 recap after overlap: define the question, defend the causal story and adjustment,
 and distinguish estimator assumptions from diagnostic checks. One emphasized takeaway
 leads into five supporting reminders and a practical sensitivity-analysis section
@@ -87,7 +97,7 @@ Optional detail covers exchangeability, positivity, consistency, and interferenc
 without treating all assumptions as inevitably violated or empirically testable.
 It has no simulation,
 estimates, or restart button. Back returns to overlap; the forward link opens the
-existing scenario sandbox through `?sandbox` as level 13.
+existing scenario sandbox through `?sandbox` as displayed level 14.
 
 An optional [clipping chapter](clipping-experiment.md) follows Poor overlap at
 `?lesson=clipping`. Compare estimates before and after probability clipping while
@@ -135,12 +145,12 @@ Topic URLs (`?lesson=mediator`, for example) follow lesson identity. Legacy
 `?level=5`, `6`, `7`, `8`, and `9` still open misspecification, double robustness,
 mediator, collider, and hidden confounding, at their new displayed positions.
 Numeric simulator IDs retain these original identities too. TMLE uses the new
-ID 11 at displayed position 10; overlap retains ID 10 at position 11. The optional revisit
+ID 11 at displayed position 11; overlap retains ID 10 at position 12. The optional revisit
 uses `?lesson=double-robustness&revisit=hidden-confounding`.
 
 Linear progression through Continue is the default. A quiet Contents toggle stays
 closed on every screen size. When opened, it groups lesson links into Foundations
-(1–4), Causal roles (5–7), and Models and limitations (8–12), followed by the
+(1–5), Causal roles (6–8), and Models and limitations (9–13), followed by the
 sandbox. The Contents control sits in the left margin, aligned with its panel, and uses
 a panel icon whose chevron indicates opening/closing. The panel opens without
 moving the lesson, and
@@ -150,13 +160,14 @@ Selecting a lesson resets its baseline and focuses its heading. Opening Contents
 preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
-Core experiments after randomization offer **Compare with previous** above the
+Core causal experiments after randomization offer **Compare with previous** above the
 diagram. Clicking opens a persistent Previous / Current switch and a short
 explanation of the lesson change. Shared nodes stay aligned and both views reserve
 the same space. The preview uses the preceding lesson's settings when arriving
 from that lesson ("As you left it"); otherwise it uses its labelled "Starting view".
 Only the graph switches: controls, estimates, and the sample remain on the current
-lesson. Navigation and Restart close the comparison. The AIPW hidden-confounding
+lesson. Uncertainty has a separate interval view; IPW's **Compare with common
+cause** returns to the confounding graph's starting view. Navigation and Restart close the comparison. The AIPW hidden-confounding
 revisit compares with AIPW; other optional chapters and the recap have no comparison.
 
 The core target remains the population total effect. The mediator lesson teaches
@@ -194,17 +205,18 @@ future work.
    implements poor overlap. Each returns
    to a correctly specified baseline. Introduce propensity histograms, weight
    concentration and per-arm effective sample sizes at level 11.
-4. **Scenario sandbox (level 13):** available at any time and after the recap. Entry
+4. **Scenario sandbox (displayed level 14):** available at any time and after the recap. Entry
    starts a separate experiment and introduces its two measured covariates and
    their interaction. Lesson settings are not transferred into this world.
 
-Only implemented lessons appear in contents. Levels 1–12 now form a continuous
-sequence; “Level N of 13” includes the final sandbox. Continue marks a guided
+Only implemented lessons appear in contents. The 13 guided lessons now form a continuous
+sequence; “Level N of 14” includes the final sandbox. Continue marks a guided
 lesson complete, and the Introduction resumes the most recently opened lesson.
 Prediction history retains the first answer, later attempts, and eventual
 correctness. This state stays in local browser storage and can be reset from
 Contents. There are no scores, lesson-completion gates, accounts, or cross-device
-sync. Later chapters and confidence intervals are separate changes.
+sync. Confidence intervals and the optional p-value chapter use the separate
+inference experiment described above.
 
 ## Sampling variation (IV prerequisite, PR A)
 
@@ -597,11 +609,48 @@ entries. When adding a lesson, include its search description and keywords.
 `tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
 themes, and mobile layouts.
 
-## Patient trajectory story
+## Opening question and patient trajectory story
 
-`?lesson=trajectory-landscape` is an optional cinematic introduction linked
-beside the existing film and after A common cause. It leaves the film and core
-Continue sequence intact. Seven chapters introduce one observed health course,
+**What if?** (`?lesson=what-if`) is an unnumbered opening chapter before
+randomization. The homepage links to it prominently, and Start from scratch
+in both learning choices and entry-quiz results opens it. Contents, the topic
+browser, and search expose the opening. Randomization links back to it; existing
+core lesson IDs, numbering, progress, and saved-resume destinations are unchanged.
+
+Four reader-controlled steps establish the causal question: one observed course,
+its simulated alternative, average day-12 outcomes for the same ten people under
+each treatment choice, and the missing comparison when only factual outcomes
+remain. The opening reuses the trajectory renderer and the landscape's ten
+retained profiles, including the highlighted patient at severity 7 (Patient 08).
+The population comparison fixes time at day 12. Both dot plots use the same health scale
+and patient order, with the focal patient highlighted. Values appear on hover
+or keyboard focus. Filled marks are factual, hollow marks
+are simulator-known counterfactuals. The final step removes missing outcomes'
+positions and values, and marks both full-population means unknown. Neither
+subgroup averages nor predictions substitute for these missing outcomes.
+
+The simulator-known means are 66 with treatment and 54 without treatment; their
+difference is +12. All individual effects are equal only for this teaching
+example. This reveals the estimand, not an estimator: there is no fitted outcome
+model and no claim to recover individual counterfactuals. The final action opens
+**A randomized experiment**. Visible copy distinguishes sample size from valid
+comparison and acknowledges estimation uncertainty; optional detail introduces
+consistency, positivity, exchangeability, and no interference.
+
+Both trajectory pages include shared theme controls, search, and Contents.
+Reduced motion displays completed scenes; animation can be paused and replayed.
+The opening’s population steps use paired dot plots with identical scales and
+patient order. Each mark exposes its patient, outcome, and observation status
+to assistive tools. Focused unit tests verify the paired
+population means, identity preservation, and removal of unobserved values and
+positions. Browser checks cover the complete opening, discovery, onward/back
+navigation, keyboard use, animation interruption, themes, and narrow screens.
+Learner comprehension has not been tested.
+
+`?lesson=trajectory-landscape` remains an optional chapter after **A common
+cause**, titled **Why a helpful treatment can look harmful**. It reuses the
+opening's patients to revisit treatment selection and confounding. Seven chapters
+introduce one observed health course,
 its counterfactual, ten patients at one severity, a return to one highlighted
 patient, ten profiles across severity, pooled factual endpoints, and a return
 to paired potential outcomes. Readers control transitions, pause and replay.
@@ -644,8 +693,8 @@ from observed within-severity groups: there is only one observed patient at each
 severity. The +12 gaps are known inside this simulator; real individual
 counterfactuals are not generally recoverable from observed data.
 
-Canvas rendering reuses the film's interpolation helpers and treatment-world
-palette. Solid versus dashed paths encode observation, independently of color.
+Canvas rendering reuses the film’s interpolation helpers with the shared
+treatment-arm theme colors. Solid versus dashed paths encode observation, independently of color.
 Grey is confined to shared pretreatment history. Counterfactuals use lighter, thinner dashed strokes and hollow endpoints,
 and are painted first; factual endpoints are filled. The highlighted patient persists
 through collapse and unfolding. The health scale moves onto that patient's
@@ -660,3 +709,20 @@ histories, fixed effects, counts versus probabilities, retained identities,
 pooled means, expansion/collapse, rotation, label bounds, counterfactual display,
 playback, reduced motion, mobile layouts and entry/return routes. Learner
 comprehension remains untested.
+
+## Final course assessment
+
+The recap now offers **Take the final quiz**, with scenario exploration still
+available beside it. [The final quiz](final-quiz.md) at `?lesson=final-quiz`
+contains twelve application questions for learners finishing the core course.
+It uses first-answer scoring, explanatory feedback, and separate practice retries;
+no optional chapters are required. Contents links directly to it without changing
+core lesson numbers. The entry quiz remains at `?lesson=quiz` and retains its
+separate saved attempt. Neither assessment gates the course or sandboxes.
+
+Five final-quiz adjustment questions and two conditional entry graph questions
+share scenarios with the building box. Results link to matched experiments with
+the learner's selected variables; experiments open in another tab to preserve
+quiz progress. Final-question feedback remains immediate, while experiment links
+and entry-question explanations follow assessment. See [final quiz](final-quiz.md)
+and [entry quiz](adaptive-quiz.md) for routing, scoring and scientific constraints.

@@ -58,3 +58,43 @@ APP_URL=http://127.0.0.1:5174/causal-sandbox/ node tests/analytics-browser.mjs
 ```
 
 `.env.example` documents the deployment variables without a real project key.
+
+## README site views
+
+The chart at the bottom of the README uses the existing public
+[GoatCounter counter](https://www.goatcounter.com/help/visitor-counter), with no
+API key or additional tracking. Only cumulative counts and date cutoffs are
+stored in `docs/site-views.json`; the README embeds `docs/site-views.svg` from
+the dedicated `site-views` branch, which contains only these two generated files.
+These are site views, not lifetime unique visitors or learning outcomes.
+The owner confirmed that this GoatCounter site covers Causal Sandbox and its
+subpages. The `TOTAL` counter includes all of them; visiting several pages can
+contribute several views. Referrers describe where visits came from; they are
+neither added to the total separately nor exported with the chart.
+
+Run `node scripts/update-site-views.mjs` to generate a local preview in `docs/`
+(ignored by Git), or pass an output directory containing the existing history:
+`node scripts/update-site-views.mjs traffic-data/docs`.
+The daily GitHub Actions workflow runs at 06:23 UTC using the generator from the
+default branch and commits only the two assets to `site-views`. This keeps
+scheduled data updates separate from the reviewed changes required on `main`.
+It needs repository contents write permission and a `site-views` branch that
+permits bot commits. The schedule becomes active after merging the workflow to
+the default branch. A manual workflow run can also refresh the chart.
+
+Each observation is the cumulative `TOTAL` count with an `end=YYYY-MM-DD`
+cutoff, starting on 6 September 2026 when tracking was introduced. GoatCounter
+parses this as midnight UTC and includes that hour's bucket. These are daily
+snapshots, not calendar-day totals: a 12 September point includes the 00:00–01:00
+UTC hour on 12 September. Before 06:00 UTC, the updater uses the preceding date
+to allow that bucket to finish and the four-hour cache window to pass. The total
+may be lower than the live footer count. The curve passes through daily
+observations without overshoot; its shape within a day is interpolation, not
+measured intraday activity.
+
+Updates refetch the latest seven cutoffs to pick up delayed counts. HTTP errors,
+invalid data, or decreases in stored counts fail the job before replacing files,
+leaving the last successful chart visible with its date. A legitimate historical
+correction requires inspecting and updating the stored history before rerunning.
+The public counter may cache results for up to four hours, and GitHub may also
+cache the image. Validate changes with `node --test scripts/site-views.test.mjs`.

@@ -1,3 +1,8 @@
+import { themeControl } from "./theme.js";
+import {
+  lessonNavigation,
+  setupLessonNavigation,
+} from "./lesson-navigation.js";
 import "./trajectory-landscape.css";
 import icon from "./brand.svg?raw";
 import { createTrajectoryRenderer } from "./trajectory-render.js";
@@ -17,7 +22,7 @@ const scenes = [
     label: "One patient",
     title: "The story <em>we see.</em>",
     kicker: "ONE PATIENT · ONE OBSERVED COURSE",
-    copy: "Follow a patient's health over 12 days. Treatment starts on day 4. The solid coral path is what happened afterward. But what would have happened without treatment?",
+    copy: "Follow a patient's health over 12 days. Treatment starts on day 4. The solid treated path is what happened afterward. But what would have happened without treatment?",
     action: "Reveal the other future",
     time: 6500,
   },
@@ -25,7 +30,7 @@ const scenes = [
     label: "Two futures",
     title: "The difference <em>we cannot observe.</em>",
     kicker: "SAME PATIENT · SAME HISTORY",
-    copy: "Rewind to day 4. The dashed blue path shows this patient's untreated future in our model. At day 12, treatment leaves them 12 health points better off. In real data, we would observe only one path.",
+    copy: "Rewind to day 4. The dashed untreated path shows this patient's untreated future in our model. At day 12, treatment leaves them 12 health points better off. In real data, we would observe only one path.",
     action: "Meet ten patients like this",
     time: 3800,
   },
@@ -100,11 +105,12 @@ let frame = 0;
 let paused = false;
 let pausedAt = 0;
 const motion = matchMedia("(prefers-reduced-motion: reduce)");
-document.title = "One patient, a whole landscape — Causal Sandbox";
+document.title = "Why a helpful treatment can look harmful — Causal Sandbox";
 document.body.classList.add("trajectory-mode");
 document.querySelector("#app").innerHTML = `<div class="trajectory-experience">
-  <header class="trajectory-header"><a class="trajectory-brand" href="?lesson=introduction">${icon}<span>CAUSAL SANDBOX</span></a><span class="trajectory-header-note">AN INTERACTIVE CAUSAL STORY</span><a href="?lesson=confounding">Back to lessons ↗</a></header>
+  <header class="trajectory-header"><a class="trajectory-brand" href="?lesson=introduction">${icon}<span>CAUSAL SANDBOX</span></a>${themeControl()}<a href="?lesson=confounding">Back to lessons ↗</a></header>
   <main>
+    ${lessonNavigation({ currentOptional: "trajectory-landscape" })}
     <nav class="trajectory-chapters" aria-label="Story chapters">${scenes.map((scene, i) => `<button type="button" data-chapter="${i}" aria-label="${i + 1}. ${scene.label}"><span>${String(i + 1).padStart(2, "0")}</span><span class="chapter-name">${scene.label}</span></button>`).join("")}</nav>
     <div class="trajectory-title"><p id="trajectory-kicker"></p><h1 id="trajectory-heading" tabindex="-1"></h1></div>
     <section class="trajectory-stage" aria-label="Patient trajectories">
@@ -124,6 +130,7 @@ document.querySelector("#app").innerHTML = `<div class="trajectory-experience">
     <footer class="trajectory-footnote"><span>FICTIONAL PATIENTS · COUNTERFACTUALS ARE KNOWN ONLY INSIDE THIS MODEL</span><details><summary>Read the model & assumptions</summary><p>Baseline severity C takes ten equally spaced values, 0–9. The frequency scene shows ten patients at one severity in separate charts with identical health and time scales. Patients at the same severity share both potential health courses. We then retain one fixed patient per severity and follow those same ten into the pooled comparison.</p><p>Let r be the Severity → Outcome slider value divided by 100. Initial health is 90 − 20rC/9. Untreated day-12 health is 78 − 48rC/9. At zero, severity no longer changes either potential health course. This slider changes prognosis, not the treatment benefit or treatment assignments. A smooth curve and a shared time fluctuation join them. Treatment begins on day 4 and smoothly adds 12 points by day 12, with no effect before treatment. This is an illustrative health score, not a clinical prediction or a risk of a binary event.</p><p>At full selection, treated counts rise from 1, 2, 3, 4, 5, 5, 6, 7, 8, and 9 across the slices. The slider moves these symmetrically toward 5, rounded to whole people. Dividing these teaching counts by ten defines the model treatment probabilities. Assignments are fixed examples, not a fresh random sample: ten independent draws would not always reproduce these exact counts. Treatment probability can be nonzero for both arms even though the landscape contains only one observed patient per severity.</p><p>The pooled difference compares observed group averages for the ten retained patients at day 12. Their assignment ranks stay fixed when selection changes. Even at equal treatment probabilities, this small example can have different severity mixes by chance. The final comparison pairs each patient with their own simulated counterfactual; it is not an adjusted estimate from observed groups. Severity is the only common cause here. In real data, comparable groups and adequate overlap require substantive assumptions; missing individual counterfactuals generally cannot be recovered. <a href="https://arxiv.org/abs/2301.09031">Counterfactual identifiability ↗</a></p><p><a href="?lesson=ipw">Continue with adjustment using IPW →</a></p></details></footer>
   </main>
 </div>`;
+setupLessonNavigation();
 const renderer = createTrajectoryRenderer($("trajectory-canvas"));
 function target() {
   return {
@@ -253,11 +260,11 @@ function updateCopy() {
     `Severity ${state.severity} · Treatment probability: ${Math.round(100 * treatmentProbability(state.severity, state.selection))}%`;
   if (state.step === 0 && !focal.treatment) {
     $("trajectory-description").textContent =
-      "Follow this patient's health over 12 days. At day 4, they do not receive treatment. The solid blue path is their observed course. What would have happened with treatment?";
+      "Follow this patient's health over 12 days. At day 4, they do not receive treatment. The solid untreated path is their observed course. What would have happened with treatment?";
   }
   if (state.step === 1 && !focal.treatment) {
     $("trajectory-description").textContent =
-      "Rewind to day 4. The dashed coral path shows this patient's treated future in our model: 12 points better at day 12. The solid blue path remains their observed course. In real data, only one is observed.";
+      "Rewind to day 4. The dashed treated path shows this patient's treated future in our model: 12 points better at day 12. The solid untreated path remains their observed course. In real data, only one is observed.";
   }
   $("trajectory-reading").textContent =
     state.step === 0
@@ -432,6 +439,7 @@ resize.observe($("trajectory-canvas"));
 motion.addEventListener("change", () => {
   if (motion.matches) animate(0);
 });
+window.addEventListener("themechange", draw);
 window.addEventListener("pagehide", () => {
   endDrag();
   cancelAnimationFrame(frame);

@@ -42,11 +42,9 @@ try {
       return write.call(this, text, x, y, ...args);
     };
   });
-  await page.goto(`${url}?lesson=introduction`);
+  await page.goto(`${url}?lesson=confounding`);
   await page
-    .getByRole("link", {
-      name: "Explore patient trajectories: an interactive causal story →",
-    })
+    .locator('.optional-preview a[href="?lesson=trajectory-landscape"]')
     .click();
   await page.locator("#trajectory-next").waitFor();
   assert.match(
@@ -56,7 +54,9 @@ try {
   assert.equal(await page.locator("#trajectory-pause").isVisible(), false);
   for (let scene = 0; scene < 7; scene++) {
     assert.equal(
-      await page.locator('[aria-current="step"]').getAttribute("data-chapter"),
+      await page
+        .locator('.trajectory-chapters [aria-current="step"]')
+        .getAttribute("data-chapter"),
       String(scene),
     );
     assert.equal(
@@ -438,7 +438,7 @@ try {
   await page.locator('[data-chapter="1"]').click();
   assert.match(
     await page.locator("#trajectory-description").innerText(),
-    /solid blue path remains their observed course/,
+    /solid untreated path remains their observed course/,
   );
   // Exercise the expansion and collapse with motion as well as reduced motion.
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -465,7 +465,9 @@ try {
     .locator('.optional-preview a[href="?lesson=trajectory-landscape"]')
     .click();
   assert.equal(
-    await page.locator('[aria-current="step"]').getAttribute("data-chapter"),
+    await page
+      .locator('.trajectory-chapters [aria-current="step"]')
+      .getAttribute("data-chapter"),
     "0",
   );
   assert.deepEqual(errors, []);

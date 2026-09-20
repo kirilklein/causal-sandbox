@@ -22,6 +22,10 @@ try {
 
   await page.locator(".intro-path").first().click();
   await page.getByRole("link", { name: /Start from scratch/ }).click();
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await page.locator('input[name="prediction"]').first().check();
   await page.locator("#try-prediction").click();
   await page.locator("#continue").click();
@@ -29,7 +33,7 @@ try {
   await page.locator("#lesson-menu-toggle").click();
   assert.equal(
     await page.locator(".lesson-progress label").innerText(),
-    "1 of 12 guided lessons complete",
+    "1 of 13 guided lessons complete",
   );
   assert.equal(
     await page.locator('[data-level="1"]').getAttribute("aria-describedby"),

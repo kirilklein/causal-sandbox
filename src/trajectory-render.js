@@ -21,13 +21,18 @@ export function createTrajectoryRenderer(canvas) {
   let width = 0;
   let height = 0;
   const css = getComputedStyle(canvas);
-  const colors = {
-    ink: css.getPropertyValue("--film-ink").trim(),
-    background: css.getPropertyValue("--film-background").trim(),
-    silver: css.getPropertyValue("--trajectory-silver").trim(),
-    treated: css.getPropertyValue("--trajectory-treated").trim(),
-    untreated: css.getPropertyValue("--trajectory-untreated").trim(),
-  };
+  const colors = {};
+  function refreshColors() {
+    for (const [key, token] of Object.entries({
+      ink: "--film-ink",
+      background: "--film-background",
+      silver: "--trajectory-silver",
+      treated: "--trajectory-treated",
+      untreated: "--trajectory-untreated",
+    }))
+      colors[key] = css.getPropertyValue(token).trim();
+  }
+  refreshColors();
   const resize = () => {
     const box = canvas.getBoundingClientRect();
     width = box.width;
@@ -110,6 +115,7 @@ export function createTrajectoryRenderer(canvas) {
   };
 
   function draw(view) {
+    refreshColors();
     const {
       unfold,
       pool,
