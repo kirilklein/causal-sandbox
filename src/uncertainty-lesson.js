@@ -244,7 +244,8 @@ function repeatSamples() {
   renderSingle();
   const start = performance.now();
   function frame(now) {
-    const fraction = Math.min(1, (now - start) / 2800);
+    // The first frame's timestamp can precede the input handler's start time.
+    const fraction = Math.max(0, Math.min(1, (now - start) / 2800));
     const count = reducedMotion.matches
       ? 100
       : 1 + Math.floor(99 * fraction ** 3);
