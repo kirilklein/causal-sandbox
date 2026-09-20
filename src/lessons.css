@@ -100,10 +100,6 @@
   fill: var(--text);
   font-size: 21px;
 }
-.intro-node .intro-node-label {
-  font-size: 12px;
-  fill: var(--text-secondary);
-}
 .intro-paths {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
