@@ -1,11 +1,8 @@
-import { chromium } from "@playwright/test";
+import { launchBrowser, getAppUrl } from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 
 try {
   const page = await browser.newPage({

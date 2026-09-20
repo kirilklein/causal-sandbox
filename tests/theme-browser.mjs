@@ -1,15 +1,16 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({ colorScheme: "light" });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   const theme = () => page.locator("html").getAttribute("data-theme");
   const snapshot = () =>
     page.evaluate(() => ({
@@ -153,7 +154,7 @@ try {
   }
   // Denied storage must not prevent loading or changing the theme.
   const blocked = await browser.newPage({ colorScheme: "dark" });
-  blocked.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(blocked, errors);
   await blocked.addInitScript(() => {
     Object.defineProperty(window, "localStorage", {
       get() {

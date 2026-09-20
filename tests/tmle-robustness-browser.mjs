@@ -1,18 +1,20 @@
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
-import { chromium, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
+const browser = await launchBrowser();
 try {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1100 },
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  const base = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+  collectPageErrors(page, errors);
+  const base = getAppUrl();
   const experimentUrl = new URL("docs/tmle-robustness-preview.html", base).href;
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });

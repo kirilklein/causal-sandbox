@@ -1,12 +1,15 @@
-import { chromium, expect } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
+import { expect } from "@playwright/test";
 import assert from "node:assert/strict";
 import { longitudinalSample } from "../src/longitudinal-simulation.js";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 const errors = [];
 try {
   const context = await browser.newContext({
@@ -14,14 +17,9 @@ try {
     colorScheme: "light",
     hasTouch: true,
   });
-  await context.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await context.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  await stubGoatCounter(context);
   const page = await context.newPage();
-  page.on("pageerror", (e) => errors.push(e.message));
+  collectPageErrors(page, errors);
   await page.goto(`${url}?lesson=timing`);
   await page
     .locator('main > p a[href="?lesson=time-varying-confounding"]')

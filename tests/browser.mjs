@@ -1,13 +1,14 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { defaults, makeNoise, simulate, estimate } from "../src/simulation.js";
 import { scenarios, scenarioState } from "../src/sandbox-scenarios.js";
 import { sandboxOverlap } from "../src/sandbox-overlap.js";
 import { glossary } from "../src/glossary.js";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
+const browser = await launchBrowser();
 try {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1000 },
@@ -15,10 +16,8 @@ try {
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto(
-    `${process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/"}?sandbox`,
-  );
+  collectPageErrors(page, errors);
+  await page.goto(`${getAppUrl()}?sandbox`);
   await page.locator(".effect-row").last().waitFor();
   const contextualGlossary = Object.values(glossary).filter(
     (term) => term.contextual,

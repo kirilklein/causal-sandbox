@@ -1,12 +1,14 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { gunzipSync } from "node:zlib";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const appUrl = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const appUrl = getAppUrl();
 try {
   const page = await browser.newPage({
     userAgent:
@@ -31,7 +33,7 @@ try {
   });
   const requests = [];
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   await page.route("https://analytics.invalid/**", async (route) => {
     requests.push({
       url: route.request().url(),
@@ -43,12 +45,7 @@ try {
       body: "{}",
     });
   });
-  await page.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await page.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  await stubGoatCounter(page);
 
   await page.goto(
     `${appUrl}?private=do-not-send&utm_source=linkedin&utm_medium=social&utm_term=private&utm_content=private%40example.com`,
@@ -191,7 +188,7 @@ try {
   const blocked = await browser.newPage();
   const blockedErrors = [];
   let blockedModules = 0;
-  blocked.on("pageerror", (error) => blockedErrors.push(error.message));
+  collectPageErrors(blocked, blockedErrors);
   await blocked.route("**/assets/posthog-*.js", (route) => {
     blockedModules += 1;
     return route.abort("blockedbyclient");

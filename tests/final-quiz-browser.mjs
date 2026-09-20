@@ -1,22 +1,24 @@
-import { chromium, expect } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
+import { expect } from "@playwright/test";
 import assert from "node:assert/strict";
 import { finalQuestions } from "../src/final-quiz-questions.js";
 import {
   adjustmentChoice,
   validAdjustmentSets,
 } from "../src/adjustment-model.js";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 const errors = [];
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
-  page.on("pageerror", (e) => errors.push(e.message));
+  collectPageErrors(page, errors);
   const select = async (choice) => {
     if (choice.startsWith("set:")) {
       for (const id of choice.slice(4).split(","))
@@ -113,7 +115,7 @@ try {
     page.waitForEvent("popup"),
     page.locator('.quiz-experiment a[href*="preset="]').click(),
   ]);
-  lab.on("pageerror", (e) => errors.push(e.message));
+  collectPageErrors(lab, errors);
   await expect(lab.locator("#lab-preset")).toHaveValue("adjustment");
   await expect(lab.locator("#lab-adjustment input:checked")).toHaveCount(2);
   await expect(lab.locator("#lab-model-caption")).toContainText("C");

@@ -1,17 +1,18 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+  collectPageErrors(page, errors);
   async function tryPrediction() {
     await page.locator('input[name="prediction"]').first().check();
     await page.locator("#try-prediction").click();

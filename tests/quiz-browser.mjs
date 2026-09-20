@@ -1,11 +1,13 @@
-import { chromium, expect } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
+import { expect } from "@playwright/test";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 const key = "causal-sandbox-entry-quiz-v2";
 const errors = [];
 try {
@@ -13,7 +15,7 @@ try {
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   async function answer(id, choice) {
     if (
       id === "C" &&
@@ -369,7 +371,7 @@ try {
     );
   }
   const blocked = await browser.newPage();
-  blocked.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(blocked, errors);
   await blocked.addInitScript(() =>
     Object.defineProperty(window, "sessionStorage", {
       get() {
