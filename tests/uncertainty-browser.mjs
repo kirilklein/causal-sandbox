@@ -518,6 +518,25 @@ try {
       .waitFor();
     assert.equal(new URL(page.url()).searchParams.get("lesson"), destination);
   }
+  await page.locator("#opening-next").click();
+  await page.locator("#opening-next").click();
+  // A frame timestamp can precede performance.now() in its input handler.
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.evaluate(() => {
+    const request = window.requestAnimationFrame;
+    window.requestAnimationFrame = (callback) => {
+      window.requestAnimationFrame = request;
+      const earlier = performance.now() - 1;
+      return request.call(window, () => callback(earlier));
+    };
+  });
+  await page.locator("#reveal-coverage").click();
+  await page.locator("#coverage-section").waitFor();
+  assert.equal(
+    await page.locator("#single-plot .inference-interval").count(),
+    100,
+  );
+  assert.equal(await page.locator("#reveal-coverage").isEnabled(), true);
   assert.deepEqual(errors, []);
   console.log("Uncertainty and p-value browser checks passed");
 } finally {
