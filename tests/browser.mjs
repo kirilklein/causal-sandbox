@@ -123,7 +123,7 @@ try {
     );
   const unadjustedStyles = await estimateStyles();
   assert.ok(
-    unadjustedStyles.every((style) => style.tint > 75 && style.tint < 85),
+    unadjustedStyles.every((style) => style.tint > 80 && style.tint < 89),
   );
   assert.ok(
     unadjustedStyles.every(
