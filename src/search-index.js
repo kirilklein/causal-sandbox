@@ -90,6 +90,10 @@ const lessonDetails = {
     "Explore treatment decisions linked across two visits.",
     "longitudinal time varying confounding sequential IPTW treatment confounder feedback",
   ],
+  "causal-relevance": [
+    "Compare unrelated variables, outcome predictors, proxies, and colliders; separate causal roles from prediction and adjustment.",
+    "causal relevance irrelevant irrelevance unknown non-contributing proxy predictor prediction feature importance direct total effect adjustment usefulness",
+  ],
   instrument: [
     "Explore how adjusting for an instrument can amplify hidden-confounding bias.",
     "instrumental variable IV bias amplification",
