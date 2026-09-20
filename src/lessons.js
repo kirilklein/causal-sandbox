@@ -352,9 +352,9 @@ function enterIntroduction(focus = true, animate = false) {
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
           <g class="intro-orbits"><circle cx="230" cy="170" r="125"/><circle cx="230" cy="170" r="85"/><path d="M30 170h400M230 20v280"/></g>
           <g class="intro-edges" fill="none" marker-end="url(#intro-arrow)"><path pathLength="1" d="M209 86 116 211"/><path pathLength="1" d="m251 86 93 125"/><path pathLength="1" d="M135 240h188"/></g>
-          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text><text class="intro-node-label" x="230" y="115">Context</text></g>
-          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text><text class="intro-node-label" x="94" y="296">Treatment</text></g>
-          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text><text class="intro-node-label" x="366" y="296">Outcome</text></g>
+          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text></g>
+          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text></g>
+          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text></g>
         </svg>
       </section>
       <nav class="intro-paths" aria-label="Choose your way in">
@@ -810,13 +810,19 @@ function update() {
   }
   if (state.level === 10) renderOverlap(result.overlap);
   if (
-    (state.level >= 4 && state.level <= 6) ||
+    (state.level >= 3 && state.level <= 6) ||
     state.level === 9 ||
     state.level === 10
   ) {
-    document.querySelector("#model-weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}.`
-      : "No treatment probabilities were clipped in this sample.";
+    const active = result.clipped > 0;
+    const showStatus = state.level !== 3 || revealed;
+    const note = document.querySelector(
+      state.level === 3 ? "#weight-note" : "#model-weight-note",
+    );
+    note.hidden = !showStatus || !active;
+    note.textContent = active
+      ? `For ${result.clipped.toLocaleString("en-US")} of ${state.n.toLocaleString("en-US")} people, fitted treatment probabilities were clipped for ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}. Probabilities below 0.02 are raised to 0.02, and those above 0.98 are lowered to 0.98 before weights are calculated. This limits extreme weights but can introduce bias.`
+      : "";
   }
   if (showsAipw(state.level)) {
     document.querySelector("#aipw-result").hidden = false;
@@ -852,9 +858,6 @@ function update() {
         document.querySelector(`#${when}-${arm}`).textContent =
           value.toFixed(2);
       });
-    document.querySelector("#weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect the comparison.`
-      : "No treatment probabilities were clipped in this sample.";
   }
   document.querySelector("#sample-label").textContent =
     `2,400 people · Sample seed ${state.seed}`;
