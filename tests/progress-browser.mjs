@@ -19,6 +19,10 @@ try {
 
   await page.locator(".intro-path").first().click();
   await page.getByRole("link", { name: /Start from scratch/ }).click();
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await page.locator('input[name="prediction"]').first().check();
   await page.locator("#try-prediction").click();
   await page.locator("#continue").click();

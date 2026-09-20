@@ -1,0 +1,145 @@
+.what-if-experience main {
+  max-width: 1080px;
+}
+.what-if-experience .lesson-nav {
+  margin-bottom: 0;
+}
+.what-if-experience .trajectory-chapters {
+  padding-top: 0;
+}
+.what-if-experience .trajectory-title {
+  min-height: 0;
+  padding-bottom: 20px;
+}
+.what-if-experience #trajectory-description {
+  max-width: 720px;
+  margin: 0 auto 22px;
+  text-align: center;
+}
+.what-if-experience .trajectory-story {
+  gap: 24px;
+}
+.what-if-experience #trajectory-reading {
+  flex: 1;
+  margin: 0;
+}
+.what-if-experience .trajectory-navigation {
+  flex-shrink: 0;
+  max-width: 100%;
+}
+#what-if-continue {
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  background: var(--film-ink);
+  color: var(--film-background);
+  padding: 13px 15px;
+  text-decoration: none;
+  font-size: 12px;
+}
+.what-if-population-note {
+  text-align: center;
+  font-size: 12px;
+}
+.what-if-worlds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.what-if-world h2 {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 500;
+  margin: 12px 0;
+}
+.what-if-world svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.what-if-axis-label,
+.what-if-person-label {
+  fill: var(--trajectory-muted);
+  font-size: 11px;
+}
+.what-if-grid {
+  stroke: var(--trajectory-faint);
+  stroke-width: 0.7;
+}
+.what-if-focal {
+  fill: var(--accent-surface);
+}
+.what-if-mean {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+}
+.what-if-person circle {
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.what-if-person {
+  cursor: default;
+}
+.what-if-person:focus {
+  outline: none;
+}
+.what-if-person:focus-visible .what-if-person-label {
+  text-decoration: underline;
+  font-weight: 700;
+}
+.what-if-person:is(:hover, :focus) circle {
+  stroke-width: 3;
+}
+.what-if-value {
+  visibility: hidden;
+  fill: var(--film-ink);
+  stroke: var(--film-background);
+  stroke-width: 4;
+  paint-order: stroke;
+  font-size: 12px;
+}
+.what-if-person:is(:hover, :focus) .what-if-value {
+  visibility: visible;
+}
+.what-if-missing {
+  fill: var(--trajectory-muted);
+  font-size: 14px;
+}
+.what-if-world-mean {
+  text-align: center;
+  margin: 8px 0;
+  font-size: 18px;
+}
+.what-if-world-mean span {
+  display: block;
+  color: var(--trajectory-muted);
+  font-size: 11px;
+}
+.what-if-inspect {
+  text-align: center;
+  color: var(--trajectory-muted);
+  font-size: 12px;
+  margin: 16px 0 0;
+}
+.what-if-effect {
+  text-align: center;
+  font-size: 15px;
+  margin: 20px 0;
+}
+@media (max-width: 700px) {
+  .what-if-experience .trajectory-title {
+    padding-top: 18px;
+  }
+  .what-if-worlds {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .what-if-experience .trajectory-navigation {
+    width: 100%;
+  }
+  #what-if-continue {
+    flex: 1;
+    justify-content: center;
+  }
+}

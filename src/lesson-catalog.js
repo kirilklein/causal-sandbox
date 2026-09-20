@@ -1,3 +1,13 @@
+export const openingLesson = {
+  id: "what-if",
+  title: "What if?",
+  href: "?lesson=what-if",
+  description:
+    "Follow one patient’s two possible futures, then ask what treatment changes on average.",
+  keywords:
+    "counterfactual potential outcomes average treatment effect patient trajectory introduction start",
+};
+
 export const coreGroups = [
   {
     title: "Foundations",
@@ -30,6 +40,15 @@ export const coreGroups = [
 ];
 
 export const optionalChapters = [
+  {
+    id: "trajectory-landscape",
+    menuTitle: "Patient trajectories",
+    after: 2,
+    title: "Why a helpful treatment can look harmful",
+    href: "?lesson=trajectory-landscape",
+    description:
+      "Follow two possible futures, unfold severity, and see how a helpful treatment can look harmful.",
+  },
   {
     id: "p-values",
     menuTitle: "P-values",
