@@ -727,16 +727,17 @@
 }
 .model-experiment-option {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  column-gap: 16px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  margin-bottom: 12px;
 }
 .model-experiment-option .lesson-switch {
   margin: 0;
 }
-.model-experiment-option .sample-note {
+.model-experiment-option input {
   margin: 0;
+}
+.model-experiment-option .sample-note {
+  margin: 0 0 0 34px;
 }
 .model-preview {
   margin: 16px 0;
