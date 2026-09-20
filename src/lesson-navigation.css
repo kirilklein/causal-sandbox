@@ -11,6 +11,24 @@
   gap: 16px;
   color: var(--text-secondary);
 }
+.lesson-heading-back {
+  order: -2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 20px;
+  text-decoration: none;
+}
+.lesson-heading-back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 .lesson-nav #lesson-menu-toggle {
   position: relative;
   order: -1;
@@ -159,4 +177,18 @@
   padding: 8px 6px;
   color: var(--text-secondary);
   text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  .lesson-nav-heading:has(.lesson-heading-back) {
+    gap: 8px;
+  }
+  .lesson-nav-heading:has(.lesson-heading-back) .search-open span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }

@@ -1382,7 +1382,10 @@ try {
     const toggleBounds = await page
       .locator("#lesson-menu-toggle")
       .boundingBox();
-    assert.equal(toggleBounds.x, panelBounds.x);
+    const backBounds = await page.locator(".lesson-heading-back").boundingBox();
+    assert.equal(backBounds.x, panelBounds.x);
+    assert.ok(backBounds.width >= 44 && backBounds.height >= 44);
+    assert.ok(toggleBounds.x >= backBounds.x + backBounds.width);
     assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
     assert.equal(
       (await page.locator(".brand").boundingBox()).x,
