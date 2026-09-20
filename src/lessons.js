@@ -326,7 +326,7 @@ function enterIntroduction(focus = true, animate = false) {
         <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
           <h1 tabindex="-1" id="intro-title">See what<br>causes what.</h1>
           <p class="intro-context">Learn through experiments, explore simulated worlds, or build your own causal graphs.</p>
-          <a class="intro-opening" href="?lesson=what-if">Start here: one patient, two possible futures →</a>
+          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start here: one patient, two possible futures →</a>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
