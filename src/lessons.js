@@ -27,6 +27,7 @@ import {
   recordPredictionAnswer,
 } from "./progress.js";
 import "./tmle-lesson.css";
+import { conceptMapCard } from "./concept-map-card.js";
 
 const lessons = [
   {
@@ -370,6 +371,7 @@ function enterIntroduction(focus = true, animate = false) {
           <h2>Build</h2><p>Draw a causal graph and explore what your assumptions imply.</p><span class="intro-path-detail">Build a graph <span aria-hidden="true">→</span></span>
         </a>
       </nav>
+      ${conceptMapCard()}
       ${filmPreview()}
     </main>`;
   setupFilmPreview();
@@ -808,13 +810,19 @@ function update() {
   }
   if (state.level === 10) renderOverlap(result.overlap);
   if (
-    (state.level >= 4 && state.level <= 6) ||
+    (state.level >= 3 && state.level <= 6) ||
     state.level === 9 ||
     state.level === 10
   ) {
-    document.querySelector("#model-weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}.`
-      : "No treatment probabilities were clipped in this sample.";
+    const active = result.clipped > 0;
+    const showStatus = state.level !== 3 || revealed;
+    const note = document.querySelector(
+      state.level === 3 ? "#weight-note" : "#model-weight-note",
+    );
+    note.hidden = !showStatus || !active;
+    note.textContent = active
+      ? `For ${result.clipped.toLocaleString("en-US")} of ${state.n.toLocaleString("en-US")} people, fitted treatment probabilities were clipped for ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}. Probabilities below 0.02 are raised to 0.02, and those above 0.98 are lowered to 0.98 before weights are calculated. This limits extreme weights but can introduce bias.`
+      : "";
   }
   if (showsAipw(state.level)) {
     document.querySelector("#aipw-result").hidden = false;
@@ -850,9 +858,6 @@ function update() {
         document.querySelector(`#${when}-${arm}`).textContent =
           value.toFixed(2);
       });
-    document.querySelector("#weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect the comparison.`
-      : "No treatment probabilities were clipped in this sample.";
   }
   document.querySelector("#sample-label").textContent =
     `2,400 people · Sample seed ${state.seed}`;

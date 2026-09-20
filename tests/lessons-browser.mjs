@@ -20,6 +20,74 @@ try {
     await page.locator('input[name="prediction"]').first().check();
     await page.locator("#try-prediction").click();
   }
+  async function checkClippingStatus(active) {
+    const warning = page
+      .locator("#model-weight-note, #weight-note")
+      .filter({ visible: true });
+    assert.doesNotMatch(
+      await page.locator(".learning").textContent(),
+      /No treatment probabilities were clipped/,
+    );
+    assert.equal(
+      await warning.count(),
+      active ? 1 : 0,
+      `${page.url()}: ${await warning.allTextContents()}`,
+    );
+    if (active) {
+      assert.match(
+        await warning.innerText(),
+        /^For [1-9][\d,]* of 2,400 people, fitted treatment probabilities were clipped for IPW and AIPW\./,
+      );
+      assert.match(
+        await warning.innerText(),
+        /Probabilities below 0\.02 are raised to 0\.02, and those above 0\.98 are lowered to 0\.98 before weights are calculated\. This limits extreme weights but can introduce bias\./,
+      );
+    } else {
+      assert.equal(
+        await page
+          .locator("#weight-note")
+          .evaluate((el) => el.getBoundingClientRect().height),
+        0,
+      );
+    }
+  }
+  // Inactive clipping is absent from both the experiment and its explanation.
+  for (const query of [
+    "lesson=ipw",
+    "lesson=outcome-regression",
+    "lesson=misspecification",
+    "lesson=double-robustness",
+    "lesson=hidden-confounding",
+    "lesson=double-robustness&revisit=hidden-confounding",
+    "lesson=overlap",
+  ]) {
+    await page.goto(`${url}?${query}`);
+    const reveal = page.locator("#reveal-ipw");
+    if (await reveal.isVisible()) await reveal.click();
+    for (const action of [null, "#redraw", "#restart"]) {
+      if (action) await page.locator(action).click();
+      if (await page.locator("#try-prediction").isVisible()) {
+        await tryPrediction();
+        await page
+          .getByRole("radio", { name: "Moderate selection", exact: true })
+          .check();
+      }
+      if ((await reveal.isVisible()) && (await reveal.isEnabled()))
+        await reveal.click();
+      await checkClippingStatus(false);
+      const before = await page.locator(".lesson-results").innerText();
+      const sample = await page.locator("#sample-label").innerText();
+      const explanation = page.locator(".lesson-explanation");
+      if (await explanation.evaluate((el) => el.open))
+        await explanation.locator("summary").click();
+      await explanation.locator("summary").focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await explanation.evaluate((el) => el.open), true);
+      await checkClippingStatus(false);
+      assert.equal(await page.locator(".lesson-results").innerText(), before);
+      assert.equal(await page.locator("#sample-label").innerText(), sample);
+    }
+  }
   // Every choice reveals feedback and the experiment without blocking navigation.
   for (const topic of ["randomization", "collider", "overlap"]) {
     for (let choice = 0; choice < 3; choice++) {
@@ -1076,10 +1144,8 @@ try {
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
   assert.equal(await page.locator("input").count(), 2);
-  assert.match(
-    await page.locator("#model-weight-note").innerText(),
-    /No treatment/,
-  );
+  assert.equal(await page.locator("#model-weight-note").isVisible(), false);
+  await checkClippingStatus(false);
   await page
     .getByRole("radio", { name: "Moderate selection", exact: true })
     .focus();
@@ -1095,14 +1161,16 @@ try {
   assert.equal(await page.locator("#known-effect").innerText(), "2.00");
   assert.match(
     await page.locator("#model-weight-note").innerText(),
-    /clipped.*IPW and AIPW/,
+    /^For 1,279 of 2,400 people, fitted treatment probabilities were clipped for IPW and AIPW\./,
   );
+  await checkClippingStatus(true);
   const strongOverlap = await result();
   const strongDiagnostics = await diagnostics();
   await page.locator(".overlap-details summary").focus();
   await page.keyboard.press("Enter");
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), strongOverlap);
+  await checkClippingStatus(true);
   assert.equal(await diagnostics(), strongDiagnostics);
   await page.screenshot({
     path: "/tmp/causal-overlap-desktop.png",
@@ -1114,10 +1182,12 @@ try {
     .tap();
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
+  await checkClippingStatus(false);
   await page
     .getByRole("radio", { name: "Strong selection", exact: true })
     .tap();
   assert.equal(await result(), strongOverlap);
+  await checkClippingStatus(true);
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -1130,9 +1200,11 @@ try {
   await page.locator("#redraw").tap();
   assert.notEqual(await result(), strongOverlap);
   assert.notEqual(await diagnostics(), strongDiagnostics);
+  await checkClippingStatus(true);
   await page.locator("#restart").tap();
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
+  await checkClippingStatus(false);
   await page.locator("#back").tap();
   assert.equal(await result(), tmleBaseline);
   assert.equal(await page.locator("#propensity-histogram").count(), 0);
@@ -1191,6 +1263,7 @@ try {
   await page.goto(`${url}?level=10`);
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
+  await checkClippingStatus(false);
   for (const [id, expected, position] of [
     [4, fourth, 4],
     [5, fifth, 8],
@@ -1379,11 +1452,19 @@ try {
     await page.locator("#lesson-menu-toggle").click();
     assert.equal(await page.locator("#lesson-menu").isVisible(), true);
     const panelBounds = await page.locator("#lesson-menu").boundingBox();
-    assert.equal(panelBounds.x, headingPosition.x);
+    const navBounds = await page.locator(".lesson-nav").boundingBox();
+    assert.ok(
+      Math.abs(
+        panelBounds.x + panelBounds.width - (navBounds.x + navBounds.width),
+      ) < 1,
+    );
     const toggleBounds = await page
       .locator("#lesson-menu-toggle")
       .boundingBox();
-    assert.equal(toggleBounds.x, panelBounds.x);
+    const backBounds = await page.locator(".lesson-heading-back").boundingBox();
+    assert.equal(backBounds.x, headingPosition.x);
+    assert.ok(backBounds.width >= 44 && backBounds.height >= 44);
+    assert.ok(toggleBounds.x >= backBounds.x + backBounds.width);
     assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
     assert.equal(
       (await page.locator(".brand").boundingBox()).x,

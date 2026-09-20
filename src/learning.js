@@ -11,6 +11,7 @@ import icon from "./brand.svg?raw";
 import "./lessons.css";
 import "./learning.css";
 import { openingLesson, lessonExperiments } from "./lesson-catalog.js";
+import { conceptMapCard } from "./concept-map-card.js";
 
 export const learningUrl = (topic) =>
   campaignHref(`${import.meta.env.BASE_URL}?lesson=${topic}`);
@@ -157,6 +158,7 @@ export function renderLearning(mode) {
       "Refresh & go deeper",
       "topics",
       `<p class="learning-lead">Choose the question you want to explore. Open a topic to find refreshers and advanced lessons.</p>
+      ${conceptMapCard()}
       <section class="panel learning-experiments" aria-label="Experiments to try"><h2>Experiments to try</h2>${topicList(["tmle-robustness", ...lessonExperiments.map(({ id }) => id)])}</section>
       <div class="learning-topics">${groups
         .map(
@@ -173,6 +175,7 @@ export function renderLearning(mode) {
       "Where would you like to begin?",
       "learn",
       `<p class="learning-lead">Start with the basics, revisit a topic, or let a few questions suggest a starting point.</p>
+      ${conceptMapCard()}
       <nav class="learning-choices" aria-label="Choose how to learn">
         <a class="panel learning-choice" href="${topicLesson("what-if").href}"><span class="learning-choice-number" aria-hidden="true">01</span><h2>Start from scratch</h2><p>Begin with one patient and the question at the heart of causal inference: what if?</p><span class="learning-choice-action">Begin: What if? →</span></a>
         <a class="panel learning-choice" href="${learningUrl("topics")}"><span class="learning-choice-number" aria-hidden="true">02</span><h2>Refresh & go deeper</h2><p>Pick a topic to revisit, then explore its nuances and advanced lessons.</p><span class="learning-choice-action">Browse topics →</span></a>

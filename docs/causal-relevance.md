@@ -2,7 +2,7 @@
 
 Optional lesson for #82 at `?lesson=causal-relevance`, after mediator, collider,
 and hidden confounding. Available from the hidden-confounding lesson, Timing,
-Contents, the adjustment topic group, and search. Return links lead to Timing
+Contents, the concept map, the adjustment topic group, and search. Return links lead to Timing
 and the core model-specification lesson. It does not add a timing category.
 
 ## Teaching plan and acceptance
