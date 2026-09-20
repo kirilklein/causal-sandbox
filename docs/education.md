@@ -622,7 +622,13 @@ its simulated alternative, average day-12 outcomes for the same ten people under
 each treatment choice, and the missing comparison when only factual outcomes
 remain. The opening reuses the trajectory renderer and the landscape's ten
 retained profiles, including the highlighted patient at severity 7 (Patient 08).
-The population comparison fixes time at day 12. Both dot plots use the same health scale
+The population comparison fixes time at day 12. Its copy connects the average
+of individual treatment-effect gaps to the difference of population means. On
+forward entry from the two-futures scene, the two endpoints move into Patient
+08’s population marks before the other people and means appear. Outcome values
+stay fixed: only the layout changes from time to people. Reduced motion shows
+the complete plots immediately; navigation, resize, or keyboard inspection ends
+the transition. Both dot plots use the same health scale
 and patient order, with the focal patient highlighted. Values appear on hover
 or keyboard focus. Filled marks are factual, hollow marks
 are simulator-known counterfactuals. The final step removes missing outcomes'
@@ -633,12 +639,15 @@ The simulator-known means are 66 with treatment and 54 without treatment; their
 difference is +12. All individual effects are equal only for this teaching
 example. This reveals the estimand, not an estimator: there is no fitted outcome
 model and no claim to recover individual counterfactuals. The final action opens
-**A randomized experiment**. Visible copy distinguishes sample size from valid
-comparison and acknowledges estimation uncertainty; optional detail introduces
+**A randomized experiment**. The handoff explains why each randomly assigned
+group can estimate a population mean under its treatment choice, while
+individual counterfactuals remain unobserved. A question about the accuracy of
+one study leads into the existing randomization prediction. Optional detail introduces
 consistency, positivity, exchangeability, and no interference.
 
 Both trajectory pages include shared theme controls, search, and Contents.
-Reduced motion displays completed scenes; animation can be paused and replayed.
+Trajectory playback can be paused and replayed. Reduced motion displays complete
+scenes and skips endpoint movement.
 The opening’s population steps use paired dot plots with identical scales and
 patient order. Each mark exposes its patient, outcome, and observation status
 to assistive tools. Focused unit tests verify the paired

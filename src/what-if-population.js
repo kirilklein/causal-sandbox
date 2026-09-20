@@ -20,7 +20,7 @@ export function populationMarkup(observedOnly) {
         const missing = observedOnly && !observed;
         // A missing outcome has no mark or value at its simulator-known position.
         const description = `${person.label}: ${missing ? "unobserved" : `${person.outcomes[a].toFixed(1)} health points, ${observed ? "observed" : "simulated counterfactual"}`}`;
-        return `<g class="what-if-person" data-person="${person.id}" tabindex="0" role="img" aria-label="${description}">
+        return `<g class="what-if-person" data-person="${person.id}" data-focal="${person.severity === 7}" tabindex="0" role="img" aria-label="${description}">
         ${missing ? `<text class="what-if-missing" x="${x}" y="258" text-anchor="middle">?</text>` : `<circle data-outcome="${a}" data-observed="${observed}" cx="${x}" cy="${y(person.outcomes[a])}" r="5" fill="${observed ? "currentColor" : "var(--film-background)"}"/><text class="what-if-value" x="${x}" y="${y(person.outcomes[a]) - 12}" text-anchor="middle">${person.outcomes[a].toFixed(1)}</text>`}
         <text class="what-if-person-label" x="${x}" y="242" text-anchor="middle">${String(index + 1).padStart(2, "0")}</text>
       </g>`;
@@ -39,7 +39,7 @@ export function populationMarkup(observedOnly) {
       <p class="what-if-world-mean" data-mean="${a}">${observedOnly ? `Average unknown<span>${openingPeople.filter((person) => person.treatment === a).length} of ${openingPeople.length} outcomes observed</span>` : `Average: <strong>${mean(a).toFixed(1)}</strong><span>Dashed line · all ten people</span>`}</p>
     </section>`;
   };
-  return `<p class="what-if-population-note">Keep day 12. Add nine people. <strong>Patient 08</strong> is highlighted in both worlds.</p>
+  return `<p class="what-if-population-note">${observedOnly ? "Keep the same people and day-12 health scale. Only observed outcomes remain." : "Keep the two day-12 endpoints. Time now stays fixed; the horizontal axis shows people."} <strong>Patient 08</strong> is highlighted in both worlds.</p>
     <div class="what-if-worlds">${world(1)}${world(0)}</div>
     <p class="what-if-inspect">Hover or focus a person to read their outcome.${observedOnly ? " A ? marks an unobserved outcome; its position does not indicate health." : " Both plots use the same health scale."}</p>
     <p class="what-if-effect" role="status">${observedOnly ? "The average effect is unknown from these outcomes alone." : `Average treatment effect: ${mean(1).toFixed(1)} − ${mean(0).toFixed(1)} = <strong>+${(mean(1) - mean(0)).toFixed(1)} health points</strong>`}</p>`;

@@ -534,6 +534,7 @@ export function createTrajectoryRenderer(canvas) {
       );
     }
     canvas.setAttribute("data-scene", String(step));
+    return { endpoints: [0, 1].map((a) => point(focal, FINAL_DAY, a)) };
   }
   return { draw, resize };
 }

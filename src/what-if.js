@@ -30,7 +30,7 @@ const scenes = [
   {
     label: "The average effect",
     title: "The same people.<em>Two treatment choices.</em>",
-    copy: "Compare average health if all ten people received treatment with average health if none did. These are the same ten people in both plots. Their difference is the average treatment effect.",
+    copy: "For each person, the effect is the gap between their two day-12 outcomes. The average treatment effect averages these individual gaps. Equivalently, compare average health for the same people if everyone received treatment versus if nobody did.",
     action: "Show only what we observe",
     reading:
       "This example gives everyone a +12 benefit. In reality, treatment effects can differ between people.",
@@ -38,9 +38,9 @@ const scenes = [
   {
     label: "The missing comparison",
     title: "One outcome each.<em>Half the comparison is missing.</em>",
-    copy: "How can we estimate the average effect when each person’s alternative is missing? A suitable study and justified assumptions let us estimate effects on average. They do not reveal each person’s missing future.",
+    copy: "We cannot observe both futures for anyone. In a new study, random assignment lets the treated group estimate the population’s average outcome with treatment, and the untreated group estimate its average without treatment.",
     reading:
-      "More people can improve precision. More people alone cannot fix an unfair comparison. Estimates still have uncertainty.",
+      "Randomization does not reveal individual counterfactuals or guarantee an exact answer. How close will the comparison be in one study?",
   },
 ];
 const $ = (id) => document.getElementById(id);
@@ -48,6 +48,7 @@ let step = 0;
 let frame = 0;
 let animation = null;
 let pausedAt = null;
+let populationAnimations = [];
 const motion = matchMedia("(prefers-reduced-motion: reduce)");
 let view = {
   step: 0,
@@ -124,7 +125,57 @@ function replay() {
   frame = requestAnimationFrame(tick);
 }
 
+function finishPopulationTransition() {
+  populationAnimations.forEach((animation) => animation.cancel());
+  populationAnimations = [];
+}
+
+function moveEndpoints(origins) {
+  // Convert the old canvas positions into each destination SVG's coordinates.
+  for (const circle of document.querySelectorAll(
+    '[data-focal="true"] circle',
+  )) {
+    const a = Number(circle.dataset.outcome);
+    const origin = new DOMPoint(origins[a].x, origins[a].y).matrixTransform(
+      circle.getScreenCTM().inverse(),
+    );
+    populationAnimations.push(
+      circle.animate(
+        [
+          {
+            transform: `translate(${origin.x - circle.cx.baseVal.value}px, ${origin.y - circle.cy.baseVal.value}px)`,
+          },
+          { transform: "translate(0, 0)" },
+        ],
+        { duration: 1000, easing: "ease-in-out" },
+      ),
+    );
+  }
+  for (const element of document.querySelectorAll(
+    '[data-focal="false"], .what-if-mean, .what-if-world-mean, .what-if-effect',
+  )) {
+    populationAnimations.push(
+      element.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: 300,
+        delay: 1000,
+        fill: "backwards",
+      }),
+    );
+  }
+}
+
 function enter(next, focus = true) {
+  finishPopulationTransition();
+  let origins;
+  if (step === 1 && next === 2 && !motion.matches) {
+    view = { ...view, day: 12, twins: 1 };
+    const { endpoints } = renderer.draw(view);
+    const rect = $("trajectory-canvas").getBoundingClientRect();
+    origins = endpoints.map(({ x, y }) => ({
+      x: rect.left + x,
+      y: rect.top + y,
+    }));
+  }
   step = next;
   const scene = scenes[step];
   $("trajectory-heading").innerHTML = scene.title;
@@ -155,6 +206,7 @@ function enter(next, focus = true) {
   renderer.resize();
   replay();
   if (focus) $("trajectory-heading").focus({ preventScroll: true });
+  if (origins) moveEndpoints(origins);
 }
 $("trajectory-next").addEventListener("click", () =>
   enter(Math.min(3, step + 1)),
@@ -193,8 +245,14 @@ const resize = new ResizeObserver(() => {
 });
 resize.observe($("trajectory-canvas"));
 window.addEventListener("themechange", draw);
-motion.addEventListener("change", replay);
+window.addEventListener("resize", finishPopulationTransition);
+$("what-if-population").addEventListener("focusin", finishPopulationTransition);
+motion.addEventListener("change", () => {
+  finishPopulationTransition();
+  replay();
+});
 window.addEventListener("pagehide", () => {
+  finishPopulationTransition();
   cancelAnimationFrame(frame);
   resize.disconnect();
 });

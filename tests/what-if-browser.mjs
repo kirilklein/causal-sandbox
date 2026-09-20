@@ -155,6 +155,80 @@ try {
   await page.locator('[data-chapter="3"]').click();
   await expect(page.locator("#what-if-playback")).toBeHidden();
   await expect(page.locator(".what-if-missing")).toHaveCount(10);
+  // Preserve the two measured endpoints while the axes change from time to people.
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.locator('[data-chapter="1"]').click();
+    await page.locator("#trajectory-next").scrollIntoViewIfNeeded();
+    const canvas = await page.locator("#trajectory-canvas").boundingBox();
+    await page.locator("#trajectory-next").click();
+    const flight = await page
+      .locator('[data-focal="true"] circle')
+      .evaluateAll((circles) =>
+        circles.map((circle) => {
+          const animation = circle.getAnimations()[0];
+          animation.pause();
+          animation.currentTime = 0;
+          const rect = circle.getBoundingClientRect();
+          return {
+            treatment: Number(circle.dataset.outcome),
+            x: rect.x + rect.width / 2,
+            y: rect.y + rect.height / 2,
+          };
+        }),
+      );
+    assert.equal(flight.length, 2);
+    for (const endpoint of flight) {
+      const health = 78 - (48 * 7) / 9 + 12 * endpoint.treatment;
+      assert.ok(
+        Math.abs(endpoint.x - (canvas.x + canvas.width - 40)) < 1,
+        "the moving mark starts at the old day-12 x position",
+      );
+      assert.ok(
+        Math.abs(
+          endpoint.y -
+            (canvas.y + 74 + ((95 - health) / 75) * (canvas.height - 146)),
+        ) < 1,
+        "the moving mark preserves the old endpoint position",
+      );
+    }
+    await page
+      .locator('[data-focal="true"] circle')
+      .evaluateAll((circles) =>
+        circles.forEach((circle) => circle.getAnimations()[0].finish()),
+      );
+    await page.waitForTimeout(1400);
+    await expect(page.locator('[data-focal="true"]').first()).toHaveAttribute(
+      "aria-label",
+      /52.7 health points/,
+    );
+    await expect(page.locator('[data-focal="true"]').last()).toHaveAttribute(
+      "aria-label",
+      /40.7 health points/,
+    );
+    await page.screenshot({
+      path: `/tmp/what-if-transition-end-${width}.png`,
+      fullPage: true,
+    });
+    // Navigating during a fresh transition must not leave hidden people or old marks.
+    await page.locator('[data-chapter="1"]').click();
+    await page.locator("#trajectory-next").click();
+    await page.locator('[data-chapter="3"]').click();
+    assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
+    await expect(page.locator(".what-if-missing")).toHaveCount(10);
+  }
+  await page.locator('[data-chapter="1"]').click();
+  await page.locator("#trajectory-next").click();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect
+    .poll(() => page.evaluate(() => document.getAnimations().length), {
+      timeout: 500,
+    })
+    .toBe(0);
+  await expect(page.locator('[data-focal="false"]').first()).toHaveCSS(
+    "opacity",
+    "1",
+  );
   assert.deepEqual(errors, []);
   console.log("What if browser checks passed");
 } finally {

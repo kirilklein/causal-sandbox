@@ -50,7 +50,7 @@ const lessons = [
     instruction:
       "Change the treatment effect, then redraw the sample to see how estimates vary.",
     explanation:
-      "Random assignment makes the groups comparable before treatment in the population. The unadjusted difference can estimate the treatment effect without adjustment. A finite sample still has chance differences, so its estimate need not equal the truth.",
+      "Random assignment makes the groups comparable before treatment in the population. The treated group’s average estimates the population average under treatment; the untreated group’s average estimates it without treatment. Their difference estimates the average effect, while individual counterfactuals remain unobserved. A finite sample still has chance differences, so its estimate need not equal the truth.",
     next: "In practice, a person's health can affect whether they receive treatment. What changes then?",
   },
   {
