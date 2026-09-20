@@ -15,24 +15,26 @@ the propensity-score primer and assumptions experiments are labeled refreshers.
 
 ## Entry assessment
 
-Eleven authored scenarios supply a deterministic route of two to six questions.
+Twelve authored scenarios supply a deterministic route of two to seven questions.
 Results summarize correct answers out of questions answered, with separate
 correct, review, and unsure states. The score describes this attempt; it does
 not assign an ability tier or determine recommendations. The full path is:
 
 1. E: distinguish a raw comparison from a causal effect.
 2. G: choose adjustment for a total effect.
-3. C: recognize that a pre-treatment variable can be a collider.
-4. H: choose information that addresses an omitted common cause.
-5. O: recognize unsupported extrapolation behind a precise effect estimate.
-6. D: identify which estimators retain consistency with a correct outcome model.
+3. J: construct a set in a harder graph with alternative blockers and a collider.
+4. C: recognize that a pre-treatment variable can be a collider.
+5. H: choose information that addresses an omitted common cause.
+6. O: recognize unsupported extrapolation behind a precise effect estimate.
+7. D: identify which estimators retain consistency with a correct outcome model.
 
 | Question | Correct response               | Incorrect or unsure                                                   |
 | -------- | ------------------------------ | --------------------------------------------------------------------- |
 | E        | G                              | F: random assignment                                                  |
 | F        | B: observational adjustment    | Finish: lesson 1                                                      |
 | B        | G, or C if G was already asked | Finish: confounding                                                   |
-| G        | C                              | Includes M: ask M. Neither/unsure: ask B if unseen; otherwise finish. |
+| G        | J                              | Includes M: ask M. Neither/unsure: ask B if unseen; otherwise finish. |
+| J        | C                              | C; preserve other placement topics and recommend graph practice.      |
 | M        | C                              | Finish: mediator/total effect                                         |
 | C        | H                              | K: concrete scholarship-selection question                            |
 | K        | H                              | Finish: collider                                                      |
@@ -41,10 +43,23 @@ not assign an ability tier or determine recommendations. The full path is:
 | P        | Finish: overlap                | Finish: IPW, then overlap                                             |
 | D        | Finish                         | Finish: double robustness                                             |
 
-The six-answer limit stops further questions, but the sixth answer always
+The seven-answer limit stops further questions, but the seventh answer always
 contributes to the result. Every question includes “I'm not sure,” recorded
 separately from incorrect options. Only two misses/uncertainties on E and F
 suggest starting at lesson 1. Other errors suggest particular lessons.
+
+G now uses clickable nodes; a correct answer unlocks J, a different graph from
+all final-quiz items. Incorrect or unsure G answers keep the existing clarification
+flow. J always rejoins C, preserving hidden-confounding, overlap and estimator
+questions within the seven-question cap on the main path. Passing the two graphs
+alone does not produce the advanced recommendation.
+
+Results recommend guided graph practice after a missed G, the harder template
+after a missed J, or further experimentation after successful graph answers.
+Template links appear only on results and open in a new tab with the submitted
+selection; other lesson recommendations remain visible. Each graph review also
+links to its own template. Returning to assessment after opening explanations
+remains practice.
 
 G distinguishes omission of C from inclusion of M. Clarification success yields
 mixed evidence rather than erasing the earlier response. Suggestions put relevant
@@ -76,8 +91,8 @@ counted. Exiting before answering offers the learning choices without placement.
 
 The current attempt is stored in sessionStorage under
 `causal-sandbox-entry-quiz-v2`, including the stable answer IDs, current view, choice
-rotation, and whether explanations have been viewed. No answers go into URLs or
-analytics. History entries preserve question views. Returning from a recommended
+rotation, and whether explanations have been viewed. Quiz attempts do not go into analytics. Results-page building-box links put
+only the selected variable labels and template ID in the destination URL. History entries preserve question views. Returning from a recommended
 lesson or reloading restores the current attempt. The v2 key starts a fresh attempt after the September 10 item revision; answers
 to the old scenarios are not scored against the new questions. Invalid or stale stored choices
 are discarded at the first unreachable step. If storage is unavailable, the active
@@ -117,7 +132,7 @@ validated assessment items.
 
 ## Validation
 
-`src/quiz-model.test.js` enumerates 287 complete answer paths and checks branch
+`src/quiz-model.test.js` enumerates every complete answer path, including all selectable graph sets and checks branch
 recovery, distinct adjustment gaps, final-answer recommendations, editing,
 untrusted saved answers, and attribution metadata. `tests/quiz-browser.mjs` covers
 the entry chooser, early/advanced routes, question history, result restoration,

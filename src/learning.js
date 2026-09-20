@@ -35,7 +35,7 @@ export function topicLesson(slug) {
 export function learningFrame(title, current, body) {
   document.title = `${title} — Causal Sandbox`;
   document.querySelector("#app").innerHTML =
-    `<header class="lesson-header"><a class="brand" href="${learningUrl("introduction")}">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
+    `<header class="lesson-header learning-entry-header"><a class="brand" href="${learningUrl("introduction")}">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning learning-entry">${lessonNavigation({ learningPage: current })}
     <p class="eyebrow">YOUR LEARNING PATH</p><h1 tabindex="-1">${title}</h1>${body}</main>`;
   setupLessonNavigation();
@@ -155,7 +155,7 @@ export function renderLearning(mode) {
       <nav class="learning-choices" aria-label="Choose how to learn">
         <a class="panel learning-choice" href="${topicLesson("randomization").href}"><span class="learning-choice-number" aria-hidden="true">01</span><h2>Start from scratch</h2><p>Build your intuition through the guided lessons, starting with a randomized experiment.</p><span class="learning-choice-action">Begin lesson 1 →</span></a>
         <a class="panel learning-choice" href="${learningUrl("topics")}"><span class="learning-choice-number" aria-hidden="true">02</span><h2>Refresh & go deeper</h2><p>Pick a topic to revisit, then explore its nuances and advanced lessons.</p><span class="learning-choice-action">Browse topics →</span></a>
-        <a class="panel learning-choice" href="${learningUrl("quiz")}"><span class="learning-choice-number" aria-hidden="true">03</span><h2>Find my starting point</h2><p>Answer up to six questions for suggestions based on the ideas you want to review.</p><span class="learning-choice-action">Take the short quiz →</span></a>
+        <a class="panel learning-choice" href="${learningUrl("quiz")}"><span class="learning-choice-number" aria-hidden="true">03</span><h2>Find my starting point</h2><p>Answer up to seven questions for suggestions based on the ideas you want to review.</p><span class="learning-choice-action">Take the short quiz →</span></a>
       </nav><p class="learning-note">Every lesson is open to you. You can choose a different route at any time.</p>
       <a href="${learningUrl("introduction")}">← Introduction</a>`,
     );

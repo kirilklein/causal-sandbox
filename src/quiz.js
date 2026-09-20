@@ -1,3 +1,11 @@
+import { adjustmentMarkup, bindAdjustment } from "./adjustment-input.js";
+import {
+  adjustmentLabel,
+  adjustmentSolutions,
+  experimentUrl,
+  gradeAdjustment,
+} from "./adjustment-model.js";
+import { graphMarkup } from "./quiz-graph.js";
 import { quizQuestions, unsureChoice } from "./quiz-questions.js";
 import {
   questionById,
@@ -132,24 +140,8 @@ window.addEventListener("popstate", (event) => {
     .focus();
 });
 
-function graphMarkup(question) {
-  if (!question.graph) return "";
-  const { nodes, edges, description } = question.graph;
-  return `<figure class="quiz-figure"><svg viewBox="0 0 500 290" role="img" aria-label="${description}" focusable="false"><defs><marker id="quiz-arrow-${question.id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1 9 5 1 9"/></marker></defs>
-    ${edges
-      .map(([from, to]) => {
-        const [, x1, y1] = nodes.find(([id]) => id === from);
-        const [, x2, y2] = nodes.find(([id]) => id === to);
-        const dx = x2 - x1,
-          dy = y2 - y1,
-          length = Math.hypot(dx, dy);
-        return `<path d="M${x1 + (dx * 28) / length} ${y1 + (dy * 28) / length} L${x2 - (dx * 32) / length} ${y2 - (dy * 32) / length}" marker-end="url(#quiz-arrow-${question.id})"/>`;
-      })
-      .join("")}
-    ${nodes.map(([id, x, y]) => `<circle cx="${x}" cy="${y}" r="27" fill="var(--node-${id}, var(--node-C))"/><text x="${x}" y="${y}">${id}</text>`).join("")}</svg></figure>`;
-}
-
 function choiceMarkup(question, selected, name = "answer") {
+  if (question.adjustment) return adjustmentMarkup(question);
   const offset =
     (state.rotation + quizQuestions.indexOf(question)) %
     question.choices.length;
@@ -167,11 +159,12 @@ function choiceMarkup(question, selected, name = "answer") {
 }
 
 function questionSetup(question) {
-  const facts = question.facts
-    ? `<dl class="quiz-facts">${question.facts.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
-    : "";
+  const facts =
+    question.facts && !question.adjustment
+      ? `<dl class="quiz-facts">${question.facts.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
+      : "";
   return `${question.context.map((paragraph) => `<p>${paragraph}</p>`).join("")}
-    <div class="${question.graph && facts ? "quiz-diagram" : ""}">${graphMarkup(question)}${facts}</div>
+    <div class="${question.graph && facts ? "quiz-diagram" : ""}">${question.adjustment ? "" : graphMarkup(question)}${facts}</div>
     ${question.assumptions ? `<details class="quiz-assumptions"><summary>Assumptions</summary><p>${question.assumptions}</p></details>` : ""}`;
 }
 
@@ -183,7 +176,7 @@ function renderQuestion() {
   learningFrame(
     "Find my starting point",
     "quiz",
-    `${state.index === 0 ? `<p class="learning-lead">Up to six questions, adapting to your answers. Feedback at the end.</p><p class="quiz-skip">Know where you want to go? <a href="${learningUrl("topics")}">Browse topics</a> or <a href="${import.meta.env.BASE_URL}?sandbox">open the sandbox</a>.</p>` : ""}
+    `${state.index === 0 ? `<p class="learning-lead">Up to seven questions, adapting to your answers. Feedback at the end.</p><p class="quiz-skip">Know where you want to go? <a href="${learningUrl("topics")}">Browse topics</a> or <a href="${import.meta.env.BASE_URL}?sandbox">open the sandbox</a>.</p>` : ""}
     ${state.practice ? '<p class="learning-note">Practice attempt: you’ve already seen the explanations.</p>' : ""}
     <p class="quiz-progress">${state.index + 1}/${questionLimit}</p>
     <section class="panel quiz-card" data-question="${question.id}"><h2 id="quiz-question" tabindex="-1">${question.title}</h2>
@@ -193,14 +186,21 @@ function renderQuestion() {
     </section><nav class="quiz-actions" aria-label="Quiz navigation">${state.index ? '<button id="quiz-back">← Previous question</button>' : `<a href="${learningUrl("learn")}">← Learning choices</a>`}<button id="quiz-finish">Show suggestions now</button></nav>`,
   );
   const form = document.querySelector("#quiz-form");
+  const selection = question.adjustment
+    ? bindAdjustment(form, selected, (choice) => {
+        document.querySelector("#quiz-submit").disabled = !choice;
+      })
+    : null;
   form.addEventListener("change", () => {
-    document.querySelector("#quiz-submit").disabled = false;
+    if (!selection) document.querySelector("#quiz-submit").disabled = false;
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    const chosen = form.querySelector("input:checked");
+    const chosen = selection
+      ? selection.choice()
+      : form.querySelector("input:checked")?.value;
     if (!chosen) return;
-    const answers = answerQuestion(state.answers, state.index, chosen.value);
+    const answers = answerQuestion(state.answers, state.index, chosen);
     const index = state.index + 1;
     // Keep the submitted selection when browser Back revisits this question.
     history.replaceState({ quiz: { ...state, answers } }, "");
@@ -259,16 +259,17 @@ function scoreSummary(answers) {
 
 function reviewMarkup(answer, index) {
   const question = questionById(answer.question);
-  const selected =
-    answer.choice === unsureChoice.id
+  const selected = question.adjustment
+    ? adjustmentLabel(answer.choice)
+    : answer.choice === unsureChoice.id
       ? unsureChoice.text
       : question.choices.find(({ id }) => id === answer.choice).text;
-  const correct = question.choices.find(
-    ({ id }) => id === question.correct,
-  ).text;
+  const correct = question.adjustment
+    ? adjustmentSolutions(question)
+    : question.choices.find(({ id }) => id === question.correct).text;
   return `<article class="quiz-answer-review" id="quiz-review-${question.id}" tabindex="-1" aria-labelledby="quiz-review-title-${question.id}" hidden><div class="quiz-review-heading"><h3 id="quiz-review-title-${question.id}">Question ${index + 1} · ${question.title}</h3><button type="button" data-close-review="${question.id}" aria-label="Close explanation for question ${index + 1}">Close</button></div>
     <p class="quiz-evidence">${answerStatus(answer)}</p>
-    <p><strong>Your answer:</strong> ${selected}</p>${isCorrect(answer) ? "" : `<p><strong>Best answer:</strong> ${correct}</p>`}<p>${question.explanation}</p>
+    <p><strong>Your answer:</strong> ${selected}</p>${isCorrect(answer) ? "" : `<p><strong>Best answer:</strong> ${correct}</p>`}<p>${question.explanation}</p>${question.adjustment ? experimentLink(question, answer.choice) : ""}
     <details class="quiz-source"><summary>Sources and question attribution</summary><p>${question.provenance}</p><ul>${question.sources.map(({ citation, url, section }) => `<li><a href="${url}" target="_blank" rel="noopener">${citation}</a> — ${section}.</li>`).join("")}</ul></details>
     <details><summary>Try this question again for practice</summary><p>This practice answer won’t change your suggested lessons.</p>
       ${questionSetup(question)}
@@ -311,6 +312,7 @@ function renderResults() {
     `<p class="learning-lead">${result.kind === "choose" ? "Start with the basics, browse topics, or return to the quiz." : introduction}</p>
     ${state.practice ? '<p class="learning-note">Practice attempt.</p>' : ""}
     ${scoreSummary(state.answers)}
+    ${experimentRecommendation()}
     <div class="quiz-suggestions">${result.items.slice(0, 3).map(suggestionMarkup).join("")}</div>
     ${
       result.items.length > 3
@@ -359,17 +361,24 @@ function renderResults() {
         setReview(button.dataset.closeReview, false),
       ),
     );
-  document.querySelectorAll(".quiz-practice").forEach((form) =>
+  document.querySelectorAll(".quiz-practice").forEach((form) => {
+    const question = questionById(form.dataset.question);
+    const selection = question.adjustment ? bindAdjustment(form) : null;
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const selected = form.querySelector("input:checked");
-      if (!selected) return;
-      const question = questionById(form.dataset.question);
+      const choice = selection
+        ? selection.choice()
+        : form.querySelector("input:checked")?.value;
+      if (!choice) return;
+      const result = question.adjustment
+        ? gradeAdjustment(question, choice)
+        : { correct: choice === question.correct };
       const feedback = form.querySelector("[role=status]");
       feedback.hidden = false;
-      feedback.textContent = `${selected.value === question.correct ? "That’s right. " : "Review the reasoning: "}${question.explanation}`;
-    }),
-  );
+      feedback.textContent = `${result.correct ? "That’s right. " : "Review the reasoning: "}${result.message || ""} ${question.explanation}`;
+      selection?.highlight(result.path);
+    });
+  });
   document.querySelector("#quiz-resume")?.addEventListener("click", () => {
     state = {
       ...state,
@@ -392,3 +401,17 @@ function render() {
 
 history.replaceState({ quiz: state }, "");
 render();
+
+function experimentLink(question, choice) {
+  return `<p><a href="${experimentUrl(question, choice)}" target="_blank" rel="noopener">Explore this graph in the building box (new tab) ↗</a></p>`;
+}
+function experimentRecommendation() {
+  const answers = state.answers.filter(
+    (answer) => questionById(answer.question).adjustment,
+  );
+  if (!answers.length) return "";
+  const answer = answers.find((answer) => !isCorrect(answer)) || answers.at(-1);
+  const question = questionById(answer.question);
+  const firstMissed = answer.question === "G" && !isCorrect(answer);
+  return `<section class="panel quiz-experiment"><h2>${firstMissed ? "Review adjustment, then try it" : isCorrect(answer) ? "Put your graph reasoning to work" : "Investigate the harder graph"}</h2>${firstMissed ? `<p><a href="${topicLesson("confounding").href}" target="_blank" rel="noopener">Review the adjustment lesson (new tab) ↗</a>, then test your selection.</p>` : ""}<p>${question.action}</p>${experimentLink(question, answer.choice)}<p class="sample-note">Your quiz results stay here. This recommendation concerns graph reasoning; your other lesson suggestions still apply.</p></section>`;
+}

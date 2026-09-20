@@ -1,3 +1,19 @@
+import { entryGraphScenarios } from "./adjustment-scenarios.js";
+
+const entryGraphs = entryGraphScenarios.map((scenario, index) => ({
+  ...scenario,
+  scenarioId: scenario.id,
+  id: index ? "J" : "G",
+  context: [scenario.context],
+  correct: "set:C",
+  choices: [],
+  provenance: "Original scenario; clickable adjustment inspired by daggle.",
+  sources: scenario.sources.map(([citation, url]) => ({
+    citation,
+    url,
+    section: "Graphical adjustment rules and interactive practice",
+  })),
+}));
 // Authored entry questions. Source details appear after the assessment.
 export const quizQuestions = [
   {
@@ -103,68 +119,7 @@ export const quizQuestions = [
     assumptions:
       "Assume the same tutoring intervention for everyone, no effects on other pupils, and all final scores recorded.",
   },
-  {
-    id: "G",
-    title: "Which differences should we account for?",
-    context: [
-      "Target: the total effect of A on Y. Treat the graph as complete.",
-    ],
-    prompt: "Which variables should we adjust for?",
-    choices: [
-      {
-        id: "c-only",
-        text: "C only.",
-      },
-      {
-        id: "both",
-        text: "C and M.",
-      },
-      {
-        id: "m-only",
-        text: "M only.",
-      },
-      {
-        id: "neither",
-        text: "Neither C nor M.",
-      },
-    ],
-    correct: "c-only",
-    explanation:
-      "Adjust for home size C to block A ← C → Y. Leave heating use M out: any savings through changed heating use belong in the total effect. Holding M fixed would exclude that pathway. Adjusting for a mediator does not generally identify a direct effect without further assumptions.",
-    sources: [
-      {
-        citation: "DAGitty, Covariate Roles in DAGs",
-        url: "https://dagitty.net/learn/graphs/roles.html",
-        section: "Confounders and mediators",
-      },
-    ],
-    provenance: "Revised from the local quiz; references support the concepts.",
-    graph: {
-      nodes: [
-        ["C", 250, 35],
-        ["A", 75, 145],
-        ["Y", 425, 145],
-        ["M", 250, 250],
-      ],
-      edges: [
-        ["C", "A"],
-        ["C", "Y"],
-        ["A", "Y"],
-        ["A", "M"],
-        ["M", "Y"],
-      ],
-      description:
-        "Insulation A → heating bill Y; home size C → A and Y; A → heating use M → Y. The graph is complete.",
-    },
-    facts: [
-      ["A", "Insulation"],
-      ["Y", "Heating bill"],
-      ["C", "Home size"],
-      ["M", "Heating use after insulation"],
-    ],
-    assumptions:
-      "At each home size, both insulation options occur. Assume accurate measurements, the same insulation intervention for every home, no effects on other homes, and all bills recorded.",
-  },
+  ...entryGraphs,
   {
     id: "M",
     title: "Which savings count?",
