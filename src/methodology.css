@@ -1,6 +1,8 @@
 /* Methodology page */
 .methodology-header {
-  max-width: 1180px;
+  max-width: 1084px;
+  width: calc(100% - 96px);
+  padding-inline: 0;
 }
 .methodology-header .brand img {
   display: block;
@@ -370,6 +372,12 @@
   font-weight: 650;
 }
 
+@media (max-width: 1100px) {
+  .methodology-header {
+    width: calc(100% - 50px);
+  }
+}
+
 @media (max-width: 820px) {
   .methodology-header nav {
     order: 3;
@@ -397,7 +405,16 @@
   }
 }
 
+@media (max-width: 760px) {
+  .methodology-header {
+    width: calc(100% - 34px);
+  }
+}
+
 @media (max-width: 560px) {
+  .methodology-header {
+    width: calc(100% - 40px);
+  }
   .methodology-page {
     padding-inline: 20px;
   }

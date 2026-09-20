@@ -10,6 +10,7 @@ import { campaignHref } from "./events.js";
 import icon from "./brand.svg?raw";
 import "./lessons.css";
 import "./learning.css";
+import { lessonExperiments } from "./lesson-catalog.js";
 
 export const learningUrl = (topic) =>
   campaignHref(`${import.meta.env.BASE_URL}?lesson=${topic}`);
@@ -21,7 +22,9 @@ export function topicLesson(slug) {
       title: core[2],
       href: campaignHref(`${import.meta.env.BASE_URL}${lessonHref(core)}`),
     };
-  const chapter = optionalChapters.find(({ id }) => id === slug);
+  const chapter = [...optionalChapters, ...lessonExperiments].find(
+    ({ id }) => id === slug,
+  );
   if (!chapter) throw new Error(`Unknown learning topic: ${slug}`);
   return {
     title: chapter.title,
@@ -32,7 +35,7 @@ export function topicLesson(slug) {
 export function learningFrame(title, current, body) {
   document.title = `${title} — Causal Sandbox`;
   document.querySelector("#app").innerHTML =
-    `<header class="lesson-header"><a class="brand" href="${learningUrl("introduction")}">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
+    `<header class="lesson-header learning-entry-header"><a class="brand" href="${learningUrl("introduction")}">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning learning-entry">${lessonNavigation({ learningPage: current })}
     <p class="eyebrow">YOUR LEARNING PATH</p><h1 tabindex="-1">${title}</h1>${body}</main>`;
   setupLessonNavigation();
@@ -63,6 +66,7 @@ const background = {
     "hidden-confounding",
   ],
   tmle: ["outcome-regression", "propensity-score", "double-robustness"],
+  "tmle-robustness": ["ipw", "double-robustness", "tmle"],
   overlap: ["ipw", "propensity-score"],
   clipping: ["ipw", "overlap"],
   trimming: ["ipw", "overlap", "clipping"],
@@ -113,6 +117,7 @@ const groups = [
       "misspecification",
       "double-robustness",
       "tmle",
+      "tmle-robustness",
       "leaving-the-sandbox",
     ],
   },
@@ -140,6 +145,7 @@ export function renderLearning(mode) {
       "Refresh & go deeper",
       "topics",
       `<p class="learning-lead">Choose the question you want to explore. Open a topic to find refreshers and advanced lessons.</p>
+      <section class="panel learning-experiments" aria-label="Experiments to try"><h2>Experiments to try</h2>${topicList(["tmle-robustness", ...lessonExperiments.map(({ id }) => id)])}</section>
       <div class="learning-topics">${groups
         .map(
           (
@@ -158,7 +164,7 @@ export function renderLearning(mode) {
       <nav class="learning-choices" aria-label="Choose how to learn">
         <a class="panel learning-choice" href="${topicLesson("randomization").href}"><span class="learning-choice-number" aria-hidden="true">01</span><h2>Start from scratch</h2><p>Build your intuition through the guided lessons, starting with a randomized experiment.</p><span class="learning-choice-action">Begin lesson 1 →</span></a>
         <a class="panel learning-choice" href="${learningUrl("topics")}"><span class="learning-choice-number" aria-hidden="true">02</span><h2>Refresh & go deeper</h2><p>Pick a topic to revisit, then explore its nuances and advanced lessons.</p><span class="learning-choice-action">Browse topics →</span></a>
-        <a class="panel learning-choice" href="${learningUrl("quiz")}"><span class="learning-choice-number" aria-hidden="true">03</span><h2>Find my starting point</h2><p>Answer up to six questions for suggestions based on the ideas you want to review.</p><span class="learning-choice-action">Take the short quiz →</span></a>
+        <a class="panel learning-choice" href="${learningUrl("quiz")}"><span class="learning-choice-number" aria-hidden="true">03</span><h2>Find my starting point</h2><p>Answer up to seven questions for suggestions based on the ideas you want to review.</p><span class="learning-choice-action">Take the short quiz →</span></a>
       </nav><p class="learning-note">Every lesson is open to you. You can choose a different route at any time.</p>
       <a href="${learningUrl("introduction")}">← Introduction</a>`,
     );

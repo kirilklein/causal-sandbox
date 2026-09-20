@@ -279,5 +279,8 @@ el("repeat").addEventListener("click", async () => {
 });
 
 document.title = "How strong is a causal arrow? · Causal Sandbox";
+if (new URLSearchParams(location.search).get("example") === "paths-cancel") {
+  state.directEffect = cancellationDirectEffect(state.treatmentStrength);
+}
 render();
 document.querySelector("h1").focus();

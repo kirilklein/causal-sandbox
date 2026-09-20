@@ -86,6 +86,67 @@ try {
     await expect(open).toBeFocused();
   }
 
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(url + "?lesson=topics");
+    const experiments = page.getByRole("region", {
+      name: "Experiments to try",
+    });
+    await expect(experiments).toBeVisible();
+    await expect(
+      experiments.getByRole("link", {
+        name: "When causal paths cancel",
+        exact: false,
+      }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: `/tmp/experiment-topics-${width}.png`,
+      fullPage: true,
+    });
+    await experiments
+      .getByRole("link", {
+        name: "Repeated studies: sampling variation",
+        exact: false,
+      })
+      .click();
+    await expect(page.locator("#repeated-studies")).toHaveAttribute("open", "");
+    await expect(page.locator("#repeated-studies > summary")).toBeFocused();
+    await expect(page.locator(".lesson-prediction")).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Repeat study", exact: true })
+      .click();
+    await expect(page.locator("#sampling-values tr")).toHaveCount(2);
+    await open.click();
+    await input.fill("repeated studies bias");
+    await input.press("Enter");
+    await expect(page).toHaveURL(url + "?lesson=confounding#repeated-studies");
+    await expect(page.locator("#repeat-study")).toBeVisible();
+    await open.click();
+    await input.fill("paths cancel");
+    await input.press("Enter");
+    await expect(page.locator("#cancel")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.locator("#z-total")).toHaveText("0.000");
+    await open.click();
+    await input.fill("bias amplification");
+    await input.press("Enter");
+    await expect(page).toHaveURL(url + "?lesson=instrument-hidden-confounding");
+    await expect(page.locator("#hidden-strength")).toBeVisible();
+    await open.click();
+    await input.fill("Both models are too simple");
+    await input.press("Enter");
+    await expect(page.locator("#scenario-select")).toHaveValue("both-models");
+    await open.click();
+    await input.fill("P K R pretreatment collider");
+    await input.press("Enter");
+    await expect(page.locator("#lab-preset")).toHaveValue("pkr");
+    await page.goto(url + "?lesson=randomization");
+    await expect(page.locator(".lesson-prediction")).toBeVisible();
+    await expect(page.locator("#repeated-studies")).not.toBeVisible();
+  }
+
   // Verify all index destinations, including client-rendered glossary fragments.
   for (const href of new Set(
     searchEntries.map(({ href }) => href.split("#")[0]),

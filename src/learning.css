@@ -1,6 +1,9 @@
 .learning-entry {
   max-width: 1000px;
 }
+.lesson-header.learning-entry-header {
+  max-width: 952px;
+}
 .learning-entry .lesson-nav {
   position: relative;
 }
@@ -90,6 +93,7 @@
   gap: 18px;
   margin: 24px 0;
 }
+.learning-experiments,
 .learning-topic-group {
   padding: 22px;
   margin: 16px 0;

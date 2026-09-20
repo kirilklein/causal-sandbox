@@ -2,11 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "LICENSE"
+    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
@@ -23,19 +19,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: production
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: development
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            production/package-lock.json
+            development/package-lock.json
       - run: npm ci
+        working-directory: production
       - run: npm test
-      - run: npm run build
+        working-directory: production
+      - run: npm run build -- --base=/causal-sandbox/
+        working-directory: production
         env:
           VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
           VITE_POSTHOG_HOST: https://eu.i.posthog.com
+      - run: npm ci
+        working-directory: development
+      - run: npm test
+        working-directory: development
+      - run: npm run build -- --base=/causal-sandbox/dev/
+        working-directory: development
+      - name: Combine production and development sites
+        run: |
+          mkdir site
+          cp -a production/dist/. site/
+          cp -a development/dist site/dev
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
 
   deploy:
     needs: build
