@@ -1,4 +1,5 @@
 import {
+  conceptMap,
   openingLesson,
   coreLessons,
   lessonHref,
@@ -137,6 +138,7 @@ const guides = [
 
 // Pages that also host lessons use the lesson's single canonical destination.
 export const searchEntries = [
+  { ...conceptMap, type: "Concept map" },
   { ...openingLesson, type: "Opening lesson" },
   ...lessonExperiments.map((experiment) => ({
     ...experiment,

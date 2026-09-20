@@ -26,6 +26,8 @@ if (page === "glossary") {
     await import("./graph-lab.js");
   } else if (params.has("sandbox")) {
     await import("./sandbox.js");
+  } else if (lesson === "concept-map") {
+    await import("./concept-map.js");
   } else if (lesson === "final-quiz") {
     await import("./final-quiz.js");
   } else if (params.has("quiz") || lesson === "quiz") {
