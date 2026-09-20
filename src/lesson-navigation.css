@@ -25,6 +25,17 @@
   font-size: 20px;
   text-decoration: none;
 }
+.lesson-position {
+  margin-right: auto;
+}
+.lesson-nav:has(.lesson-heading-back) #lesson-menu-toggle {
+  order: 0;
+  margin-right: 0;
+}
+.lesson-nav:has(.lesson-heading-back) #lesson-menu {
+  left: auto;
+  right: 0;
+}
 .lesson-heading-back:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;

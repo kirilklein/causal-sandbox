@@ -1378,12 +1378,17 @@ try {
     await page.locator("#lesson-menu-toggle").click();
     assert.equal(await page.locator("#lesson-menu").isVisible(), true);
     const panelBounds = await page.locator("#lesson-menu").boundingBox();
-    assert.equal(panelBounds.x, headingPosition.x);
+    const navBounds = await page.locator(".lesson-nav").boundingBox();
+    assert.ok(
+      Math.abs(
+        panelBounds.x + panelBounds.width - (navBounds.x + navBounds.width),
+      ) < 1,
+    );
     const toggleBounds = await page
       .locator("#lesson-menu-toggle")
       .boundingBox();
     const backBounds = await page.locator(".lesson-heading-back").boundingBox();
-    assert.equal(backBounds.x, panelBounds.x);
+    assert.equal(backBounds.x, headingPosition.x);
     assert.ok(backBounds.width >= 44 && backBounds.height >= 44);
     assert.ok(toggleBounds.x >= backBounds.x + backBounds.width);
     assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
