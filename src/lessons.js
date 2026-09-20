@@ -91,12 +91,14 @@ const lessons = [
     transition:
       "We return to one measured confounder, a risk score (C). Both models adjust for it. Is choosing the right variable enough?",
     instruction:
-      "Make the outcome relationship more complex, then make treatment assignment more complex. Compare which estimates are affected.",
+      "Change which relationship is complex. Which method’s estimate is affected?",
     explanation: [
-      "Outcome regression relies on the outcome model; IPW relies on the treatment model. Each experiment adds a pattern that the corresponding fitted model cannot represent, while leaving the other relationship correctly specified. Compare the true and fitted curves, then the estimates. One sample cannot establish a method’s bias.",
-      "A more flexible model can capture the measured relationship. It cannot repair an invalid adjustment set, unmeasured confounding, or absent overlap. Those require revisiting the causal design or available data.",
+      "<strong>Simple relationships:</strong> Both models can represent the relationships generating the data. Estimates can still differ from truth because of sampling variation.",
+      "<strong>Complex outcome relationship:</strong> The outcome model misses the added curve. Outcome regression loses its correct-model guarantee; IPW still uses a correctly specified treatment model.",
+      "<strong>Complex treatment assignment:</strong> The treatment model misses the added pattern. IPW loses its correct-model guarantee; outcome regression still uses a correctly specified outcome model.",
+      "Choosing the right adjustment variables is not enough—the model must also represent the relevant relationship. One sample cannot establish a method’s bias.",
     ],
-    next: "Next, combine both models and test what happens when only one is correctly specified.",
+    next: "Outcome regression and IPW each rely on a different model. Could one method use both and still work when one model is wrong?",
   },
   {
     question: "Can combining the models help when one is too simple?",
@@ -105,7 +107,14 @@ const lessons = [
     instruction:
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
-      "With confounding controlled and overlap—people with similar risk scores can receive either treatment—AIPW can approach the true effect as samples grow if either model is correctly specified. It need not be exact or closest to truth in this sample. If both models are wrong, that protection is lost. For AIPW and TMLE, double robustness concerns statistical model specification; it does not repair causal misspecification, such as missing confounders or invalid adjustment.",
+      "With valid causal assumptions and sufficient overlap, AIPW can approach the true effect as samples grow if either the outcome model or the treatment propensity model consistently learns the correct relationship. This is double robustness. It does not fix an invalid adjustment set or unmeasured confounding, and it need not give the closest estimate in this sample.",
+    intuition: {
+      title: "Precise guarantee and limits",
+      paragraphs: [
+        'Under causal identification assumptions and regularity conditions, AIPW is consistent if either model is correctly specified and consistently estimated. Positivity requires that people at each relevant combination of adjustment variables can receive either treatment. See <a href="https://pubmed.ncbi.nlm.nih.gov/16401269/">Bang &amp; Robins (2005)</a>.',
+        'If both models are misspecified, there is no general guarantee, although particular errors can cancel. Double robustness also does not guarantee lower mean squared error than other estimators. See <a href="https://doi.org/10.1214/07-STS227">Kang &amp; Schafer (2007)</a>.',
+      ],
+    },
     next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to see how TMLE builds the correction into the predictions.",
   },
   {
@@ -267,13 +276,21 @@ function controls(level) {
     return '<p id="regression-explanation">We fit a model to predict the observed outcome from treatment received and risk score. For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
-      ["simple", "Simple relationships"],
-      ["outcome", "More complex outcome relationship"],
-      ["treatment", "More complex treatment assignment"],
+      ["simple", "Simple relationships", "Both models correctly specified"],
+      [
+        "outcome",
+        "More complex outcome relationship",
+        "Outcome model misspecified",
+      ],
+      [
+        "treatment",
+        "More complex treatment assignment",
+        "Treatment model misspecified",
+      ],
     ]
       .map(
-        ([value, label]) =>
-          `<label class="lesson-switch"><input type="radio" name="model-experiment" value="${value}" ${value === "simple" ? "checked" : ""}>${label}</label>`,
+        ([value, label, status]) =>
+          `<div class="model-experiment-option"><label class="lesson-switch"><input type="radio" name="model-experiment" value="${value}" aria-describedby="${value}-model-status" ${value === "simple" ? "checked" : ""}>${label}</label><span class="sample-note" id="${value}-model-status">${status}</span></div>`,
       )
       .join(
         "",
@@ -427,11 +444,21 @@ function enter(level, focus = true, callback = false, restart = false) {
             : ""
         }
       </section>
-      <details class="lesson-explanation"><summary>Explain what is happening</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
+      <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
-      ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>The simple outcome model uses treatment and C. The more complex outcome relationship adds C² − 1; including C² and an intercept lets the fitted model represent that curve.</p><p>The treatment model is logistic: it converts a linear predictor (log odds) into a probability. Even with only an intercept and C, its probability curve is nonlinear. The more complex treatment assignment adds C² − 1 to the log odds. The simple model misses this quadratic term, not the logistic transformation.</p>${level === 5 ? '<p>The separate <a href="?sandbox&scenario=treatment-model">treatment-model scenario</a> uses two covariates, C₁ and C₂. There, an additive logistic model omits the C₁ × C₂ interaction in the true log odds: one covariate’s influence on log odds depends on the other. Adding the interaction addresses this functional-form mismatch without changing the adjustment set.</p>' : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
+      ${
+        level >= 5 && level <= 6
+          ? `<details class="lesson-details model-specification-details">
+        <summary>Model details (optional)</summary>
+        <p><strong>Outcome model.</strong> The simple model uses treatment and <math><mi>C</mi></math>. The more complex outcome relationship adds <math aria-label="C squared minus one"><msup><mi>C</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></math>; including <math aria-label="C squared"><msup><mi>C</mi><mn>2</mn></msup></math> and an intercept lets the fitted model represent that curve.</p>
+        <p><strong>Treatment model.</strong> The complex experiment adds a quadratic term, <math aria-label="C squared minus one"><msup><mi>C</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></math>, to the treatment log odds. The simple fitted model includes only <math><mi>C</mi></math> and an intercept, so it cannot represent that added pattern.</p>
+        <p>These experiments use a valid adjustment set and sufficient overlap. More flexible models cannot repair unmeasured confounding or an invalid adjustment set.</p>
+        ${level === 5 ? '<p><a href="?sandbox&scenario=treatment-model">Explore a two-covariate example →</a><br>In this scenario, one covariate’s effect on treatment assignment depends on the other. Both variables are included, but the model needs their interaction, <math aria-label="C one times C two"><msub><mi>C</mi><mn>1</mn></msub><mo>×</mo><msub><mi>C</mi><mn>2</mn></msub></math>, to capture this relationship.</p>' : ""}
+      </details>`
+          : ""
+      }
       ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       `

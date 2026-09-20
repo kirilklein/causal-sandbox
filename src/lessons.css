@@ -503,9 +503,13 @@
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
-.aipw-calculation math {
+.aipw-calculation math,
+.model-specification-details math {
   margin: 0;
   font-family: "STIX Two Math", "Cambria Math", math;
+}
+.model-specification-details math {
+  white-space: nowrap;
 }
 .aipw-formula {
   display: flex;
@@ -720,6 +724,19 @@
 .model-choices legend {
   font-weight: 600;
   margin-bottom: 8px;
+}
+.model-experiment-option {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 16px;
+  margin-bottom: 8px;
+}
+.model-experiment-option .lesson-switch {
+  margin: 0;
+}
+.model-experiment-option .sample-note {
+  margin: 0;
 }
 .model-preview {
   margin: 16px 0;
