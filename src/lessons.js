@@ -27,6 +27,7 @@ import {
   recordPredictionAnswer,
 } from "./progress.js";
 import "./tmle-lesson.css";
+import { conceptMapCard } from "./concept-map-card.js";
 
 const lessons = [
   {
@@ -370,6 +371,7 @@ function enterIntroduction(focus = true, animate = false) {
           <h2>Build</h2><p>Draw a causal graph and explore what your assumptions imply.</p><span class="intro-path-detail">Build a graph <span aria-hidden="true">→</span></span>
         </a>
       </nav>
+      ${conceptMapCard()}
       ${filmPreview()}
     </main>`;
   setupFilmPreview();

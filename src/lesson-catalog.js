@@ -1,3 +1,13 @@
+export const conceptMap = {
+  id: "concept-map",
+  title: "How the pieces fit together",
+  href: "?lesson=concept-map",
+  description:
+    "Explore a visual map connecting causal questions, valid comparisons, estimation methods, and evidence.",
+  keywords:
+    "concept map atlas overview big picture curriculum learning path causal inference introduction",
+};
+
 export const openingLesson = {
   id: "what-if",
   title: "What if?",

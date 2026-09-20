@@ -745,3 +745,31 @@ the learner's selected variables; experiments open in another tab to preserve
 quiz progress. Final-question feedback remains immediate, while experiment links
 and entry-question explanations follow assessment. See [final quiz](final-quiz.md)
 and [entry quiz](adaptive-quiz.md) for routing, scoring and scientific constraints.
+
+## Concept map
+
+**How the pieces fit together** (`?lesson=concept-map`) is a visual overview of
+the covered curriculum. A homepage card, the learning chooser, topic browser,
+Contents, and search make it discoverable. It offers a direct route to What if?
+without changing lesson order or recording lesson progress.
+
+Four regions connect the causal question, the validity of the comparison,
+estimation methods, and interpretation of evidence. Each schematic illustration
+has an adjacent plain-language explanation. The connecting route describes the
+reasoning process, not causal arrows or a prerequisite graph. The guided course
+revisits these regions in teaching order.
+
+Selecting a region reveals its concepts. Each concept explains a connection to
+another region and links to existing lessons. Trimming connects to the target
+population; hidden confounding to the limits of double robustness; precision to
+causal validity. The map links to the existing instruments-and-adjustment
+material without implying that it teaches an IV estimator.
+
+Region and concept controls support keyboard use; Escape closes a region and
+returns focus. The map stacks in reading order on phones and follows both
+themes and reduced-motion preferences. Illustrations use SVG and shared palette
+variables; they are explicitly schematic, not numerical study results.
+
+Focused checks cover curriculum coverage, discovery, concept connections, lesson
+links, keyboard use, themes, and narrow-screen overflow. Learner comprehension
+and screen-reader listening require separate evaluation.
