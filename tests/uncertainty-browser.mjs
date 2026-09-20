@@ -111,6 +111,14 @@ try {
       firstX: plot.querySelector("circle").getAttribute("cx"),
       firstY: plot.querySelector("circle").getAttribute("cy"),
     }));
+  // Viewport changes can resolve before the resize handler redraws the chart.
+  await page.waitForFunction(() => {
+    const plot = document.querySelector("#single-plot");
+    return (
+      plot.querySelector("svg").viewBox.baseVal.width ===
+      Math.max(230, plot.clientWidth)
+    );
+  });
   const originalGeometry = await samplingGeometry();
   await page.clock.install({ time: new Date("2026-09-12T12:00:00Z") });
   await page.clock.pauseAt(new Date("2026-09-12T12:00:01Z"));
