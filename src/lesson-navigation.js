@@ -30,6 +30,7 @@ export function lessonNavigation({
         learn: "Learning choices",
         topics: "Topic browser",
         quiz: "Starting-point quiz",
+        "final-quiz": "Final quiz",
       }[learningPage]
     : introduction
       ? "Introduction"
@@ -54,6 +55,7 @@ export function lessonNavigation({
             .join("")}</ol></section>`,
       )
       .join("")}
+    <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=final-quiz" ${learningPage === "final-quiz" ? 'aria-current="step"' : ""}>Final quiz</a>
     <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2>
       ${optionalChapters.map(({ id, menuTitle, href }) => `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`).join("")}
     </section>
