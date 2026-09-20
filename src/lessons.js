@@ -351,9 +351,9 @@ function enterIntroduction(focus = true, animate = false) {
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
           <g class="intro-orbits"><circle cx="230" cy="170" r="125"/><circle cx="230" cy="170" r="85"/><path d="M30 170h400M230 20v280"/></g>
           <g class="intro-edges" fill="none" marker-end="url(#intro-arrow)"><path pathLength="1" d="M209 86 116 211"/><path pathLength="1" d="m251 86 93 125"/><path pathLength="1" d="M135 240h188"/></g>
-          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text><text class="intro-node-label" x="230" y="115">Context</text></g>
-          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text><text class="intro-node-label" x="94" y="296">Treatment</text></g>
-          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text><text class="intro-node-label" x="366" y="296">Outcome</text></g>
+          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text></g>
+          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text></g>
+          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text></g>
         </svg>
       </section>
       <nav class="intro-paths" aria-label="Choose your way in">
