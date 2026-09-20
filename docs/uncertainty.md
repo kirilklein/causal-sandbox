@@ -33,8 +33,13 @@ crossings, then the completed batch reveals its measured percentage alongside
 "about 95% over many repetitions, under the assumptions." Reduced-motion mode
 reveals the whole batch immediately. Running another batch keeps the initial
 observed sample and draws 99 new ones. Starting with a new sample clears the batch.
-Increasing sample size compresses the spread; adding C → A moves the unadjusted
-comparison away from the causal truth.
+A sample-size slider above this same chart changes every plotted study from
+200 to 3,200 people. The displayed sample count and average interval width update
+immediately. Study seeds, row positions, and axis bounds stay fixed, so returning
+to a sample size restores the results. Redrawing and repeating retain the selected
+size; controls are disabled during the batch animation. After the first batch,
+the confounding toggle appears: adding C → A moves the unadjusted comparison away
+from causal truth. The coverage caveat changes with the assignment mechanism.
 
 The optional bootstrap starts with a concrete resample. Six original participant
 IDs visibly become zero, one, or multiple copies, using their actual selection
@@ -73,8 +78,8 @@ p-values use an inequality instead of rounding to zero.
 The uncertainty lesson starts with n=200, effect=2, seed=4217. Redraw advances
 that study's seed. Each coverage batch retains that sample plus 99 new studies,
 using successive seeds starting at 12000. The graph and count include all 100.
-The precision comparison uses seeds
-9000–9049 at each setting (n=200–3200). Each interval estimates uncertainty from
+Sample-size and confounding changes reuse the currently plotted study seeds
+(n=200–3200). Each interval estimates uncertainty from
 its own sample; the across-study spread is never substituted for its SE.
 
 The p-value lesson simulates batches of 100 null studies (effect=0, seeds starting
@@ -88,9 +93,10 @@ Matching interval inclusion and p-values change continuously across 0.05.
 
 ## Optional bootstrap exploration
 
-`?lesson=uncertainty#bootstrap` opens the optional disclosure directly. It uses
-the observed randomized study from the sampling experiment; changing to confounding
-regenerates a study with selection=1.2 and the same seed. Each batch draws
+`?lesson=uncertainty#bootstrap` opens the optional disclosure directly. Its source
+study stays at 200 people, using the sampling experiment's initial-study seed;
+changing its own confounding toggle
+regenerates that source with selection=1.2 and the same seed. Each batch draws
 resamples of observed people with replacement, separately within treatment arms,
 preserving the original arm sizes. The calculation uses only A and Y. Redrawing
 the original study or changing the bootstrap world clears the previous results.
@@ -105,6 +111,16 @@ Add 10 extends the same sequence to 20, 30, and onward. After 20, Build to 1,000
 provides a shortcut. Reusing the seed preserves all earlier draws. Starting a new
 resample resets the sequence with a new seed; changing the source resets both
 views. SE is unavailable for a single resample and uses divisor B−1 thereafter.
+
+A second graph plots the running bootstrap SE against the number of resamples.
+Each point is the sample SD of the first B estimates (divisor B−1), starting at
+B=2. Adding draws preserves the earlier sequence; the 1,000-draw shortcut includes
+every intermediate prefix. A dashed line shows the same study's formula SE as
+a reference, not an exact limit: finite empirical arm variances differ slightly
+from the unbiased variances used by the formula. The running estimate may rise or
+fall; more resamples stabilize its calculation without making the study more precise.
+The horizontal axis initially spans 0–100 and expands with larger batches.
+Starting a new resample or changing the source starts a new trajectory.
 
 The inspection table and percentile-interval disclosure have been removed.
 Participant copies and interval/null-study graphs carry the patterns; long

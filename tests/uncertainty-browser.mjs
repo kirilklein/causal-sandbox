@@ -90,6 +90,16 @@ try {
     new RegExp(fmt(baseline.estimate)),
   );
   const first = await page.locator("#single-result").textContent();
+  await page.locator("#uncertainty-n").focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await page.locator("#uncertainty-n").inputValue(), "400");
+  assert.ok(
+    (await page.locator("#single-result").textContent()).includes(
+      fmt(uncertaintyStudy({ n: 400 }).estimate),
+    ),
+  );
+  await page.keyboard.press("Home");
+  assert.equal(await page.locator("#single-result").textContent(), first);
   await page.locator("#uncertainty-redraw").click();
   assert.notEqual(await page.locator("#single-result").textContent(), first);
   await page.locator("#restart").click();
@@ -125,6 +135,7 @@ try {
   await page.locator("#reveal-coverage").focus();
   await page.keyboard.press("Enter");
   assert.equal(await page.locator("#uncertainty-redraw").isDisabled(), true);
+  assert.equal(await page.locator("#uncertainty-n").isDisabled(), true);
   assert.equal(await page.locator("#coverage-section").isVisible(), false);
   await page.clock.runFor(900);
   const earlyCount = await page
@@ -218,15 +229,76 @@ try {
   );
   assert.deepEqual(await samplingGeometry(), originalGeometry);
   assert.equal(await page.locator(".inference-page table").count(), 0);
-  await page.locator("#show-precision").click();
+  assert.equal(await page.locator("#show-precision").count(), 0);
   const small = await page.locator("#precision-summary").innerText();
+  const smallPlot = await page.locator("#single-plot").innerHTML();
+  const smallGeometry = await samplingGeometry();
+  const smallWidths = await page
+    .locator("#single-plot .inference-interval > path")
+    .evaluateAll((paths) => paths.map((path) => path.getBBox().width));
   await page.locator("#uncertainty-n").focus();
   await page.keyboard.press("End");
   assert.equal(await page.locator("#uncertainty-n").inputValue(), "3200");
   assert.notEqual(await page.locator("#precision-summary").innerText(), small);
+  assert.equal(await page.locator("#uncertainty-n-value").innerText(), "3200");
+  assert.match(
+    await page.locator("#sampling-world").innerText(),
+    /3200 people/,
+  );
+  const largeGeometry = await samplingGeometry();
+  assert.equal(largeGeometry.truth, smallGeometry.truth);
+  assert.equal(largeGeometry.viewBox, smallGeometry.viewBox);
+  assert.equal(largeGeometry.firstY, smallGeometry.firstY);
+  const largeBatch = nextBatch.map((study) =>
+    uncertaintyStudy({ n: 3200, seed: study.seed }),
+  );
+  const averageWidth =
+    largeBatch.reduce((sum, study) => sum + study.upper - study.lower, 0) /
+    largeBatch.length;
+  assert.ok(
+    (await page.locator("#precision-summary").innerText()).includes(
+      fmt(averageWidth),
+    ),
+  );
+  assert.match(
+    await page.locator("#coverage-summary").innerText(),
+    new RegExp(`${coverageSummary(largeBatch).covered} of 100`),
+  );
+  const largeWidths = await page
+    .locator("#single-plot .inference-interval > path")
+    .evaluateAll((paths) => paths.map((path) => path.getBBox().width));
+  assert.equal(largeWidths.length, 100);
+  assert.ok(
+    largeWidths.every((width, i) => width < smallWidths[i] / 2),
+    "larger studies visibly narrow intervals on the same axis",
+  );
+  await page.keyboard.press("Home");
+  assert.equal(await page.locator("#single-plot").innerHTML(), smallPlot);
+  assert.equal(await page.locator("#precision-summary").innerText(), small);
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const n of [200, 3200]) {
+      await page.locator("#uncertainty-n").fill(String(n));
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      );
+      await page
+        .locator("#single-section")
+        .screenshot({ path: `/tmp/uncertainty-size-${n}-${width}.png` });
+    }
+  }
   await page.locator("#uncertainty-confounded").check();
-  assert.match(await page.locator("#precision-world").innerText(), /confounds/);
-  assert.match(await page.locator("#precision-summary").innerText(), /0 of 50/);
+  assert.match(
+    await page.locator("#precision-world").textContent(),
+    /confounds/,
+  );
+  assert.match(await page.locator("#coverage-summary").innerText(), /0 of 100/);
+  assert.match(
+    await page.locator("#coverage-takeaway").innerText(),
+    /confounded/,
+  );
   await page.locator("#bootstrap > summary").focus();
   await page.keyboard.press("Enter");
   assert.equal(
@@ -247,6 +319,21 @@ try {
       fmt(boot.se),
     ),
   );
+  const seChart = page.locator("#bootstrap-se-plot svg");
+  const sePath = page.locator("#bootstrap-se-plot .bootstrap-se-path");
+  const checkSEChart = async (count) => {
+    const expected = bootstrapDifference(uncertaintyRows(), {
+      repetitions: count,
+    });
+    assert.equal(await seChart.getAttribute("data-count"), String(count));
+    const plottedSE = Number(
+      await page.locator(".bootstrap-se-current").getAttribute("data-se"),
+    );
+    assert.ok(Math.abs(plottedSE - expected.se) < 1e-10);
+    assert.equal((await sePath.getAttribute("d")).split("L").length, count - 1);
+  };
+  await checkSEChart(10);
+  const initialSEPath = await sePath.getAttribute("d");
   const trace = await page
     .locator("#bootstrap-trace .resample-person")
     .evaluateAll((nodes) =>
@@ -261,6 +348,10 @@ try {
     assert.equal(item.tokens, item.count);
   }
   assert.equal(trace.length, 6);
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page
+    .locator("#bootstrap-plot")
+    .screenshot({ path: "/tmp/bootstrap-before-extend.png" });
   const truthPosition = await page
     .locator("#bootstrap-plot .inference-truth")
     .getAttribute("d");
@@ -275,6 +366,14 @@ try {
     await page.locator("#bootstrap-plot svg").getAttribute("data-count"),
     "20",
   );
+  await checkSEChart(20);
+  assert.ok((await sePath.getAttribute("d")).startsWith(initialSEPath));
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page
+      .locator("#bootstrap-se-plot")
+      .screenshot({ path: `/tmp/bootstrap-se-20-${width}.png` });
+  }
   const nextBars = await page
     .locator("#bootstrap-plot .bootstrap-bar")
     .evaluateAll((nodes) => nodes.map((node) => Number(node.dataset.count)));
@@ -301,7 +400,17 @@ try {
     await page.locator("#bootstrap-plot svg").getAttribute("data-count"),
     "1000",
   );
+  await checkSEChart(1000);
   assert.equal(await page.locator("#run-bootstrap").isDisabled(), true);
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const colorScheme of ["light", "dark"]) {
+      await page.emulateMedia({ colorScheme });
+      await page.locator("#bootstrap-se-plot").screenshot({
+        path: `/tmp/bootstrap-se-1000-${colorScheme}-${width}.png`,
+      });
+    }
+  }
   assert.equal(
     await page.locator("#bootstrap-plot .inference-truth").getAttribute("d"),
     truthPosition,
@@ -357,7 +466,7 @@ try {
       ),
     );
     await page
-      .locator("#precision-section")
+      .locator("#single-section")
       .screenshot({ path: `/tmp/uncertainty-bias-${width}.png` });
     await page
       .locator("#single-section")
@@ -372,8 +481,28 @@ try {
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   assert.equal(await page.locator("#precision-summary").innerText(), stable);
   await page
-    .locator("#precision-section")
+    .locator("#single-section")
     .screenshot({ path: "/tmp/uncertainty-bias-dark-320.png" });
+  await page.locator("#uncertainty-redraw").click();
+  assert.equal(
+    await page.locator("#single-plot .inference-interval").count(),
+    1,
+  );
+  assert.equal(await page.locator("#uncertainty-n").inputValue(), "3200");
+  assert.ok(
+    (await page.locator("#single-result").textContent()).includes(
+      fmt(uncertaintyStudy({ n: 3200, selection: 1.2, seed: 4218 }).estimate),
+    ),
+  );
+  await page.locator("#reveal-coverage").click();
+  await page.locator("#coverage-section").waitFor();
+  assert.equal(await page.locator("#uncertainty-n").isEnabled(), true);
+  assert.match(await page.locator("#coverage-summary").innerText(), /0 of 100/);
+  await page.locator("#uncertainty-confounded").uncheck();
+  await page.locator("#uncertainty-n").focus();
+  await page.keyboard.press("Home");
+  assert.equal(await page.locator("#uncertainty-n").inputValue(), "200");
+  assert.match(await page.locator("#sampling-world").innerText(), /Randomized/);
   await page.locator("#continue").click();
   await page.locator("#reveal-ipw").waitFor();
   await page.locator("#back").click();
