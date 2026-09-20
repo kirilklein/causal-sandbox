@@ -45,9 +45,14 @@ export function lessonNavigation({
           ? "Refresher"
           : "Advanced lesson"
         : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
+  const previous = coreLessons[revisiting ? position : position - 1];
+  const backLabel = `Back to ${previous ? previous[2] : openingLesson.title}`;
+  const back = Number.isInteger(position)
+    ? `<a class="lesson-heading-back" href="${previous ? lessonHref(previous) : `${import.meta.env.BASE_URL}${openingLesson.href}`}" ${previous ? `data-level="${previous[0]}"` : ""} aria-label="${backLabel}" title="${backLabel}"><span aria-hidden="true">←</span></a>`
+    : "";
   let number = 0;
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
-    <div class="lesson-nav-heading"><button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button>${searchButton()}<span>${status}</span></div>
+    <div class="lesson-nav-heading">${back}${back ? `<span class="lesson-position">${status}</span>` : ""}<button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button>${searchButton()}${back ? "" : `<span>${status}</span>`}</div>
     <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Learning choices</a>
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}${conceptMap.href}" ${learningPage === "concept-map" ? 'aria-current="step"' : ""}>Concept map</a>
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}${openingLesson.href}" ${learningPage === "what-if" ? 'aria-current="step"' : ""}>${openingLesson.title}</a>
