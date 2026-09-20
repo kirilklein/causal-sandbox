@@ -1,4 +1,8 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import {
   uncertaintyStudy,
@@ -9,18 +13,15 @@ import {
 } from "../src/uncertainty.js";
 import { fmt, pLabel } from "../src/uncertainty-view.js";
 
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
+const url = getAppUrl();
+const browser = await launchBrowser();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   await page.goto(`${url}?lesson=confounding`);
   await page.locator("#continue").click();
   await page.locator("#opening-next").waitFor();
