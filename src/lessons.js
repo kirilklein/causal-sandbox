@@ -454,7 +454,7 @@ function enter(level, focus = true, callback = false, restart = false) {
             : ""
         }
       </section>
-      <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}${(level >= 3 && level <= 6) || level === 9 || level === 10 ? '<p id="inactive-clipping-note" hidden></p>' : ""}</details>
+      <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
@@ -819,14 +819,8 @@ function update() {
     );
     note.hidden = !showStatus || !active;
     note.textContent = active
-      ? `${result.clipped} treatment probabilities were clipped for ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}. Probabilities below 0.02 are raised to 0.02, and those above 0.98 are lowered to 0.98 before weights are calculated. This limits extreme weights but can introduce bias.`
+      ? `For ${result.clipped.toLocaleString("en-US")} of ${state.n.toLocaleString("en-US")} people, fitted treatment probabilities were clipped for ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}. Probabilities below 0.02 are raised to 0.02, and those above 0.98 are lowered to 0.98 before weights are calculated. This limits extreme weights but can introduce bias.`
       : "";
-    const inactiveNote = document.querySelector("#inactive-clipping-note");
-    inactiveNote.hidden = !showStatus || active;
-    inactiveNote.textContent =
-      showStatus && !active
-        ? "No treatment probabilities were clipped in this sample."
-        : "";
   }
   if (showsAipw(state.level)) {
     document.querySelector("#aipw-result").hidden = false;

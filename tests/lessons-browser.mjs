@@ -24,28 +24,25 @@ try {
     const warning = page
       .locator("#model-weight-note, #weight-note")
       .filter({ visible: true });
-    const inactive = page.locator("#inactive-clipping-note");
+    assert.doesNotMatch(
+      await page.locator(".learning").textContent(),
+      /No treatment probabilities were clipped/,
+    );
     assert.equal(
       await warning.count(),
       active ? 1 : 0,
       `${page.url()}: ${await warning.allTextContents()}`,
     );
-    assert.equal(await inactive.evaluate((el) => el.hidden), active);
     if (active) {
-      assert.equal(await inactive.textContent(), "");
       assert.match(
         await warning.innerText(),
-        /^[1-9]\d* treatment probabilities were clipped for IPW and AIPW\./,
+        /^For [1-9][\d,]* of 2,400 people, fitted treatment probabilities were clipped for IPW and AIPW\./,
       );
       assert.match(
         await warning.innerText(),
         /Probabilities below 0\.02 are raised to 0\.02, and those above 0\.98 are lowered to 0\.98 before weights are calculated\. This limits extreme weights but can introduce bias\./,
       );
     } else {
-      assert.equal(
-        await inactive.textContent(),
-        "No treatment probabilities were clipped in this sample.",
-      );
       assert.equal(
         await page
           .locator("#weight-note")
@@ -54,7 +51,7 @@ try {
       );
     }
   }
-  // Inactive clipping belongs at the end of the explanation in each affected lesson.
+  // Inactive clipping is absent from both the experiment and its explanation.
   for (const query of [
     "lesson=ipw",
     "lesson=outcome-regression",
@@ -66,13 +63,7 @@ try {
   ]) {
     await page.goto(`${url}?${query}`);
     const reveal = page.locator("#reveal-ipw");
-    if (await reveal.isVisible()) {
-      assert.equal(
-        await page.locator("#inactive-clipping-note").isVisible(),
-        false,
-      );
-      await reveal.click();
-    }
+    if (await reveal.isVisible()) await reveal.click();
     for (const action of [null, "#redraw", "#restart"]) {
       if (action) await page.locator(action).click();
       if (await page.locator("#try-prediction").isVisible()) {
@@ -89,19 +80,10 @@ try {
       const explanation = page.locator(".lesson-explanation");
       if (await explanation.evaluate((el) => el.open))
         await explanation.locator("summary").click();
-      assert.equal(
-        await page.locator("#inactive-clipping-note").isVisible(),
-        false,
-      );
       await explanation.locator("summary").focus();
       await page.keyboard.press("Enter");
-      await page
-        .locator("#inactive-clipping-note")
-        .waitFor({ state: "visible" });
-      assert.equal(
-        await explanation.locator(":scope > :last-child").getAttribute("id"),
-        "inactive-clipping-note",
-      );
+      assert.equal(await explanation.evaluate((el) => el.open), true);
+      await checkClippingStatus(false);
       assert.equal(await page.locator(".lesson-results").innerText(), before);
       assert.equal(await page.locator("#sample-label").innerText(), sample);
     }
@@ -1163,10 +1145,7 @@ try {
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
   assert.equal(await page.locator("input").count(), 2);
   assert.equal(await page.locator("#model-weight-note").isVisible(), false);
-  assert.equal(
-    await page.locator("#inactive-clipping-note").textContent(),
-    "No treatment probabilities were clipped in this sample.",
-  );
+  await checkClippingStatus(false);
   await page
     .getByRole("radio", { name: "Moderate selection", exact: true })
     .focus();
@@ -1182,7 +1161,7 @@ try {
   assert.equal(await page.locator("#known-effect").innerText(), "2.00");
   assert.match(
     await page.locator("#model-weight-note").innerText(),
-    /clipped.*IPW and AIPW/,
+    /^For 1,279 of 2,400 people, fitted treatment probabilities were clipped for IPW and AIPW\./,
   );
   await checkClippingStatus(true);
   const strongOverlap = await result();
