@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   differenceInference,
   bootstrapDifference,
+  bootstrapSEHistory,
   uncertaintyRows,
   normalInference,
   normalCritical,
@@ -288,4 +289,28 @@ test("bootstrap histogram keeps fixed bins and reports draws beyond its fixed ax
     ),
     10,
   );
+});
+
+test("running bootstrap SE uses each prefix and preserves history as draws accumulate", () => {
+  assert.deepEqual(bootstrapSEHistory([]), []);
+  assert.deepEqual(bootstrapSEHistory([5]), []);
+  const hand = bootstrapSEHistory([1, 3, 5, 7]);
+  close(hand[0].se, Math.sqrt(2));
+  close(hand[1].se, 2);
+  close(hand[2].se, Math.sqrt(20 / 3));
+  assert.deepEqual(
+    hand.map((point) => point.count),
+    [2, 3, 4],
+  );
+  const rows = uncertaintyRows();
+  const full = bootstrapDifference(rows, { repetitions: 1000 });
+  const history = bootstrapSEHistory(full.estimates);
+  for (const repetitions of [2, 10, 20, 80, 1000]) {
+    const prefix = bootstrapDifference(rows, { repetitions });
+    close(history[repetitions - 2].se, prefix.se);
+    assert.deepEqual(
+      bootstrapSEHistory(prefix.estimates),
+      history.slice(0, repetitions - 1),
+    );
+  }
 });

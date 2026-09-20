@@ -24,6 +24,7 @@ import {
   fmt,
   intervalPlot,
   bootstrapPlot,
+  bootstrapSEPlot,
   resampleTrace,
   assignmentGraph,
   openingPlot,
@@ -50,8 +51,13 @@ document.querySelector("#app").innerHTML =
       </div>
     </section>
     <section id="single-section" class="panel" aria-labelledby="single-title" hidden>
-      <div class="experiment-heading"><h2 id="single-title" tabindex="-1">1. What does 95% confidence mean?</h2><span class="experiment-tag">Randomized · 200 people per sample</span></div>
+      <div class="experiment-heading"><h2 id="single-title" tabindex="-1">What does 95% confidence mean?</h2><span id="sampling-world" class="experiment-tag">Randomized · 200 people per study</span></div>
       <div class="plot-legend"><span>● Estimate + 95% interval</span><span class="legend-truth">┊ True effect: 2</span><span class="legend-miss">╌ Misses the true effect</span></div>
+      <div class="inference-controls">
+        <div><label for="uncertainty-n">People per study <output id="uncertainty-n-value" for="uncertainty-n">200</output></label><input id="uncertainty-n" type="range" min="200" max="3200" step="200" value="200" aria-describedby="precision-summary"></div>
+        <div id="confounding-control" hidden><label><input id="uncertainty-confounded" type="checkbox"> Add confounding: risk score also affects treatment</label></div>
+      </div>
+      <p id="precision-summary" class="small" role="status"></p>
       <div class="sampling-stage">
         <div id="single-plot"></div>
         <p id="sampling-prompt"><span>New sample. New estimate.<br>Does its interval cross the line?</span></p>
@@ -60,9 +66,14 @@ document.querySelector("#app").innerHTML =
       <p id="sampling-progress" class="small"></p>
       <div id="coverage-section" hidden>
         <div id="coverage-summary" role="status"></div>
-        <p class="inference-prompt">About 95% in the long run—under the assumptions.</p>
-        <div class="actions"><button id="show-precision" class="primary">Make the studies bigger →</button></div>
+        <p id="coverage-takeaway" class="inference-prompt"></p>
+        <p id="precision-takeaway" class="small"></p>
       </div>
+      <details><summary>What changes—and what stays fixed?</summary>
+        <div id="precision-dag"></div><p id="precision-world" class="small"></p>
+        <p>Move the slider to change the number of people in every plotted study. Study seeds, the axis, and the true effect of 2 stay fixed. Larger samples usually narrow intervals; they do not remove confounding.</p>
+        <p>Under confounding, these intervals describe the population association and can miss the causal effect. The analysis remains an unadjusted mean difference.</p>
+      </details>
       <details><summary>Where does the interval come from?</summary>
         <p>A <a href="glossary/#standard-error">standard error</a> estimates how much this estimate would vary across samples. It uses outcome variation and the number of people in each group.</p>
         <p><strong>95% interval ≈ estimate ± 1.96 × standard error.</strong> This is a large-sample normal approximation. <code>SE = √(s₁²/n₁ + s₀²/n₀)</code>, where s is each group's outcome SD and n its size.</p>
@@ -74,24 +85,9 @@ document.querySelector("#app").innerHTML =
         <p>Each row is a fresh population sample with its own standard error. All 100 intervals remain on the graph. Arrows mark bounds beyond the fixed axis. We know the true effect here because this is a simulation.</p>
       </details>
     </section>
-    <section id="precision-section" class="panel" aria-labelledby="precision-title" hidden>
-      <h2 id="precision-title" tabindex="-1">2. Narrower. But closer?</h2>
-      <div class="inference-controls">
-        <div><label for="uncertainty-n">People per study <output id="uncertainty-n-value" for="uncertainty-n">200</output></label><input id="uncertainty-n" type="range" min="200" max="3200" step="200" value="200"></div>
-        <label><input id="uncertainty-confounded" type="checkbox"> Add confounding: risk score also affects treatment</label>
-      </div>
-      <div id="precision-dag"></div><p id="precision-world" class="small"></p>
-      <div id="precision-plot"></div>
-      <div id="precision-summary" role="status"></div>
-      <p id="precision-takeaway" class="inference-prompt"></p>
-      <details><summary>What changes—and what stays fixed?</summary>
-        <p>Each setting uses the same 50 study seeds and a true effect of 2. The analysis remains an unadjusted mean difference. Larger samples usually narrow intervals; they do not remove confounding.</p>
-        <p>Under confounding, these intervals describe the population association and can miss the causal effect. An interval's width measures precision, not causal validity.</p>
-      </details>
-    </section>
     <details id="bootstrap" class="panel"><summary>Optional: reuse the people you already have</summary>
       <h2>One study → resample → estimate</h2>
-      <p class="small">A <a href="glossary/#bootstrap">bootstrap</a> redraws people from the observed study, with replacement.</p>
+      <p class="small">A <a href="glossary/#bootstrap">bootstrap</a> redraws people with replacement. This separate experiment keeps its source study at 200 people.</p>
       <div class="inference-controls"><label><input id="bootstrap-confounded" type="checkbox"> Use a confounded study</label></div>
       <p id="bootstrap-source" class="small"></p>
       <div class="plot-legend"><span>Original → resample</span><span>First 6 of 200 people</span><span class="arm-key-0">○ Untreated</span><span class="arm-key-1">□ Treated</span></div>
@@ -102,11 +98,16 @@ document.querySelector("#app").innerHTML =
         <div id="bootstrap-plot"></div>
         <div class="plot-legend"><span>│ Observed estimate</span><span class="legend-truth">┊ Causal effect: 2</span><span>● First resample</span></div>
         <div id="bootstrap-summary" aria-live="polite"></div>
+        <h3>Does the SE estimate settle down?</h3>
+        <div id="bootstrap-se-plot"></div>
+        <div class="plot-legend"><span>─ Running bootstrap SE</span><span>╌ Formula SE reference</span></div>
+        <p class="small">Each point uses all resamples so far. More resamples stabilize the SE estimate; they do not make this study more precise.</p>
         <p id="bootstrap-takeaway" class="inference-prompt"></p>
       </div>
       <details><summary>What the bootstrap tells us</summary>
         <ul>
           <li>The spread estimates sampling uncertainty. More resamples stabilize that estimate; they add no new people.</li>
+          <li>The formula SE is a reference, not an exact convergence target. Resampling the finite observed groups can give a slightly different limiting SE. The running estimate can rise or fall as resamples are added.</li>
           <li>Resampling does not repair confounding or selection bias. It must preserve dependence, such as clusters or repeated observations.</li>
           <li>This distribution follows the observed estimate. The <a href="?lesson=p-values">p-value lesson</a> uses a zero-effect null distribution.</li>
         </ul>
@@ -151,7 +152,6 @@ let samplingFrame;
 let samplingRunning = false;
 let nextStudySeed = 12000;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-let precisionStudies = [];
 
 let openingStage = 0;
 function renderOpening() {
@@ -201,25 +201,42 @@ function renderSingle() {
   el("sampling-progress").hidden = studies.length === 100 && !samplingRunning;
   el("single-plot").setAttribute("aria-busy", String(samplingRunning));
   el("uncertainty-sample").textContent =
-    `200 people · sample seed ${single.seed}`;
+    `${state.n} people · sample seed ${single.seed}`;
+  el("sampling-world").textContent =
+    `${state.selection ? "Confounded" : "Randomized"} · ${state.n} people per study`;
+  const valid = studies.filter((study) => study.status === "ok");
+  const meanWidth =
+    valid.reduce((sum, study) => sum + study.upper - study.lower, 0) /
+    valid.length;
+  el("precision-summary").textContent = valid.length
+    ? `${valid.length === 1 ? "Interval width" : "Average interval width"}: ${fmt(meanWidth)} outcome units`
+    : "Interval width unavailable.";
 }
 
-function coverageReadout(summary) {
-  const rate = summary.valid ? (100 * summary.covered) / summary.valid : 0;
-  return `<div class="coverage-readout"><strong>${summary.covered} of ${summary.valid}</strong><span>cover truth · ${summary.valid - summary.covered} miss${summary.unavailable ? ` · ${summary.unavailable} unavailable` : ""}</span><div class="coverage-bar" aria-hidden="true"><span style="width:${rate}%"></span></div></div>`;
-}
-
-function finishSampling() {
-  samplingRunning = false;
-  cancelAnimationFrame(samplingFrame);
-  renderSingle();
+function renderCoverage() {
   const summary = coverageSummary(studies);
   const rate = summary.valid
     ? Math.round((100 * summary.covered) / summary.valid)
     : 0;
   el("coverage-summary").innerHTML =
     `<div class="coverage-readout"><strong>${rate}%</strong><span>${summary.covered} of ${summary.valid} intervals crossed the line${summary.unavailable ? ` · ${summary.unavailable} unavailable` : ""}.</span><div class="coverage-bar" aria-hidden="true"><span style="width:${rate}%"></span></div></div>`;
+  el("coverage-takeaway").textContent = state.selection
+    ? "Narrow intervals can miss the causal effect when treatment is confounded."
+    : "About 95% in the long run—under the assumptions.";
+  el("precision-takeaway").textContent =
+    "Move the sample-size slider: more people usually narrow the intervals, but do not remove confounding.";
+}
+
+function finishSampling() {
+  samplingRunning = false;
+  cancelAnimationFrame(samplingFrame);
+  renderSingle();
+  renderCoverage();
   el("coverage-section").hidden = false;
+  el("confounding-control").hidden = false;
+  el("uncertainty-check").hidden = false;
+  el("uncertainty-n").disabled = false;
+  el("uncertainty-confounded").disabled = false;
   el("reveal-coverage").textContent = "Run another 100 samples";
   el("reveal-coverage").disabled = false;
   el("uncertainty-redraw").disabled = false;
@@ -232,10 +249,12 @@ function repeatSamples() {
   const batch = [
     single,
     ...Array.from({ length: 99 }, () =>
-      uncertaintyStudy({ ...uncertaintyBaseline, seed: nextStudySeed++ }),
+      uncertaintyStudy({ ...state, seed: nextStudySeed++ }),
     ),
   ];
   samplingRunning = true;
+  el("uncertainty-n").disabled = true;
+  el("uncertainty-confounded").disabled = true;
   el("coverage-section").hidden = true;
   el("reveal-coverage").hidden = false;
   el("reveal-coverage").disabled = true;
@@ -263,36 +282,24 @@ function repeatSamples() {
   });
 }
 
-function renderPrecision() {
-  if (!precisionStudies.length) return;
-  el("precision-plot").innerHTML = intervalPlot(precisionStudies, {
-    truth: true,
-    width: width("precision-plot"),
-    rowGap: 5,
-  });
-  const valid = precisionStudies.filter((s) => s.status === "ok");
-  const summary = coverageSummary(precisionStudies);
-  const meanWidth =
-    valid.reduce((sum, s) => sum + s.upper - s.lower, 0) / valid.length;
-  el("precision-summary").innerHTML =
-    `${coverageReadout(summary)}<p class="small">Average interval width: ${fmt(meanWidth)} outcome units</p>`;
-  el("precision-takeaway").textContent = el("uncertainty-confounded").checked
-    ? "More people. Narrow intervals. Confounding stays."
-    : "More people → less sampling spread.";
+function renderWorld() {
+  el("precision-dag").innerHTML = assignmentGraph(Boolean(state.selection));
+  el("precision-world").textContent = state.selection
+    ? "C confounds the comparison. Analysis: no adjustment."
+    : "Randomized treatment. Analysis: no adjustment.";
 }
 
 function updatePrecision() {
-  const n = Number(el("uncertainty-n").value);
-  const selection = el("uncertainty-confounded").checked ? 1.2 : 0;
-  el("uncertainty-n-value").textContent = n;
-  el("precision-dag").innerHTML = assignmentGraph(Boolean(selection));
-  el("precision-world").textContent = selection
-    ? "C confounds the comparison. Analysis: no adjustment."
-    : "Randomized treatment. Analysis: no adjustment.";
-  precisionStudies = Array.from({ length: 50 }, (_, i) =>
-    uncertaintyStudy({ ...uncertaintyBaseline, n, selection, seed: 9000 + i }),
+  state.n = Number(el("uncertainty-n").value);
+  state.selection = el("uncertainty-confounded").checked ? 1.2 : 0;
+  el("uncertainty-n-value").textContent = state.n;
+  studies = studies.map((study) =>
+    uncertaintyStudy({ ...state, seed: study.seed }),
   );
-  renderPrecision();
+  single = studies[0];
+  renderWorld();
+  renderSingle();
+  if (studies.length === 100) renderCoverage();
 }
 
 let bootstrapRows;
@@ -337,6 +344,10 @@ function renderBootstrap() {
   el("finish-bootstrap").hidden = bootstrapCount < 20 || bootstrapCount >= 1000;
   if (bootstrapCount < 10) return;
   el("bootstrap-plot").innerHTML = bootstrapPlot(b, width("bootstrap-plot"));
+  el("bootstrap-se-plot").innerHTML = bootstrapSEPlot(
+    b,
+    width("bootstrap-se-plot"),
+  );
   el("bootstrap-summary").innerHTML =
     `<div class="inference-result"><div><span>Spread of ${bootstrapCount.toLocaleString("en-US")} estimates<br>Bootstrap SE</span><strong>${fmt(b.se)}</strong></div><div><span>Formula SE<br>Same observed study</span><strong>${fmt(b.observed.se)}</strong></div></div><p class="small">Same 200 people · fixed −1 to 5 axis</p>`;
   el("bootstrap-takeaway").textContent = el("bootstrap-confounded").checked
@@ -406,13 +417,6 @@ el("uncertainty-redraw").addEventListener("click", () => {
   capture("simulation_run", { lesson: "uncertainty", action: "redraw" });
 });
 el("reveal-coverage").addEventListener("click", repeatSamples);
-el("show-precision").addEventListener("click", () => {
-  el("precision-section").hidden = false;
-  el("uncertainty-check").hidden = false;
-  el("show-precision").hidden = true;
-  updatePrecision();
-  el("precision-title").focus();
-});
 el("uncertainty-n").addEventListener("input", updatePrecision);
 el("uncertainty-confounded").addEventListener("change", updatePrecision);
 el("restart").addEventListener("click", () => location.reload());
@@ -450,8 +454,8 @@ for (const button of document.querySelectorAll("[data-answer]"))
 window.addEventListener("resize", () => {
   renderOpening();
   renderSingle();
-  renderPrecision();
   renderBootstrap();
 });
 renderOpening();
 renderSingle();
+renderWorld();
