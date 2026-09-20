@@ -322,7 +322,7 @@ function renderResults() {
             .join("")}</details>`
         : ""
     }
-    <nav class="learning-actions" aria-label="Choose your next step">${result.kind === "advanced" ? "" : `<a class="${result.items.length ? "" : "primary"}" href="${learningUrl("topics")}">Browse all topics →</a>`}<a href="${topicLesson("randomization").href}">Start from scratch</a><a href="${learningUrl("learn")}">Learning choices</a>${nextQuestion(state.answers) ? '<button id="quiz-resume">Continue the quiz</button>' : ""}<button id="quiz-restart">${seenExplanations ? "Start a new practice attempt" : "Start a new attempt"}</button></nav>
+    <nav class="learning-actions" aria-label="Choose your next step">${result.kind === "advanced" ? "" : `<a class="${result.items.length ? "" : "primary"}" href="${learningUrl("topics")}">Browse all topics →</a>`}<a href="${topicLesson("what-if").href}">Start from scratch</a><a href="${learningUrl("learn")}">Learning choices</a>${nextQuestion(state.answers) ? '<button id="quiz-resume">Continue the quiz</button>' : ""}<button id="quiz-restart">${seenExplanations ? "Start a new practice attempt" : "Start a new attempt"}</button></nav>
     ${state.answers.length ? `<p class="learning-note">Based on ${state.answers.length} answered questions. Topics we didn’t ask about weren’t assessed.</p>` : ""}`,
   );
   function setReview(id, open) {

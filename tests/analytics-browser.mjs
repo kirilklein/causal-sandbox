@@ -65,6 +65,11 @@ try {
   assert.doesNotMatch(page.url(), /private|do-not-send|utm_term|utm_content/);
   assert.equal(requests.length, 0, "the chooser should not contact PostHog");
   await page.getByRole("link", { name: /Start from scratch/ }).click();
+  assert.equal(requests.length, 0, "the opening should not contact PostHog");
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await page.waitForFunction(() => document.querySelector("#try-prediction"));
   const request = await eventRequest;
   assert.deepEqual(errors, []);
@@ -116,6 +121,10 @@ try {
     const postStart = page.waitForRequest("https://analytics.invalid/**");
     await page.getByRole("link", { name: "Learn", exact: true }).click();
     await page.getByRole("link", { name: /Start from scratch/ }).click();
+    await page.locator('[data-chapter="3"]').click();
+    await page
+      .getByRole("link", { name: "Start with a randomized experiment" })
+      .click();
     const postPayload = JSON.parse(
       gunzipSync((await postStart).postDataBuffer()).toString(),
     ).batch[0];
@@ -199,6 +208,10 @@ try {
   await blocked.goto(appUrl);
   await blocked.getByRole("link", { name: "Learn", exact: true }).click();
   await blocked.getByRole("link", { name: /Start from scratch/ }).click();
+  await blocked.locator('[data-chapter="3"]').click();
+  await blocked
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await blocked.locator("#try-prediction").waitFor();
   await blocked.locator("#continue").click();
   await blocked.waitForFunction(() =>

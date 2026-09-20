@@ -46,11 +46,11 @@ const lessons = [
     question:
       "With random assignment, will the observed outcome difference equal the true effect?",
     transition:
-      "<strong>True effect:</strong> Imagine the same population under two alternatives: everyone receives treatment, or nobody does. The true effect is the average outcome under the first alternative minus the average under the second.",
+      "<strong>True effect:</strong> Imagine the same population under two alternatives: everyone receives treatment, or nobody does. The true effect is the average outcome under the first alternative minus the average under the second. This experiment uses a new population of 2,400 people and an adjustable effect.",
     instruction:
       "Change the treatment effect, then redraw the sample to see how estimates vary.",
     explanation:
-      "Random assignment makes the groups comparable before treatment in the population. The unadjusted difference can estimate the treatment effect without adjustment. A finite sample still has chance differences, so its estimate need not equal the truth.",
+      "Random assignment makes the groups comparable before treatment in the population. The treated group’s average estimates the population average under treatment; the untreated group’s average estimates it without treatment. Their difference estimates the average effect, while individual counterfactuals remain unobserved. A finite sample still has chance differences, so its estimate need not equal the truth.",
     next: "In practice, a person's health can affect whether they receive treatment. What changes then?",
   },
   {
@@ -326,6 +326,7 @@ function enterIntroduction(focus = true, animate = false) {
         <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
           <h1 tabindex="-1" id="intro-title">See what<br>causes what.</h1>
           <p class="intro-context">Learn through experiments, explore simulated worlds, or build your own causal graphs.</p>
+          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start here: one patient, two possible futures →</a>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
@@ -443,7 +444,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       `
       }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-quiz" class="primary" href="?lesson=final-quiz">Take the final quiz →</a><a id="recap-exit" href="?sandbox">Explore scenarios ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=what-if">← What if?</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-quiz" class="primary" href="?lesson=final-quiz">Take the final quiz →</a><a id="recap-exit" href="?sandbox">Explore scenarios ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters

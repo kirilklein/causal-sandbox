@@ -10,6 +10,9 @@ try {
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
+  await page.route("**/gc.zgo.at/count.js", (route) =>
+    route.fulfill({ contentType: "application/javascript", body: "" }),
+  );
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   async function tryPrediction() {
@@ -1219,6 +1222,10 @@ try {
     .click();
   await page
     .getByRole("link", { name: "Start from scratch", exact: false })
+    .click();
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
     .click();
   await tryPrediction();
   assert.equal(await result(), first);

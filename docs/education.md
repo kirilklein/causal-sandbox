@@ -65,7 +65,7 @@ whole framework. Three entry cards each give one learning promise: **Learn**
 opens a learning chooser for new visitors and resumes lessons when progress is
 saved, **Explore** opens the scenario sandbox, and **Build** opens
 the graph sandbox. The existing 22-second film is a secondary text button.
-Contents and lesson 1 offer a return to the introduction. Explicit lesson,
+Contents offers a return to the introduction; lesson 1 links back to What if?. Explicit lesson,
 legacy level, and sandbox links retain their destinations and numbering.
 
 On initial entry, a decorative causal graph connects and the three cards appear
@@ -608,6 +608,116 @@ on titles, aliases, keywords, and summaries, with up to eight results displayed.
 entries. When adding a lesson, include its search description and keywords.
 `tests/search-browser.mjs` checks destinations, glossary anchors, keyboard focus,
 themes, and mobile layouts.
+
+## Opening question and patient trajectory story
+
+**What if?** (`?lesson=what-if`) is an unnumbered opening chapter before
+randomization. The homepage links to it prominently, and Start from scratch
+in both learning choices and entry-quiz results opens it. Contents, the topic
+browser, and search expose the opening. Randomization links back to it; existing
+core lesson IDs, numbering, progress, and saved-resume destinations are unchanged.
+
+Four reader-controlled steps establish the causal question: one observed course,
+its simulated alternative, average day-12 outcomes for the same ten people under
+each treatment choice, and the missing comparison when only factual outcomes
+remain. The opening reuses the trajectory renderer and the landscape's ten
+retained profiles, including the highlighted patient at severity 7 (Patient 08).
+The population comparison fixes time at day 12. Its copy connects the average
+of individual treatment-effect gaps to the difference of population means. On
+forward entry from the two-futures scene, the two endpoints move into Patient
+08’s population marks before the other people and means appear. Outcome values
+stay fixed: only the layout changes from time to people. Reduced motion shows
+the complete plots immediately; navigation, resize, or keyboard inspection ends
+the transition. Both dot plots use the same health scale
+and patient order, with the focal patient highlighted. Values appear on hover
+or keyboard focus. Filled marks are factual, hollow marks
+are simulator-known counterfactuals. The final step removes missing outcomes'
+positions and values, and marks both full-population means unknown. Neither
+subgroup averages nor predictions substitute for these missing outcomes.
+
+The simulator-known means are 66 with treatment and 54 without treatment; their
+difference is +12. All individual effects are equal only for this teaching
+example. This reveals the estimand, not an estimator: there is no fitted outcome
+model and no claim to recover individual counterfactuals. The final action opens
+**A randomized experiment**. The handoff explains why each randomly assigned
+group can estimate a population mean under its treatment choice, while
+individual counterfactuals remain unobserved. A question about the accuracy of
+one study leads into the existing randomization prediction. Optional detail introduces
+consistency, positivity, exchangeability, and no interference.
+
+Both trajectory pages include shared theme controls, search, and Contents.
+Trajectory playback can be paused and replayed. Reduced motion displays complete
+scenes and skips endpoint movement.
+The opening’s population steps use paired dot plots with identical scales and
+patient order. Each mark exposes its patient, outcome, and observation status
+to assistive tools. Focused unit tests verify the paired
+population means, identity preservation, and removal of unobserved values and
+positions. Browser checks cover the complete opening, discovery, onward/back
+navigation, keyboard use, animation interruption, themes, and narrow screens.
+Learner comprehension has not been tested.
+
+`?lesson=trajectory-landscape` remains an optional chapter after **A common
+cause**, titled **Why a helpful treatment can look harmful**. It reuses the
+opening's patients to revisit treatment selection and confounding. Seven chapters
+introduce one observed health course,
+its counterfactual, ten patients at one severity, a return to one highlighted
+patient, ten profiles across severity, pooled factual endpoints, and a return
+to paired potential outcomes. Readers control transitions, pause and replay.
+Reduced motion shows each chapter's final composition without animation.
+
+The continuous teaching model lives in `src/trajectory-model.js`. Severity
+C = 0,…,9 sets initial health to 90 − 20C/9 and untreated final health to
+78 − 48C/9. Smooth interpolation and a shared time fluctuation connect them.
+Treatment starts on day 4 and adds a smooth response reaching +12 at day 12.
+Paired histories coincide before treatment. Higher health is better.
+
+The Severity → Outcome slider, introduced on returning to one profile, scales
+both severity terms by r ∈ [0,1]. At r = 0, severity has no effect on either
+health course, and the factual pooled difference is +12 at every treatment
+selection setting. Treatment assignments and the +12 benefit remain fixed when
+r changes. This is a prognostic effect, not treatment-effect modification.
+The two severity-connection sliders separately change selection and prognosis.
+
+The frequency chapter introduces ten patients at the selected severity in
+separate charts with identical health and time scales. Their potential health
+courses are identical; treatment assignment varies. One chart is highlighted
+and retained when the group collapses. A treatment-probability readout survives
+the collapse. The landscape then unfolds one fixed patient at each of ten
+equally spaced severities. No additional patients appear during pooling.
+
+With u = 2C/9 − 1, teaching counts are 5 + sign(u) × round(4s|u|), giving
+1, 2, 3, 4, 5, 5, 6, 7, 8, 9 at full selection and 5 everywhere at zero.
+Dividing by ten defines the model assignment probabilities. These are fixed
+illustrative assignments, not a fresh random sample: ten independent draws
+would not always reproduce the displayed counts. The retained patient ranks
+are fixed across selection settings, and each is present in their severity's
+frequency view. At full selection, treated severities are 2,6,7,8,9 and untreated
+severities are 0,1,3,4,5. Their pooled difference is −8.27 despite the +12 benefit.
+At equal probabilities, a ten-person example need not have balanced severity
+mixes; its observed difference is +14.22, not exactly +12.
+
+The final chapter reveals each retained patient's own counterfactual, enabled
+by default with an optional hide control. It does not claim an adjusted estimate
+from observed within-severity groups: there is only one observed patient at each
+severity. The +12 gaps are known inside this simulator; real individual
+counterfactuals are not generally recoverable from observed data.
+
+Canvas rendering reuses the film’s interpolation helpers with the shared
+treatment-arm theme colors. Solid versus dashed paths encode observation, independently of color.
+Grey is confined to shared pretreatment history. Counterfactuals use lighter, thinner dashed strokes and hollow endpoints,
+and are painted first; factual endpoints are filled. The highlighted patient persists
+through collapse and unfolding. The health scale moves onto that patient's
+day-12 plane as severity unfolds, so its ticks align with the endpoint values.
+Endpoint labels describe individual outcomes, not group means.
+
+Mouse/touch dragging and arrow keys rotate both landscape chapters. The hint
+and reset control appear above the canvas; Home also resets the view. Rotation
+changes no patients, assignments or comparisons. DOM captions and numeric
+readouts describe the canvas for assistive tools. Focused tests cover shared
+histories, fixed effects, counts versus probabilities, retained identities,
+pooled means, expansion/collapse, rotation, label bounds, counterfactual display,
+playback, reduced motion, mobile layouts and entry/return routes. Learner
+comprehension remains untested.
 
 ## Final course assessment
 
