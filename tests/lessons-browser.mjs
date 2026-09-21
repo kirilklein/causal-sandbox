@@ -196,14 +196,41 @@ try {
         await page.keyboard.press("ArrowDown");
         await page.keyboard.press("ArrowDown");
         await page.keyboard.press("Tab");
-        await page.keyboard.press("Enter");
       } else {
         await choices.nth(choice).check();
-        await page.locator("#try-prediction").click();
+        await page.locator("#try-prediction").scrollIntoViewIfNeeded();
       }
+      const beforeAnswer = await page.evaluate(() => ({
+        scroll: window.scrollY,
+        questionTop: document.querySelector("#question").getBoundingClientRect()
+          .top,
+      }));
+      if (choice === 2) await page.keyboard.press("Enter");
+      else await page.locator("#try-prediction").click();
       const feedback = page.getByRole("region", {
         name: "Prediction explained",
       });
+      const afterAnswer = await page.evaluate(() => ({
+        scroll: window.scrollY,
+        questionTop: document.querySelector("#question").getBoundingClientRect()
+          .top,
+      }));
+      // Allow one pixel for browser scroll rounding.
+      for (const coordinate of ["scroll", "questionTop"])
+        assert.ok(
+          Math.abs(afterAnswer[coordinate] - beforeAnswer[coordinate]) <= 1,
+          `${topic}: answering keeps ${coordinate} in place`,
+        );
+      assert.equal(await choices.nth(choice).isChecked(), true);
+      assert.equal(await choices.nth(choice).isDisabled(), true);
+      assert.equal(
+        await feedback.locator("strong").evaluate((message) => {
+          const bounds = message.getBoundingClientRect();
+          return bounds.top >= 0 && bounds.bottom <= window.innerHeight;
+        }),
+        true,
+        `${topic}: feedback starts in view without scrolling`,
+      );
       assert.ok((await feedback.innerText()).includes(selected));
       assert.equal(
         await feedback.locator("strong").innerText(),
@@ -319,7 +346,7 @@ try {
     await page.locator("#lesson-graph svg text").allTextContents(),
     ["Treatment (A)", "Outcome (Y)"],
   );
-  assert.equal(await page.locator("input").count(), 1);
+  assert.equal(await page.locator("input:enabled").count(), 1);
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
   assert.equal(await result(), first);
@@ -672,7 +699,7 @@ try {
     );
     roleBaselines.push([level, baseline]);
     assert.equal(await page.locator(".lesson-result:visible").count(), 2);
-    assert.equal(await page.locator("input").count(), 1);
+    assert.equal(await page.locator("input:enabled").count(), 1);
     assert.equal(await page.locator("#post-adjustment").isChecked(), false);
     assert.equal(await page.locator("#model-weight-note").count(), 0);
     assert.equal(
@@ -783,7 +810,7 @@ try {
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 14/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
-  assert.equal(await page.locator("input").count(), 1);
+  assert.equal(await page.locator("input:enabled").count(), 1);
   const ninth = await result();
   assert.equal(await page.locator("#aipw").count(), 0);
   assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
@@ -1182,7 +1209,7 @@ try {
     .check();
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
-  assert.equal(await page.locator("input").count(), 2);
+  assert.equal(await page.locator("input:enabled").count(), 2);
   assert.equal(await page.locator("#model-weight-note").isVisible(), false);
   await checkClippingStatus(false);
   await page

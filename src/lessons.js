@@ -671,13 +671,17 @@ function setupPrediction(prediction) {
       is_correct: correct,
     });
     const encouragement = correct ? "Good prediction!" : "Not quite.";
-    checkpoint.before(checkpoint.querySelector("#question"));
-    checkpoint.innerHTML = `<p><strong>${encouragement}</strong></p><p class="sample-note">Your prediction: ${prediction.choices[Number(selected.value)]}</p><p>${observed}</p><p>${prediction.explanation}</p>`;
-    checkpoint.setAttribute("tabindex", "-1");
-    checkpoint.setAttribute("role", "region");
-    checkpoint.setAttribute("aria-label", "Prediction explained");
-    document.querySelector(".lesson-results").after(checkpoint);
-    checkpoint.focus();
+    const choices = checkpoint.querySelector("fieldset");
+    choices.disabled = true;
+    choices.removeAttribute("aria-describedby");
+    const feedback = document.createElement("div");
+    feedback.innerHTML = `<p><strong>${encouragement}</strong></p><p class="sample-note">Your prediction: ${prediction.choices[Number(selected.value)]}</p><p>${observed}</p><p>${prediction.explanation}</p>`;
+    feedback.setAttribute("tabindex", "-1");
+    feedback.setAttribute("role", "region");
+    feedback.setAttribute("aria-label", "Prediction explained");
+    checkpoint.querySelector("#prediction-hint").replaceWith(feedback);
+    button.remove();
+    feedback.focus({ preventScroll: true });
   });
 }
 

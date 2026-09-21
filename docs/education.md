@@ -171,7 +171,9 @@ preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
 Randomization, collider, and overlap place the prediction question with its answer
-choices immediately after the current graph. Collider and overlap offer their
+choices immediately after the current graph. Answering keeps the question and
+selected choice in place, replacing the hint and submit button with focused
+feedback without scrolling. Collider and overlap offer their
 previous-graph comparison below the experiment only after answering. This separate
 comparison never replaces the current graph. Restart restores the unanswered view.
 
