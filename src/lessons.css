@@ -340,15 +340,18 @@
   padding: 24px;
   margin: 24px 0 12px;
 }
-#lesson-graph {
+#lesson-graph,
+#comparison-graph {
   max-width: 540px;
   margin: 12px auto;
 }
-#lesson-graph svg {
+#lesson-graph svg,
+#comparison-graph svg {
   width: 100%;
   display: block;
 }
-#lesson-graph text {
+#lesson-graph text,
+#comparison-graph text {
   text-anchor: middle;
   fill: var(--text);
   font-size: 16px;
@@ -356,6 +359,10 @@
 .graph-comparison {
   max-width: 540px;
   margin: 16px auto 0;
+}
+.graph-comparison-separate {
+  max-width: none;
+  margin: 12px 0;
 }
 .graph-comparison > button {
   min-height: 44px;
@@ -891,6 +898,9 @@
   padding: 18px;
   border: 1px solid var(--border-strong);
   border-radius: 10px;
+}
+.lesson-prediction legend h2 {
+  margin: 0 0 12px;
 }
 .lesson-prediction .lesson-switch {
   padding: 4px 8px;

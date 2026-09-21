@@ -170,7 +170,12 @@ Selecting a lesson resets its baseline and focuses its heading. Opening Contents
 preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
-Core causal experiments after randomization offer **Compare with previous** above the
+Randomization, collider, and overlap place the prediction question with its answer
+choices immediately after the current graph. Collider and overlap offer their
+previous-graph comparison below the experiment only after answering. This separate
+comparison never replaces the current graph. Restart restores the unanswered view.
+
+Other core causal experiments after randomization offer **Compare with previous** above the
 diagram. Clicking opens a persistent Previous / Current switch and a short
 explanation of the lesson change. Shared nodes stay aligned and both views reserve
 the same space. The preview uses the preceding lesson's settings when arriving

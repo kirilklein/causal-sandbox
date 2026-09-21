@@ -98,6 +98,29 @@ try {
       await page.goto(`${url}?lesson=${topic}`);
       await page.locator("#try-prediction").waitFor();
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      const question = await page.locator("#question").innerText();
+      assert.equal(
+        await page.getByRole("group", { name: question, exact: true }).count(),
+        1,
+      );
+      assert.equal(await page.locator(".experiment > h2").count(), 0);
+      assert.equal(
+        await page.locator("#question").evaluate((heading) => {
+          const graph = document.querySelector("#lesson-graph");
+          const choices = document.querySelector('input[name="prediction"]');
+          return (
+            graph.getBoundingClientRect().bottom <=
+              heading.getBoundingClientRect().top &&
+            heading.getBoundingClientRect().bottom <=
+              choices.getBoundingClientRect().top &&
+            choices.getBoundingClientRect().top -
+              heading.getBoundingClientRect().bottom <
+              60
+          );
+        }),
+        true,
+      );
+      assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(
         await page.locator(".lesson-explanation").isVisible(),
         false,
@@ -191,6 +214,21 @@ try {
         true,
       );
       assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(await page.locator("#question").innerText(), question);
+      if (topic !== "randomization") {
+        assert.equal(await page.locator("#compare-graph").isVisible(), true);
+        assert.equal(
+          await page
+            .locator(".graph-comparison")
+            .evaluate(
+              (comparison) =>
+                comparison.getBoundingClientRect().top >=
+                document.querySelector(".experiment").getBoundingClientRect()
+                  .bottom,
+            ),
+          true,
+        );
+      }
       assert.equal(await page.locator("#sample-label").textContent(), seed);
       if (topic === "collider")
         assert.equal(await page.locator("#post-adjustment").isChecked(), true);
@@ -220,6 +258,7 @@ try {
           fullPage: true,
         });
       await page.locator("#restart").click();
+      assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
       if (topic === "overlap") {
         assert.equal(
