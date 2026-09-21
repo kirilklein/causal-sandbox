@@ -4,12 +4,12 @@ import { studySummary } from "./instrument-simulation.js";
 export const relevanceScenes = [
   {
     world: "proxy",
-    title: "A useful clue",
+    title: "Example: a proxy for hidden fitness",
     measurement: "fitness test",
     story:
-      "Some patients enter rehabilitation because of their underlying fitness. A research-only fitness test gives us a noisy clue about that fitness; clinicians never see its score.",
+      "Underlying fitness is the hidden confounder: it affects both rehabilitation participation and later mobility. The observed fitness test is its proxy: a noisy measurement of that fitness. Clinicians never see the research-only test score, so the score does not determine treatment.",
     question:
-      "The test score does not cause mobility. Could adjusting for it still help estimate the program’s effect?",
+      "We cannot adjust for hidden fitness directly. What happens if we adjust for its observed proxy, the fitness test?",
     graphLabel:
       "Unmeasured fitness causes rehabilitation, mobility, and the fitness test score. Rehabilitation causes mobility. The test score has no outgoing arrows.",
     nodes: [
@@ -25,9 +25,9 @@ export const relevanceScenes = [
       ["A", "Y"],
     ],
     expected: "closer",
-    takeaway: "No causal effect does not mean no useful information.",
+    takeaway: "The proxy reduces confounding here, but does not remove it.",
     explanation:
-      "The test is a proxy: it carries information about hidden fitness. Including it brings the average estimate closer to truth in this model. The test is noisy, so confounding remains. Changing the recorded score alone would not change anyone’s mobility.",
+      "Adjusting for the test makes the treated and untreated groups more comparable in underlying fitness in this model. The mean estimate moves closer to the true effect. But people with the same test score can still differ in fitness: the proxy is noisy, so confounding remains.",
     limitation:
       "A proxy need not reduce bias in every model. Here, the graph explains the information it carries; the specified simulation shows how much it helps.",
   },
@@ -64,10 +64,22 @@ export const relevanceScenes = [
   },
 ];
 
-export function relevanceGraph(scene) {
+export const proxyMechanism = {
+  ...relevanceScenes[0],
+  graphLabel:
+    "Hidden confounder U causes treatment, outcome, and observed proxy V. Treatment causes outcome. V carries information about U but does not itself cause treatment or outcome in this graph.",
+  nodes: [
+    ["U", "Hidden U", 110, 45, true],
+    ["V", "Proxy V", 350, 45],
+    ["A", "Treatment", 110, 220],
+    ["Y", "Outcome", 350, 220],
+  ],
+};
+
+export function relevanceGraph(scene, markerId = "relevance-arrow") {
   const nodes = new Map(scene.nodes.map((node) => [node[0], node]));
   return `<svg viewBox="0 0 460 280" role="img" aria-label="${scene.graphLabel}">
-    <defs><marker id="relevance-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" /></marker></defs>
+    <defs><marker id="${markerId}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" /></marker></defs>
     ${scene.edges
       .map(([from, to]) => {
         const [, , x, y, hidden] = nodes.get(from);
@@ -78,7 +90,7 @@ export function relevanceGraph(scene) {
           dx ? 67 / Math.abs(dx) : Infinity,
           dy ? 27 / Math.abs(dy) : Infinity,
         );
-        return `<path class="relevance-edge${hidden ? " hidden-cause" : ""}" data-edge="${from}${to}" d="M${x + dx * scale} ${y + dy * scale}L${tx - dx * scale} ${ty - dy * scale}" marker-end="url(#relevance-arrow)" />`;
+        return `<path class="relevance-edge${hidden ? " hidden-cause" : ""}" data-edge="${from}${to}" d="M${x + dx * scale} ${y + dy * scale}L${tx - dx * scale} ${ty - dy * scale}" marker-end="url(#${markerId})" />`;
       })
       .join("")}
     ${scene.nodes.map(([id, label, x, y, hidden]) => `<g data-node="${id}"><rect x="${x - 64}" y="${y - 25}" width="128" height="50" rx="12" fill="var(--node-${hidden ? "U" : ["A", "Y"].includes(id) ? id : "C"})" class="${hidden ? "hidden-cause" : ""}"/><text x="${x}" y="${y + 7}" text-anchor="middle">${label}</text></g>`).join("")}

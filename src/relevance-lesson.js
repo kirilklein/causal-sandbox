@@ -8,32 +8,47 @@ import {
 import { relevanceSample } from "./relevance-simulation.js";
 import {
   relevanceScenes,
+  proxyMechanism,
   relevanceGraph,
   relevancePlot,
   relevanceSummaries,
 } from "./relevance-view.js";
 import icon from "./brand.svg?raw";
 
-const title = "Does better prediction mean a better causal estimate?";
+const title = "Proxies for hidden confounders";
 document.title = `${title} · Causal Sandbox`;
 document.querySelector("#app").innerHTML = `
 <div class="instrument-page relevance-page">
   <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
   <main>
     ${lessonNavigation({ currentOptional: "causal-relevance" })}
-    <p class="eyebrow">OPTIONAL · PREDICTION AND CAUSAL ESTIMATION</p>
+    <p class="eyebrow">OPTIONAL · HIDDEN CONFOUNDING</p>
     <h1 tabindex="-1">${title}</h1>
-    <p class="intro">Predicting someone’s mobility and estimating what rehabilitation changes are different tasks. See how adding the same measurement can help one task and hurt the other.</p>
-    <p class="small">Builds on <a href="?lesson=collider">colliders</a> and <a href="?lesson=hidden-confounding">hidden confounding</a>.</p>
-    <div class="relevance-target"><span>ONE QUESTION THROUGHOUT</span><p>What is the average total effect of a rehabilitation program on mobility after 12 weeks?</p><small>Fictional study population · program versus no program · higher mobility is better</small></div>
+    <p class="intro">We cannot always measure the factors that confound a treatment effect. Their observed consequences can give us partial information about them.</p>
+    <p class="small">Builds on <a href="?lesson=hidden-confounding">hidden confounding</a>.</p>
+    <section class="panel proxy-mechanism" aria-labelledby="mechanism-title">
+      <h2 id="mechanism-title">How a proxy can help</h2>
+      <div class="proxy-mechanism-layout">
+        <div><div id="proxy-mechanism-graph" class="relevance-graph">${relevanceGraph(proxyMechanism, "proxy-mechanism-arrow")}</div><p class="small">U is unobserved; V, treatment, and outcome are measured.</p></div>
+        <ol>
+          <li><strong>A hidden confounder.</strong> U affects both treatment and outcome. This can bias our estimate of the treatment’s effect.</li>
+          <li><strong>An observed proxy.</strong> U also influences V, which we can measure. V carries information about U; we call it a <em>proxy for the confounder</em>.</li>
+          <li><strong>Partial adjustment.</strong> Adjusting for V can make the groups more comparable in U. A noisy proxy leaves some differences in U, so confounding can remain.</li>
+        </ol>
+      </div>
+      <p class="small">The proxy need not cause treatment or outcome itself. This is one way proxy adjustment can help; it is not a guarantee that every proxy reduces bias.</p>
+    </section>
     <nav class="relevance-steps" aria-label="Lesson steps">
-      <button data-step="0"><span>1</span> A useful clue</button>
-      <button data-step="1"><span>2</span> A misleading clue</button>
-      <button data-step="2"><span>3</span> Your turn</button>
+      <button data-step="0"><span>1</span> Try the example</button>
+      <button data-step="2"><span>2</span> Check your understanding</button>
     </nav>
     <div id="relevance-scene"></div>
     <div class="relevance-bottom"><button id="restart-relevance">Restart lesson</button><a href="?lesson=topics">All topics</a><a href="?lesson=misspecification">Resume core lessons →</a></div>
-    <details class="relevance-background"><summary>Background and other variable roles</summary>
+    <details class="relevance-background"><summary>Optional: why not adjust for every predictor?</summary>
+      <p>A predictive measurement need not be a useful proxy for a confounder. If it is a <a href="?lesson=collider">collider</a>, adjustment can introduce bias even when it improves prediction.</p>
+      <button data-step="1">Explore the collider comparison</button>
+    </details>
+    <details><summary>Background and other variable roles</summary>
       <p>Review <a href="?lesson=hidden-confounding">hidden common causes</a>, <a href="?lesson=collider">colliders</a>, or <a href="?lesson=timing">what timing tells us</a>.</p>
       <p>An <strong>unrelated variable</strong> has no relevant paths or predictive information in a stipulated toy world. An <strong>outcome cause independent of treatment</strong> can improve precision without removing confounding. Neither label can be established by one small fitted coefficient.</p>
       <p><strong>No direct effect</strong> still allows an indirect path through a mediator. <strong>No total effect</strong> can reflect opposing paths that cancel. <strong>No directed path</strong> rules out a causal effect within the assumed graph, but does not rule out predictive information. Explore <a href="?lesson=mediator">direct and mediated effects</a> and <a href="?lesson=arrow-strength&example=paths-cancel">cancelling paths</a>.</p>
@@ -74,7 +89,7 @@ function updateResults() {
     `${active ? "Remove" : "Include"} the ${scene.measurement}`;
   el("relevance-explanation").hidden = !active;
   el("relevance-explanation").innerHTML = active
-    ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p><h3>${step === 1 ? "Yet it predicts mobility better" : "It also predicts mobility better"}</h3>${predictionView(studies)}`
+    ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p>${step === 1 ? `<h3>Yet it predicts mobility better</h3>${predictionView(studies)}` : `<details><summary>Prediction is a separate question</summary>${predictionView(studies)}<p>Lower prediction error alone cannot show that a measurement is a useful proxy for a confounder. Its causal role matters.</p></details>`}`
     : "";
   const direction = scene.expected === "closer" ? "closer to" : "farther from";
   el("guess-feedback").textContent =
@@ -94,7 +109,7 @@ async function showStep(next, focus = true) {
   });
   if (step === 2) {
     el("relevance-scene").innerHTML =
-      `<section class="panel relevance-transfer" aria-labelledby="scene-title"><p class="eyebrow">03 · APPLY THE DISTINCTION</p><h2 id="scene-title" tabindex="-1">A new measurement, an unknown role</h2><p>A wearable records a baseline activity score. It improves prediction of 12-week mobility in new patients. You do not yet know what causes this score or whether it affects treatment or mobility.</p><p class="relevance-question">Is that enough to decide whether to adjust for it when estimating the program’s total effect?</p><div class="relevance-answers" role="group" aria-label="Choose an answer"><button data-answer="include">Include it: it predicts mobility.</button><button data-answer="exclude">Omit it: it is not a proven cause.</button><button data-answer="unknown">We need a causal explanation first.</button></div><div id="practice-feedback" role="status"></div><div class="relevance-real-world"><h3>In real data, the graph is an assumption</h3><p>The first two examples supplied the causal story. Here, prediction cannot supply the missing arrows. Use study design, timing, and knowledge of how the measurement is produced. Check whether a proposed adjustment is valid across plausible graphs.</p><details><summary>What could justify leaving out an arrow?</summary><p>Timing can exclude backward causation. Randomized assignment can justify missing causes of treatment. Evidence about mechanisms and interventions can support particular exclusions. A weak association, null coefficient, or low feature importance alone cannot show that a variable is causally irrelevant.</p></details></div></section>`;
+      `<section class="panel relevance-transfer" aria-labelledby="scene-title"><p class="eyebrow">02 · CHECK YOUR UNDERSTANDING</p><h2 id="scene-title" tabindex="-1">Closer to truth, but not all the way</h2><p>Across repeated studies, adjusting for the noisy proxy brings the average estimate closer to the true effect. A systematic gap remains.</p><p class="relevance-question">What does this show in the simulated example?</p><div class="relevance-answers" role="group" aria-label="Choose an answer"><button data-answer="removed">The proxy removed the hidden confounding.</button><button data-answer="reduced">The proxy reduced the hidden confounding.</button><button data-answer="caused">The proxy itself caused the outcome.</button></div><div id="practice-feedback" role="status"></div><div class="relevance-real-world"><h3>In real data, we do not know the true effect</h3><p>Here, we supplied the causal graph and the true effect. In a real study, a changed estimate alone cannot establish that a proxy helped. We need evidence that the measurement carries information about the hidden confounder, and assumptions about its other causal relationships.</p><details><summary>Does good outcome prediction establish a proxy’s role?</summary><p>No. A new wearable score might predict mobility without being a useful proxy for the hidden confounder. Study design, timing, and knowledge of how the score is produced help assess its causal role. The optional collider comparison shows why prediction alone is insufficient.</p></details></div></section>`;
     document.querySelectorAll("[data-answer]").forEach((button) =>
       button.addEventListener("click", () => {
         answer = button.dataset.answer;
@@ -106,9 +121,9 @@ async function showStep(next, focus = true) {
     const scene = relevanceScenes[step];
     el("relevance-scene").innerHTML =
       `<section class="panel relevance-experiment" aria-labelledby="scene-title">
-      <p class="eyebrow">0${step + 1} · ${step ? "PREDICTION DOES NOT CERTIFY ADJUSTMENT" : "A VARIABLE CAN HELP WITHOUT CAUSING THE OUTCOME"}</p>
-      <h2 id="scene-title" tabindex="-1">${scene.title}: the ${scene.measurement}</h2><p class="relevance-story">${scene.story}</p>
-      <div class="relevance-workspace"><div class="relevance-world"><h3>The assumed world</h3><p class="small">Treat this graph as correct for the fictional study. Dashed nodes and arrows represent unmeasured causes.</p><div id="relevance-graph">${relevanceGraph(scene)}</div><p class="relevance-graph-note">The ${scene.measurement} is recorded before treatment. It has no causal path to mobility.</p></div>
+      <p class="eyebrow">${step ? "OPTIONAL · A DIFFERENT CAUSAL ROLE" : "01 · FROM MECHANISM TO EXAMPLE"}</p>
+      <h2 id="scene-title" tabindex="-1">${scene.title}</h2><p class="relevance-story">${scene.story}</p><div class="relevance-target"><span>THE EFFECT WE WANT TO ESTIMATE</span><p>What is the average total effect of rehabilitation on mobility after 12 weeks?</p><small>Fictional study population · program versus no program · higher mobility is better</small></div>
+      <div class="relevance-workspace"><div class="relevance-world"><h3>The assumed world</h3><p class="small">Treat this graph as correct for the fictional study. Dashed nodes and arrows represent unmeasured causes.</p><div id="relevance-graph" class="relevance-graph">${relevanceGraph(scene)}</div><p class="relevance-graph-note">The ${scene.measurement} is recorded before treatment. It has no causal path to mobility.</p></div>
       <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><p class="small effect-axis-label">Estimated effect (mobility points)</p><p class="small plot-key">Each dot is one study; ◆ marks the mean. Vertical spacing separates dots. Redder dots are farther from truth (0–2 points of error).</p></div></div>
       <div class="relevance-action"><p class="relevance-question">${scene.question}</p><fieldset id="relevance-guess"><legend>Predict where the mean estimate will move:</legend>${[
         ["closer", "Closer to truth"],
@@ -123,7 +138,7 @@ async function showStep(next, focus = true) {
           "",
         )}</fieldset><button id="include-measurement" class="primary" aria-pressed="false" disabled>Include the ${scene.measurement}</button><p class="small">This changes the regression adjustment, not the people, their outcomes, or the true effect.</p><p id="study-status" role="status">Preparing 60 studies…</p><p id="guess-feedback" role="status"></p></div>
       <div id="relevance-explanation" aria-live="polite" hidden></div>
-      <div class="relevance-forward"><button id="next-relevance">${step ? "Try an unknown measurement →" : "Next: a misleading clue →"}</button></div>
+      <div class="relevance-forward"><button id="next-relevance">Check your understanding →</button></div>
     </section>`;
     document.querySelectorAll('[name="guess"]').forEach((radio) =>
       radio.addEventListener("change", () => {
@@ -135,7 +150,7 @@ async function showStep(next, focus = true) {
       included[step] = !included[step];
       updateResults();
     });
-    el("next-relevance").addEventListener("click", () => showStep(step + 1));
+    el("next-relevance").addEventListener("click", () => showStep(2));
     if (!cache.has(step)) {
       const studies = [];
       for (let i = 0; i < 60; i++) {
@@ -158,12 +173,12 @@ async function showStep(next, focus = true) {
 
 function showAnswer() {
   const responses = {
-    include:
-      "Prediction alone is not enough. The research score improved prediction but opened a collider path. We need to know how the activity score relates causally to treatment and mobility.",
-    exclude:
-      "Not being a proven cause does not make a measurement useless. The fitness test helped as a proxy in the first example. Its adjustment role still needed a causal explanation.",
-    unknown:
-      "Yes. Predictive usefulness is established for the tested setting; adjustment safety is not. Ask what causes the activity score, whether it affects treatment or mobility, and which paths adjustment would open or block.",
+    removed:
+      "Some confounding remains: the mean estimate still misses truth. A noisy proxy does not make hidden fitness identical between the treated and untreated groups.",
+    reduced:
+      "Yes. In this model, the proxy carries information about hidden fitness and reduces confounding. It does not fully measure fitness, so a systematic gap remains.",
+    caused:
+      "A proxy can help without causing the outcome. Hidden fitness causes both the test score and mobility; changing the recorded score alone would not change mobility in this graph.",
   };
   document
     .querySelectorAll("[data-answer]")

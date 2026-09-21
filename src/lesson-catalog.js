@@ -97,12 +97,12 @@ export const optionalChapters = [
   },
   {
     id: "causal-relevance",
-    menuTitle: "Does better prediction mean a better causal estimate?",
+    menuTitle: "Proxies for hidden confounders",
     after: 9,
-    title: "Does better prediction mean a better causal estimate?",
+    title: "Proxies for hidden confounders",
     href: "?lesson=causal-relevance",
     description:
-      "Compare prediction error and causal estimates: a proxy can help, while a predictive collider can introduce bias.",
+      "See how an observed consequence of a hidden confounder can help reduce bias, then try a noisy-proxy example.",
   },
   {
     id: "time-varying-confounding",

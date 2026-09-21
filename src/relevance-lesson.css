@@ -27,7 +27,7 @@
 }
 .relevance-steps {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .relevance-page .relevance-steps button {
@@ -71,20 +71,21 @@
 .relevance-page .relevance-workspace h3 {
   margin-top: 0;
 }
-.relevance-workspace svg {
+.relevance-workspace svg,
+.proxy-mechanism svg {
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
 }
-#relevance-graph {
+.relevance-graph {
   margin: 26px 0 16px;
 }
-#relevance-graph text {
+.relevance-graph text {
   fill: var(--text);
   font-size: 23px;
 }
-#relevance-graph marker path {
+.relevance-graph marker path {
   fill: var(--causal-path);
 }
 .relevance-edge {
@@ -92,7 +93,7 @@
   stroke: var(--causal-path);
   stroke-width: 2;
 }
-#relevance-graph rect.hidden-cause {
+.relevance-graph rect.hidden-cause {
   stroke: var(--causal-path);
   stroke-width: 2;
 }
@@ -265,7 +266,7 @@
   .relevance-world {
     padding: 16px;
   }
-  #relevance-graph {
+  .relevance-graph {
     max-width: 460px;
     margin-inline: auto;
   }
@@ -317,4 +318,35 @@
 
 .relevance-page main a {
   color: var(--accent);
+}
+
+.proxy-mechanism-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 32px;
+  align-items: center;
+}
+.proxy-mechanism h2 {
+  margin-top: 0;
+}
+.proxy-mechanism ol {
+  margin: 0;
+  padding-left: 24px;
+}
+.proxy-mechanism li {
+  padding-left: 6px;
+  margin: 0 0 18px;
+}
+.proxy-mechanism li:last-child {
+  margin-bottom: 0;
+}
+.proxy-mechanism li::marker {
+  color: var(--accent);
+  font-weight: 650;
+}
+@media (max-width: 760px) {
+  .proxy-mechanism-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
 }

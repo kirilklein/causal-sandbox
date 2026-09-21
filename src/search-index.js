@@ -92,7 +92,7 @@ const lessonDetails = {
     "longitudinal time varying confounding sequential IPTW treatment confounder feedback",
   ],
   "causal-relevance": [
-    "Try two rehabilitation studies: a proxy can help without causing the outcome, while a predictive collider can harm adjustment.",
+    "Adjust for an observed proxy of a hidden confounder and see why bias can decrease without disappearing.",
     "causal relevance irrelevant irrelevance unknown non-contributing proxy predictor prediction feature importance direct total effect adjustment usefulness",
   ],
   instrument: [

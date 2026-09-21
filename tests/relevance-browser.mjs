@@ -12,7 +12,7 @@ import { relevanceSummaries } from "../src/relevance-view.js";
 
 const browser = await launchBrowser();
 const url = getAppUrl();
-const title = "Does better prediction mean a better causal estimate?";
+const title = "Proxies for hidden confounders";
 try {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1100 },
@@ -26,9 +26,27 @@ try {
   const include = page.locator("#include-measurement");
   await expect(include).toBeEnabled();
   await expect(page.locator("#relevance-graph")).toBeVisible();
-  await expect(page.locator("#scene-title")).toContainText("fitness test");
+  await expect(page.locator("#scene-title")).toContainText(
+    "proxy for hidden fitness",
+  );
   await expect(page.locator(".study-dot")).toHaveCount(60);
   await expect(page.locator("#relevance-explanation")).toBeHidden();
+  await expect(page.locator("#mechanism-title")).toHaveText(
+    "How a proxy can help",
+  );
+  await expect(page.locator(".proxy-mechanism")).toContainText(
+    "U also influences V",
+  );
+  assert.ok(
+    await page.evaluate(
+      () =>
+        document
+          .querySelector(".proxy-mechanism")
+          .compareDocumentPosition(document.querySelector("#relevance-scene")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ),
+  );
+  await expect(page.locator('.relevance-steps [data-step="1"]')).toHaveCount(0);
   const beforeGraph = await page.locator("#relevance-graph").innerHTML();
   const beforeDots = await page
     .locator('.study-dot[data-arm="0"]')
@@ -90,6 +108,9 @@ try {
     return stats;
   };
   const proxyStats = await checkStudies("proxy");
+  await page
+    .getByText("Prediction is a separate question", { exact: true })
+    .click();
   assert.deepEqual(
     await page.locator(".prediction-bars strong").allTextContents(),
     proxyStats.map((s) => s.prediction.mean.toFixed(2)),
@@ -103,8 +124,15 @@ try {
   await include.click();
 
   await page.locator("#next-relevance").click();
+  await expect(page.locator("#scene-title")).toHaveText(
+    "Closer to truth, but not all the way",
+  );
+  await page
+    .getByText("Optional: why not adjust for every predictor?", { exact: true })
+    .click();
+  await page.locator('[data-step="1"]').click();
   await expect(include).toBeEnabled();
-  await expect(page.locator("#scene-title")).toContainText("research score");
+  await expect(page.locator("#scene-title")).toContainText("misleading clue");
   await expect(page.locator("#relevance-graph svg")).toHaveAttribute(
     "aria-label",
     /collider/,
@@ -132,9 +160,9 @@ try {
   await page.locator('[data-step="2"]').click();
   await expect(page.locator("#relevance-graph")).toHaveCount(0);
   for (const [answer, text] of [
-    ["include", "collider"],
-    ["exclude", "proxy"],
-    ["unknown", "adjustment safety is not"],
+    ["removed", "Some confounding remains"],
+    ["reduced", "reduces confounding"],
+    ["caused", "without causing the outcome"],
   ]) {
     await page.locator(`[data-answer="${answer}"]`).click();
     await expect(page.locator("#practice-feedback")).toContainText(text);
@@ -174,6 +202,9 @@ try {
   await expect(include).toBeEnabled();
 
   await mkdir("test-results", { recursive: true });
+  await page
+    .getByText("Optional: why not adjust for every predictor?", { exact: true })
+    .click();
   for (const width of [1440, 320]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const scene of [0, 1, 2]) {
@@ -203,6 +234,10 @@ try {
         );
         const logo = await page.locator(".brand svg").boundingBox();
         assert.ok(logo.width < 100 && logo.height < 100, "header icon size");
+        if (scene === 0)
+          await page.locator(".proxy-mechanism").screenshot({
+            path: `test-results/proxy-mechanism-${width}-${mode}.png`,
+          });
         await page.locator("#relevance-scene").screenshot({
           path: `test-results/relevance-story-${width}-${scene}-${mode}.png`,
         });
@@ -221,7 +256,7 @@ try {
     document.querySelector('[data-step="1"]').click();
     document.querySelector('[data-step="2"]').click();
   });
-  await expect(touch.locator("#scene-title")).toContainText("unknown role");
+  await expect(touch.locator("#scene-title")).toContainText("Closer to truth");
   await touch.waitForTimeout(150);
   await expect(touch.locator(".study-dot")).toHaveCount(0);
   await touch.locator('[data-step="0"]').tap();

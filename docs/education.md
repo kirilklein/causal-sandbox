@@ -1,15 +1,15 @@
 # Progressive education delivery
 
-The optional [Does better prediction mean a better causal estimate? chapter](causal-relevance.md)
-follows the causal-role material at `?lesson=causal-relevance`. Two rehabilitation
-examples keep the target and stipulated graph visible. Learners predict what
-adjustment will do, then include a noisy fitness test or a combined research
-score. Paired distributions of 60 study estimates show a helpful proxy and a
-harmful collider; a separate prediction comparison exposes the collider's
-predictive benefit. An unknown-role activity tests whether learners can separate
-prediction from adjustment safety. Other variable roles, direct/total effects,
-and cancellation remain supporting background. Contents, the concept map,
-topics, search, hidden confounding, and Timing provide entry points.
+The optional [Proxies for hidden confounders chapter](causal-relevance.md)
+follows hidden confounding at `?lesson=causal-relevance`. It starts with the
+mechanism: an unobserved confounder affects treatment, outcome, and an observed
+proxy. Adjustment for the proxy can reduce bias without eliminating it. A
+rehabilitation example then names the hidden factor (fitness) and proxy (a noisy
+fitness test). Learners include the proxy and compare the same 60 study estimates
+before and after. A practice question distinguishes partial bias reduction from
+complete control of confounding. The predictive-collider comparison and
+prediction-error metrics remain optional supporting material. Contents, the
+concept map, topics, search, hidden confounding, and Timing provide entry points.
 
 The core [uncertainty lesson](uncertainty.md) follows confounding and precedes
 IPW at `?lesson=uncertainty`. An optional bootstrap exploration at

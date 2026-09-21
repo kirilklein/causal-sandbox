@@ -1,39 +1,46 @@
-# Does better prediction mean a better causal estimate?
+# Proxies for hidden confounders
 
-Optional lesson at `?lesson=causal-relevance`, after mediator, collider, and
-hidden confounding. Follow-up to #82 and PR #260. Available from hidden
-confounding, Timing, Contents, the concept map, topics, and search.
+Optional lesson at `?lesson=causal-relevance`, after hidden confounding.
+Follow-up to #82 and PR #260. Available from hidden confounding, Timing, Contents,
+the concept map, topics, and search. The topic URL remains compatible.
 
 ## Teaching objective
 
-This is an optional synthesis after the causal-role lessons. The collider lesson
-explains how adjustment opens a biasing path; this lesson asks why a model can
-predict outcomes better while estimating a treatment effect less accurately.
+A learner should explain that an unobserved confounder can influence an observed
+variable, making that variable a proxy for the confounder. Adjusting for a proxy
+can reduce confounding in some models without eliminating it. The proxy need
+not itself cause treatment or outcome. Ordinary proxy adjustment does not
+necessarily help in every setting.
 
-A learner should be able to explain why predictive usefulness alone does not
-justify adjustment, and why having no causal effect on the outcome does not
-justify ignoring a measurement. They must separate a stipulated toy graph from
-an unknown causal role in real data.
+Teach the general mechanism before the concrete example. The main lesson is
+about partial information on hidden confounders; prediction versus causal
+estimation and collider bias are optional comparisons.
 
-The fixed target is the population average total effect of attending a
+The example targets the population average total effect of attending a
 rehabilitation program versus not attending on mobility after 12 weeks.
 Higher mobility is better. All people have a program effect of +2 mobility
 points. These are fictional mechanisms, not claims about rehabilitation.
 
 ## Storyboard
 
-| Step            | Learner question and action                                                                                | Visible consequence                                                                                                                          | Intended inference                                                                          |
-| --------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Useful clue     | A research-only fitness test has no path to mobility. Predict what adjustment will do, then include it.    | The same 60 studies' adjusted estimates appear beside their original estimates. The average moves toward the fixed truth line but misses it. | A noisy proxy can help without causing the outcome; it leaves confounding in this model.    |
-| Misleading clue | A research score combines transport access and fitness. Predict what including it will do.                 | The average effect estimate moves away from truth, while a separate prediction-error comparison improves.                                    | Being predictive and measured before treatment does not make a collider safe to adjust for. |
-| Unknown role    | A wearable's baseline activity score predicts mobility. Decide whether this establishes adjustment safety. | Immediate feedback refers back to the relevant example and names the missing causal knowledge.                                               | A prediction result cannot supply a causal graph.                                           |
+1. Show U causing treatment, outcome, and observed V. Explain the hidden
+   confounder, its observed proxy, and why a noisy proxy can leave confounding.
+2. Map the roles to a concrete example: hidden fitness and an observed fitness
+   test. Include the proxy in the regression and compare the same 60 studies.
+   Mean estimates move toward truth but retain a systematic gap.
+3. Ask what the result demonstrates: reduced confounding, complete removal, or
+   an effect of the proxy itself. Feedback explains the remaining bias.
+4. State the real-data limit: a changed estimate alone cannot establish that a
+   proxy helped when the graph and true effect are unknown.
 
-The known graph is visible before every experiment. The measurement is not used
-to assign treatment in either story. Only regression adjustment changes when
-Include/Remove is selected; the graph, people, outcomes, studies, and true effect
-stay fixed. The predictor and unrelated-variable cases remain concise supporting
-background. Mediator and cancellation lessons supply the direct/total-effect
-extensions without adding more main experiments.
+The optional collider experiment is reached through a collapsed disclosure,
+not the main Next path. Its prediction comparison shows why predictive value
+alone cannot establish a useful proxy role. Proxy prediction errors, other
+variable roles, and direct/total-effect extensions are optional background.
+
+Only regression adjustment changes when Include/Remove is selected; the graph,
+people, outcomes, studies, and true effect stay fixed. The measurement is not
+used to assign treatment in either experiment.
 
 ## Visual contract
 
@@ -52,7 +59,8 @@ Only the unadjusted row appears initially. Including the measurement adds the
 second row on the same scale; each row labels its own mean. There is
 no table of individual studies and no confidence interval claim.
 
-Both examples reveal a separate prediction comparison after adjustment. Its
+Prediction comparisons are optional: the proxy's is in a disclosure, and the
+collider experiment is itself optional. Their
 bars show actual mean held-out RMSE over the same studies,
 on a common 0–2 mobility-point scale with exact numeric labels. Prediction is
 under the same observational distribution, not under intervention.
@@ -91,9 +99,9 @@ errors, step changes during loading, replay/reset, targeted feedback, navigation
 keyboard/touch, and desktop/phone light/dark layouts.
 
 Functional tests and screenshots do not establish comprehension. A learner
-walkthrough should check whether they can explain why changing a recorded score
-need not change mobility, and why lower prediction error cannot certify a causal
-adjustment. Screen-reader listening remains a separate check.
+walkthrough should check whether they can identify the hidden confounder and its
+proxy, explain the partial reduction in bias, and distinguish the known toy
+mechanism from an assumed proxy relationship in real data. Screen-reader listening remains a separate check.
 
 Sources: Hernán and Robins, [Causal Inference: What If](https://miguelhernan.org/whatifbook),
 chapters 6–8; Hernán, Hsu and Healy,
