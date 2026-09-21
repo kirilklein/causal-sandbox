@@ -288,6 +288,24 @@ try {
       const firstFeedback = await feedback.innerText();
       const toggle = page.locator("#toggle-prediction");
       assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(
+        await toggle.getAttribute("aria-controls"),
+        "prediction-content",
+      );
+      assert.equal(
+        await toggle.evaluate((button) => {
+          const content = document.getElementById(
+            button.getAttribute("aria-controls"),
+          );
+          return (
+            button.closest(".lesson-prediction") === content.parentElement &&
+            button.getBoundingClientRect().bottom <=
+              content.getBoundingClientRect().top
+          );
+        }),
+        true,
+        "Disclosure header is inside the card, above the content it controls",
+      );
       const beforeCollapse = await page.locator(".lesson-results").innerText();
       const graphBeforeCollapse = await page
         .locator("#lesson-graph")

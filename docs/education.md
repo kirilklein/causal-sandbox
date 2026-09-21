@@ -174,8 +174,9 @@ Randomization, collider, and overlap place the prediction question with its answ
 choices immediately after the current graph. Answering keeps the question and
 selected choice in place, replacing the hint and submit button with focused
 feedback without scrolling. After answering, a “Prediction and feedback” disclosure
-with a state arrow collapses or restores the question, choices, and feedback without
-changing the experiment.
+in the card’s top header collapses or restores the question, choices, and feedback
+below it without changing the experiment. The header space is present before answering
+so revealing its control does not shift the question.
 Collider and overlap offer their
 previous-graph comparison below the experiment only after answering. This separate
 comparison never replaces the current graph. Restart restores the unanswered view.

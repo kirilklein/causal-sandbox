@@ -918,7 +918,19 @@
   cursor: default;
 }
 
+.prediction-header {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+}
+#prediction-content {
+  margin-top: 8px;
+}
 #toggle-prediction {
+  width: 100%;
+  font: inherit;
   display: flex;
   align-items: center;
   gap: 8px;

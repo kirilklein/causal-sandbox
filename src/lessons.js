@@ -625,12 +625,15 @@ function setupPrediction(prediction) {
   checkpoint.id = "lesson-prediction";
   checkpoint.className = "lesson-prediction";
   checkpoint.innerHTML = `
+    <div class="prediction-header">Your prediction</div>
+    <div id="prediction-content">
     <fieldset class="model-choices" aria-describedby="prediction-hint">
       <legend><h2 id="question">${prediction.question}</h2></legend>
       ${prediction.choices.map((choice, index) => `<label class="lesson-switch"><input type="radio" name="prediction" value="${index}">${choice}</label>`).join("")}
     </fieldset>
     <p id="prediction-hint" class="sample-note">Choose a prediction to try the experiment. Any choice lets you continue.</p>
-    <button id="try-prediction" disabled>Try it</button>`;
+    <button id="try-prediction" disabled>Try it</button>
+    </div>`;
   document.querySelector("#lesson-graph").after(checkpoint);
   const button = checkpoint.querySelector("button");
   checkpoint.addEventListener("change", () => {
@@ -687,12 +690,13 @@ function setupPrediction(prediction) {
     toggle.innerHTML =
       '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 2 4 4-4 4"/></svg><span>Prediction and feedback</span>';
     toggle.setAttribute("aria-expanded", "true");
-    toggle.setAttribute("aria-controls", checkpoint.id);
+    const content = checkpoint.querySelector("#prediction-content");
+    toggle.setAttribute("aria-controls", content.id);
     toggle.addEventListener("click", () => {
-      checkpoint.hidden = !checkpoint.hidden;
-      toggle.setAttribute("aria-expanded", String(!checkpoint.hidden));
+      content.hidden = !content.hidden;
+      toggle.setAttribute("aria-expanded", String(!content.hidden));
     });
-    checkpoint.after(toggle);
+    checkpoint.querySelector(".prediction-header").replaceChildren(toggle);
     feedback.focus({ preventScroll: true });
   });
 }
