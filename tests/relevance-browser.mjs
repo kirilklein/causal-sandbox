@@ -77,7 +77,7 @@ try {
       assert.ok(Math.abs(dot.x - (24 + (dot.value / 5) * 312)) < 1e-9);
     }
     const means = await page
-      .locator("#effect-summary strong")
+      .locator("#effect-plot .mean-value")
       .allTextContents();
     assert.deepEqual(
       means,
@@ -188,7 +188,7 @@ try {
         if (scene < 2) {
           await include.click();
           await expect(page.locator(".effect-truth")).toHaveCount(1);
-          await expect(page.locator(".plot-prompt")).toBeVisible();
+          await expect(page.locator(".row-label")).toHaveCount(1);
           await page.locator(".relevance-analysis").screenshot({
             path: `test-results/relevance-before-${width}-${scene}-${mode}.png`,
           });

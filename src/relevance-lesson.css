@@ -103,9 +103,6 @@
   font-size: 14px;
   color: var(--text-secondary);
 }
-#effect-plot {
-  min-height: 240px;
-}
 #effect-plot text {
   font-size: 13px;
   fill: var(--text);
@@ -114,12 +111,8 @@
   font-size: 14px;
   font-weight: 600;
 }
-#effect-plot .plot-prompt {
-  fill: var(--text-secondary);
-  font-size: 13px;
-}
-#effect-plot .pending-label {
-  fill: var(--text-secondary);
+#effect-plot .mean-value {
+  font-weight: 650;
 }
 .effect-axis-label {
   text-align: center;
@@ -149,20 +142,6 @@
   fill: var(--text);
   stroke: var(--surface);
   stroke-width: 1.5;
-}
-.effect-summary {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 12px 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.effect-summary strong {
-  display: block;
-  font-size: 24px;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
 }
 .relevance-action {
   border-top: 1px solid var(--border);
@@ -295,14 +274,10 @@
     width: 100%;
     margin-inline: auto;
   }
-  #effect-plot {
-    min-height: 0;
-  }
 }
 @media (max-width: 480px) {
   #effect-plot text,
-  #effect-plot .row-label,
-  #effect-plot .plot-prompt {
+  #effect-plot .row-label {
     font-size: 18px;
   }
   .relevance-page main {
@@ -337,9 +312,6 @@
     grid-template-columns: 98px minmax(0, 1fr) 35px;
     gap: 8px;
     font-size: 12px;
-  }
-  .effect-summary {
-    gap: 12px;
   }
 }
 

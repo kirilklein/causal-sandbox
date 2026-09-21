@@ -96,37 +96,36 @@ export function relevancePlot(studies, included) {
   const summaries = relevanceSummaries(studies);
   const x = (value) => 24 + (Math.max(0, Math.min(5, value)) / 5) * 312;
   const truth = studies[0].truth;
+  const arms = included ? [0, 1] : [0];
+  const axisY = included ? 188 : 100;
   const fmt = (value) =>
     Number.isFinite(value) ? value.toFixed(2) : "Unavailable";
   const description = `Each dot is one of ${studies.length} studies; vertical spacing only separates dots. Diamonds mark means. Without adjustment: mean ${fmt(summaries[0].effect.mean)}, standard deviation ${fmt(summaries[0].effect.sd)}.${included ? ` With adjustment: mean ${fmt(summaries[1].effect.mean)}, standard deviation ${fmt(summaries[1].effect.sd)}.` : " Adjusted estimates have not been revealed."} True effect: ${truth} mobility points. The horizontal scale is fixed from 0 to 5; triangles indicate off-scale estimates.`;
-  return `<svg viewBox="0 0 360 234" role="img" aria-label="${description}">
-    <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="58" y2="116"/>${included ? `<line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="146" y2="210"/>` : ""}
+  return `<svg viewBox="0 0 360 ${axisY + 24}" role="img" aria-label="${description}">
     <text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">Truth: +${truth}</text>
-    ${[0, 1]
+    ${arms
       .map((arm) => {
-        const y = arm ? 170 : 82;
-        return `<text class="row-label${arm && !included ? " pending-label" : ""}" x="24" y="${y - 29}">${arm ? "With adjustment" : "Without adjustment"}</text>
-      ${
-        arm && !included
-          ? `<text class="plot-prompt" x="24" y="${y - 2}"><tspan x="24">Include the measurement</tspan><tspan x="24" dy="21">to compare estimates</tspan></text>`
-          : studies
-              .map((study, i) => {
-                const value = study.fits[arm].effect;
-                const xx = x(value),
-                  yy = y + ((i % 9) - 4) * 3.5;
-                const tint = effectComparison(value, truth).tint;
-                const attributes = `class="study-dot" data-study="${i}" data-arm="${arm}" data-estimate="${value}" style="--error-tint:${tint}%"`;
-                const title = `<title>Study ${i + 1}, ${arm ? "with" : "without"} measurement: ${fmt(value)} mobility points</title>`;
-                return value < 0 || value > 5
-                  ? `<path ${attributes} d="M${xx} ${yy}l${value < 0 ? 6 : -6} -4v8Z">${title}</path>`
-                  : `<circle ${attributes} cx="${xx}" cy="${yy}" r="2">${title}</circle>`;
-              })
-              .join("")
-      }
-      ${arm && !included ? "" : `<path class="effect-mean" data-arm="${arm}" d="M${x(summaries[arm].effect.mean)} ${y + 21}l4 5-4 5-4-5Z"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></path>`}`;
+        const y = 60 + arm * 88;
+        return `<text class="row-label" x="24" y="${y - 25}">${arm ? "With adjustment" : "Without adjustment"}</text>
+      <text class="mean-label" x="336" y="${y - 25}" text-anchor="end">Mean <tspan class="mean-value">${fmt(summaries[arm].effect.mean)}</tspan></text>
+      <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="${y - 20}" y2="${y + 36}"/>
+      ${studies
+        .map((study, i) => {
+          const value = study.fits[arm].effect;
+          const xx = x(value),
+            yy = y + ((i % 9) - 4) * 3.5;
+          const tint = effectComparison(value, truth).tint;
+          const attributes = `class="study-dot" data-study="${i}" data-arm="${arm}" data-estimate="${value}" style="--error-tint:${tint}%"`;
+          const title = `<title>Study ${i + 1}, ${arm ? "with" : "without"} measurement: ${fmt(value)} mobility points</title>`;
+          return value < 0 || value > 5
+            ? `<path ${attributes} d="M${xx} ${yy}l${value < 0 ? 6 : -6} -4v8Z">${title}</path>`
+            : `<circle ${attributes} cx="${xx}" cy="${yy}" r="2">${title}</circle>`;
+        })
+        .join("")}
+      <path class="effect-mean" data-arm="${arm}" d="M${x(summaries[arm].effect.mean)} ${y + 21}l4 5-4 5-4-5Z"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></path>`;
       })
       .join("")}
-    <line class="effect-axis" x1="24" x2="336" y1="211" y2="211"/>
-    ${[0, 1, 2, 3, 4, 5].map((tick) => `<text x="${x(tick)}" y="229" text-anchor="middle">${tick}</text>`).join("")}
+    <line class="effect-axis" x1="24" x2="336" y1="${axisY}" y2="${axisY}"/>
+    ${[0, 1, 2, 3, 4, 5].map((tick) => `<text x="${x(tick)}" y="${axisY + 18}" text-anchor="middle">${tick}</text>`).join("")}
   </svg>`;
 }

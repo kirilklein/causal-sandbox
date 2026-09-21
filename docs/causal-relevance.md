@@ -48,7 +48,8 @@ marks truth (+2) in revealed rows, diamonds below the dots mark means, and error
 tint uses the shared 0–2 scale.
 Off-scale estimates are triangles with exact values in their titles. Individual
 marks have value tooltips; SVG descriptions include mean, SD, truth, and scale.
-The unrevealed row has a neutral prompt and no truth line crossing it. There is
+Only the unadjusted row appears initially. Including the measurement adds the
+second row on the same scale; each row labels its own mean. There is
 no table of individual studies and no confidence interval claim.
 
 Both examples reveal a separate prediction comparison after adjustment. Its

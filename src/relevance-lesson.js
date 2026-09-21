@@ -66,15 +66,12 @@ function updateResults() {
   const studies = cache.get(step);
   if (!studies) return;
   const scene = relevanceScenes[step];
-  const stats = relevanceSummaries(studies);
   const active = included[step];
   el("effect-plot").innerHTML = relevancePlot(studies, active);
   el("include-measurement").disabled = false;
   el("include-measurement").setAttribute("aria-pressed", String(active));
   el("include-measurement").textContent =
     `${active ? "Remove" : "Include"} the ${scene.measurement}`;
-  el("effect-summary").innerHTML =
-    `<span>Mean without adjustment <strong>${fmt(stats[0].effect.mean)}</strong></span>${active ? `<span aria-hidden="true">→</span><span>Mean with adjustment <strong>${fmt(stats[1].effect.mean)}</strong></span>` : ""}`;
   el("relevance-explanation").hidden = !active;
   el("relevance-explanation").innerHTML = active
     ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p><h3>${step === 1 ? "Yet it predicts mobility better" : "It also predicts mobility better"}</h3>${predictionView(studies)}`
@@ -112,7 +109,7 @@ async function showStep(next, focus = true) {
       <p class="eyebrow">0${step + 1} · ${step ? "PREDICTION DOES NOT CERTIFY ADJUSTMENT" : "A VARIABLE CAN HELP WITHOUT CAUSING THE OUTCOME"}</p>
       <h2 id="scene-title" tabindex="-1">${scene.title}: the ${scene.measurement}</h2><p class="relevance-story">${scene.story}</p>
       <div class="relevance-workspace"><div class="relevance-world"><h3>The assumed world</h3><p class="small">Treat this graph as correct for the fictional study. Dashed nodes and arrows represent unmeasured causes.</p><div id="relevance-graph">${relevanceGraph(scene)}</div><p class="relevance-graph-note">The ${scene.measurement} is recorded before treatment. It has no causal path to mobility.</p></div>
-      <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><p class="small effect-axis-label">Estimated effect (mobility points)</p><div id="effect-summary" class="effect-summary"></div><p class="small plot-key">Each dot is one study; ◆ marks the mean. Vertical spacing separates dots. Redder dots are farther from truth (0–2 points of error).</p></div></div>
+      <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><p class="small effect-axis-label">Estimated effect (mobility points)</p><p class="small plot-key">Each dot is one study; ◆ marks the mean. Vertical spacing separates dots. Redder dots are farther from truth (0–2 points of error).</p></div></div>
       <div class="relevance-action"><p class="relevance-question">${scene.question}</p><fieldset id="relevance-guess"><legend>Predict where the mean estimate will move:</legend>${[
         ["closer", "Closer to truth"],
         ["same", "About the same"],
