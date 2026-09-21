@@ -6,328 +6,190 @@ import {
   setupLessonNavigation,
 } from "./lesson-navigation.js";
 import { relevanceSample } from "./relevance-simulation.js";
-import { studySummary } from "./instrument-simulation.js";
-import { effectComparison } from "./effect-comparison.js";
+import {
+  relevanceScenes,
+  relevanceGraph,
+  relevancePlot,
+  relevanceSummaries,
+} from "./relevance-view.js";
 import icon from "./brand.svg?raw";
 
-const pairs = [
-  ["unrelated", "predictor"],
-  ["predictor", "proxy"],
-  ["proxy", "collider"],
-];
-const worlds = {
-  unrelated: {
-    title: "An unrelated variable",
-    explanation:
-      "V is independent of A and Y in this stipulated world. It neither causes Y nor adds predictive information. Adjusting for it is unnecessary; finite samples can still show a small change in either result.",
-    adjustment:
-      "No confounding to remove; adding V has no population prediction benefit.",
-    nodes: { A: [70, 180], Y: [330, 180], V: [200, 50] },
-    edges: [["A", "Y"]],
-    hidden: [],
-  },
-  predictor: {
-    title: "An outcome cause and predictor",
-    explanation:
-      "V causes Y but does not affect randomized treatment A. Including V explains outcome variation: across studies, the treatment estimate is more precise. V is not a confounder of A and Y here.",
-    adjustment:
-      "No confounding to remove; adding V improves precision in this model.",
-    nodes: { A: [70, 180], Y: [330, 180], V: [200, 50] },
-    edges: [
-      ["A", "Y"],
-      ["V", "Y"],
-    ],
-    hidden: [],
-  },
-  proxy: {
-    title: "A proxy for a hidden common cause",
-    explanation:
-      "V is a noisy measurement of U. Changing V alone would not change U or Y, yet V carries information about both treatment and outcome. Adjusting for V reduces bias in this model, but cannot fully remove confounding by U. Other proxy settings need not improve bias.",
-    adjustment:
-      "The path A ← U → Y remains open; V alone is not a sufficient adjustment set.",
-    nodes: { A: [70, 180], Y: [330, 180], U: [100, 50], V: [300, 50] },
-    edges: [
-      ["A", "Y"],
-      ["U", "A"],
-      ["U", "Y"],
-      ["U", "V"],
-    ],
-    hidden: ["U"],
-  },
-  collider: {
-    title: "A collider measured before treatment",
-    explanation:
-      "V is a common effect of P and R. It helps predict Y through R, despite having no causal effect on Y. Adjusting for V connects the otherwise independent causes P and R: prediction improves here while the treatment-effect estimate becomes biased.",
-    adjustment:
-      "Adding V opens A ← P → V ← R → Y. Being measured before A does not make V safe.",
-    nodes: {
-      A: [70, 190],
-      Y: [330, 190],
-      P: [70, 45],
-      R: [330, 45],
-      V: [200, 105],
-    },
-    edges: [
-      ["A", "Y"],
-      ["P", "A"],
-      ["R", "Y"],
-      ["P", "V"],
-      ["R", "V"],
-    ],
-    hidden: ["P", "R"],
-  },
-};
-
+const title = "Should we adjust for this measurement?";
+document.title = `${title} · Causal Sandbox`;
 document.querySelector("#app").innerHTML = `
 <div class="instrument-page relevance-page">
   <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
   <main>
     ${lessonNavigation({ currentOptional: "causal-relevance" })}
-    <p class="eyebrow">OPTIONAL · CAUSAL ROLES</p>
-    <h1 tabindex="-1">Does this variable matter?</h1>
-    <p class="intro">Not contributing to what? Causing an outcome, predicting it, and helping estimate a treatment effect are different jobs.</p>
-    <p><strong>Our question:</strong> What is the average total effect of giving treatment A rather than no treatment on outcome Y? V is another measured variable, recorded before A.</p>
-    <details><summary>Helpful background</summary><p>Start with <a href="?lesson=mediator">mediators</a>, <a href="?lesson=collider">colliders</a>, and <a href="?lesson=hidden-confounding">hidden common causes</a>.</p></details>
-
-    <section class="panel" aria-labelledby="comparison-title">
-      <div class="relevance-step"><h2 id="comparison-title">Comparison 1 of 3</h2><div class="actions"><button id="previous">← Previous</button><button id="next">Next comparison →</button></div></div>
-      <p id="comparison-question"></p>
-      <fieldset class="relevance-worlds"><legend>Compare two fictional worlds</legend><label><input type="radio" name="world" value="0" checked> World 1</label><label><input type="radio" name="world" value="1"> World 2</label></fieldset>
-      <p class="small">Switch worlds to change the generating mechanism. Within each world, both models use the same people.</p>
-      <h3>What the analyst can calculate</h3>
-      <table class="relevance-metrics">
-        <caption>Outcome regression, with or without V</caption>
-        <thead><tr><th scope="col">Question</th><th scope="col">A only</th><th scope="col">A + V</th></tr></thead>
-        <tbody><tr><th scope="row">Predict Y<br><small>Error on new people ↓</small></th><td id="prediction-0"></td><td id="prediction-1"></td></tr>
-        <tr><th scope="row">Estimate A’s effect<br><small>Fitted A coefficient</small></th><td id="effect-0"></td><td id="effect-1"></td></tr></tbody>
-      </table>
-      <p class="small">Fit on 1,200 people; predict outcomes for 1,200 different people from the same world. Prediction error is root mean squared error (RMSE), in outcome units; lower is better.</p>
-      <p class="note">Does better prediction tell you whether V causes Y, or whether adjusting for V is safe?</p>
-      <button id="reveal" class="primary" aria-expanded="false" aria-controls="world-truth">Reveal the toy world</button>
-      <div id="world-truth" hidden>
-        <h3 id="world-title"></h3>
-        <div class="relevance-story"><div id="world-graph"></div><div><p id="world-explanation"></p><p id="adjustment-path" class="small"></p></div></div>
-        <p id="causal-truth" class="relevance-truth"></p>
-        <p class="small">The graph and truth come from the simulator’s equations, not from fitting the data. Estimate colors show distance from the true effect of A on the shared 0–2 outcome-unit scale.</p>
-      </div>
-      <div class="actions"><button id="redraw">Redraw sample</button><button id="reset">Restart lesson</button><span id="sample" class="small"></span></div>
-      <details id="studies"><summary>Does this pattern persist across studies?</summary>
-        <p>Repeat both fits on 60 independent samples. Compare their mean effect estimates and spread; one sample cannot establish bias or precision.</p>
-        <button id="repeat">Run 60 studies</button><p id="study-status" role="status"></p><div id="study-results"></div>
-      </details>
-    </section>
-
-    <details><summary>Five meanings of “does not contribute”</summary>
-      <dl class="relevance-definitions">
-        <dt>No direct effect on Y</dt><dd>No direct V → Y effect. V could still act through a mediator: V → M → Y.</dd>
-        <dt>No total effect on Y</dt><dd>Changing V produces no net change in Y for the intervention and population considered. Opposing paths can cancel; a zero average can also hide different effects in different people. Try <a href="?lesson=arrow-strength&example=paths-cancel">the cancellation experiment</a>.</dd>
-        <dt>No directed causal path to Y</dt><dd>In the stipulated graph, changing V cannot reach Y. A proxy or collider can still be associated with Y through other paths.</dd>
-        <dt>No predictive information</dt><dd>V adds nothing for predicting Y given the other inputs in the target setting. A small coefficient or low feature importance in one fitted model does not establish this, or causal irrelevance.</dd>
-        <dt>No adjustment benefit</dt><dd>A claim about estimating A’s effect using a particular method. A variable may improve precision, leave confounding, or introduce bias; prediction accuracy cannot decide which.</dd>
-      </dl>
+    <p class="eyebrow">OPTIONAL · CHOOSING WHAT TO ADJUST FOR</p>
+    <h1 tabindex="-1">${title}</h1>
+    <p class="intro">A measurement can predict an outcome without being safe to adjust for. Try two examples to see why.</p>
+    <div class="relevance-target"><span>ONE QUESTION THROUGHOUT</span><p>What is the average total effect of a rehabilitation program on mobility after 12 weeks?</p><small>Fictional study population · program versus no program · higher mobility is better</small></div>
+    <nav class="relevance-steps" aria-label="Lesson steps">
+      <button data-step="0"><span>1</span> A useful clue</button>
+      <button data-step="1"><span>2</span> A misleading clue</button>
+      <button data-step="2"><span>3</span> Your turn</button>
+    </nav>
+    <div id="relevance-scene"></div>
+    <div class="relevance-bottom"><button id="restart-relevance">Restart lesson</button><a href="?lesson=topics">All topics</a><a href="?lesson=misspecification">Resume core lessons →</a></div>
+    <details class="relevance-background"><summary>Background and other variable roles</summary>
+      <p>Review <a href="?lesson=hidden-confounding">hidden common causes</a>, <a href="?lesson=collider">colliders</a>, or <a href="?lesson=timing">what timing tells us</a>.</p>
+      <p>An <strong>unrelated variable</strong> has no relevant paths or predictive information in a stipulated toy world. An <strong>outcome cause independent of treatment</strong> can improve precision without removing confounding. Neither label can be established by one small fitted coefficient.</p>
+      <p><strong>No direct effect</strong> still allows an indirect path through a mediator. <strong>No total effect</strong> can reflect opposing paths that cancel. <strong>No directed path</strong> rules out a causal effect within the assumed graph, but does not rule out predictive information. Explore <a href="?lesson=mediator">direct and mediated effects</a> and <a href="?lesson=arrow-strength&example=paths-cancel">cancelling paths</a>.</p>
     </details>
-    <details><summary>What would justify a missing arrow in real data?</summary>
-      <p>Specify what changing V would mean and when it could affect Y. Use study design, biological or other subject-matter knowledge, and intervention evidence to argue for or against particular paths. Timing can rule out backward causation; being earlier does not establish an effect.</p>
-      <p>Randomization can justify missing causes of treatment assignment. It does not remove paths among other variables. A null association alone cannot justify deleting an arrow: cancellation, noisy measurement, or an unsuitable model can hide effects.</p>
-      <p>If several graphs remain plausible, compare whether the intended adjustment works in each and report the unresolved assumption. The four toy worlds are examples, not an exhaustive classification or a graph-discovery algorithm.</p>
+    <details><summary>Sources and simulation assumptions</summary>
+      <p>These are specified additive models, not claims about real rehabilitation. All background draws are independent; the program’s effect is a constant +2 mobility points. Fitness and access are hidden from the analyst. Only the program, the measured score, and mobility enter the regression.</p>
+      <p>Each of 60 independent studies fits outcome regression on 1,200 people and evaluates prediction on another 1,200. The two adjustment choices reuse the same people. Dots show sampling variation, not confidence intervals. Seeds 100–159 keep the comparisons reproducible.</p>
+      <p>Proxy adjustment here is ordinary regression, not a specialized identification method. A noisy proxy does not necessarily reduce bias in other settings. Good prediction under the observed distribution does not establish accurate predictions under intervention.</p>
+      <ul><li><a href="https://miguelhernan.org/whatifbook">Hernán & Robins, Causal Inference: What If</a>, chapters 6–8.</li><li><a href="https://arxiv.org/abs/1804.10846">Hernán, Hsu & Healy: description, prediction, and counterfactual prediction</a>.</li></ul>
     </details>
-    <section class="panel" aria-labelledby="practice-title">
-      <h2 id="practice-title">Try the distinction</h2>
-      <p>A biomarker measured before treatment improves prediction of recovery in new patients. You do not know its causal role. What does this establish about adjusting for it when estimating the treatment’s total effect?</p>
-      <div class="relevance-answers" role="group" aria-label="Choose an answer">
-        <button data-answer="include">Include it: prediction improved.</button>
-        <button data-answer="exclude">Omit it: it is not a proven cause.</button>
-        <button data-answer="unknown">Its adjustment role is still uncertain.</button>
-      </div>
-      <p id="practice-feedback" role="status"></p>
-    </section>
-    <details><summary>Sources and model assumptions</summary>
-      <p>These additive toy models have independent background causes and a constant treatment effect. Proxy adjustment is ordinary regression, not a specialized method that identifies effects from proxies. Predictive performance is assessed under the same observational distribution, not after intervention or distribution shift.</p>
-      <ul><li><a href="https://miguelhernan.org/whatifbook">Hernán & Robins: Causal Inference: What If</a>, chapters 6–8, on causal diagrams, confounding, and selection.</li><li><a href="https://dagitty.net/learn/graphs/roles.html">DAGitty: covariate roles</a>.</li><li><a href="https://arxiv.org/abs/1804.10846">Hernán et al.: description, prediction, and counterfactual prediction</a>.</li></ul>
-    </details>
-    <nav class="actions" aria-label="Chapter navigation"><a href="?lesson=timing">← Timing and adjustment</a><a href="?lesson=topics">All topics</a><a class="primary" href="?lesson=misspecification">Resume core lessons →</a></nav>
-    <footer>Fictional worlds; causal roles are stipulated, not discovered.</footer>
   </main>
 </div>`;
 setupLessonNavigation();
 
 const el = (id) => document.getElementById(id);
-const state = { pair: 0, choice: 0, seed: 4217, revealed: false };
-let result;
-let batch = null;
+const cache = new Map();
+let step = 0;
 let runId = 0;
-const fmt = (value) =>
-  Number.isFinite(value) ? value.toFixed(3) : "Unavailable";
-const currentWorld = () => pairs[state.pair][state.choice];
+let included = [false, false];
+let guesses = [null, null];
+let answer = null;
+const fmt = (value) => value.toFixed(2);
 
-function graph(world) {
-  const { nodes, edges, hidden } = world;
-  const description = edges
-    .map(([from, to]) => `${from} causes ${to}`)
-    .join(". ");
-  return `<svg class="graph" viewBox="0 0 400 235" role="img" aria-label="${description}. ${hidden.length ? `${hidden.join(" and ")} unmeasured.` : "All shown variables measured."}">
-    <defs><marker id="relevance-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" /></marker></defs>
-    ${edges
-      .map(([from, to]) => {
-        const [x, y] = nodes[from];
-        const [tx, ty] = nodes[to];
-        const length = Math.hypot(tx - x, ty - y);
-        const dx = (tx - x) / length,
-          dy = (ty - y) / length;
-        return `<path d="M${x + dx * 24} ${y + dy * 24}L${tx - dx * 28} ${ty - dy * 28}" marker-end="url(#relevance-arrow)" ${hidden.includes(from) ? 'stroke-dasharray="5 4"' : ""} />`;
-      })
-      .join("")}
-    ${Object.entries(nodes)
-      .map(
-        ([name, [x, y]]) =>
-          `<circle cx="${x}" cy="${y}" r="24" fill="var(--node-${["A", "Y"].includes(name) ? name : hidden.includes(name) ? "U" : "C"})" ${hidden.includes(name) ? 'class="unmeasured"' : ""}/><text x="${x}" y="${y + 7}" text-anchor="middle">${name}</text>`,
-      )
-      .join("")}
-    </svg><p class="small">A: treatment · Y: outcome · V: measured variable.${hidden.length ? ` Dashed: ${hidden.join(", ")} unmeasured.` : ""}</p>`;
+function predictionView(studies) {
+  const stats = relevanceSummaries(studies);
+  return `<div class="prediction-bars" aria-label="Prediction error on new people">${stats.map((arm, i) => `<div><span>${i ? "With measurement" : "Without measurement"}</span><div class="prediction-track"><i style="width:${Math.min(100, (arm.prediction.mean / 2) * 100)}%"></i></div><strong>${fmt(arm.prediction.mean)}</strong></div>`).join("")}</div><p class="small">Average error predicting mobility in new people (RMSE). Lower is better. Both bars use the same 0–2 mobility-point scale.</p>`;
 }
 
-function renderBatch() {
-  if (!batch) {
-    el("study-results").innerHTML = "";
-    return;
-  }
-  el("study-results").innerHTML =
-    `<table class="relevance-metrics"><caption>60 studies · ${state.revealed ? "true effect of A: 2" : "causal truth not revealed"}</caption><thead><tr><th scope="col">Across studies</th><th scope="col">A only</th><th scope="col">A + V</th></tr></thead><tbody><tr><th scope="row">Mean effect estimate</th>${batch.map((b) => `<td>${fmt(b.effect.mean)}</td>`).join("")}</tr><tr><th scope="row">Effect estimate SD</th>${batch.map((b) => `<td>${fmt(b.effect.sd)}</td>`).join("")}</tr><tr><th scope="row">Mean prediction RMSE</th>${batch.map((b) => `<td>${fmt(b.prediction.mean)}</td>`).join("")}</tr></tbody></table><p class="small">Seeds 100–159. SD measures spread across studies, not uncertainty about the causal graph. Smaller prediction RMSE does not establish less bias.</p>`;
-}
-
-function render() {
-  const world = worlds[currentWorld()];
-  el("comparison-title").textContent = `Comparison ${state.pair + 1} of 3`;
-  el("comparison-question").textContent = [
-    "Does V add useful information for predicting Y?",
-    "Must a useful predictor cause Y? World 1 keeps the previous comparison’s World 2.",
-    "Does better prediction mean safer adjustment? World 1 keeps the previous comparison’s World 2.",
-  ][state.pair];
-  el("previous").disabled = state.pair === 0;
-  el("next").disabled = state.pair === 2;
-  document
-    .querySelectorAll('[name="world"]')
-    .forEach((radio) => (radio.checked = Number(radio.value) === state.choice));
-  result.fits.forEach((fit, i) => {
-    el(`prediction-${i}`).textContent = fmt(fit.rmse);
-    const comparison = effectComparison(fit.effect, result.truth);
-    el(`effect-${i}`).innerHTML = state.revealed
-      ? `<span class="comparison-value" style="--error-tint:${comparison.tint}%"><strong>${fmt(fit.effect)}</strong><small>${comparison.difference}</small></span>`
-      : fmt(fit.effect);
-  });
-  el("reveal").setAttribute("aria-expanded", String(state.revealed));
-  el("reveal").textContent = state.revealed
-    ? "Return to analyst view"
-    : "Reveal the toy world";
-  el("world-truth").hidden = !state.revealed;
-  // Clear the hidden content too: analyst mode must not expose truth to assistive tools.
-  el("world-title").textContent = state.revealed ? world.title : "";
-  el("world-graph").innerHTML = state.revealed ? graph(world) : "";
-  el("world-explanation").textContent = state.revealed ? world.explanation : "";
-  el("adjustment-path").textContent = state.revealed ? world.adjustment : "";
-  el("causal-truth").textContent = state.revealed
-    ? `True total effect of A: 2. V’s direct effect on Y: ${result.vEffect}. V’s total effect on Y: ${result.vEffect}. ${result.vEffect ? "V has a directed path to Y." : "V has no directed path to Y."} V effects refer to a one-unit increase.`
+function updateResults() {
+  const studies = cache.get(step);
+  if (!studies) return;
+  const scene = relevanceScenes[step];
+  const stats = relevanceSummaries(studies);
+  const active = included[step];
+  el("effect-plot").innerHTML = relevancePlot(studies, active);
+  el("include-measurement").disabled = false;
+  el("include-measurement").setAttribute("aria-pressed", String(active));
+  el("include-measurement").textContent =
+    `${active ? "Remove" : "Include"} the ${scene.measurement}`;
+  el("effect-summary").innerHTML =
+    `<span>Without measurement <strong>${fmt(stats[0].effect.mean)}</strong></span>${active ? `<span aria-hidden="true">→</span><span>With ${scene.measurement} <strong>${fmt(stats[1].effect.mean)}</strong></span>` : `<span>True effect <strong>2.00</strong></span>`}`;
+  el("relevance-explanation").hidden = !active;
+  el("relevance-explanation").innerHTML = active
+    ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p>${step === 1 ? `<h3>Yet it predicts mobility better</h3>${predictionView(studies)}` : `<details><summary>Does the fitness test also help prediction?</summary>${predictionView(studies)}</details>`}`
     : "";
-  el("sample").textContent = `Sample ${state.seed} · 2,400 people`;
-  renderBatch();
-}
-
-function clearStudies() {
-  runId++;
-  batch = null;
-  el("repeat").disabled = false;
+  const direction = scene.expected === "closer" ? "closer to" : "farther from";
+  el("guess-feedback").textContent =
+    active && guesses[step]
+      ? `${guesses[step] === scene.expected ? "Your prediction matches this result." : `Here, adjustment moves the mean estimate ${direction} truth.`} Compare the diamonds with the fixed truth line.`
+      : "";
   el("study-status").textContent = "";
-  el("studies").open = false;
 }
 
-function changeWorld() {
-  clearStudies();
-  state.revealed = false;
-  result = relevanceSample({ world: currentWorld(), seed: state.seed });
-  render();
-}
-
-document.querySelectorAll('[name="world"]').forEach((radio) =>
-  radio.addEventListener("change", () => {
-    state.choice = Number(radio.value);
-    changeWorld();
-  }),
-);
-for (const [id, step] of [
-  ["previous", -1],
-  ["next", 1],
-])
-  el(id).addEventListener("click", () => {
-    state.pair += step;
-    state.choice = 0;
-    changeWorld();
+async function showStep(next, focus = true) {
+  step = next;
+  const current = ++runId;
+  document.querySelectorAll("[data-step]").forEach((button) => {
+    if (Number(button.dataset.step) === step)
+      button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
   });
-el("reveal").addEventListener("click", () => {
-  state.revealed = !state.revealed;
-  render();
-});
-el("redraw").addEventListener("click", () => {
-  state.seed++;
-  result = relevanceSample({ world: currentWorld(), seed: state.seed });
-  render();
-});
-el("reset").addEventListener("click", () => {
-  Object.assign(state, { pair: 0, choice: 0, seed: 4217 });
-  el("practice-feedback").textContent = "";
+  if (step === 2) {
+    el("relevance-scene").innerHTML =
+      `<section class="panel relevance-transfer" aria-labelledby="scene-title"><p class="eyebrow">03 · APPLY THE DISTINCTION</p><h2 id="scene-title" tabindex="-1">A new measurement, an unknown role</h2><p>A wearable records a baseline activity score. It improves prediction of 12-week mobility in new patients. You do not yet know what causes this score or whether it affects treatment or mobility.</p><p class="relevance-question">Is that enough to decide whether to adjust for it when estimating the program’s total effect?</p><div class="relevance-answers" role="group" aria-label="Choose an answer"><button data-answer="include">Include it: it predicts mobility.</button><button data-answer="exclude">Omit it: it is not a proven cause.</button><button data-answer="unknown">We need a causal explanation first.</button></div><div id="practice-feedback" role="status"></div><div class="relevance-real-world"><h3>In real data, the graph is an assumption</h3><p>The first two examples supplied the causal story. Here, prediction cannot supply the missing arrows. Use study design, timing, and knowledge of how the measurement is produced. Check whether a proposed adjustment is valid across plausible graphs.</p><details><summary>What could justify leaving out an arrow?</summary><p>Timing can exclude backward causation. Randomized assignment can justify missing causes of treatment. Evidence about mechanisms and interventions can support particular exclusions. A weak association, null coefficient, or low feature importance alone cannot show that a variable is causally irrelevant.</p></details></div></section>`;
+    document.querySelectorAll("[data-answer]").forEach((button) =>
+      button.addEventListener("click", () => {
+        answer = button.dataset.answer;
+        showAnswer();
+      }),
+    );
+    showAnswer();
+  } else {
+    const scene = relevanceScenes[step];
+    el("relevance-scene").innerHTML =
+      `<section class="panel relevance-experiment" aria-labelledby="scene-title">
+      <p class="eyebrow">0${step + 1} · ${step ? "PREDICTION DOES NOT CERTIFY ADJUSTMENT" : "A VARIABLE CAN HELP WITHOUT CAUSING THE OUTCOME"}</p>
+      <h2 id="scene-title" tabindex="-1">${scene.title}: the ${scene.measurement}</h2><p class="relevance-story">${scene.story}</p>
+      <div class="relevance-workspace"><div class="relevance-world"><h3>The assumed world</h3><p class="small">Treat this graph as correct for the fictional study. Dashed nodes and arrows represent unmeasured causes.</p><div id="relevance-graph">${relevanceGraph(scene)}</div><p class="relevance-graph-note">The ${scene.measurement} is recorded before treatment. It has no causal path to mobility.</p></div>
+      <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><div id="effect-summary" class="effect-summary"></div><p class="small plot-key">Each dot is one study; diamonds mark the means. Vertical spacing separates dots. Redder marks are farther from truth on the shared 0–2 error scale.</p></div></div>
+      <div class="relevance-action"><p class="relevance-question">${scene.question}</p><fieldset id="relevance-guess"><legend>Predict where the mean estimate will move:</legend>${[
+        ["closer", "Closer to truth"],
+        ["same", "About the same"],
+        ["farther", "Farther from truth"],
+      ]
+        .map(
+          ([value, label]) =>
+            `<label><input type="radio" name="guess" value="${value}" ${guesses[step] === value ? "checked" : ""}> ${label}</label>`,
+        )
+        .join(
+          "",
+        )}</fieldset><button id="include-measurement" class="primary" aria-pressed="false" disabled>Include the ${scene.measurement}</button><p class="small">This changes the regression adjustment, not the people, their outcomes, or the true effect.</p><p id="study-status" role="status">Preparing 60 studies…</p><p id="guess-feedback" role="status"></p></div>
+      <div id="relevance-explanation" aria-live="polite" hidden></div>
+      <div class="relevance-forward"><button id="next-relevance">${step ? "Try an unknown measurement →" : "Next: a misleading clue →"}</button></div>
+    </section>`;
+    document.querySelectorAll('[name="guess"]').forEach((radio) =>
+      radio.addEventListener("change", () => {
+        guesses[step] = radio.value;
+        updateResults();
+      }),
+    );
+    el("include-measurement").addEventListener("click", () => {
+      included[step] = !included[step];
+      updateResults();
+    });
+    el("next-relevance").addEventListener("click", () => showStep(step + 1));
+    if (!cache.has(step)) {
+      const studies = [];
+      for (let i = 0; i < 60; i++) {
+        if (current !== runId) return;
+        const { fits, truth } = relevanceSample({
+          world: scene.world,
+          seed: 100 + i,
+        });
+        studies.push({ fits, truth });
+        if (i % 10 === 9)
+          await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      if (current !== runId) return;
+      cache.set(step, studies);
+    }
+    updateResults();
+  }
+  if (focus && current === runId) el("scene-title").focus();
+}
+
+function showAnswer() {
+  const responses = {
+    include:
+      "Prediction alone is not enough. The research score improved prediction but opened a collider path. We need to know how the activity score relates causally to treatment and mobility.",
+    exclude:
+      "Not being a proven cause does not make a measurement useless. The fitness test helped as a proxy in the first example. Its adjustment role still needed a causal explanation.",
+    unknown:
+      "Yes. Predictive usefulness is established for the tested setting; adjustment safety is not. Ask what causes the activity score, whether it affects treatment or mobility, and which paths adjustment would open or block.",
+  };
   document
     .querySelectorAll("[data-answer]")
-    .forEach((button) => button.removeAttribute("aria-pressed"));
-  changeWorld();
-});
-el("repeat").addEventListener("click", async () => {
-  const current = ++runId;
-  const world = currentWorld();
-  const effects = [[], []],
-    predictions = [[], []];
-  batch = null;
-  renderBatch();
-  el("repeat").disabled = true;
-  try {
-    for (let i = 0; i < 60; i++) {
-      if (current !== runId) return;
-      const study = relevanceSample({ world, seed: 100 + i });
-      study.fits.forEach((fit, j) => {
-        effects[j].push(fit.effect);
-        predictions[j].push(fit.rmse);
-      });
-      el("study-status").textContent = `${i + 1} of 60 studies`;
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
-    if (current !== runId) return;
-    batch = effects.map((values, i) => ({
-      effect: studySummary(values),
-      prediction: studySummary(predictions[i]),
-    }));
-    el("study-status").textContent = "60 studies complete.";
-    renderBatch();
-  } finally {
-    if (current === runId) el("repeat").disabled = false;
-  }
-});
+    .forEach((button) =>
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.answer === answer),
+      ),
+    );
+  el("practice-feedback").textContent = answer ? responses[answer] : "";
+}
 
-const feedback = {
-  include:
-    "Better prediction is not enough. In comparison 3, a baseline collider predicts Y but adjusting for it opens a biasing path. Ask how the biomarker is generated and what paths conditioning on it would open or block.",
-  exclude:
-    "Not causing Y does not make a variable useless. A proxy can carry information about a hidden cause, as in comparison 2. Whether to adjust still requires a causal argument; proxy adjustment is not guaranteed to remove bias.",
-  unknown:
-    "Yes. Predictive usefulness is established for the tested setting; adjustment safety is not. Use study design and knowledge of the biomarker’s causes and effects to assess plausible graphs and adjustment sets.",
-};
-document.querySelectorAll("[data-answer]").forEach((button) =>
-  button.addEventListener("click", () => {
-    document
-      .querySelectorAll("[data-answer]")
-      .forEach((answer) =>
-        answer.setAttribute("aria-pressed", String(answer === button)),
-      );
-    el("practice-feedback").textContent = feedback[button.dataset.answer];
-  }),
-);
-document.title = "Does this variable matter? · Causal Sandbox";
-changeWorld();
+document
+  .querySelectorAll("[data-step]")
+  .forEach((button) =>
+    button.addEventListener("click", () =>
+      showStep(Number(button.dataset.step)),
+    ),
+  );
+el("restart-relevance").addEventListener("click", () => {
+  included = [false, false];
+  guesses = [null, null];
+  answer = null;
+  showStep(0);
+});
+showStep(0, false);
 document.querySelector("h1").focus();

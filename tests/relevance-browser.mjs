@@ -8,152 +8,160 @@ import {
   stubGoatCounter,
 } from "./browser-setup.mjs";
 import { relevanceSample } from "../src/relevance-simulation.js";
-import { studySummary } from "../src/instrument-simulation.js";
+import { relevanceSummaries } from "../src/relevance-view.js";
 
 const browser = await launchBrowser();
 const url = getAppUrl();
+const title = "Should we adjust for this measurement?";
 try {
   const page = await browser.newPage({
-    viewport: { width: 1280, height: 1100 },
+    viewport: { width: 1440, height: 1100 },
   });
   const errors = [];
   collectPageErrors(page, errors);
   await stubGoatCounter(page);
   await page.goto(`${url}?lesson=hidden-confounding`);
+  await page.getByRole("link", { name: `${title} →`, exact: true }).click();
+  await expect(page.locator("h1")).toHaveText(title);
+  const include = page.locator("#include-measurement");
+  await expect(include).toBeEnabled();
+  await expect(page.locator("#relevance-graph")).toBeVisible();
+  await expect(page.locator("#scene-title")).toContainText("fitness test");
+  await expect(page.locator(".study-dot")).toHaveCount(60);
+  await expect(page.locator("#relevance-explanation")).toBeHidden();
+  const beforeGraph = await page.locator("#relevance-graph").innerHTML();
+  const beforeDots = await page
+    .locator('.study-dot[data-arm="0"]')
+    .evaluateAll((els) => els.map((e) => e.outerHTML));
+  const originalProgress = await page.evaluate(() =>
+    localStorage.getItem("causal-sandbox-progress"),
+  );
   await page
-    .getByRole("link", { name: "Does this variable matter? →", exact: true })
-    .click();
-  await expect(page.locator("h1")).toHaveText("Does this variable matter?");
-  await expect(page.locator("#world-truth")).toBeHidden();
-  await expect(page.locator("#world-graph")).toBeEmpty();
-  await expect(page.locator(".comparison-value")).toHaveCount(0);
-  const checkFits = async (world, seed = 4217) => {
-    const expected = relevanceSample({ world, seed });
-    for (let i = 0; i < 2; i++) {
-      await expect(page.locator(`#prediction-${i}`)).toHaveText(
-        expected.fits[i].rmse.toFixed(3),
-      );
-      const estimate = page.locator(`#effect-${i} strong`);
-      if (await estimate.count())
-        await expect(estimate).toHaveText(expected.fits[i].effect.toFixed(3));
-      else
-        await expect(page.locator(`#effect-${i}`)).toHaveText(
-          expected.fits[i].effect.toFixed(3),
-        );
-    }
-  };
-  await checkFits("unrelated");
-  await page.locator("#reveal").focus();
+    .getByRole("radio", { name: "About the same", exact: true })
+    .check();
+  await include.focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#world-title")).toHaveText(
-    "An unrelated variable",
-  );
-  await expect(page.locator("#causal-truth")).toContainText(
-    "V’s total effect on Y: 0",
-  );
-  await checkFits("unrelated");
-  await page.locator("#reveal").click();
-  await expect(page.locator("#causal-truth")).toBeEmpty();
-  await expect(page.locator(".comparison-value")).toHaveCount(0);
-  await page.getByRole("radio", { name: "World 1", exact: true }).focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(
-    page.getByRole("radio", { name: "World 2", exact: true }),
-  ).toBeChecked();
-  await checkFits("predictor");
-  await page.locator("#reveal").click();
-  await expect(page.locator("#causal-truth")).toContainText(
-    "V’s total effect on Y: 1.5",
-  );
-  await page.locator("#next").click();
-  await checkFits("predictor");
-  await expect(page.locator("#world-truth")).toBeHidden();
-  await page.getByRole("radio", { name: "World 2", exact: true }).check();
-  await checkFits("proxy");
-  await page.locator("#reveal").click();
-  await expect(page.locator("#world-graph svg")).toHaveAttribute(
-    "aria-label",
-    /U causes A.*U causes Y.*U causes V.*U unmeasured/,
-  );
-  await page.locator("#redraw").click();
-  await checkFits("proxy", 4218);
-  await expect(page.locator("#world-truth")).toBeVisible();
-  await page.locator("#next").click();
-  await checkFits("proxy", 4218);
-  await page.getByRole("radio", { name: "World 2", exact: true }).check();
-  await checkFits("collider", 4218);
-  await page.locator("#reveal").click();
-  await expect(page.locator("#world-title")).toContainText("collider");
-  await expect(page.locator("#world-graph svg")).toHaveAttribute(
-    "aria-label",
-    /P causes V.*R causes V/,
-  );
-  await page.locator("#studies summary").click();
-  await page.locator("#repeat").click();
-  await expect(page.locator("#study-status")).toHaveText(
-    "60 studies complete.",
-  );
-  const studies = Array.from({ length: 60 }, (_, i) =>
-    relevanceSample({ world: "collider", seed: 100 + i }),
-  );
-  const batchValues = await page.locator("#study-results td").allTextContents();
-  assert.deepEqual(batchValues, [
-    ...[0, 1].map((j) =>
-      studySummary(studies.map((s) => s.fits[j].effect)).mean.toFixed(3),
-    ),
-    ...[0, 1].map((j) =>
-      studySummary(studies.map((s) => s.fits[j].effect)).sd.toFixed(3),
-    ),
-    ...[0, 1].map((j) =>
-      studySummary(studies.map((s) => s.fits[j].rmse)).mean.toFixed(3),
-    ),
-  ]);
-  await page.locator("#reveal").click();
-  await expect(page.locator("#study-results caption")).not.toContainText(
-    "true effect of A: 2",
-  );
-  await page.locator("#reveal").click();
-  await page.locator("#redraw").click();
+  await expect(include).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".study-dot")).toHaveCount(120);
+  assert.equal(await page.locator("#relevance-graph").innerHTML(), beforeGraph);
   assert.deepEqual(
-    await page.locator("#study-results td").allTextContents(),
-    batchValues,
+    await page
+      .locator('.study-dot[data-arm="0"]')
+      .evaluateAll((els) => els.map((e) => e.outerHTML)),
+    beforeDots,
   );
-  await page.locator("#repeat").click();
-  await page.locator("#previous").click();
-  await expect(page.locator("#study-results")).toBeEmpty();
-  await page.waitForTimeout(100);
-  await expect(page.locator("#study-status")).toBeEmpty();
-  await page
-    .getByRole("button", { name: "Include it: prediction improved." })
-    .click();
-  await expect(page.locator("#practice-feedback")).toContainText(
-    "baseline collider",
+  await expect(page.locator("#guess-feedback")).toContainText(
+    "closer to truth",
   );
+  await expect(page.locator("#relevance-explanation")).toContainText(
+    "confounding remains",
+  );
+  const checkStudies = async (world) => {
+    const studies = Array.from({ length: 60 }, (_, i) =>
+      relevanceSample({ world, seed: 100 + i }),
+    );
+    const stats = relevanceSummaries(studies);
+    const dots = await page.locator(".study-dot").evaluateAll((els) =>
+      els.map((e) => ({
+        study: Number(e.dataset.study),
+        arm: Number(e.dataset.arm),
+        value: Number(e.dataset.estimate),
+        x: Number(e.getAttribute("cx")),
+      })),
+    );
+    assert.equal(dots.length, 120);
+    for (const dot of dots) {
+      assert.ok(
+        Math.abs(dot.value - studies[dot.study].fits[dot.arm].effect) < 1e-9,
+      );
+      assert.ok(Math.abs(dot.x - (24 + (dot.value / 5) * 312)) < 1e-9);
+    }
+    const means = await page
+      .locator("#effect-summary strong")
+      .allTextContents();
+    assert.deepEqual(
+      means,
+      stats.map((s) => s.effect.mean.toFixed(2)),
+    );
+    await expect(page.locator(".effect-truth").first()).toHaveAttribute(
+      "x1",
+      "148.8",
+    );
+    return stats;
+  };
+  const proxyStats = await checkStudies("proxy");
   await page
-    .getByRole("button", { name: "Omit it: it is not a proven cause." })
+    .getByText("Does the fitness test also help prediction?", { exact: true })
     .click();
-  await expect(page.locator("#practice-feedback")).toContainText("proxy");
+  assert.deepEqual(
+    await page.locator(".prediction-bars strong").allTextContents(),
+    proxyStats.map((s) => s.prediction.mean.toFixed(2)),
+  );
+  await page.getByLabel("Color theme").selectOption("dark");
+  assert.equal(await page.locator("#relevance-graph").innerHTML(), beforeGraph);
+  await checkStudies("proxy");
+  await include.click();
+  await expect(page.locator(".study-dot")).toHaveCount(60);
+  await expect(page.locator("#relevance-explanation")).toBeEmpty();
+  await include.click();
+
+  await page.locator("#next-relevance").click();
+  await expect(include).toBeEnabled();
+  await expect(page.locator("#scene-title")).toContainText("research score");
+  await expect(page.locator("#relevance-graph svg")).toHaveAttribute(
+    "aria-label",
+    /collider/,
+  );
+  await expect(page.locator(".study-dot")).toHaveCount(60);
   await page
-    .getByRole("button", { name: "Its adjustment role is still uncertain." })
-    .click();
-  await expect(page.locator("#practice-feedback")).toContainText("Yes.");
-  await page.locator("#reset").click();
-  await checkFits("unrelated");
+    .getByRole("radio", { name: "Farther from truth", exact: true })
+    .check();
+  await include.click();
+  const colliderStats = await checkStudies("collider");
+  await expect(page.locator("#guess-feedback")).toContainText("matches");
+  assert.deepEqual(
+    await page.locator(".prediction-bars strong").allTextContents(),
+    colliderStats.map((s) => s.prediction.mean.toFixed(2)),
+  );
+  await expect(page.locator("#relevance-explanation")).toContainText(
+    "same score",
+  );
+  await page.locator('[data-step="0"]').click();
+  await expect(include).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("radio", { name: "About the same", exact: true }),
+  ).toBeChecked();
+  await checkStudies("proxy");
+  await page.locator('[data-step="2"]').click();
+  await expect(page.locator("#relevance-graph")).toHaveCount(0);
+  for (const [answer, text] of [
+    ["include", "collider"],
+    ["exclude", "proxy"],
+    ["unknown", "adjustment safety is not"],
+  ]) {
+    await page.locator(`[data-answer="${answer}"]`).click();
+    await expect(page.locator("#practice-feedback")).toContainText(text);
+  }
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("causal-sandbox-progress")),
+    originalProgress,
+  );
+  await page.locator("#restart-relevance").click();
+  await expect(include).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator('[name="guess"]:checked')).toHaveCount(0);
+  await expect(page.locator(".study-dot")).toHaveCount(60);
+  await page.locator('[data-step="2"]').click();
   await expect(page.locator("#practice-feedback")).toBeEmpty();
-  await expect(page.locator("#world-truth")).toBeHidden();
-  await expect(page.locator("#comparison-title")).toHaveText(
-    "Comparison 1 of 3",
-  );
 
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   await expect(page.locator('.optional-menu [aria-current="step"]')).toHaveText(
-    "Does this variable matter?",
+    title,
   );
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByRole("searchbox").fill("causal relevance");
   await page.locator("#search-results a").first().click();
-  await expect(page.locator("h1")).toHaveText("Does this variable matter?");
+  await expect(page.locator("h1")).toHaveText(title);
   await page.getByRole("link", { name: "All topics", exact: true }).click();
   await page
     .locator(".learning-topic-group > summary")
@@ -161,54 +169,62 @@ try {
     .click();
   await page
     .locator(".learning-topic-columns a")
-    .filter({ hasText: "Does this variable matter?" })
+    .filter({ hasText: title })
     .click();
-  await expect(page.locator("h1")).toHaveText("Does this variable matter?");
-  await page
-    .getByRole("link", { name: "← Timing and adjustment", exact: true })
-    .click();
-  await page
-    .getByRole("link", { name: "Does this variable matter? →", exact: true })
-    .click();
+  await expect(page.locator("h1")).toHaveText(title);
+  await page.goto(`${url}?lesson=timing`);
+  await page.getByRole("link", { name: `${title} →`, exact: true }).click();
+  await expect(include).toBeEnabled();
 
   await mkdir("test-results", { recursive: true });
-  for (const width of [1280, 320]) {
+  for (const width of [1440, 320]) {
     await page.setViewportSize({ width, height: 1000 });
-    await page.locator("#reset").click();
-    await page.locator("#next").click();
-    await page.locator("#next").click();
-    await page.getByRole("radio", { name: "World 2", exact: true }).check();
-    await page.locator("#reveal").click();
-    for (const mode of ["light", "dark"]) {
-      const values = await page.locator(".relevance-metrics").innerText();
-      await page.getByLabel("Color theme").selectOption(mode);
-      assert.equal(
-        await page.locator(".relevance-metrics").innerText(),
-        values,
-      );
-      assert.ok(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth,
-        ),
-        `${width} ${mode} overflow`,
-      );
-      await page
-        .locator('section[aria-labelledby="comparison-title"]')
-        .screenshot({ path: `test-results/relevance-${width}-${mode}.png` });
+    for (const scene of [0, 1, 2]) {
+      await page.locator(`[data-step="${scene}"]`).click();
+      if (scene < 2) {
+        await expect(include).toBeEnabled();
+        if ((await include.getAttribute("aria-pressed")) === "false")
+          await include.click();
+      }
+      for (const mode of ["light", "dark"]) {
+        await page.getByLabel("Color theme").selectOption(mode);
+        assert.ok(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+          `${width} ${scene} ${mode} overflow`,
+        );
+        const logo = await page.locator(".brand svg").boundingBox();
+        assert.ok(logo.width < 100 && logo.height < 100, "header icon size");
+        await page.locator("#relevance-scene").screenshot({
+          path: `test-results/relevance-story-${width}-${scene}-${mode}.png`,
+        });
+      }
     }
   }
   const touch = await browser.newPage({
     viewport: { width: 390, height: 844 },
     hasTouch: true,
   });
-  await stubGoatCounter(touch);
   collectPageErrors(touch, errors);
+  await stubGoatCounter(touch);
   await touch.goto(`${url}?lesson=causal-relevance`);
-  await touch.getByRole("radio", { name: "World 2", exact: true }).tap();
-  await touch.locator("#reveal").tap();
-  await expect(touch.locator("#world-title")).toContainText("outcome cause");
+  // Changing steps while computations yield must not put results into the wrong scene.
+  await touch.evaluate(() => {
+    document.querySelector('[data-step="1"]').click();
+    document.querySelector('[data-step="2"]').click();
+  });
+  await expect(touch.locator("#scene-title")).toContainText("unknown role");
+  await touch.waitForTimeout(150);
+  await expect(touch.locator(".study-dot")).toHaveCount(0);
+  await touch.locator('[data-step="0"]').tap();
+  await expect(touch.locator("#include-measurement")).toBeEnabled();
+  await touch.locator("#include-measurement").tap();
+  await expect(touch.locator(".study-dot")).toHaveCount(120);
   assert.deepEqual(errors, []);
-  console.log("Causal relevance browser checks passed.");
+  console.log(
+    "Relevance story: paired estimates, fixed graph/truth, prediction feedback, transfer, replay/reset, navigation, keyboard/touch, themes and phone layouts passed.",
+  );
 } finally {
   await browser.close();
 }

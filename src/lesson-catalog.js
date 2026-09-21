@@ -97,12 +97,12 @@ export const optionalChapters = [
   },
   {
     id: "causal-relevance",
-    menuTitle: "Does this variable matter?",
+    menuTitle: "Should we adjust for this measurement?",
     after: 9,
-    title: "Does this variable matter?",
+    title: "Should we adjust for this measurement?",
     href: "?lesson=causal-relevance",
     description:
-      "Separate causing an outcome, predicting it, and helping estimate a treatment effect.",
+      "Try a useful proxy and a predictive collider to decide what belongs in a treatment-effect analysis.",
   },
   {
     id: "time-varying-confounding",
