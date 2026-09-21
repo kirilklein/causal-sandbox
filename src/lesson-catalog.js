@@ -96,6 +96,15 @@ export const optionalChapters = [
       "See why measuring a variable before treatment does not make it safe to adjust for.",
   },
   {
+    id: "causal-relevance",
+    menuTitle: "Does this variable matter?",
+    after: 9,
+    title: "Does this variable matter?",
+    href: "?lesson=causal-relevance",
+    description:
+      "Separate causing an outcome, predicting it, and helping estimate a treatment effect.",
+  },
+  {
     id: "time-varying-confounding",
     menuTitle: "Longitudinal treatment",
     title: "When treatment changes the next treatment decision",

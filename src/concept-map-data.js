@@ -86,7 +86,13 @@ export const mapRegions = [
         name: "What to adjust for",
         description:
           "A variable’s role depends on the causal graph and the effect we want. Adjusting for a collider can create bias; measuring something before treatment does not automatically make it safe to adjust for.",
-        lessons: ["collider", "mediator", "timing", "instrument"],
+        lessons: [
+          "collider",
+          "mediator",
+          "timing",
+          "causal-relevance",
+          "instrument",
+        ],
         connection: [
           "question",
           "An adjustment set is chosen for a particular causal effect. Adding more variables is not automatically an improvement.",

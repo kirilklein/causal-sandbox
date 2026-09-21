@@ -54,6 +54,7 @@ const background = {
   collider: ["confounding"],
   "hidden-confounding": ["confounding", "outcome-regression"],
   timing: ["mediator", "collider", "hidden-confounding"],
+  "causal-relevance": ["mediator", "collider", "hidden-confounding"],
   instrument: [
     "ipw",
     "outcome-regression",
@@ -109,6 +110,7 @@ const groups = [
     refreshers: ["confounding", "mediator", "collider"],
     advanced: [
       "timing",
+      "causal-relevance",
       "instrument",
       "arrow-strength",
       "time-varying-confounding",

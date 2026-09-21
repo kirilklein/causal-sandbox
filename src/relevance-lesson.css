@@ -1,0 +1,110 @@
+.relevance-page .relevance-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.relevance-page .relevance-step .actions,
+.relevance-page .relevance-step h2 {
+  margin: 0;
+}
+.relevance-page button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.relevance-worlds {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 20px;
+}
+.relevance-worlds legend {
+  margin-bottom: 8px;
+}
+.relevance-worlds label {
+  padding: 10px 4px;
+  cursor: pointer;
+}
+.relevance-page .relevance-metrics {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.relevance-metrics caption {
+  text-align: left;
+  margin: 8px 0;
+  color: var(--text-secondary);
+}
+.relevance-page .relevance-metrics th,
+.relevance-page .relevance-metrics td {
+  padding: 12px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.relevance-page .relevance-metrics th:first-child {
+  width: 42%;
+}
+.relevance-metrics small {
+  font-weight: normal;
+}
+.relevance-page .relevance-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.relevance-page .graph text {
+  font-size: 22px;
+}
+.relevance-page .graph marker path {
+  fill: var(--causal-path);
+  stroke: none;
+}
+.relevance-page .unmeasured {
+  stroke: var(--causal-path);
+  stroke-dasharray: 5 4;
+  stroke-width: 2;
+}
+.relevance-truth {
+  background: var(--node-Y);
+  padding: 16px;
+  border-radius: 8px;
+}
+.relevance-definitions dt {
+  font-weight: 650;
+  margin-top: 18px;
+}
+.relevance-definitions dd {
+  margin: 4px 0 0;
+}
+.relevance-answers {
+  display: grid;
+  gap: 10px;
+}
+.relevance-answers button {
+  text-align: left;
+}
+.relevance-answers button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
+@media (max-width: 600px) {
+  .relevance-page .relevance-story {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .relevance-page .panel {
+    padding: 16px;
+  }
+  .relevance-page .relevance-metrics {
+    font-size: 13px;
+  }
+  .relevance-page .comparison-value {
+    padding: 8px 4px;
+  }
+}
