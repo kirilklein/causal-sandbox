@@ -107,16 +107,23 @@
   min-height: 240px;
 }
 #effect-plot text {
-  font-size: 16px;
+  font-size: 13px;
   fill: var(--text);
 }
 #effect-plot .row-label {
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
 }
 #effect-plot .plot-prompt {
   fill: var(--text-secondary);
   font-size: 13px;
+}
+#effect-plot .pending-label {
+  fill: var(--text-secondary);
+}
+.effect-axis-label {
+  text-align: center;
+  margin: 0 0 8px;
 }
 .effect-truth {
   stroke: var(--truth);
@@ -140,6 +147,8 @@
 }
 .effect-mean {
   fill: var(--text);
+  stroke: var(--surface);
+  stroke-width: 1.5;
 }
 .effect-summary {
   display: flex;
@@ -291,6 +300,11 @@
   }
 }
 @media (max-width: 480px) {
+  #effect-plot text,
+  #effect-plot .row-label,
+  #effect-plot .plot-prompt {
+    font-size: 18px;
+  }
   .relevance-page main {
     padding: 20px 16px;
   }

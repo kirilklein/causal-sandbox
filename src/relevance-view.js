@@ -99,16 +99,16 @@ export function relevancePlot(studies, included) {
   const fmt = (value) =>
     Number.isFinite(value) ? value.toFixed(2) : "Unavailable";
   const description = `Each dot is one of ${studies.length} studies; vertical spacing only separates dots. Diamonds mark means. Without adjustment: mean ${fmt(summaries[0].effect.mean)}, standard deviation ${fmt(summaries[0].effect.sd)}.${included ? ` With adjustment: mean ${fmt(summaries[1].effect.mean)}, standard deviation ${fmt(summaries[1].effect.sd)}.` : " Adjusted estimates have not been revealed."} True effect: ${truth} mobility points. The horizontal scale is fixed from 0 to 5; triangles indicate off-scale estimates.`;
-  return `<svg viewBox="0 0 360 250" role="img" aria-label="${description}">
-    <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="58" y2="110"/><line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="146" y2="210"/>
+  return `<svg viewBox="0 0 360 234" role="img" aria-label="${description}">
+    <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="58" y2="116"/>${included ? `<line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="146" y2="210"/>` : ""}
     <text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">Truth: +${truth}</text>
     ${[0, 1]
       .map((arm) => {
         const y = arm ? 170 : 82;
-        return `<text class="row-label" x="24" y="${y - 29}">${arm ? "With measurement" : "Without measurement"}</text>
+        return `<text class="row-label${arm && !included ? " pending-label" : ""}" x="24" y="${y - 29}">${arm ? "With adjustment" : "Without adjustment"}</text>
       ${
         arm && !included
-          ? `<text class="plot-prompt" x="180" y="${y + 4}" text-anchor="middle">Try including it below</text>`
+          ? `<text class="plot-prompt" x="24" y="${y - 2}"><tspan x="24">Include the measurement</tspan><tspan x="24" dy="21">to compare estimates</tspan></text>`
           : studies
               .map((study, i) => {
                 const value = study.fits[arm].effect;
@@ -119,15 +119,14 @@ export function relevancePlot(studies, included) {
                 const title = `<title>Study ${i + 1}, ${arm ? "with" : "without"} measurement: ${fmt(value)} mobility points</title>`;
                 return value < 0 || value > 5
                   ? `<path ${attributes} d="M${xx} ${yy}l${value < 0 ? 6 : -6} -4v8Z">${title}</path>`
-                  : `<circle ${attributes} cx="${xx}" cy="${yy}" r="3.2">${title}</circle>`;
+                  : `<circle ${attributes} cx="${xx}" cy="${yy}" r="2">${title}</circle>`;
               })
               .join("")
       }
-      ${arm && !included ? "" : `<path class="effect-mean" data-arm="${arm}" d="M${x(summaries[arm].effect.mean)} ${y - 24}l5 6-5 6-5-6Z"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></path>`}`;
+      ${arm && !included ? "" : `<path class="effect-mean" data-arm="${arm}" d="M${x(summaries[arm].effect.mean)} ${y + 21}l4 5-4 5-4-5Z"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></path>`}`;
       })
       .join("")}
     <line class="effect-axis" x1="24" x2="336" y1="211" y2="211"/>
     ${[0, 1, 2, 3, 4, 5].map((tick) => `<text x="${x(tick)}" y="229" text-anchor="middle">${tick}</text>`).join("")}
-    <text x="180" y="248" text-anchor="middle">Estimated program effect (mobility points)</text>
   </svg>`;
 }

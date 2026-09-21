@@ -97,12 +97,12 @@ export const optionalChapters = [
   },
   {
     id: "causal-relevance",
-    menuTitle: "Should we adjust for this measurement?",
+    menuTitle: "Does better prediction mean a better causal estimate?",
     after: 9,
-    title: "Should we adjust for this measurement?",
+    title: "Does better prediction mean a better causal estimate?",
     href: "?lesson=causal-relevance",
     description:
-      "Try a useful proxy and a predictive collider to decide what belongs in a treatment-effect analysis.",
+      "Compare prediction error and causal estimates: a proxy can help, while a predictive collider can introduce bias.",
   },
   {
     id: "time-varying-confounding",

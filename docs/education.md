@@ -1,6 +1,6 @@
 # Progressive education delivery
 
-The optional [Should we adjust for this measurement? chapter](causal-relevance.md)
+The optional [Does better prediction mean a better causal estimate? chapter](causal-relevance.md)
 follows the causal-role material at `?lesson=causal-relevance`. Two rehabilitation
 examples keep the target and stipulated graph visible. Learners predict what
 adjustment will do, then include a noisy fitness test or a combined research

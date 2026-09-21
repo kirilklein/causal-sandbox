@@ -14,16 +14,17 @@ import {
 } from "./relevance-view.js";
 import icon from "./brand.svg?raw";
 
-const title = "Should we adjust for this measurement?";
+const title = "Does better prediction mean a better causal estimate?";
 document.title = `${title} · Causal Sandbox`;
 document.querySelector("#app").innerHTML = `
 <div class="instrument-page relevance-page">
   <header><a class="brand" href="./">${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
   <main>
     ${lessonNavigation({ currentOptional: "causal-relevance" })}
-    <p class="eyebrow">OPTIONAL · CHOOSING WHAT TO ADJUST FOR</p>
+    <p class="eyebrow">OPTIONAL · PREDICTION AND CAUSAL ESTIMATION</p>
     <h1 tabindex="-1">${title}</h1>
-    <p class="intro">A measurement can predict an outcome without being safe to adjust for. Try two examples to see why.</p>
+    <p class="intro">Predicting someone’s mobility and estimating what rehabilitation changes are different tasks. See how adding the same measurement can help one task and hurt the other.</p>
+    <p class="small">Builds on <a href="?lesson=collider">colliders</a> and <a href="?lesson=hidden-confounding">hidden confounding</a>.</p>
     <div class="relevance-target"><span>ONE QUESTION THROUGHOUT</span><p>What is the average total effect of a rehabilitation program on mobility after 12 weeks?</p><small>Fictional study population · program versus no program · higher mobility is better</small></div>
     <nav class="relevance-steps" aria-label="Lesson steps">
       <button data-step="0"><span>1</span> A useful clue</button>
@@ -73,15 +74,15 @@ function updateResults() {
   el("include-measurement").textContent =
     `${active ? "Remove" : "Include"} the ${scene.measurement}`;
   el("effect-summary").innerHTML =
-    `<span>Without measurement <strong>${fmt(stats[0].effect.mean)}</strong></span>${active ? `<span aria-hidden="true">→</span><span>With ${scene.measurement} <strong>${fmt(stats[1].effect.mean)}</strong></span>` : `<span>True effect <strong>2.00</strong></span>`}`;
+    `<span>Mean without adjustment <strong>${fmt(stats[0].effect.mean)}</strong></span>${active ? `<span aria-hidden="true">→</span><span>Mean with adjustment <strong>${fmt(stats[1].effect.mean)}</strong></span>` : ""}`;
   el("relevance-explanation").hidden = !active;
   el("relevance-explanation").innerHTML = active
-    ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p>${step === 1 ? `<h3>Yet it predicts mobility better</h3>${predictionView(studies)}` : `<details><summary>Does the fitness test also help prediction?</summary>${predictionView(studies)}</details>`}`
+    ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p><h3>${step === 1 ? "Yet it predicts mobility better" : "It also predicts mobility better"}</h3>${predictionView(studies)}`
     : "";
   const direction = scene.expected === "closer" ? "closer to" : "farther from";
   el("guess-feedback").textContent =
     active && guesses[step]
-      ? `${guesses[step] === scene.expected ? "Your prediction matches this result." : `Here, adjustment moves the mean estimate ${direction} truth.`} Compare the diamonds with the fixed truth line.`
+      ? `${guesses[step] === scene.expected ? "Your prediction matches this result." : `Here, adjustment moves the mean estimate ${direction} truth.`} Compare the mean markers with the fixed truth line.`
       : "";
   el("study-status").textContent = "";
 }
@@ -111,7 +112,7 @@ async function showStep(next, focus = true) {
       <p class="eyebrow">0${step + 1} · ${step ? "PREDICTION DOES NOT CERTIFY ADJUSTMENT" : "A VARIABLE CAN HELP WITHOUT CAUSING THE OUTCOME"}</p>
       <h2 id="scene-title" tabindex="-1">${scene.title}: the ${scene.measurement}</h2><p class="relevance-story">${scene.story}</p>
       <div class="relevance-workspace"><div class="relevance-world"><h3>The assumed world</h3><p class="small">Treat this graph as correct for the fictional study. Dashed nodes and arrows represent unmeasured causes.</p><div id="relevance-graph">${relevanceGraph(scene)}</div><p class="relevance-graph-note">The ${scene.measurement} is recorded before treatment. It has no causal path to mobility.</p></div>
-      <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><div id="effect-summary" class="effect-summary"></div><p class="small plot-key">Each dot is one study; diamonds mark the means. Vertical spacing separates dots. Redder marks are farther from truth on the shared 0–2 error scale.</p></div></div>
+      <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><p class="small effect-axis-label">Estimated effect (mobility points)</p><div id="effect-summary" class="effect-summary"></div><p class="small plot-key">Each dot is one study; ◆ marks the mean. Vertical spacing separates dots. Redder dots are farther from truth (0–2 points of error).</p></div></div>
       <div class="relevance-action"><p class="relevance-question">${scene.question}</p><fieldset id="relevance-guess"><legend>Predict where the mean estimate will move:</legend>${[
         ["closer", "Closer to truth"],
         ["same", "About the same"],

@@ -1,10 +1,14 @@
-# Should we adjust for this measurement?
+# Does better prediction mean a better causal estimate?
 
 Optional lesson at `?lesson=causal-relevance`, after mediator, collider, and
 hidden confounding. Follow-up to #82 and PR #260. Available from hidden
 confounding, Timing, Contents, the concept map, topics, and search.
 
 ## Teaching objective
+
+This is an optional synthesis after the causal-role lessons. The collider lesson
+explains how adjustment opens a biasing path; this lesson asks why a model can
+predict outcomes better while estimating a treatment effect less accurately.
 
 A learner should be able to explain why predictive usefulness alone does not
 justify adjustment, and why having no causal effect on the outcome does not
@@ -40,13 +44,15 @@ its identity and appearance under adjustment.
 Each dot is an estimate from one simulated study, with one row per adjustment
 choice. The horizontal axis is the estimated program effect in mobility points,
 fixed at 0–5 across steps. Vertical offsets only separate dots. A dashed line
-marks truth (+2), diamonds mark means, and error tint uses the shared 0–2 scale.
+marks truth (+2) in revealed rows, diamonds below the dots mark means, and error
+tint uses the shared 0–2 scale.
 Off-scale estimates are triangles with exact values in their titles. Individual
 marks have value tooltips; SVG descriptions include mean, SD, truth, and scale.
-There is no table of individual studies and no confidence interval claim.
+The unrevealed row has a neutral prompt and no truth line crossing it. There is
+no table of individual studies and no confidence interval claim.
 
-The collider's prediction comparison appears after adjustment. The proxy's is
-optional detail. Both bars show actual mean held-out RMSE over the same studies,
+Both examples reveal a separate prediction comparison after adjustment. Its
+bars show actual mean held-out RMSE over the same studies,
 on a common 0–2 mobility-point scale with exact numeric labels. Prediction is
 under the same observational distribution, not under intervention.
 

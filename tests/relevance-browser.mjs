@@ -12,7 +12,7 @@ import { relevanceSummaries } from "../src/relevance-view.js";
 
 const browser = await launchBrowser();
 const url = getAppUrl();
-const title = "Should we adjust for this measurement?";
+const title = "Does better prediction mean a better causal estimate?";
 try {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1100 },
@@ -90,9 +90,6 @@ try {
     return stats;
   };
   const proxyStats = await checkStudies("proxy");
-  await page
-    .getByText("Does the fitness test also help prediction?", { exact: true })
-    .click();
   assert.deepEqual(
     await page.locator(".prediction-bars strong").allTextContents(),
     proxyStats.map((s) => s.prediction.mean.toFixed(2)),
@@ -188,6 +185,16 @@ try {
       }
       for (const mode of ["light", "dark"]) {
         await page.getByLabel("Color theme").selectOption(mode);
+        if (scene < 2) {
+          await include.click();
+          await expect(page.locator(".effect-truth")).toHaveCount(1);
+          await expect(page.locator(".plot-prompt")).toBeVisible();
+          await page.locator(".relevance-analysis").screenshot({
+            path: `test-results/relevance-before-${width}-${scene}-${mode}.png`,
+          });
+          await include.click();
+          await expect(page.locator(".effect-truth")).toHaveCount(2);
+        }
         assert.ok(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
