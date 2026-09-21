@@ -294,7 +294,7 @@ try {
         .innerHTML();
       await toggle.focus();
       await page.keyboard.press("Enter");
-      assert.equal(await toggle.innerText(), "Show prediction");
+      assert.equal(await toggle.innerText(), "Prediction and feedback");
       assert.equal(await toggle.getAttribute("aria-expanded"), "false");
       assert.equal(await feedback.isVisible(), false);
       assert.equal(await page.locator("#question").isVisible(), false);
@@ -320,7 +320,7 @@ try {
         });
       await page.keyboard.press("Space");
       assert.equal(await toggle.getAttribute("aria-expanded"), "true");
-      assert.equal(await toggle.innerText(), "Hide prediction");
+      assert.equal(await toggle.innerText(), "Prediction and feedback");
       assert.equal(await feedback.innerText(), firstFeedback);
       assert.equal(await choices.nth(choice).isChecked(), true);
       assert.equal(await choices.nth(choice).isDisabled(), true);

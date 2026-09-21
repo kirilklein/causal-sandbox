@@ -684,14 +684,12 @@ function setupPrediction(prediction) {
     button.remove();
     const toggle = document.createElement("button");
     toggle.id = "toggle-prediction";
-    toggle.textContent = "Hide prediction";
+    toggle.innerHTML =
+      '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 2 4 4-4 4"/></svg><span>Prediction and feedback</span>';
     toggle.setAttribute("aria-expanded", "true");
     toggle.setAttribute("aria-controls", checkpoint.id);
     toggle.addEventListener("click", () => {
       checkpoint.hidden = !checkpoint.hidden;
-      toggle.textContent = checkpoint.hidden
-        ? "Show prediction"
-        : "Hide prediction";
       toggle.setAttribute("aria-expanded", String(!checkpoint.hidden));
     });
     checkpoint.after(toggle);
