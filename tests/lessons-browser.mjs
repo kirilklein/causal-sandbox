@@ -98,6 +98,7 @@ try {
       await page.goto(`${url}?lesson=${topic}`);
       await page.locator("#try-prediction").waitFor();
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      assert.equal(await page.locator("#toggle-prediction").count(), 0);
       const question = await page.locator("#question").innerText();
       assert.equal(
         await page.getByRole("group", { name: question, exact: true }).count(),
@@ -200,16 +201,29 @@ try {
         await choices.nth(choice).check();
         await page.locator("#try-prediction").scrollIntoViewIfNeeded();
       }
-      const beforeAnswer = await page.evaluate(() => ({
-        scroll: window.scrollY,
-        questionTop: document.querySelector("#question").getBoundingClientRect()
-          .top,
-      }));
+      // Measure at activation, after Playwright's click preparation scrolls.
+      await page.evaluate(() => {
+        document.querySelector("#try-prediction").addEventListener(
+          "click",
+          () => {
+            window.predictionViewportBefore = {
+              scroll: window.scrollY,
+              questionTop: document
+                .querySelector("#question")
+                .getBoundingClientRect().top,
+            };
+          },
+          { capture: true, once: true },
+        );
+      });
       if (choice === 2) await page.keyboard.press("Enter");
       else await page.locator("#try-prediction").click();
       const feedback = page.getByRole("region", {
         name: "Prediction explained",
       });
+      const beforeAnswer = await page.evaluate(
+        () => window.predictionViewportBefore,
+      );
       const afterAnswer = await page.evaluate(() => ({
         scroll: window.scrollY,
         questionTop: document.querySelector("#question").getBoundingClientRect()
@@ -219,7 +233,7 @@ try {
       for (const coordinate of ["scroll", "questionTop"])
         assert.ok(
           Math.abs(afterAnswer[coordinate] - beforeAnswer[coordinate]) <= 1,
-          `${topic}: answering keeps ${coordinate} in place`,
+          `${topic}/${choice}: answering keeps ${coordinate} in place (${beforeAnswer[coordinate]} → ${afterAnswer[coordinate]})`,
         );
       assert.equal(await choices.nth(choice).isChecked(), true);
       assert.equal(await choices.nth(choice).isDisabled(), true);
@@ -272,6 +286,44 @@ try {
           fullPage: true,
         });
       const firstFeedback = await feedback.innerText();
+      const toggle = page.locator("#toggle-prediction");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      const beforeCollapse = await page.locator(".lesson-results").innerText();
+      const graphBeforeCollapse = await page
+        .locator("#lesson-graph")
+        .innerHTML();
+      await toggle.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await toggle.innerText(), "Show prediction");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+      assert.equal(await feedback.isVisible(), false);
+      assert.equal(await page.locator("#question").isVisible(), false);
+      assert.equal(await page.locator("#lesson-graph").isVisible(), true);
+      assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(
+        await toggle.evaluate((el) => el === document.activeElement),
+        true,
+      );
+      assert.equal(
+        await page.locator(".lesson-results").innerText(),
+        beforeCollapse,
+      );
+      assert.equal(
+        await page.locator("#lesson-graph").innerHTML(),
+        graphBeforeCollapse,
+      );
+      assert.equal(await page.locator("#sample-label").textContent(), seed);
+      if (choice === 2)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-collapsed-mobile.png`,
+          fullPage: true,
+        });
+      await page.keyboard.press("Space");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(await toggle.innerText(), "Hide prediction");
+      assert.equal(await feedback.innerText(), firstFeedback);
+      assert.equal(await choices.nth(choice).isChecked(), true);
+      assert.equal(await choices.nth(choice).isDisabled(), true);
       await page.locator("#redraw").click();
       assert.equal(await feedback.innerText(), firstFeedback);
       assert.ok(
@@ -285,6 +337,7 @@ try {
           fullPage: true,
         });
       await page.locator("#restart").click();
+      assert.equal(await page.locator("#toggle-prediction").count(), 0);
       assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
       if (topic === "overlap") {

@@ -622,6 +622,7 @@ function setupPrediction(prediction) {
     element.hidden = true;
   });
   const checkpoint = document.createElement("div");
+  checkpoint.id = "lesson-prediction";
   checkpoint.className = "lesson-prediction";
   checkpoint.innerHTML = `
     <fieldset class="model-choices" aria-describedby="prediction-hint">
@@ -681,6 +682,19 @@ function setupPrediction(prediction) {
     feedback.setAttribute("aria-label", "Prediction explained");
     checkpoint.querySelector("#prediction-hint").replaceWith(feedback);
     button.remove();
+    const toggle = document.createElement("button");
+    toggle.id = "toggle-prediction";
+    toggle.textContent = "Hide prediction";
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-controls", checkpoint.id);
+    toggle.addEventListener("click", () => {
+      checkpoint.hidden = !checkpoint.hidden;
+      toggle.textContent = checkpoint.hidden
+        ? "Show prediction"
+        : "Hide prediction";
+      toggle.setAttribute("aria-expanded", String(!checkpoint.hidden));
+    });
+    checkpoint.after(toggle);
     feedback.focus({ preventScroll: true });
   });
 }
