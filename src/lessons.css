@@ -899,7 +899,7 @@
   border: 1px solid var(--border-strong);
   border-radius: 10px;
 }
-.lesson-prediction legend h2 {
+.lesson-prediction h2 {
   margin: 0 0 12px;
 }
 .lesson-prediction .lesson-switch {

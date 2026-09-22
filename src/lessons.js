@@ -642,6 +642,9 @@ function setupPrediction(prediction) {
   button.addEventListener("click", () => {
     const selected = checkpoint.querySelector("input:checked");
     if (!selected) return;
+    const feedbackTop = checkpoint
+      .querySelector("#prediction-hint")
+      .getBoundingClientRect().top;
     const before = lessonResult(state, noise);
     if (state.level === 8) {
       state.postAdjusted = true;
@@ -676,10 +679,9 @@ function setupPrediction(prediction) {
     });
     const encouragement = correct ? "Good prediction!" : "Not quite.";
     const choices = checkpoint.querySelector("fieldset");
-    choices.disabled = true;
-    choices.removeAttribute("aria-describedby");
+    choices.replaceWith(choices.querySelector("#question"));
     const feedback = document.createElement("div");
-    feedback.innerHTML = `<p><strong>${encouragement}</strong></p><p class="sample-note">Your prediction: ${prediction.choices[Number(selected.value)]}</p><p>${observed}</p><p>${prediction.explanation}</p>`;
+    feedback.innerHTML = `<p><strong>${encouragement}</strong> You predicted: “${prediction.choices[Number(selected.value)]}”</p><p>${observed}</p><p>${prediction.explanation}</p>`;
     feedback.setAttribute("tabindex", "-1");
     feedback.setAttribute("role", "region");
     feedback.setAttribute("aria-label", "Prediction explained");
@@ -698,6 +700,11 @@ function setupPrediction(prediction) {
     });
     checkpoint.querySelector(".prediction-header").replaceChildren(toggle);
     feedback.focus({ preventScroll: true });
+    // Keep the feedback where the hint was as the options disappear above it.
+    window.scrollBy({
+      top: feedback.firstElementChild.getBoundingClientRect().top - feedbackTop,
+      behavior: "instant",
+    });
   });
 }
 

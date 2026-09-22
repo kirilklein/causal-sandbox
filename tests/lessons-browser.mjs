@@ -207,9 +207,8 @@ try {
           "click",
           () => {
             window.predictionViewportBefore = {
-              scroll: window.scrollY,
-              questionTop: document
-                .querySelector("#question")
+              feedbackTop: document
+                .querySelector("#prediction-hint")
                 .getBoundingClientRect().top,
             };
           },
@@ -224,19 +223,16 @@ try {
       const beforeAnswer = await page.evaluate(
         () => window.predictionViewportBefore,
       );
-      const afterAnswer = await page.evaluate(() => ({
-        scroll: window.scrollY,
-        questionTop: document.querySelector("#question").getBoundingClientRect()
-          .top,
-      }));
-      // Allow one pixel for browser scroll rounding.
-      for (const coordinate of ["scroll", "questionTop"])
-        assert.ok(
-          Math.abs(afterAnswer[coordinate] - beforeAnswer[coordinate]) <= 1,
-          `${topic}/${choice}: answering keeps ${coordinate} in place (${beforeAnswer[coordinate]} → ${afterAnswer[coordinate]})`,
-        );
-      assert.equal(await choices.nth(choice).isChecked(), true);
-      assert.equal(await choices.nth(choice).isDisabled(), true);
+      const feedbackTop = await feedback
+        .locator("p")
+        .first()
+        .evaluate((p) => p.getBoundingClientRect().top);
+      // Removing the options should not move the feedback's reading position.
+      assert.ok(
+        Math.abs(feedbackTop - beforeAnswer.feedbackTop) <= 1,
+        `${topic}/${choice}: feedback stays in place (${beforeAnswer.feedbackTop} → ${feedbackTop})`,
+      );
+      assert.equal(await choices.count(), 0);
       assert.equal(
         await feedback.locator("strong").evaluate((message) => {
           const bounds = message.getBoundingClientRect();
@@ -340,8 +336,7 @@ try {
       assert.equal(await toggle.getAttribute("aria-expanded"), "true");
       assert.equal(await toggle.innerText(), "Prediction and feedback");
       assert.equal(await feedback.innerText(), firstFeedback);
-      assert.equal(await choices.nth(choice).isChecked(), true);
-      assert.equal(await choices.nth(choice).isDisabled(), true);
+      assert.equal(await choices.count(), 0);
       await page.locator("#redraw").click();
       assert.equal(await feedback.innerText(), firstFeedback);
       assert.ok(

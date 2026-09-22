@@ -171,12 +171,12 @@ preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
 Randomization, collider, and overlap place the prediction question with its answer
-choices immediately after the current graph. Answering keeps the question and
-selected choice in place, replacing the hint and submit button with focused
-feedback without scrolling. After answering, a “Prediction and feedback” disclosure
-in the card’s top header collapses or restores the question, choices, and feedback
-below it without changing the experiment. The header space is present before answering
-so revealing its control does not shift the question.
+choices immediately after the current graph. Answering removes the radio options,
+keeps the question, and names the selected answer in the feedback. The feedback is
+anchored to the hint’s previous screen position so removing the options does not
+lose the learner’s reading position. A “Prediction and feedback” disclosure in the
+card’s top header collapses or restores the question and feedback below it without
+changing the experiment. Its header space is present before answering.
 Collider and overlap offer their
 previous-graph comparison below the experiment only after answering. This separate
 comparison never replaces the current graph. Restart restores the unanswered view.
