@@ -92,7 +92,7 @@ const lessonDetails = {
     "longitudinal time varying confounding sequential IPTW treatment confounder feedback",
   ],
   "causal-relevance": [
-    "Compare unrelated variables, outcome predictors, proxies, and colliders; separate causal roles from prediction and adjustment.",
+    "Adjust for an observed proxy of a hidden confounder and see why bias can decrease without disappearing.",
     "causal relevance irrelevant irrelevance unknown non-contributing proxy predictor prediction feature importance direct total effect adjustment usefulness",
   ],
   instrument: [
