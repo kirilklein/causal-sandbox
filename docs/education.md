@@ -1,14 +1,12 @@
 # Progressive education delivery
 
 The advanced [front-door lesson](front-door.md) at `?lesson=front-door` follows
-hidden confounding. A fictional tutoring → practice → passing example rebuilds
-a total effect through a mediator using exact population proportions. Five short
-visual stages separate the confounded comparison, the two identified relationships,
-their combination, and violations of the required graph/support conditions. The
-same 1,000 observed student records regroup and change weight to make the two
-averages visible; no individual counterfactual is inferred.
-It is discoverable from hidden confounding, Contents, topics, and search; the
-core sequence is unchanged. The formula and model assumptions are optional detail.
+hidden confounding. One persistent tutoring → practice → passing graph shows
+how a mediator carries a total effect. Hidden-readiness selection changes the
+observed difference while the valid front-door reconstruction stays fixed;
+changing the causal story exposes where it fails. The two averaging steps,
+formulas, and model assumptions are optional detail. The lesson is discoverable
+from hidden confounding, Contents, topics, and search; the core sequence is unchanged.
 
 The optional [Proxies for hidden confounders chapter](causal-relevance.md)
 follows hidden confounding at `?lesson=causal-relevance`. It starts with the

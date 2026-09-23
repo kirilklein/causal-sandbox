@@ -94,3 +94,17 @@ test("reconstruction respects observed group weights and mass rescaling", () => 
   close(result.rebuilt[0], 0.23);
   close(result.rebuilt[1], 0.47);
 });
+
+test("the binary mechanism product equals the full front-door contrast", () => {
+  for (const world of ["valid", "direct", "mediator"])
+    for (const selection of [0, 0.3, 0.8]) {
+      const result = reconstructFrontDoor(
+        frontDoorPopulation({ world, selection }).cells,
+      );
+      close(
+        (result.pM[1][1] - result.pM[0][1]) *
+          (result.response[1] - result.response[0]),
+        result.effect,
+      );
+    }
+});

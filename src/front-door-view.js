@@ -1,6 +1,6 @@
 import { effectComparison } from "./effect-comparison.js";
 
-export const percent = (value) => `${(100 * value).toFixed(0)}%`;
+export const percent = (value) => `${Number((100 * value).toFixed(1))}%`;
 export const points = (value) =>
   `${(100 * value).toFixed(1).replace(/\.0$/, "")} pp`;
 
@@ -67,35 +67,47 @@ export const frontDoorWorlds = {
   },
 };
 
-export function frontDoorGraph({
-  stage = 0,
-  world = "valid",
-  selection = 0.6,
-} = {}) {
-  const node = (name, x, y) =>
-    `<g><circle cx="${x}" cy="${y}" r="23" fill="var(--node-${name})" ${name === "U" ? 'stroke="var(--text-muted)" stroke-dasharray="4 4"' : ""}/><text x="${x}" y="${y + 6}" text-anchor="middle" class="fd-node-label">${name}</text></g>`;
-  const edge = (path, hidden = false, dim = false, extra = "") =>
-    `<path d="${path}" class="fd-edge ${hidden ? "fd-hidden" : ""} ${dim ? "fd-dim" : ""}" marker-end="url(#fd-arrow)" ${extra}/>`;
-  return `<svg viewBox="0 0 350 240" role="img" aria-label="Assumed causal graph: tutoring A causes practice M, which causes passing Y. Unmeasured readiness U causes A and Y.${world === "direct" ? " A also directly causes Y." : ""}${world === "mediator" ? " U also directly causes M." : ""}${selection === 0 ? " The U to A effect is set to zero." : ""}">
-    <defs><marker id="fd-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--causal-path)"/></marker></defs>
-    ${edge("M153 54 Q70 50 51 137", true, stage === 1 || selection === 0)}
-    ${edge("M197 54 Q280 50 299 137", true, stage === 1)}
-    ${edge("M69 160 L149 160", false, stage === 2)}
-    ${edge("M199 160 L279 160", false, stage === 1)}
-    ${world === "direct" ? edge("M57 181 Q175 260 293 181", false, false, 'data-edge="direct"') : ""}
-    ${world === "mediator" ? edge("M175 77 L175 133", true, false, 'data-edge="mediator"') : ""}
-    ${node("U", 175, 52)}${node("A", 45, 160)}${node("M", 175, 160)}${node("Y", 305, 160)}
-    <text x="175" y="16" text-anchor="middle" class="fd-graph-label">Readiness · unmeasured</text>
-    <text x="45" y="200" text-anchor="middle" class="fd-graph-label">Tutoring</text><text x="175" y="200" text-anchor="middle" class="fd-graph-label">Practice</text><text x="305" y="200" text-anchor="middle" class="fd-graph-label">Pass</text>
-  </svg>`;
+export function frontDoorGraph({ world = "valid", selection = 0.6, result }) {
+  const practiceChange = result.pM[1][1] - result.pM[0][1];
+  const passingChange = result.supported
+    ? result.response[1] - result.response[0]
+    : null;
+  const change = (value) =>
+    value === null ? "Unavailable" : `${value > 0 ? "+" : ""}${points(value)}`;
+  const firstLabel =
+    world === "mediator"
+      ? ["observed practice", "difference"]
+      : ["more regular", "practice"];
+  const secondLabel =
+    world === "mediator"
+      ? ["adjusted association", "still confounded"]
+      : world === "support"
+        ? ["missing outcome", "comparisons"]
+        : ["higher chance", "of passing"];
+  const description = `Assumed causal story: tutoring A causes practice M, which causes passing Y. Hidden readiness U causes A and Y. Observed practice change ${change(practiceChange)}; adjusted passing contrast ${change(passingChange)}.${world === "direct" ? " Tutoring also directly affects passing." : ""}${world === "mediator" ? " Readiness also causes practice; the links cannot be interpreted causally." : ""}${selection === 0 ? " Readiness to tutoring is inactive." : ""}`;
+  return [false, true]
+    .map((mobile) => {
+      const id = mobile ? "fd-mobile-arrow" : "fd-desktop-arrow";
+      const node = (name, x, y, label, labelY) =>
+        `<g><circle cx="${x}" cy="${y}" r="24" fill="var(--node-${name})" ${name === "U" ? 'stroke="var(--text-muted)" stroke-dasharray="4 4"' : ""}/><text x="${x}" y="${y + 6}" text-anchor="middle" class="fd-node-label">${name}</text><text x="${mobile && name !== "U" ? x + 37 : x}" y="${mobile && name !== "U" ? y - 15 : labelY}" text-anchor="${mobile && name !== "U" ? "start" : "middle"}" class="fd-graph-label">${label}</text></g>`;
+      const edge = (path, hidden = false, extra = "") =>
+        `<path d="${path}" class="fd-edge ${hidden ? "fd-hidden" : ""}" marker-end="url(#${id})" ${extra}/>`;
+      const annotation = (x, y, value, lines, link) =>
+        `<g class="fd-link-note"><text data-link="${link}" class="fd-link-value ${value === null ? "fd-unavailable" : ""}" x="${x}" y="${y}" text-anchor="${mobile ? "start" : "middle"}">${change(value)}</text>${lines.map((line, i) => `<text class="fd-link-label" x="${x}" y="${y + 22 + i * 17}" text-anchor="${mobile ? "start" : "middle"}">${line}</text>`).join("")}</g>`;
+      const graph = mobile
+        ? `${edge("M250 181 V71 Q250 55 234 55 H86", true, selection === 0 ? 'opacity="0.35"' : "")}${edge("M278 205 H286 Q298 205 298 217 V339 Q298 355 282 355 H86", true)}${edge("M58 83 V177")}${edge("M58 233 V327")}${world === "direct" ? edge("M30 55 H20 Q12 55 12 63 V347 Q12 355 20 355 H30", false, 'data-edge="direct"') : ""}${world === "mediator" ? edge("M222 205 H86", true, 'data-edge="mediator"') : ""}${node("A", 58, 55, "Tutoring", 19)}${node("M", 58, 205, "Practice", 169)}${node("Y", 58, 355, "Passing", 319)}${node("U", 250, 205, "Readiness", 251)}<text x="250" y="269" text-anchor="middle" class="fd-link-label">hidden</text>${annotation(105, 108, practiceChange, firstLabel, "practice")}${annotation(105, 277, passingChange, secondLabel, "passing")}${world === "direct" ? '<text x="155" y="407" text-anchor="middle" class="fd-link-label">Extra route: hints help passing</text>' : ""}`
+        : `${edge("M364 50 Q70 50 70 172", true, selection === 0 ? 'opacity="0.35"' : "")}${edge("M416 50 Q710 50 710 172", true)}${edge("M98 200 H362")}${edge("M418 200 H682")}${world === "direct" ? edge("M70 228 V280 Q70 296 86 296 H694 Q710 296 710 280 V228", false, 'data-edge="direct"') : ""}${world === "mediator" ? edge("M390 78 V172", true, 'data-edge="mediator"') : ""}${node("A", 70, 200, "Tutoring", 247)}${node("M", 390, 200, "Practice", 247)}${node("Y", 710, 200, "Passing", 247)}${node("U", 390, 50, "Readiness · hidden", 12)}${annotation(230, 132, practiceChange, firstLabel, "practice")}${annotation(550, 132, passingChange, secondLabel, "passing")}${world === "direct" ? '<text x="390" y="281" text-anchor="middle" class="fd-link-label">Extra route: hints help passing</text>' : ""}`;
+      return `<svg class="${mobile ? "fd-graph-mobile" : "fd-graph-desktop"}" viewBox="${mobile ? "0 0 310 424" : "0 0 780 312"}" role="img" aria-label="${description}"><defs><marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="var(--causal-path)"/></marker></defs>${graph}</svg>`;
+    })
+    .join("");
 }
 
 export function effectCards(result, population, reveal = false) {
   const rows = reveal
     ? [
-        ["True total effect", population.effect, "truth"],
         ["Observed difference", result.rawEffect, "observed"],
         ["Front-door reconstruction", result.effect, "front-door"],
+        ["Simulator truth", population.effect, "truth"],
       ]
     : [["Observed difference", result.rawEffect, "observed"]];
   return `<div class="results fd-results" aria-label="Effects in percentage points">${rows

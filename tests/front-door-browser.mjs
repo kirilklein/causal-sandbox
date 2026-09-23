@@ -28,114 +28,32 @@ try {
     .getByRole("link", { name: "The front-door criterion →", exact: true })
     .click();
   await expect(page.locator("h1")).toHaveText("The front-door criterion");
-  await expect(page.locator("#fd-title")).toHaveText(
-    "The groups already differ",
-  );
   await expect(page.locator(".fd-details[open]")).toHaveCount(0);
-  await page.getByRole("button", { name: "No", exact: true }).focus();
-  await page.keyboard.press("Enter");
-  await expect(page.locator("#fd-prediction")).toContainText("Right.");
-  await page.evaluate(() => {
-    window.firstStudent = document.querySelector(
-      '[data-student="1"][data-copy="0"]',
-    );
-  });
-  await expect(page.locator("[data-population-rate]")).toHaveText([
-    "24% pass",
-    "62% pass",
-  ]);
-  await page.locator("#fd-student").fill("800");
-  await expect(page.locator("#fd-journey")).toHaveText(
-    "Tutoring → regular practice → passed",
-  );
-  await page.locator("#fd-next").click();
-  await expect(page.locator("#fd-title")).toBeFocused();
-  await expect(page.locator("[data-population-rate]")).toHaveText([
-    "20% practice regularly",
-    "70% practice regularly",
-  ]);
-  await page.locator("#fd-next").click();
-  await expect(page.locator("[data-population-rate]")).toHaveText([
-    "21% pass",
-    "70% pass",
-  ]);
-  await page.locator("#fd-balance").focus();
-  await page.keyboard.press("Enter");
-  await expect(page.locator("[data-population-rate]")).toHaveText([
-    "25% pass",
-    "65% pass",
-  ]);
-  await expect(page.locator("#fd-balance")).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(page.locator(".fd-group-label")).toHaveText([
-    "No tutoring · 50% · 16% pass",
-    "Tutoring · 50% · 34% pass",
-    "No tutoring · 50% · 56% pass",
-    "Tutoring · 50% · 74% pass",
-  ]);
-  await page.locator("#fd-next").click();
-  await expect(page.locator('[data-effect="truth"]')).toHaveCount(0);
-  await page.locator("#fd-reveal").click();
+  await expect(page.locator('[data-effect="observed"]')).toHaveText("+38 pp");
   await expect(page.locator('[data-effect="front-door"]')).toHaveText("+20 pp");
   await expect(page.locator('[data-effect="truth"]')).toHaveText("+20 pp");
-  await expect(page.locator(".fd-results .result")).toHaveCount(3);
-  await expect(page.locator(".fd-effect-track")).toHaveCount(0);
-  await expect(page.locator("[data-population-rate]")).toHaveText([
-    "33% pass",
-    "53% pass",
-  ]);
-  assert.ok(
-    await page.evaluate(
-      () =>
-        window.firstStudent ===
-        document.querySelector('[data-student="1"][data-copy="0"]'),
-    ),
-    "Student DOM identity persists through regrouping",
+  await expect(
+    page.locator('.fd-graph-desktop [data-link="practice"]'),
+  ).toHaveText("+50 pp");
+  await expect(
+    page.locator('.fd-graph-desktop [data-link="passing"]'),
+  ).toHaveText("+40 pp");
+  await expect(page.locator("#fd-explanation")).toContainText(
+    "20 extra passes per 100",
   );
-  const weighted = await page.locator(".fd-student").evaluateAll((nodes) =>
-    [0, 1].map((panel) => {
-      const records = nodes.filter(
-        (node) =>
-          Number(node.dataset.panel) === panel && node.style.opacity === "1",
-      );
-      return {
-        count: records.length,
-        mass: records.reduce(
-          (sum, node) => sum + Number(node.dataset.weight),
-          0,
-        ),
-        passed: records.reduce(
-          (sum, node) =>
-            sum +
-            Number(node.dataset.weight) *
-              Number(node.dataset.record.split("/")[2]),
-          0,
-        ),
-      };
-    }),
-  );
-  weighted.forEach((panel, i) => {
-    assert.equal(panel.count, 1000);
-    assert.ok(Math.abs(panel.mass - 1000) < 1e-8);
-    assert.ok(Math.abs(panel.passed / panel.mass - [0.33, 0.53][i]) < 1e-10);
-  });
-  await expect(page.locator("#fd-journey")).toHaveText(
-    "Tutoring → regular practice → passed",
-  );
-  await mkdir("test-results/front-door", { recursive: true });
-  await page.waitForTimeout(1000); // Capture the settled reconstructed populations.
-  await page.screenshot({
-    path: "test-results/front-door/desktop-combine.png",
-    fullPage: true,
-  });
-  await page.locator("#fd-next").click();
+  await expect(page.locator("#fd-population, .fd-steps")).toHaveCount(0);
+  await page.locator("#fd-evidence > summary").click();
+  await expect(page.locator('[data-within="0"]')).toHaveText("+40 pp");
+  await expect(page.locator('[data-within="1"]')).toHaveText("+40 pp");
+  await expect(page.locator("#fd-evidence-content")).toContainText("16%");
   await page.locator("#fd-selection").focus();
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("#fd-selection-value")).toHaveText("0.7");
   await expect(page.locator('[data-effect="observed"]')).toHaveText("+41 pp");
   await expect(page.locator('[data-effect="front-door"]')).toHaveText("+20 pp");
+  await expect(page.locator("#fd-evidence")).toHaveAttribute("open", "");
+  await expect(page.locator("#fd-evidence-content")).toContainText("14.5%");
+  await page.locator("#fd-evidence > summary").click();
   for (const world of ["direct", "mediator", "support", "valid"]) {
     await page.locator("#fd-world").selectOption(world);
     const population = frontDoorPopulation({ world, selection: 0.7 });
@@ -150,39 +68,40 @@ try {
       ["observed", result.rawEffect],
       ["front-door", result.effect],
     ]) {
-      const comparison = effectComparison(value, population.effect);
       const tint = await page
         .locator(`[data-effect="${id}"]`)
         .evaluate((node) =>
           parseFloat(node.parentElement.style.getPropertyValue("--error-tint")),
         );
-      assert.equal(
-        tint,
-        comparison.tint,
-        `${world}/${id} uses the shared error scale`,
-      );
+      assert.equal(tint, effectComparison(value, population.effect).tint);
     }
-    if (world === "direct")
-      await expect(
-        page.locator(".fd-results .effect-difference").last(),
-      ).toHaveText("-15 pp from truth");
-    if (world === "support")
-      await expect(
-        page.locator(".fd-results .effect-difference").last(),
-      ).toHaveText("Cannot compare with truth");
     await expect(page.locator('#fd-graph [data-edge="direct"]')).toHaveCount(
-      world === "direct" ? 1 : 0,
+      world === "direct" ? 2 : 0,
     );
     await expect(page.locator('#fd-graph [data-edge="mediator"]')).toHaveCount(
-      world === "mediator" ? 1 : 0,
+      world === "mediator" ? 2 : 0,
     );
+    await page.locator("#fd-arithmetic > summary").click();
+    if (world === "support")
+      await expect(page.locator("#fd-arithmetic-content")).toContainText(
+        "cannot be reconstructed",
+      );
+    else
+      await expect(
+        page.locator("#fd-arithmetic-content [role=math]"),
+      ).toHaveCount(1);
+    await page.locator("#fd-arithmetic > summary").click();
+    if (world === "mediator")
+      await expect(page.locator(".fd-graph-desktop")).toContainText(
+        "still confounded",
+      );
   }
   await page.locator("#fd-selection").focus();
   await page.keyboard.press("Home");
   await expect(page.locator("#fd-selection-value")).toHaveText("0.0");
   await expect(page.locator('[data-effect="observed"]')).toHaveText("+20 pp");
-  await expect(page.locator("#fd-limit-results")).toContainText(
-    "U → A is set to zero",
+  await expect(page.locator("#fd-explanation")).toContainText(
+    "Readiness → tutoring is off",
   );
   await page.getByText("Check your understanding", { exact: true }).click();
   await page.getByRole("button", { name: "Yes, practice is measured" }).click();
@@ -191,125 +110,96 @@ try {
     .getByRole("button", { name: "No, the hints bypass practice" })
     .click();
   await expect(page.locator("#fd-answer")).toContainText("Right.");
-  await page.locator("#fd-world").selectOption("direct");
-  for (const width of [1440, 390, 320]) {
-    await page.setViewportSize({ width, height: 1000 });
+  await page.getByText("Check your understanding", { exact: true }).click();
+  await mkdir("test-results/front-door", { recursive: true });
+  for (const width of [1440, 700, 390, 320]) {
+    await page.setViewportSize({ width, height: 1100 });
     for (const theme of ["light", "dark"]) {
       await page
         .getByRole("combobox", { name: "Color theme" })
         .selectOption(theme);
-      for (const step of [0, 1, 2, 3, 4]) {
-        await page.locator(`[data-step="${step}"]`).click();
-        await expect(page.locator(`#fd-title`)).toBeFocused();
+      for (const world of ["valid", "direct", "mediator", "support"]) {
+        await page.locator("#fd-world").selectOption(world);
+        const currentSelection = Number(
+          await page.locator("#fd-selection").inputValue(),
+        );
+        const currentResult = reconstructFrontDoor(
+          frontDoorPopulation({ world, selection: currentSelection }).cells,
+        );
+        await expect(page.locator('[data-effect="front-door"]')).toHaveText(
+          currentResult.effect === null
+            ? "Unavailable"
+            : `+${points(currentResult.effect)}`,
+        );
         assert.ok(
           await page.evaluate(
-            () => document.documentElement.scrollWidth <= window.innerWidth,
+            () => document.documentElement.scrollWidth <= innerWidth,
           ),
-          `No overflow at ${width}/${theme}/step ${step}`,
+          `No page overflow ${width}/${theme}/${world}`,
         );
         assert.ok(
-          await page
-            .locator(".fd-stage")
-            .evaluate((node) => node.scrollWidth <= node.clientWidth),
-          `Stage fits at ${width}/${theme}/step ${step}`,
+          await page.locator("#fd-graph svg:visible").evaluate((svg) => {
+            const bounds = svg.getBoundingClientRect();
+            return [...svg.querySelectorAll("text")].every((text) => {
+              const box = text.getBoundingClientRect();
+              return (
+                box.left >= bounds.left - 1 &&
+                box.right <= bounds.right + 1 &&
+                box.top >= bounds.top - 1 &&
+                box.bottom <= bounds.bottom + 1
+              );
+            });
+          }),
+          `Graph labels fit ${width}/${theme}/${world}`,
         );
-        if (
-          (width === 1440 && step === 2) ||
-          (width === 390 && step === 3) ||
-          (width === 320 && step === 4)
-        ) {
-          await page.waitForTimeout(1000); // Allow the regrouping transition to finish for visual review.
-          await page.screenshot({
-            path: `test-results/front-door/${width}-${theme}-step-${step}.png`,
-            fullPage: true,
+        if (width !== 700 && (world === "valid" || world === "direct"))
+          await page.locator(".fd-experiment").screenshot({
+            path: `test-results/front-door/chain-${width}-${theme}-${world}.png`,
           });
-        }
       }
       const slider = page.locator("#fd-selection");
       assert.ok(
         await slider.evaluate((node) => {
-          const style = getComputedStyle(node);
+          const css = getComputedStyle(node);
           return (
-            parseFloat(style.height) >= 6 &&
-            style.backgroundColor !== "rgba(0, 0, 0, 0)"
+            parseFloat(css.height) >= 6 &&
+            css.backgroundColor !== "rgba(0, 0, 0, 0)"
           );
         }),
-        `Slider has a visible track at ${width}/${theme}`,
       );
       await slider.scrollIntoViewIfNeeded();
-      const track = await slider.boundingBox();
-      await page.mouse.click(
-        track.x + track.width / 2,
-        track.y + track.height / 2,
-      );
+      const box = await slider.boundingBox();
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
       await expect(slider).toHaveValue("0.4");
       await expect(page.locator("#fd-selection-value")).toHaveText("0.4");
-      await page.locator("#fd-formulas > summary").click();
-      await expect(page.locator("#fd-formulas [role=math]")).toHaveCount(2);
-      assert.ok(
-        await page.locator("#fd-formulas").evaluate((node) => {
-          const bounds = node.getBoundingClientRect();
-          return (
-            node.scrollWidth <= node.clientWidth &&
-            [...node.querySelectorAll("math")].every((math) => {
-              const box = math.getBoundingClientRect();
-              return box.left >= bounds.left && box.right <= bounds.right;
-            })
-          );
-        }),
-        `Typeset equations fit at ${width}/${theme}`,
-      );
-      await page.locator("#fd-formulas").screenshot({
-        path: `test-results/front-door/${width}-${theme}-formulas.png`,
-      });
-      await page.locator("#fd-formulas > summary").click();
-      await page.locator("#fd-model > summary").click();
-      await expect(page.locator("#fd-model [role=math]")).toHaveCount(4);
-      assert.ok(
-        await page.locator("#fd-model").evaluate((node) => {
-          const bounds = node.getBoundingClientRect();
-          return (
-            node.scrollWidth <= node.clientWidth &&
-            [...node.querySelectorAll("math")].every(
-              (math) => math.getBoundingClientRect().right <= bounds.right,
-            )
-          );
-        }),
-        `Model equations fit at ${width}/${theme}`,
-      );
-      await page.locator("#fd-model").screenshot({
-        path: `test-results/front-door/${width}-${theme}-model.png`,
-      });
-      await page.locator("#fd-model > summary").click();
+      for (const [id, count] of [
+        ["fd-formulas", 2],
+        ["fd-model", 4],
+      ]) {
+        await page.locator(`#${id} > summary`).click();
+        await expect(page.locator(`#${id} [role=math]`)).toHaveCount(count);
+        assert.ok(
+          await page.locator(`#${id}`).evaluate((node) => {
+            const bounds = node.getBoundingClientRect();
+            return (
+              node.scrollWidth <= node.clientWidth &&
+              [...node.querySelectorAll("math")].every((math) => {
+                const box = math.getBoundingClientRect();
+                return box.left >= bounds.left && box.right <= bounds.right;
+              })
+            );
+          }),
+        );
+        await page.locator(`#${id} > summary`).click();
+      }
     }
   }
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.locator('[data-step="2"]').click();
-  assert.equal(
-    await page
-      .locator(".fd-student")
-      .first()
-      .evaluate((node) => getComputedStyle(node).transitionDuration),
-    "0s",
-  );
   await page.locator("#fd-restart").click();
-  await expect(page.locator("#fd-student")).toHaveValue("1");
-  await page.locator('[data-step="2"]').click();
-  await expect(page.locator("#fd-balance")).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
-  await page.locator('[data-step="3"]').click();
-  await expect(page.locator("#fd-reveal")).toBeVisible();
-  await page.locator("#fd-restart").click();
-  await expect(page.locator("#fd-title")).toHaveText(
-    "The groups already differ",
-  );
-  await expect(page.locator("#fd-prediction")).toBeEmpty();
-  await page.locator('[data-step="4"]').click();
+  await expect(page.locator("h1")).toBeFocused();
   await expect(page.locator("#fd-world")).toHaveValue("valid");
   await expect(page.locator("#fd-selection")).toHaveValue("0.6");
   await expect(page.locator("#fd-answer")).toBeEmpty();
+  await expect(page.locator(".fd-details[open]")).toHaveCount(0);
   await page.goto(`${url}?lesson=topics`);
   await page
     .locator(".learning-topic-group > summary")
@@ -324,12 +214,9 @@ try {
     "The front-door criterion",
   );
   await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("button", { name: "Contents", exact: true }),
-  ).toBeFocused();
   assert.deepEqual(errors, []);
   console.log(
-    "Front-door lesson: calculations, discovery, flow, failures, reset, keyboard, themes and narrow layouts passed.",
+    "Integrated front-door lesson: mechanism, selection, failures, disclosures, discovery, keyboard, reset, themes and responsive graph passed.",
   );
 } finally {
   await browser.close();

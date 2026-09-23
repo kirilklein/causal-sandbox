@@ -1,49 +1,56 @@
 # The front-door criterion (#251)
 
 The advanced lesson at `?lesson=front-door` follows hidden confounding. It is
-registered in Contents, the topic browser, search, and the hidden-confounding
-lesson's optional links. Core ordering is unchanged. Prerequisites: mediators
-and hidden confounding.
+registered in Contents, topics, search, and the hidden-confounding lesson's
+optional links. Prerequisites: mediators and hidden confounding.
 
 **Takeaway:** a suitable mediator can identify the total effect despite hidden
 treatment–outcome confounding. Measuring a mediator alone is insufficient.
 
-The misconception is that front-door means adding M to an outcome regression
-and interpreting the coefficient on A. The lesson instead makes the two averages
-visible, retaining the mediated route in the total effect.
+## One causal story
 
-## Flow and visual meaning
+The main question is: how many extra students pass because tutoring changes
+practice? One persistent causal graph carries the argument:
 
-1. Predict whether the observed tutoring/pass comparison identifies the effect.
-   Two groups show 1,000 observed students with exact A/M/Y proportions.
-2. Keep each student and split each tutoring group by practice. Regular practice
-   rises from 20% to 70%; the grouping makes the observed counts visible.
-3. Regroup by practice. Compare the two tutoring strata within each practice
-   group, then reweight them to the population's 50/50 tutoring mix. Symbol area
-   shows contribution to the average. The pass rates become 25% and 65%.
-4. Reuse all observed records in two weighted copies: one with the practice mix
-   under no tutoring, one under tutoring. Their pass rates are 33% and 53%.
-   Explicitly reveal simulator truth to compare the reconstructed effect with it.
-5. Change the graph or support and vary hidden treatment selection. A transfer
-   question asks whether an app's direct hints invalidate using practice as a
-   front-door mediator for its total effect.
+- Tutoring → practice: a 50 percentage-point rise in regular practice.
+- Practice → passing: a 40-point adjusted pass-rate contrast.
+- Together: 20 extra passes per 100 students, on average.
 
-Student marks persist across regrouping; their observed records never change.
-Circles mean no tutoring, triangles mean tutoring; filled marks passed, hollow
-marks did not. A keyboard-accessible student selector and mark clicks expose the
-same observed tutoring → practice → outcome journey across stages. The final two
-copies represent contributions to population averages, not individual futures.
-Symbol area is proportional to weight within a panel; panel and subgroup sizes
-are layout containers, not probability scales. Reduced-motion mode skips movement.
+Changing how strongly hidden readiness selects students into tutoring moves the
+observed difference while leaving the valid reconstruction fixed. The graph,
+controls, and shared result boxes remain visible together. Simulator truth is
+explicitly labeled and available immediately; real data do not reveal it.
 
-Only one stage is visible. Steps are freely navigable; predictions never gate
-progress. The graph uses the existing A/M/Y/U palette, dashed unmeasured paths,
-and fixed geometry. Effect results use the lesson result boxes: values and signed
-differences in percentage points, the shared error tint, and a constant truth
-background. Tint is computed in the model’s outcome units (risk), before converting
-values to percentage points. Missing results remain explicitly unavailable.
-The opening comparison stays neutral until truth is revealed.
-Derivation, formal conditions, source, and model details start collapsed.
+Changing the causal story adds a direct tutoring → passing path, a hidden
+readiness → practice path, or missing tutoring/practice combinations. The same
+graph and result boxes expose the failure. In the hidden mediator-cause world,
+link annotations explicitly say observed difference and confounded association.
+Unavailable outcome comparisons are not filled in.
+
+Optional explanations show the within-tutoring comparisons, averaging, full
+formula, model, source, and a transfer question. At the default settings the
+within-group pass rates are 16% → 56% and 34% → 74%. Averaging over this
+population's 50/50 tutoring mix gives 25% and 65%; the full reconstruction gives
+33% and 53%. The main view leads with the mechanism rather than these averages.
+
+For binary practice, the front-door contrast factors into the change in practice
+probability times the standardized practice-response contrast. This identity
+holds for the observational functional even in the invalid worlds; identifying
+it with the total causal effect requires the front-door assumptions. It is not
+a general instruction to multiply regression coefficients.
+
+## Visual and interaction conventions
+
+The graph retains the A/M/Y/U palette and dashed unmeasured paths. It uses a
+horizontal chain on desktop and a vertical chain on narrow phones. Geometry
+stays fixed within each layout as selection and causal assumptions change.
+Zero selection dims the readiness → tutoring edge and names it as inactive.
+
+Effect results use the shared error tint in raw risk units, with displayed
+values and differences in percentage points. Truth has a constant background.
+The readiness slider has a visible track and keyboard controls. Open disclosures
+stay open while controls update their contents. Restart resets the world,
+selection, transfer answer, and disclosures.
 
 ## Population and identification
 
@@ -54,40 +61,28 @@ The fictional binary model has independent background randomness:
 - P(M=1 | A)=0.2+0.5A.
 - P(Y=1 | M,U)=0.1+0.4M+0.3U.
 
-Enumerating the population gives eight observed A/M/Y probability cells. Only
-those cells enter `reconstructFrontDoor`. Hidden U and intervention truth never
-enter the reconstruction. Exact enumeration isolates identification from
-sampling variation and fitted-model error, which are explained in optional detail.
+Enumeration gives eight observed A/M/Y cells. Only these cells enter
+`reconstructFrontDoor`; hidden U and intervention truth do not. Exact population
+proportions isolate identification from sampling and fitted-model error.
 
-The starting observational pass rates are 24% and 62%. Standardized mediator
-responses are 25% and 65%; reconstructed intervention risks are 33% and 53%.
-The observed risk difference is 38 percentage points and the total effect is 20.
-
-The direct-path world adds 0.15A to the outcome probability. The true effect is
-35 points, while the reconstruction remains 20. The hidden-mediator-cause world
-adds 0.2U to the mediator probability, invalidating both identification stages
-at nonzero treatment selection. The support violation sets M=A, leaving two
-required conditional outcomes undefined. The lesson reports Unavailable and
-does not interpolate or substitute truth.
-
-Each tutorial stage uses the baseline. Limit-experiment settings persist when
-revisiting that stage; Restart resets the stage, world, selection, predictions,
-practice answer, balancing, truth reveal, selected student, and disclosures. No study data are transferred to other lessons.
+The direct-path world adds 0.15A to the outcome probability: truth is 35 points
+and the reconstruction is 20. The hidden-mediator-cause world adds 0.2U to the
+practice probability. At nonzero selection both identification stages are
+confounded; at zero selection the practice–outcome stage remains confounded.
+The no-overlap world sets M=A, leaving required conditional outcomes undefined.
 
 Source: [Pearl, Glymour & Jewell, Causal Inference in Statistics: A Primer,
 §3.4](https://bayes.cs.ucla.edu/PRIMER/primer-ch3.pdf), definition and theorem 3.4.1.
-The lesson uses the binary-outcome risk version of the front-door formula, not
-a general claim that causal effects can be multiplied.
 
 ## Validation
 
-`node --test src/front-door.test.js src/front-door-population.test.js src/search-index.test.js` checks hand-derived
-population values, recovery across selection strengths, both graph violations,
-missing support, unequal standardization weights, and discovery. The population
-tests verify record preservation, weighted reconstruction, and mark area and bounds.
-`APP_URL=... node tests/front-door-browser.mjs` checks navigation, displayed
-calculations, keyboard controls, experiment state, reset, theme preservation,
-persistent student marks, reduced motion, and desktop/390px/320px layout. It saves screenshots under `test-results/front-door/`.
+`node --test src/front-door.test.js src/effect-comparison.test.js src/search-index.test.js`
+checks the model, selection sweep, graph violations, missing support, unequal
+averaging weights, binary contrast identity, shared tints, and discovery.
+`APP_URL=... node tests/front-door-browser.mjs` checks the integrated mechanism,
+controls, changing evidence, disclosures, reset, discovery, both themes, and
+1440/700/390/320px layouts. Screenshots are saved to `test-results/front-door/`.
 
-Learner testing remains separate: ask a new learner why M is used without simply
-blocking its path, why balancing compares within A, and what a direct A→Y path changes.
+Learner comprehension still needs a walkthrough: can someone explain why the
+observed difference changes, why the reconstruction stays fixed, and why adding
+a direct route breaks their agreement?
