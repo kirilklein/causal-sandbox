@@ -143,11 +143,8 @@ document.querySelector("#app").innerHTML =
           ><button id="reset">Restart section</button
           ><span class="small" id="sample"></span>
         </div>
-        <details id="study-detail">
-          <summary id="study-title">
-            Why can adjusting for Z increase variability?
-          </summary>
-          <p id="study-mechanism"></p>
+        <section id="study-detail" aria-labelledby="study-title">
+          <h2 id="study-title">Next: compare variability across studies</h2>
           <p id="study-explanation"></p>
           <p>
             Run 200 independent studies of 2,400 people. Compare adjustment for
@@ -156,7 +153,11 @@ document.querySelector("#app").innerHTML =
           <button id="repeat">Run 200 studies</button>
           <p id="study-progress" class="small" role="status"></p>
           <div id="study-results"></div>
-        </details>
+          <details id="study-reason">
+            <summary id="study-reason-title"></summary>
+            <p id="study-mechanism"></p>
+          </details>
+        </section>
       </section>
       <details>
         <summary id="detail-title"></summary>
@@ -213,7 +214,7 @@ const lessons = [
     instruction:
       "Add Z to the adjustment set, then remove it. The people, outcomes, and treatment uptake below stay fixed.",
     interpretation:
-      "Z is not a confounder. Adding it can change the estimates in this sample and increase their spread across studies, even when they remain centered near the true effect.",
+      "Z is not a confounder. Adding it can change this sample’s estimates, but one estimate moving closer to or farther from truth cannot show a change in variability. Compare repeated studies below.",
     detailTitle: "An example of an instrument",
     detail:
       "<p>Imagine randomly assigning an invitation to take treatment. The invitation is Z; receiving treatment is A. For the invitation to be an instrument, it must change uptake and affect Y only through receiving treatment. Random assignment makes it independent of baseline causes.</p><p>In a real study these conditions need justification. Here they are built into the simulation.</p><p>The checkbox adds Z to the IPW treatment model, the outcome-regression model, and both AIPW models. C remains included. This example uses a binary measured baseline factor C, so both treatment models are correctly specified when U is absent.</p>",
@@ -281,11 +282,14 @@ function render() {
   el("adjust").checked = state.adjust;
   el("study-title").textContent =
     state.step === 1
-      ? "Why can adjusting for Z increase variability?"
+      ? "Next: compare variability across studies"
       : "Compare bias and spread across studies";
   el("study-explanation").textContent = comparing
     ? "Mean estimate minus truth estimates bias across studies. The C-only bias is already present; the change in bias after adding Z shows whether it is amplified. SD measures spread, not bias."
     : "The mean estimate shows where estimates are centered. Their standard deviation (SD) shows how much they vary between studies. Larger SD means less precision; it does not mean the average estimate is shifted away from truth.";
+  el("study-reason-title").textContent = comparing
+    ? "Which hidden-confounding strength is used?"
+    : "Why can adjusting for Z increase variability?";
   el("study-mechanism").textContent =
     state.step === 1
       ? "Z predicts treatment but adds no outcome information once A and C are known. Adjusting for Z can leave less independent treatment variation and make IPW weights more uneven."
@@ -339,7 +343,7 @@ function enter(step) {
   state.step = step;
   state.adjust = false;
   state.seed = 4217;
-  el("study-detail").open = false;
+  el("study-reason").open = false;
   el("detail").parentElement.open = false;
   render();
   el("title").focus();

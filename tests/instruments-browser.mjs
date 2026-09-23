@@ -59,11 +59,15 @@ try {
   await page.keyboard.press("Space");
   assert.equal(await results(), initial);
 
-  await page.locator("#study-title").click();
+  assert.ok(await page.locator("#repeat").isVisible());
+  assert.equal(
+    await page.locator("#repeat").evaluate((node) => node.closest("details")),
+    null,
+  );
+  assert.equal(await page.locator("#study-reason").getAttribute("open"), null);
   assert.equal(await results(), initial);
-  await page
-    .getByRole("button", { name: "Run 200 studies", exact: true })
-    .click();
+  await page.locator("#repeat").focus();
+  await page.keyboard.press("Enter");
   await page
     .getByRole("button", { name: "Run another 200 studies", exact: true })
     .waitFor();
@@ -90,6 +94,9 @@ try {
   await page
     .locator("#study-results")
     .screenshot({ path: "/tmp/instruments-sd-desktop.png" });
+  await page
+    .locator("#study-detail")
+    .screenshot({ path: "/tmp/instruments-flow-desktop.png" });
   const studyResult = await page.locator("#study-results").innerText();
   await page.getByLabel("Color theme").selectOption("dark");
   assert.equal(await results(), initial);
@@ -115,6 +122,9 @@ try {
   await page
     .locator("#study-results")
     .screenshot({ path: "/tmp/instruments-sd-mobile.png" });
+  await page
+    .locator("#study-detail")
+    .screenshot({ path: "/tmp/instruments-flow-mobile.png" });
   await page.locator("#study-means summary").click();
   assert.match(await page.locator("#study-means").innerText(), /Mean estimate/);
 
@@ -124,7 +134,6 @@ try {
   await page
     .getByRole("button", { name: "Restart section", exact: true })
     .click();
-  await page.locator("#study-title").click();
   await page
     .getByRole("button", { name: "Run 200 studies", exact: true })
     .click();
@@ -218,7 +227,6 @@ try {
   await page.getByLabel("Color theme").selectOption("dark");
   assert.equal(await paired(), hiddenResults);
   await assertColors(1);
-  await page.locator("#study-title").click();
   await page
     .getByRole("button", { name: "Run 200 studies", exact: true })
     .click();

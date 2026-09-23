@@ -51,7 +51,11 @@ At zero, U’s label remains readable and its inactive paths are faded.
 
 ## Repeated studies
 
-An optional disclosure runs paired comparisons across 200 independent studies.
+A visible next step after the single-sample comparison runs paired comparisons
+across 200 independent studies. The introduction distinguishes one estimate’s
+error from variability across studies; SD bars and their interpretation appear
+in the main learning path. Its mechanism explanation, means, and RMSE remain
+optional. The later hidden-confounding section retains its separate bias question.
 Later runs advance to the next seed batch. Each fit uses the same data as its
 paired alternative. Runs yield to the UI every ten studies, report progress,
 and preserve the single-study results. Restart cancels the run and clears its
