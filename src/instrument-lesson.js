@@ -148,8 +148,8 @@ document.querySelector("#app").innerHTML =
           <h2 id="study-title">Next: compare variability across studies</h2>
           <p id="study-explanation"></p>
           <div id="instrument-control">
-            <label for="instrument-strength">Z → treatment strength <output id="instrument-value" for="instrument-strength">2.0</output></label>
-            <input id="instrument-strength" type="range" min="0" max="2" step="0.1" value="2" aria-describedby="instrument-help instrument-status" />
+            <label for="instrument-strength">Z → treatment strength <output id="instrument-value" for="instrument-strength">2.8</output></label>
+            <input id="instrument-strength" type="range" min="0" max="2.8" step="0.1" value="2.8" aria-describedby="instrument-help instrument-status" />
             <p class="small" id="instrument-help">Lower the strength, then rerun the studies. The same people and random draws are retained; treatment and outcomes can change. The true effect stays at 2.</p>
             <p class="small" id="instrument-status" role="status"></p>
           </div>
@@ -185,15 +185,16 @@ setupLessonNavigation();
 
 import { instrumentAdjustment, studySummary } from "./instrument-simulation.js";
 const el = (id) => document.getElementById(id);
+const step =
+  new URLSearchParams(location.search).get("lesson") ===
+  "instrument-hidden-confounding"
+    ? 2
+    : 1;
 const state = {
-  step:
-    new URLSearchParams(location.search).get("lesson") ===
-    "instrument-hidden-confounding"
-      ? 2
-      : 1,
+  step,
   seed: 4217,
   adjust: false,
-  strength: 2,
+  strength: step === 1 ? 2.8 : 2,
   hidden: 0,
 };
 let batchStart = 100,
@@ -274,7 +275,7 @@ function render() {
   el("instrument-strength").value = state.strength;
   el("instrument-strength").style.setProperty(
     "--fill",
-    `${50 * state.strength}%`,
+    `${(100 * state.strength) / 2.8}%`,
   );
   el("instrument-value").textContent = state.strength.toFixed(1);
   el("instrument-status").textContent =
@@ -370,7 +371,7 @@ function clearStudies() {
 function enter(step) {
   clearStudies();
   state.hidden = 0;
-  state.strength = 2;
+  state.strength = step === 1 ? 2.8 : 2;
   state.step = step;
   state.adjust = false;
   state.seed = 4217;

@@ -180,3 +180,22 @@ test("precision cost grows across instrument strengths without shifting study me
     assert.ok(ratios[2][k] > 1.04);
   }
 });
+
+test("stronger introductory instrument increases IPW spread while means stay near truth", () => {
+  const values = Array.from({ length: 2 }, () =>
+    Array.from({ length: 3 }, () => []),
+  );
+  for (let seed = 600; seed < 1600; seed++) {
+    instrumentAdjustment({ seed, strength: 2.8 }).fits.forEach((fit, j) => {
+      assert.equal(fit.clipped, 0);
+      [3, 2, 4].forEach((index, k) => values[j][k].push(fit.values[index]));
+    });
+  }
+  const stats = values.map((arm) => arm.map((v) => studySummary(v)));
+  for (const arm of stats)
+    for (const result of arm) {
+      assert.equal(result.unavailable, 0);
+      assert.ok(Math.abs(result.mean - 2) < 0.015);
+    }
+  assert.ok(stats[1][0].sd > 1.5 * stats[0][0].sd);
+});

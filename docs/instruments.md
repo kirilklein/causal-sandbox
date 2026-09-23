@@ -29,7 +29,8 @@ C = +1 if C1 > 0, otherwise -1
 Z = 1[jitter < 0.5]
 A = 1[a < sigmoid(-0.8 + 1.2 C + s Z + h U)]
 Y = 2 A + 1.5 C + 1.5 h U + eY
-s = 2 by default; the introduction slider ranges from 0 to 2 in steps of 0.1
+s = 2.8 by default in the introduction; its slider ranges from 0 to 2.8 in steps of 0.1
+s = 2 in the hidden-confounding section
 h = 0 in the introduction; h ranges from 0 to 2 in the follow-on section
 ```
 
@@ -55,7 +56,7 @@ experiment. Strength changes retain background draws but can change treatment,
 outcomes, and uptake. Zero turns off Z’s treatment effect; any observed uptake
 difference is then due to chance. Changing strength cancels and clears study
 results and resets the batch seed to 100, so reruns at different strengths share
-background draws. Restart and section entry restore strength 2. The later
+background draws. Restart and section entry restore introductory strength 2.8. The later
 hidden-confounding section keeps instrument strength fixed at 2.
 
 ## Repeated studies
@@ -129,3 +130,11 @@ Browser checks also reconcile both displayed fits and repeated-study means with
 the simulator, exercise keyboard/touch strength changes, zero restoration, redraw,
 reset/reload, and cancellation when strength changes. Desktop and 320px screenshots
 cover paired results and bias summaries in light/dark themes.
+
+The introductory default is now strength 2.8 to make the precision cost more
+visible. Across 1,000 additional seeds (600–1599), IPW SD was 0.0463 with C
+and 0.0756 with C + Z (about 63% higher). Means were 1.9999 and 2.0034,
+respectively, with no clipped probabilities in these studies. This is a
+repeated-sample check, not a guarantee of exact finite-sample unbiasedness or
+that clipping is impossible in any future batch. The hidden-confounding
+section and simulator’s default strength remain 2.

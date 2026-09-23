@@ -53,7 +53,7 @@ try {
   const adjust = page.getByLabel("Also adjust for instrument Z");
   await adjust.focus();
   await page.keyboard.press("Space");
-  const expected = instrumentAdjustment().fits[1];
+  const expected = instrumentAdjustment({ strength: 2.8 }).fits[1];
   assert.equal(
     await page.locator("#ipw").textContent(),
     expected.values[3].toFixed(3),
@@ -64,11 +64,11 @@ try {
   assert.equal(await results(), initial);
 
   const instrumentSlider = page.getByLabel("Z → treatment strength");
-  assert.equal(await instrumentSlider.inputValue(), "2");
+  assert.equal(await instrumentSlider.inputValue(), "2.8");
   await instrumentSlider.focus();
   await page.keyboard.press("ArrowLeft");
-  assert.equal(await instrumentSlider.inputValue(), "1.9");
-  assert.equal(await page.locator("#instrument-value").innerText(), "1.9");
+  assert.equal(await instrumentSlider.inputValue(), "2.7");
+  assert.equal(await page.locator("#instrument-value").innerText(), "2.7");
   await instrumentSlider.fill("0");
   assert.match(
     await page.locator("#instrument-status").innerText(),
@@ -183,7 +183,7 @@ try {
   );
   await page.locator("#repeat").click();
   await page.locator("#study-results.studies-animating").waitFor();
-  await instrumentSlider.fill("2");
+  await instrumentSlider.fill("2.8");
   assert.equal(await page.locator("#study-results").innerText(), "");
   assert.equal(await page.locator("#study-progress").innerText(), "");
   assert.equal(await results(), initial);
@@ -209,7 +209,7 @@ try {
   assert.equal(await page.locator("#study-means").getAttribute("open"), null);
   const expectedDots = Array.from({ length: 3 }, () => [[], []]);
   for (let seed = 100; seed < 300; seed++) {
-    instrumentAdjustment({ seed }).fits.forEach((fit, j) => {
+    instrumentAdjustment({ seed, strength: 2.8 }).fits.forEach((fit, j) => {
       [3, 2, 4].forEach((index, k) =>
         expectedDots[k][j].push(fit.values[index]),
       );
@@ -501,14 +501,14 @@ try {
   await touch.goto(`${url}?lesson=instrument`);
   const touchInstrument = touch.getByLabel("Z → treatment strength");
   await touchInstrument.tap();
-  assert.ok(Number(await touchInstrument.inputValue()) < 2);
+  assert.ok(Number(await touchInstrument.inputValue()) < 2.8);
   await touch
     .getByRole("button", { name: "Restart section", exact: true })
     .click();
-  assert.equal(await touchInstrument.inputValue(), "2");
+  assert.equal(await touchInstrument.inputValue(), "2.8");
   await touchInstrument.fill("0");
   await touch.reload();
-  assert.equal(await touchInstrument.inputValue(), "2");
+  assert.equal(await touchInstrument.inputValue(), "2.8");
   await touch.locator("#repeat").click();
   await touch
     .getByRole("button", { name: "Run another 200 studies", exact: true })
