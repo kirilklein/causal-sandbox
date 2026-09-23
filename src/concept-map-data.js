@@ -103,7 +103,11 @@ export const mapRegions = [
         name: "Hidden common causes",
         description:
           "If an important common cause is unmeasured, adjustment using the available variables may leave confounding bias.",
-        lessons: ["hidden-confounding", "instrument-hidden-confounding"],
+        lessons: [
+          "hidden-confounding",
+          "instrument-hidden-confounding",
+          "front-door",
+        ],
         connection: [
           "methods",
           "Double robustness concerns errors in fitted models. It does not remove the need for sufficient information to control confounding.",

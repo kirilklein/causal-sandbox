@@ -62,6 +62,8 @@ if (page === "glossary") {
     await import("./timing-lesson.js");
   } else if (lesson === "causal-relevance") {
     await import("./relevance-lesson.js");
+  } else if (lesson === "front-door") {
+    await import("./front-door-lesson.js");
   } else if (lesson === "time-varying-confounding") {
     await import("./longitudinal-lesson.js");
   } else {
