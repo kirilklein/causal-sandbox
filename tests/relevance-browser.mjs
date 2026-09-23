@@ -30,6 +30,11 @@ try {
     "proxy for hidden fitness",
   );
   await expect(page.locator(".study-dot")).toHaveCount(60);
+  await expect(page.locator(".truth-label")).toHaveText("True effect: 2");
+  await expect(page.locator(".effect-legend li")).toHaveText([
+    "One study",
+    "Mean",
+  ]);
   await expect(page.locator("#relevance-explanation")).toBeHidden();
   await expect(page.locator("#mechanism-title")).toHaveText(
     "How a proxy can help",
@@ -95,11 +100,11 @@ try {
       assert.ok(Math.abs(dot.x - (24 + (dot.value / 5) * 312)) < 1e-9);
     }
     const means = await page
-      .locator("#effect-plot .mean-value")
+      .locator("#effect-plot .effect-mean title")
       .allTextContents();
     assert.deepEqual(
       means,
-      stats.map((s) => s.effect.mean.toFixed(2)),
+      stats.map((s) => `Mean: ${s.effect.mean.toFixed(2)}`),
     );
     await expect(page.locator(".effect-truth").first()).toHaveAttribute(
       "x1",

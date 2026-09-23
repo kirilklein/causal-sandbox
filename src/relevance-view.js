@@ -114,12 +114,11 @@ export function relevancePlot(studies, included) {
     Number.isFinite(value) ? value.toFixed(2) : "Unavailable";
   const description = `Each dot is one of ${studies.length} studies; vertical spacing only separates dots. Diamonds mark means. Without adjustment: mean ${fmt(summaries[0].effect.mean)}, standard deviation ${fmt(summaries[0].effect.sd)}.${included ? ` With adjustment: mean ${fmt(summaries[1].effect.mean)}, standard deviation ${fmt(summaries[1].effect.sd)}.` : " Adjusted estimates have not been revealed."} True effect: ${truth} mobility points. The horizontal scale is fixed from 0 to 5; triangles indicate off-scale estimates.`;
   return `<svg viewBox="0 0 360 ${axisY + 24}" role="img" aria-label="${description}">
-    <text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">Truth: +${truth}</text>
+    <text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">True effect: ${truth}</text>
     ${arms
       .map((arm) => {
         const y = 60 + arm * 88;
         return `<text class="row-label" x="24" y="${y - 25}">${arm ? "With adjustment" : "Without adjustment"}</text>
-      <text class="mean-label" x="336" y="${y - 25}" text-anchor="end">Mean <tspan class="mean-value">${fmt(summaries[arm].effect.mean)}</tspan></text>
       <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="${y - 20}" y2="${y + 36}"/>
       ${studies
         .map((study, i) => {

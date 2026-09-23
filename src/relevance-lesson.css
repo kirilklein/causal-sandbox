@@ -112,9 +112,6 @@
   font-size: 14px;
   font-weight: 600;
 }
-#effect-plot .mean-value {
-  font-weight: 650;
-}
 .effect-axis-label {
   text-align: center;
   margin: 0 0 8px;
@@ -143,6 +140,29 @@
   fill: var(--text);
   stroke: var(--surface);
   stroke-width: 1.5;
+}
+.effect-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.effect-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.effect-legend svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+.effect-legend circle {
+  fill: var(--estimate);
 }
 .relevance-action {
   border-top: 1px solid var(--border);
