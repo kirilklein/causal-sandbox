@@ -9,9 +9,10 @@ import { frontDoorPopulation, reconstructFrontDoor } from "./front-door.js";
 import {
   frontDoorGraph,
   frontDoorFormulas,
+  frontDoorModel,
   frontDoorWorlds,
   probabilityBar,
-  effectPlot,
+  effectCards,
   mixture,
   percent,
 } from "./front-door-view.js";
@@ -46,7 +47,7 @@ document.querySelector("#app").innerHTML =
     </section>
     <details class="fd-details"><summary>The four front-door conditions</summary><ol><li>Every causal path from A to Y passes through M.</li><li>There is no open back-door path from A to M.</li><li>Conditioning on A blocks every back-door path from M to Y.</li><li>The A/M combinations needed for both averages occur in the data.</li></ol><p>These conditions describe the assumed causal structure and support. An observed association or a successful fit cannot establish the graph. Consistency and no interference are also assumed.</p></details>
     <details id="fd-formulas" class="fd-details"><summary>The formula, connected to the pictures</summary>${frontDoorFormulas()}<p>Simply adjusting Y for A and M and reading off A’s coefficient does not perform this reconstruction. Holding M fixed blocks the mediated route we want to include.</p></details>
-    <details class="fd-details"><summary>Model and source</summary><p>This is an invented example, not evidence about tutoring. U, A, M and Y are binary with independent background randomness. P(U=1)=0.5; P(A=1|U)=0.5+s(U−0.5); P(M=1|A)=0.2+0.5A; P(Y=1|M,U)=0.1+0.4M+0.3U. Initially s=0.6.</p><p>The direct-path world adds 0.15A to the outcome probability. The hidden-mediator-cause world adds 0.2U to the practice probability. The no-overlap world sets M=A. Truth comes from intervening on A in each model. The reconstruction receives only the observed A/M/Y distribution.</p><p>Exact enumeration isolates identification. In finite studies the probabilities must be estimated, adding sampling error and possibly model error.</p><p><a href="https://bayes.cs.ucla.edu/PRIMER/primer-ch3.pdf">Pearl, Glymour & Jewell, Causal Inference in Statistics: A Primer</a>, §3.4, definition and theorem 3.4.1.</p></details>
+    <details id="fd-model" class="fd-details"><summary>Model and source</summary><p>This is an invented example, not evidence about tutoring. U, A, M and Y are binary with independent background randomness.</p>${frontDoorModel()}<p>Initially <math><mi>s</mi><mo>=</mo><mn>0.6</mn></math>.</p><p>The direct-path world adds <math><mn>0.15</mn><mi>A</mi></math> to the outcome probability. The hidden-mediator-cause world adds <math><mn>0.2</mn><mi>U</mi></math> to the practice probability. The no-overlap world sets <math><mi>M</mi><mo>=</mo><mi>A</mi></math>. Truth comes from intervening on A in each model. The reconstruction receives only the observed A/M/Y distribution.</p><p>Exact enumeration isolates identification. In finite studies the probabilities must be estimated, adding sampling error and possibly model error.</p><p><a href="https://bayes.cs.ucla.edu/PRIMER/primer-ch3.pdf">Pearl, Glymour & Jewell, Causal Inference in Statistics: A Primer</a>, §3.4, definition and theorem 3.4.1.</p></details>
     <nav class="fd-footer" aria-label="Continue learning"><button id="fd-restart">Restart lesson</button><a href="?lesson=hidden-confounding">← Hidden confounding</a><a href="?lesson=topics">All topics</a><a href="?lesson=misspecification">Resume core lessons →</a></nav>
   </main></div>`;
 setupLessonNavigation();
@@ -93,7 +94,7 @@ function render(focus = false) {
     ][stage] || "";
   if (stage === 0) {
     el("fd-content").innerHTML =
-      `<p>Readiness affects both joining tutoring and passing. The observed groups differ before tutoring can help.</p>${probabilityBar("No tutoring", result.observed[0], { arm: 0 })}${probabilityBar("Tutoring", result.observed[1], { arm: 1 })}<p class="small">Observed pass rates · same 0–100% scale</p>${effectPlot(result, population)}<fieldset class="fd-question"><legend>Does that +38 pp difference tell us the total effect?</legend><button data-predict="yes">Yes</button><button data-predict="no">No</button></fieldset><p id="fd-prediction" class="fd-feedback" role="status">${prediction ? predictionText() : ""}</p>`;
+      `<p>Readiness affects both joining tutoring and passing. The observed groups differ before tutoring can help.</p>${probabilityBar("No tutoring", result.observed[0], { arm: 0 })}${probabilityBar("Tutoring", result.observed[1], { arm: 1 })}<p class="small">Observed pass rates · same 0–100% scale</p>${effectCards(result, population)}<fieldset class="fd-question"><legend>Does that +38 pp difference tell us the total effect?</legend><button data-predict="yes">Yes</button><button data-predict="no">No</button></fieldset><p id="fd-prediction" class="fd-feedback" role="status">${prediction ? predictionText() : ""}</p>`;
     document.querySelectorAll("[data-predict]").forEach((button) =>
       button.addEventListener("click", () => {
         prediction = button.dataset.predict;
@@ -116,7 +117,7 @@ function render(focus = false) {
       `<p>Practice and passing share the path M ← A ← U → Y. Comparing within A blocks it; then we average over the same tutoring mix.</p><div class="fd-strata">${[0, 1].map((a) => `<section><h3>${a ? "Tutoring" : "No tutoring"}</h3>${probabilityBar("Little practice", result.outcome[a][0], { arm: a })}${probabilityBar("Regular practice", result.outcome[a][1], { arm: a })}<p class="small">${percent(result.pA[a])} of the population</p></section>`).join("")}</div><div class="fd-pooling" aria-hidden="true">½ from each group ↓</div><div class="fd-standardized"><h3>Pass rates after averaging</h3>${probabilityBar("If everyone practiced little", result.response[0])}${probabilityBar("If everyone practiced regularly", result.response[1])}</div><p class="small">Same 0–100% scale throughout. The 50/50 weights are this population’s tutoring shares, not a universal rule.</p>`;
   } else if (stage === 3) {
     el("fd-content").innerHTML =
-      `<p>Weight the practice → passing responses by the tutoring → practice mix.</p>${mixture(result)}${effectPlot(result, population, true)}<p class="fd-insight">53% − 33% = <strong>+20 percentage points</strong>. Both causal stages are retained, so this is the total effect.</p>`;
+      `<p>Weight the practice → passing responses by the tutoring → practice mix.</p>${mixture(result)}${effectCards(result, population, true)}<p class="fd-insight">53% − 33% = <strong>+20 percentage points</strong>. Both causal stages are retained, so this is the total effect.</p>`;
   } else {
     el("fd-content").innerHTML =
       `<label class="fd-control" for="fd-world">Which world are we in?<select id="fd-world">${Object.entries(
@@ -154,7 +155,7 @@ function updateLimits() {
   el("fd-selection-value").textContent = selection.toFixed(1);
   el("fd-graph").innerHTML = frontDoorGraph({ stage, world, selection });
   el("fd-limit-results").innerHTML =
-    `${effectPlot(result, population, true)}<p class="fd-insight" role="status">${frontDoorWorlds[world].note}${selection === 0 ? " U → A is set to zero here." : ""}</p>`;
+    `${effectCards(result, population, true)}<p class="fd-insight" role="status">${frontDoorWorlds[world].note}${selection === 0 ? " U → A is set to zero here." : ""}</p>`;
 }
 
 function predictionText() {

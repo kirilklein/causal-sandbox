@@ -100,8 +100,7 @@
 .fd-probability {
   margin: 15px 0;
 }
-.fd-probability > div:first-child,
-.fd-effect-row > div:first-child {
+.fd-probability > div:first-child {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -109,8 +108,7 @@
   font-size: 14px;
   margin-bottom: 7px;
 }
-.fd-probability strong,
-.fd-effect-row strong {
+.fd-probability strong {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -125,37 +123,38 @@
   height: 100%;
   background: var(--estimate);
 }
-.fd-effect-plot {
-  margin-top: 25px;
+.fd-page .fd-results {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
 }
-.fd-effect-row {
-  margin-top: 16px;
-}
-.fd-effect-track {
-  position: relative;
-  height: 15px;
-  background: var(--grid);
-}
-.fd-effect-track > span {
+.fd-results .result > span {
   display: block;
-  height: 100%;
-  background: var(--estimate);
 }
-.fd-effect-track > i {
-  position: absolute;
-  top: -5px;
-  bottom: -5px;
-  border-left: 2px dashed var(--truth);
+.fd-results .result > strong {
+  font-size: 24px;
+  margin-block: 6px;
 }
-.fd-truth .fd-effect-track > span {
-  background: var(--truth);
-}
-.fd-axis {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  color: var(--text-secondary);
+.fd-results .effect-difference {
   font-size: 12px;
+}
+.fd-results .fd-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--page)
+  );
+}
+.fd-results .fd-truth {
+  background: var(--node-Y);
+}
+:root[data-theme="dark"] .fd-results .fd-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+:root[data-theme="dark"] .fd-results .fd-truth {
+  background: var(--truth-surface);
 }
 .fd-question {
   border: 0;
@@ -464,12 +463,21 @@
   .fd-mixture span {
     font-size: 10px;
   }
-  .fd-probability > div:first-child,
-  .fd-effect-row > div:first-child {
+  .fd-probability > div:first-child {
     font-size: 12px;
   }
 }
 
 .fd-page a {
   color: var(--accent);
+}
+
+.fd-model-equations {
+  container-type: inline-size;
+  display: grid;
+  gap: 12px;
+}
+.fd-model-equations .fd-formula {
+  justify-content: flex-start;
+  background: var(--surface-subtle);
 }

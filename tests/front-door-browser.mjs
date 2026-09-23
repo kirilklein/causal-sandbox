@@ -12,6 +12,7 @@ import {
   reconstructFrontDoor,
 } from "../src/front-door.js";
 import { points } from "../src/front-door-view.js";
+import { effectComparison } from "../src/effect-comparison.js";
 
 const browser = await launchBrowser();
 const url = getAppUrl();
@@ -43,6 +44,8 @@ try {
   await page.locator("#fd-next").click();
   await expect(page.locator('[data-effect="front-door"]')).toHaveText("+20 pp");
   await expect(page.locator('[data-effect="truth"]')).toHaveText("+20 pp");
+  await expect(page.locator(".fd-results .result")).toHaveCount(3);
+  await expect(page.locator(".fd-effect-track")).toHaveCount(0);
   await expect(page.locator(".fd-mixture-sum strong")).toHaveText([
     "= 33% pass",
     "= 53% pass",
@@ -68,6 +71,30 @@ try {
     await expect(page.locator('[data-effect="truth"]')).toHaveText(
       `+${points(population.effect)}`,
     );
+    for (const [id, value] of [
+      ["observed", result.rawEffect],
+      ["front-door", result.effect],
+    ]) {
+      const comparison = effectComparison(value, population.effect);
+      const tint = await page
+        .locator(`[data-effect="${id}"]`)
+        .evaluate((node) =>
+          parseFloat(node.parentElement.style.getPropertyValue("--error-tint")),
+        );
+      assert.equal(
+        tint,
+        comparison.tint,
+        `${world}/${id} uses the shared error scale`,
+      );
+    }
+    if (world === "direct")
+      await expect(
+        page.locator(".fd-results .effect-difference").last(),
+      ).toHaveText("-15 pp from truth");
+    if (world === "support")
+      await expect(
+        page.locator(".fd-results .effect-difference").last(),
+      ).toHaveText("Cannot compare with truth");
     await expect(page.locator('#fd-graph [data-edge="direct"]')).toHaveCount(
       world === "direct" ? 1 : 0,
     );
@@ -160,6 +187,26 @@ try {
         path: `test-results/front-door/${width}-${theme}-formulas.png`,
       });
       await page.locator("#fd-formulas > summary").click();
+      await page.locator("#fd-model > summary").click();
+      await expect(page.locator("#fd-model [role=math]")).toHaveCount(4);
+      assert.ok(
+        await page.locator("#fd-model").evaluate((node) => {
+          const bounds = node.getBoundingClientRect();
+          return (
+            node.scrollWidth <= node.clientWidth &&
+            [...node.querySelectorAll("math")].every(
+              (math) => math.getBoundingClientRect().right <= bounds.right,
+            )
+          );
+        }),
+        `Model equations fit at ${width}/${theme}`,
+      );
+      await page
+        .locator("#fd-model")
+        .screenshot({
+          path: `test-results/front-door/${width}-${theme}-model.png`,
+        });
+      await page.locator("#fd-model > summary").click();
     }
   }
   await page.locator("#fd-restart").click();

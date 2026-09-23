@@ -1,3 +1,5 @@
+import { effectComparison } from "./effect-comparison.js";
+
 export const percent = (value) => `${(100 * value).toFixed(0)}%`;
 export const points = (value) =>
   `${(100 * value).toFixed(1).replace(/\.0$/, "")} pp`;
@@ -18,6 +20,32 @@ export function frontDoorFormulas() {
     </div>
     <p>Weight those responses by the practice mix under each tutoring choice. Subtract the risk for <math><mi>a</mi><mo>=</mo><mn>0</mn></math> from the risk for <math><mi>a</mi><mo>=</mo><mn>1</mn></math> to get the total effect.</p>
   </div>`;
+}
+
+export function frontDoorModel() {
+  const rows = [
+    [
+      "P of U equals 1 equals 0.5",
+      "<mi>U</mi><mo>=</mo><mn>1</mn>",
+      "<mn>0.5</mn>",
+    ],
+    [
+      "P of A equals 1 given U equals 0.5 plus s times U minus 0.5",
+      "<mi>A</mi><mo>=</mo><mn>1</mn><mo>∣</mo><mi>U</mi>",
+      "<mn>0.5</mn><mo>+</mo><mi>s</mi><mo>(</mo><mi>U</mi><mo>−</mo><mn>0.5</mn><mo>)</mo>",
+    ],
+    [
+      "P of M equals 1 given A equals 0.2 plus 0.5 A",
+      "<mi>M</mi><mo>=</mo><mn>1</mn><mo>∣</mo><mi>A</mi>",
+      "<mn>0.2</mn><mo>+</mo><mn>0.5</mn><mi>A</mi>",
+    ],
+    [
+      "P of Y equals 1 given M and U equals 0.1 plus 0.4 M plus 0.3 U",
+      "<mi>Y</mi><mo>=</mo><mn>1</mn><mo>∣</mo><mi>M</mi><mo>,</mo><mi>U</mi>",
+      "<mn>0.1</mn><mo>+</mo><mn>0.4</mn><mi>M</mi><mo>+</mo><mn>0.3</mn><mi>U</mi>",
+    ],
+  ];
+  return `<div class="fd-model-equations">${rows.map(([label, condition, expression]) => `<div class="fd-formula" role="math" aria-label="${label}"><math aria-hidden="true"><mi mathvariant="normal">P</mi><mo>(</mo>${condition}<mo>)</mo><mo>=</mo></math><math aria-hidden="true">${expression}</math></div>`).join("")}</div>`;
 }
 
 export const frontDoorWorlds = {
@@ -70,17 +98,27 @@ export function probabilityBar(
   return `<div class="fd-probability ${className}"><div><span>${label}</span><strong>${value === null ? "Missing" : percent(value)}</strong></div><div class="fd-track" aria-hidden="true"><span style="width:${value === null ? 0 : value * 100}%;${arm === null ? "" : `background:var(--arm-${arm})`}"></span></div></div>`;
 }
 
-export function effectPlot(result, population, reveal = false) {
-  const rows = [
-    ["Observed difference", result.rawEffect, false],
-    ...(reveal
-      ? [
-          ["Front-door reconstruction", result.effect, false],
-          ["True total effect", population.effect, true],
-        ]
-      : []),
-  ];
-  return `<div class="fd-effect-plot" aria-label="Difference in pass rates, in percentage points">${rows.map(([label, value, truth]) => `<div class="fd-effect-row ${truth ? "fd-truth" : ""}"><div><span>${label}</span><strong data-effect="${truth ? "truth" : label.startsWith("Front") ? "front-door" : "observed"}">${value === null ? "Unavailable" : `+${points(value)}`}</strong></div><div class="fd-effect-track" aria-hidden="true">${value === null ? "" : `<span style="width:${(value / 0.7) * 100}%"></span>`}${reveal ? `<i style="left:${(population.effect / 0.7) * 100}%"></i>` : ""}</div></div>`).join("")}<div class="fd-axis" aria-hidden="true"><span>0</span><span>+35</span><span>+70 pp</span></div>${reveal ? '<p class="small">Dashed line: simulator truth, unavailable in a real study.</p>' : ""}</div>`;
+export function effectCards(result, population, reveal = false) {
+  const rows = reveal
+    ? [
+        ["True total effect", population.effect, "truth"],
+        ["Observed difference", result.rawEffect, "observed"],
+        ["Front-door reconstruction", result.effect, "front-door"],
+      ]
+    : [["Observed difference", result.rawEffect, "observed"]];
+  return `<div class="results fd-results" aria-label="Effects in percentage points">${rows
+    .map(([label, value, id]) => {
+      // Keep the shared error scale in outcome units (risk), not display units (pp).
+      const comparison = effectComparison(value, population.effect);
+      const error = Number(((value - population.effect) * 100).toFixed(1));
+      const difference = Number.isFinite(value)
+        ? `${error > 0 ? "+" : ""}${error} pp from truth`
+        : comparison.difference;
+      return `<div class="result ${id === "truth" ? "fd-truth" : "fd-estimate"}" style="--error-tint:${reveal ? comparison.tint : 0}%"><span>${label}</span><strong data-effect="${id}">${Number.isFinite(value) ? `${value > 0 ? "+" : ""}${points(value)}` : "Unavailable"}</strong>${reveal && id !== "truth" ? `<span class="effect-difference">${difference}</span>` : ""}</div>`;
+    })
+    .join(
+      "",
+    )}</div>${reveal ? '<p class="small">Redder boxes mean farther from simulator truth. Real studies do not reveal that truth.</p>' : ""}`;
 }
 
 export function mixture(result) {

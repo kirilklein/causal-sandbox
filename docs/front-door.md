@@ -30,8 +30,11 @@ visible, retaining the mediated route in the total effect.
 
 Only one stage is visible. Steps are freely navigable; predictions never gate
 progress. The graph uses the existing A/M/Y/U palette, dashed unmeasured paths,
-and fixed geometry. Results retain numeric labels and a fixed 0–70 percentage
-point axis. Truth uses the shared truth color and a dashed reference line.
+and fixed geometry. Effect results use the lesson result boxes: values and signed
+differences in percentage points, the shared error tint, and a constant truth
+background. Tint is computed in the model’s outcome units (risk), before converting
+values to percentage points. Missing results remain explicitly unavailable.
+The opening comparison stays neutral until truth is revealed.
 Derivation, formal conditions, source, and model details start collapsed.
 
 ## Population and identification
