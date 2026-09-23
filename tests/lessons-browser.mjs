@@ -98,6 +98,30 @@ try {
       await page.goto(`${url}?lesson=${topic}`);
       await page.locator("#try-prediction").waitFor();
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      assert.equal(await page.locator("#toggle-prediction").count(), 0);
+      const question = await page.locator("#question").innerText();
+      assert.equal(
+        await page.getByRole("group", { name: question, exact: true }).count(),
+        1,
+      );
+      assert.equal(await page.locator(".experiment > h2").count(), 0);
+      assert.equal(
+        await page.locator("#question").evaluate((heading) => {
+          const graph = document.querySelector("#lesson-graph");
+          const choices = document.querySelector('input[name="prediction"]');
+          return (
+            graph.getBoundingClientRect().bottom <=
+              heading.getBoundingClientRect().top &&
+            heading.getBoundingClientRect().bottom <=
+              choices.getBoundingClientRect().top &&
+            choices.getBoundingClientRect().top -
+              heading.getBoundingClientRect().bottom <
+              60
+          );
+        }),
+        true,
+      );
+      assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(
         await page.locator(".lesson-explanation").isVisible(),
         false,
@@ -173,14 +197,50 @@ try {
         await page.keyboard.press("ArrowDown");
         await page.keyboard.press("ArrowDown");
         await page.keyboard.press("Tab");
-        await page.keyboard.press("Enter");
       } else {
         await choices.nth(choice).check();
-        await page.locator("#try-prediction").click();
+        await page.locator("#try-prediction").scrollIntoViewIfNeeded();
       }
+      // Measure at activation, after Playwright's click preparation scrolls.
+      await page.evaluate(() => {
+        document.querySelector("#try-prediction").addEventListener(
+          "click",
+          () => {
+            window.predictionViewportBefore = {
+              feedbackTop: document
+                .querySelector("#prediction-hint")
+                .getBoundingClientRect().top,
+            };
+          },
+          { capture: true, once: true },
+        );
+      });
+      if (choice === 2) await page.keyboard.press("Enter");
+      else await page.locator("#try-prediction").click();
       const feedback = page.getByRole("region", {
         name: "Prediction explained",
       });
+      const beforeAnswer = await page.evaluate(
+        () => window.predictionViewportBefore,
+      );
+      const feedbackTop = await feedback
+        .locator("p")
+        .first()
+        .evaluate((p) => p.getBoundingClientRect().top);
+      // Removing the options should not move the feedback's reading position.
+      assert.ok(
+        Math.abs(feedbackTop - beforeAnswer.feedbackTop) <= 1,
+        `${topic}/${choice}: feedback stays in place (${beforeAnswer.feedbackTop} → ${feedbackTop})`,
+      );
+      assert.equal(await choices.count(), 0);
+      assert.equal(
+        await feedback.locator("strong").evaluate((message) => {
+          const bounds = message.getBoundingClientRect();
+          return bounds.top >= 0 && bounds.bottom <= window.innerHeight;
+        }),
+        true,
+        `${topic}: feedback starts in view without scrolling`,
+      );
       assert.ok((await feedback.innerText()).includes(selected));
       assert.equal(
         await feedback.locator("strong").innerText(),
@@ -191,6 +251,21 @@ try {
         true,
       );
       assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(await page.locator("#question").innerText(), question);
+      if (topic !== "randomization") {
+        assert.equal(await page.locator("#compare-graph").isVisible(), true);
+        assert.equal(
+          await page
+            .locator(".graph-comparison")
+            .evaluate(
+              (comparison) =>
+                comparison.getBoundingClientRect().top >=
+                document.querySelector(".experiment").getBoundingClientRect()
+                  .bottom,
+            ),
+          true,
+        );
+      }
       assert.equal(await page.locator("#sample-label").textContent(), seed);
       if (topic === "collider")
         assert.equal(await page.locator("#post-adjustment").isChecked(), true);
@@ -207,6 +282,61 @@ try {
           fullPage: true,
         });
       const firstFeedback = await feedback.innerText();
+      const toggle = page.locator("#toggle-prediction");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(
+        await toggle.getAttribute("aria-controls"),
+        "prediction-content",
+      );
+      assert.equal(
+        await toggle.evaluate((button) => {
+          const content = document.getElementById(
+            button.getAttribute("aria-controls"),
+          );
+          return (
+            button.closest(".lesson-prediction") === content.parentElement &&
+            button.getBoundingClientRect().bottom <=
+              content.getBoundingClientRect().top
+          );
+        }),
+        true,
+        "Disclosure header is inside the card, above the content it controls",
+      );
+      const beforeCollapse = await page.locator(".lesson-results").innerText();
+      const graphBeforeCollapse = await page
+        .locator("#lesson-graph")
+        .innerHTML();
+      await toggle.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await toggle.innerText(), "Prediction and feedback");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+      assert.equal(await feedback.isVisible(), false);
+      assert.equal(await page.locator("#question").isVisible(), false);
+      assert.equal(await page.locator("#lesson-graph").isVisible(), true);
+      assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(
+        await toggle.evaluate((el) => el === document.activeElement),
+        true,
+      );
+      assert.equal(
+        await page.locator(".lesson-results").innerText(),
+        beforeCollapse,
+      );
+      assert.equal(
+        await page.locator("#lesson-graph").innerHTML(),
+        graphBeforeCollapse,
+      );
+      assert.equal(await page.locator("#sample-label").textContent(), seed);
+      if (choice === 2)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-collapsed-mobile.png`,
+          fullPage: true,
+        });
+      await page.keyboard.press("Space");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(await toggle.innerText(), "Prediction and feedback");
+      assert.equal(await feedback.innerText(), firstFeedback);
+      assert.equal(await choices.count(), 0);
       await page.locator("#redraw").click();
       assert.equal(await feedback.innerText(), firstFeedback);
       assert.ok(
@@ -220,6 +350,8 @@ try {
           fullPage: true,
         });
       await page.locator("#restart").click();
+      assert.equal(await page.locator("#toggle-prediction").count(), 0);
+      assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
       if (topic === "overlap") {
         assert.equal(
@@ -280,7 +412,7 @@ try {
     await page.locator("#lesson-graph svg text").allTextContents(),
     ["Treatment (A)", "Outcome (Y)"],
   );
-  assert.equal(await page.locator("input").count(), 1);
+  assert.equal(await page.locator("input:enabled").count(), 1);
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
   assert.equal(await result(), first);
@@ -633,7 +765,7 @@ try {
     );
     roleBaselines.push([level, baseline]);
     assert.equal(await page.locator(".lesson-result:visible").count(), 2);
-    assert.equal(await page.locator("input").count(), 1);
+    assert.equal(await page.locator("input:enabled").count(), 1);
     assert.equal(await page.locator("#post-adjustment").isChecked(), false);
     assert.equal(await page.locator("#model-weight-note").count(), 0);
     assert.equal(
@@ -744,7 +876,7 @@ try {
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 14/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
-  assert.equal(await page.locator("input").count(), 1);
+  assert.equal(await page.locator("input:enabled").count(), 1);
   const ninth = await result();
   assert.equal(await page.locator("#aipw").count(), 0);
   assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
@@ -1143,7 +1275,7 @@ try {
     .check();
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
-  assert.equal(await page.locator("input").count(), 2);
+  assert.equal(await page.locator("input:enabled").count(), 2);
   assert.equal(await page.locator("#model-weight-note").isVisible(), false);
   await checkClippingStatus(false);
   await page

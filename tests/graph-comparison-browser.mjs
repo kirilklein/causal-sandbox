@@ -58,6 +58,7 @@ try {
   await page.locator("#post-adjustment").check();
   await page.locator("#redraw").click();
   const before = await experiment();
+  const currentGraph = await page.locator("#lesson-graph").innerHTML();
   await toggle.focus();
   await page.keyboard.press("Enter");
   assert.equal(await toggle.getAttribute("aria-expanded"), "true");
@@ -74,6 +75,7 @@ try {
     await visibleView.locator("svg").getAttribute("aria-label"),
     /response, which causes outcome/,
   );
+  assert.equal(await page.locator("#lesson-graph").innerHTML(), currentGraph);
   const previousNodes = await nodes();
   for (const variable of ["A", "C", "Y"])
     assert.deepEqual(
@@ -152,8 +154,17 @@ try {
   ];
   for (const [slug, title] of transitions) {
     await page.goto(`${url}?lesson=${slug}`);
+    const prediction = page.locator("#try-prediction");
+    if (await prediction.isVisible()) {
+      assert.equal(await toggle.isVisible(), false);
+      await page.locator('input[name="prediction"]').first().check();
+      await prediction.click();
+    }
+    const mainGraph = await page.locator("#lesson-graph").innerHTML();
     await toggle.tap();
     await previous.tap();
+    if (["collider", "overlap"].includes(slug))
+      assert.equal(await page.locator("#lesson-graph").innerHTML(), mainGraph);
     assert.match(
       await visibleView.innerText(),
       new RegExp(`Previous: ${title}`),
