@@ -201,11 +201,9 @@ try {
         }),
         `Model equations fit at ${width}/${theme}`,
       );
-      await page
-        .locator("#fd-model")
-        .screenshot({
-          path: `test-results/front-door/${width}-${theme}-model.png`,
-        });
+      await page.locator("#fd-model").screenshot({
+        path: `test-results/front-door/${width}-${theme}-model.png`,
+      });
       await page.locator("#fd-model > summary").click();
     }
   }
