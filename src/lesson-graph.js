@@ -21,12 +21,12 @@ export function lessonGraph(
   }
   if (compact) {
     return `<svg viewBox="0 0 240 90" role="img" aria-label="Risk score C causes treatment A and outcome Y. Treatment causes outcome.">
-      <defs><marker id="${markerId}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="var(--causal-path)"/></marker></defs>
-      <g fill="none" stroke="var(--causal-path)" stroke-width="2" marker-end="url(#${markerId})"><path d="M99 30L45 59"/><path d="M141 30L195 59"/><path d="M51 73H186"/></g>
+      <defs><marker id="${markerId}" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7Z" fill="var(--causal-path)"/></marker></defs>
+      <g fill="none" stroke="var(--causal-path)" stroke-width="1.5" marker-end="url(#${markerId})"><path d="M98 32L42 54"/><path d="M142 32L198 54"/><path d="M55 73H185"/></g>
       <rect x="99" y="1" width="42" height="30" rx="10" fill="var(--node-C)"/><text x="120" y="22">C</text>
       <rect x="9" y="58" width="42" height="30" rx="10" fill="var(--node-A)"/><text x="30" y="79">A</text>
       <rect x="189" y="58" width="42" height="30" rx="10" fill="var(--node-Y)"/><text x="210" y="79">Y</text>
-    </svg><p class="sample-note">Treatment (A) and outcome (Y) models adjust for risk score C.<br>Target: average total effect in the whole population.</p>`;
+    </svg><p class="sample-note">Both models adjust for risk score C.<br>Target: average total effect in the whole population.</p>`;
   }
   const commonCause = state.level > 1;
   const treatmentDescription =
