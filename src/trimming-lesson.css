@@ -11,17 +11,9 @@
     background-repeat: no-repeat;
     background-position: center;
   }
-  .effect-switch {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-block: 16px;
-  }
-  .effect-switch input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-    flex-shrink: 0;
+  .varying-comparison {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
   }
   .legend {
     flex-wrap: wrap;
