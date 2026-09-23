@@ -4,7 +4,9 @@ The advanced [front-door lesson](front-door.md) at `?lesson=front-door` follows
 hidden confounding. A fictional tutoring → practice → passing example rebuilds
 a total effect through a mediator using exact population proportions. Five short
 visual stages separate the confounded comparison, the two identified relationships,
-their combination, and violations of the required graph/support conditions.
+their combination, and violations of the required graph/support conditions. The
+same 1,000 observed student records regroup and change weight to make the two
+averages visible; no individual counterfactual is inferred.
 It is discoverable from hidden confounding, Contents, topics, and search; the
 core sequence is unchanged. The formula and model assumptions are optional detail.
 

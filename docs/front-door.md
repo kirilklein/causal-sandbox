@@ -15,18 +15,26 @@ visible, retaining the mediated route in the total effect.
 ## Flow and visual meaning
 
 1. Predict whether the observed tutoring/pass comparison identifies the effect.
-   Show the assumed graph and observed pass-rate bars on a common 0–100% scale.
-2. Show how tutoring shifts the practice mix. Each waffle square is 5% of its
-   own treatment group; filled squares mean regular practice.
-3. Compare practice levels within each tutoring group, then standardize over
-   the observed tutoring shares. All bars retain the same 0–100% scale.
-4. Combine the practice mixtures with the standardized responses. Segment
-   widths encode practice probabilities, not outcome contributions. The adjacent
-   arithmetic displays the products and their sum. Compare the reconstructed
-   risk difference with the raw association and explicitly labeled simulator truth.
+   Two groups show 1,000 observed students with exact A/M/Y proportions.
+2. Keep each student and split each tutoring group by practice. Regular practice
+   rises from 20% to 70%; the grouping makes the observed counts visible.
+3. Regroup by practice. Compare the two tutoring strata within each practice
+   group, then reweight them to the population's 50/50 tutoring mix. Symbol area
+   shows contribution to the average. The pass rates become 25% and 65%.
+4. Reuse all observed records in two weighted copies: one with the practice mix
+   under no tutoring, one under tutoring. Their pass rates are 33% and 53%.
+   Explicitly reveal simulator truth to compare the reconstructed effect with it.
 5. Change the graph or support and vary hidden treatment selection. A transfer
    question asks whether an app's direct hints invalidate using practice as a
    front-door mediator for its total effect.
+
+Student marks persist across regrouping; their observed records never change.
+Circles mean no tutoring, triangles mean tutoring; filled marks passed, hollow
+marks did not. A keyboard-accessible student selector and mark clicks expose the
+same observed tutoring → practice → outcome journey across stages. The final two
+copies represent contributions to population averages, not individual futures.
+Symbol area is proportional to weight within a panel; panel and subgroup sizes
+are layout containers, not probability scales. Reduced-motion mode skips movement.
 
 Only one stage is visible. Steps are freely navigable; predictions never gate
 progress. The graph uses the existing A/M/Y/U palette, dashed unmeasured paths,
@@ -64,7 +72,7 @@ does not interpolate or substitute truth.
 
 Each tutorial stage uses the baseline. Limit-experiment settings persist when
 revisiting that stage; Restart resets the stage, world, selection, predictions,
-practice answer, and disclosures. No study data are transferred to other lessons.
+practice answer, balancing, truth reveal, selected student, and disclosures. No study data are transferred to other lessons.
 
 Source: [Pearl, Glymour & Jewell, Causal Inference in Statistics: A Primer,
 §3.4](https://bayes.cs.ucla.edu/PRIMER/primer-ch3.pdf), definition and theorem 3.4.1.
@@ -73,12 +81,13 @@ a general claim that causal effects can be multiplied.
 
 ## Validation
 
-`node --test src/front-door.test.js src/search-index.test.js` checks hand-derived
+`node --test src/front-door.test.js src/front-door-population.test.js src/search-index.test.js` checks hand-derived
 population values, recovery across selection strengths, both graph violations,
-missing support, unequal standardization weights, and discovery.
+missing support, unequal standardization weights, and discovery. The population
+tests verify record preservation, weighted reconstruction, and mark area and bounds.
 `APP_URL=... node tests/front-door-browser.mjs` checks navigation, displayed
 calculations, keyboard controls, experiment state, reset, theme preservation,
-and desktop/390px/320px layout. It saves screenshots under `test-results/front-door/`.
+persistent student marks, reduced motion, and desktop/390px/320px layout. It saves screenshots under `test-results/front-door/`.
 
 Learner testing remains separate: ask a new learner why M is used without simply
-blocking its path, why step 2 compares within A, and what a direct A→Y path changes.
+blocking its path, why balancing compares within A, and what a direct A→Y path changes.

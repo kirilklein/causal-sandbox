@@ -90,14 +90,6 @@ export function frontDoorGraph({
   </svg>`;
 }
 
-export function probabilityBar(
-  label,
-  value,
-  { arm = null, className = "" } = {},
-) {
-  return `<div class="fd-probability ${className}"><div><span>${label}</span><strong>${value === null ? "Missing" : percent(value)}</strong></div><div class="fd-track" aria-hidden="true"><span style="width:${value === null ? 0 : value * 100}%;${arm === null ? "" : `background:var(--arm-${arm})`}"></span></div></div>`;
-}
-
 export function effectCards(result, population, reveal = false) {
   const rows = reveal
     ? [
@@ -119,8 +111,4 @@ export function effectCards(result, population, reveal = false) {
     .join(
       "",
     )}</div>${reveal ? '<p class="small">Redder boxes mean farther from simulator truth. Real studies do not reveal that truth.</p>' : ""}`;
-}
-
-export function mixture(result) {
-  return `<div class="fd-mixture-key"><span>Little practice: ${percent(result.response[0])} pass</span><span>Regular practice: ${percent(result.response[1])} pass</span></div>${[0, 1].map((a) => `<div class="fd-mixture-row"><h3>If everyone ${a ? "received tutoring" : "went without tutoring"}</h3><div class="fd-mixture"><div style="flex:${result.pM[a][0]}"><strong>${percent(result.pM[a][0])}</strong><span>little practice</span></div><div style="flex:${result.pM[a][1]}"><strong>${percent(result.pM[a][1])}</strong><span>regular practice</span></div></div><div class="fd-mixture-sum"><span>${percent(result.pM[a][0])} × ${percent(result.response[0])} + ${percent(result.pM[a][1])} × ${percent(result.response[1])}</span><strong>= ${percent(result.rebuilt[a])} pass</strong></div></div>`).join("")}`;
 }

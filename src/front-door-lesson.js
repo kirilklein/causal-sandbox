@@ -11,18 +11,17 @@ import {
   frontDoorFormulas,
   frontDoorModel,
   frontDoorWorlds,
-  probabilityBar,
   effectCards,
-  mixture,
-  percent,
 } from "./front-door-view.js";
+import { frontDoorStudents } from "./front-door-population.js";
+import { mountStudentPopulation } from "./front-door-population-view.js";
 import icon from "./brand.svg?raw";
 
 const steps = [
-  "The problem",
-  "A → M",
-  "M → Y",
-  "Put it together",
+  "Observe",
+  "Group by practice",
+  "Balance the groups",
+  "Rebuild",
   "Test the limits",
 ];
 let stage = 0;
@@ -30,6 +29,8 @@ let world = "valid";
 let selection = 0.6;
 let prediction = null;
 let answer = null;
+let balanced = false;
+let truthRevealed = false;
 const el = (id) => document.getElementById(id);
 
 document.title = "The front-door criterion · Causal Sandbox";
@@ -42,7 +43,7 @@ document.querySelector("#app").innerHTML =
     <p class="intro fd-takeaway">A mediator can reveal the total effect even with hidden confounding—if it meets the front-door conditions.</p>
     <nav class="fd-steps" aria-label="Experiment steps">${steps.map((label, i) => `<button data-step="${i}"><span>${i + 1}</span>${label}</button>`).join("")}</nav>
     <section class="panel fd-experiment" aria-labelledby="fd-title">
-      <div class="fd-workspace"><aside class="fd-world"><p class="eyebrow">OUR FICTIONAL STUDY</p><h2>Does tutoring help students pass?</h2><div id="fd-graph"></div><p class="small">A, M and Y are measured. U is hidden.<br>Target: tutoring everyone versus no one.</p><p class="small fd-exact">Exact population proportions.<br>No sampling noise in this experiment.</p></aside><div class="fd-stage"><p id="fd-step-label" class="eyebrow"></p><h2 id="fd-title" tabindex="-1"></h2><div id="fd-content"></div></div></div>
+      <div class="fd-stage"><p id="fd-step-label" class="eyebrow"></p><h2 id="fd-title" tabindex="-1"></h2><div id="fd-content"></div><details id="fd-story" class="fd-causal-story"><summary>Our assumed causal story</summary><div id="fd-graph"></div><p class="small" id="fd-story-note"></p></details><div id="fd-population"></div><div id="fd-after"></div></div>
       <nav class="fd-actions" aria-label="Move through experiment"><button id="fd-back">← Back</button><span id="fd-position"></span><button id="fd-next" class="primary"></button></nav>
     </section>
     <details class="fd-details"><summary>The four front-door conditions</summary><ol><li>Every causal path from A to Y passes through M.</li><li>There is no open back-door path from A to M.</li><li>Conditioning on A blocks every back-door path from M to Y.</li><li>The A/M combinations needed for both averages occur in the data.</li></ol><p>These conditions describe the assumed causal structure and support. An observed association or a successful fit cannot establish the graph. Consistency and no interference are also assumed.</p></details>
@@ -51,6 +52,13 @@ document.querySelector("#app").innerHTML =
     <nav class="fd-footer" aria-label="Continue learning"><button id="fd-restart">Restart lesson</button><a href="?lesson=hidden-confounding">← Hidden confounding</a><a href="?lesson=topics">All topics</a><a href="?lesson=misspecification">Resume core lessons →</a></nav>
   </main></div>`;
 setupLessonNavigation();
+const teachingPopulation = frontDoorPopulation();
+const teachingResult = reconstructFrontDoor(teachingPopulation.cells);
+const populationView = mountStudentPopulation(
+  el("fd-population"),
+  frontDoorStudents(teachingPopulation.cells),
+  teachingResult,
+);
 
 function render(focus = false) {
   const population = frontDoorPopulation({
@@ -78,8 +86,8 @@ function render(focus = false) {
   el("fd-title").textContent = [
     "The groups already differ",
     "Tutoring changes the practice mix",
-    "Compare practice within each tutoring group",
-    "Keep the response. Change the mix.",
+    "Give both practice groups the same tutoring mix",
+    "Same responses. Two different practice mixes.",
     "A mediator is not enough",
   ][stage];
   el("fd-position").textContent = `${stage + 1} / ${steps.length}`;
@@ -92,9 +100,23 @@ function render(focus = false) {
       "Rebuild the total effect →",
       "Test the limits →",
     ][stage] || "";
+  el("fd-population").hidden = stage === 4;
+  el("fd-after").innerHTML = "";
+  el("fd-story").open = stage === 4;
+  el("fd-story-note").textContent =
+    stage === 4
+      ? "A, M and Y are measured; readiness U is hidden. Change the world below to test the reconstruction’s limits."
+      : "A, M and Y are measured; readiness U is hidden. We assume tutoring affects passing only through practice.";
+  el("fd-content").parentNode.insertBefore(
+    el("fd-story"),
+    el(stage === 4 ? "fd-content" : "fd-population"),
+  );
+  if (stage < 4) populationView.update(stage, balanced);
   if (stage === 0) {
     el("fd-content").innerHTML =
-      `<p>Readiness affects both joining tutoring and passing. The observed groups differ before tutoring can help.</p>${probabilityBar("No tutoring", result.observed[0], { arm: 0 })}${probabilityBar("Tutoring", result.observed[1], { arm: 1 })}<p class="small">Observed pass rates · same 0–100% scale</p>${effectCards(result, population)}<fieldset class="fd-question"><legend>Does that +38 pp difference tell us the total effect?</legend><button data-predict="yes">Yes</button><button data-predict="no">No</button></fieldset><p id="fd-prediction" class="fd-feedback" role="status">${prediction ? predictionText() : ""}</p>`;
+      `<p>Does tutoring help students pass? Readiness affects both joining tutoring and passing, so these groups already differ.</p>`;
+    el("fd-after").innerHTML =
+      `${effectCards(result, population)}<fieldset class="fd-question"><legend>Does that +38 pp difference tell us the total effect?</legend><button data-predict="yes">Yes</button><button data-predict="no">No</button></fieldset><p id="fd-prediction" class="fd-feedback" role="status">${prediction ? predictionText() : ""}</p>`;
     document.querySelectorAll("[data-predict]").forEach((button) =>
       button.addEventListener("click", () => {
         prediction = button.dataset.predict;
@@ -111,13 +133,39 @@ function render(focus = false) {
     );
   } else if (stage === 1) {
     el("fd-content").innerHTML =
-      `<p>In this assumed graph, A → M has no open back-door path. The observed practice mix tells us what tutoring changes.</p><div class="fd-practice-pair">${[0, 1].map((a) => `<div class="fd-practice-card"><h3>${a ? "Tutoring" : "No tutoring"}</h3><div class="fd-waffle" role="img" aria-label="${percent(result.pM[a][1])} practice regularly">${Array.from({ length: 20 }, (_, i) => `<i class="${i < Math.round(result.pM[a][1] * 20) ? "fd-practices" : ""}"></i>`).join("")}</div><strong>${percent(result.pM[a][1])}</strong><span>practice regularly</span></div>`).join("")}</div><p class="small">Each square is 5% of that group. Filled squares: regular practice.</p><p class="fd-insight">Tutoring shifts students toward practice. Next, we need to learn what practice does to passing.</p>`;
+      `<p>Keep the same students. Separate little from regular practice: tutoring shifts the mix from <strong>20% to 70% regular practice</strong>.</p>`;
+    el("fd-after").innerHTML =
+      `<p class="fd-insight">Under our assumed graph, the tutoring → practice relationship is unconfounded. Next: what does practice do to passing?</p>`;
   } else if (stage === 2) {
     el("fd-content").innerHTML =
-      `<p>Practice and passing share the path M ← A ← U → Y. Comparing within A blocks it; then we average over the same tutoring mix.</p><div class="fd-strata">${[0, 1].map((a) => `<section><h3>${a ? "Tutoring" : "No tutoring"}</h3>${probabilityBar("Little practice", result.outcome[a][0], { arm: a })}${probabilityBar("Regular practice", result.outcome[a][1], { arm: a })}<p class="small">${percent(result.pA[a])} of the population</p></section>`).join("")}</div><div class="fd-pooling" aria-hidden="true">½ from each group ↓</div><div class="fd-standardized"><h3>Pass rates after averaging</h3>${probabilityBar("If everyone practiced little", result.response[0])}${probabilityBar("If everyone practiced regularly", result.response[1])}</div><p class="small">Same 0–100% scale throughout. The 50/50 weights are this population’s tutoring shares, not a universal rule.</p>`;
+      `<p>Now group by practice. The tutoring mix differs. Compare outcomes within each tutoring group, then restore the population’s <strong>50/50 tutoring mix</strong> in both practice groups.</p><button id="fd-balance" class="primary" aria-pressed="${balanced}"></button>`;
+    function updateBalance() {
+      el("fd-balance").textContent = balanced
+        ? "Show the observed mix"
+        : "Make the tutoring mix the same";
+      el("fd-balance").setAttribute("aria-pressed", String(balanced));
+      el("fd-after").innerHTML =
+        `<p class="fd-insight" role="status">${balanced ? "In our graph, comparing within tutoring groups blocks the hidden-readiness path from practice to passing. Only contributions change; observed pass rates stay fixed." : "The regular-practice group includes far more tutored students. Its higher pass rate also reflects their different readiness."}</p>`;
+      populationView.update(stage, balanced);
+    }
+    el("fd-balance").addEventListener("click", () => {
+      balanced = !balanced;
+      updateBalance();
+    });
+    updateBalance();
   } else if (stage === 3) {
     el("fd-content").innerHTML =
-      `<p>Weight the practice → passing responses by the tutoring → practice mix.</p>${mixture(result)}${effectCards(result, population, true)}<p class="fd-insight">53% − 33% = <strong>+20 percentage points</strong>. Both causal stages are retained, so this is the total effect.</p>`;
+      `<p>Reuse the balanced practice groups to rebuild two population averages. Keep their <strong>25% and 65% pass rates</strong>; change how much each practice group contributes.</p>`;
+    function revealResult() {
+      el("fd-after").innerHTML =
+        `<p id="fd-reconstruction" class="fd-insight" tabindex="-1">53% − 33% = <strong>+20 percentage points</strong>. Changing the practice mix carries tutoring’s total effect.</p>${truthRevealed ? effectCards(result, population, true) : '<button id="fd-reveal" class="primary">Compare with simulator truth</button>'}`;
+      el("fd-reveal")?.addEventListener("click", () => {
+        truthRevealed = true;
+        revealResult();
+        el("fd-reconstruction").focus({ preventScroll: true });
+      });
+    }
+    revealResult();
   } else {
     el("fd-content").innerHTML =
       `<label class="fd-control" for="fd-world">Which world are we in?<select id="fd-world">${Object.entries(
@@ -184,6 +232,9 @@ el("fd-restart").addEventListener("click", () => {
   selection = 0.6;
   prediction = null;
   answer = null;
+  balanced = false;
+  truthRevealed = false;
+  populationView.reset();
   document.querySelectorAll(".fd-details").forEach((detail) => {
     detail.open = false;
   });

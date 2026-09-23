@@ -37,25 +37,6 @@
   padding: 0;
   overflow: hidden;
 }
-.fd-workspace {
-  display: grid;
-  grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.4fr);
-}
-.fd-world {
-  padding: 28px 24px;
-  background: var(--surface-subtle);
-  border-right: 1px solid var(--border);
-}
-.fd-world h2 {
-  font-size: 23px;
-  line-height: 1.25;
-  max-width: 250px;
-  margin: 12px 0 18px;
-}
-.fd-world svg {
-  width: 100%;
-  display: block;
-}
 .fd-node-label {
   font-size: 20px;
   font-weight: 650;
@@ -76,14 +57,9 @@
 .fd-dim {
   opacity: 0.35;
 }
-.fd-exact {
-  padding-top: 16px;
-  border-top: 1px solid var(--border-strong);
-}
 .fd-stage {
   min-width: 0;
   padding: 28px;
-  min-height: 570px;
 }
 .fd-stage h2 {
   font-size: 26px;
@@ -96,32 +72,6 @@
 .fd-page .eyebrow {
   font-size: 11px;
   letter-spacing: 0.09em;
-}
-.fd-probability {
-  margin: 15px 0;
-}
-.fd-probability > div:first-child {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  font-size: 14px;
-  margin-bottom: 7px;
-}
-.fd-probability strong {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.fd-track {
-  height: 12px;
-  background: var(--grid);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.fd-track > span {
-  display: block;
-  height: 100%;
-  background: var(--estimate);
 }
 .fd-page .fd-results {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
@@ -182,122 +132,6 @@
   border-left: 3px solid var(--accent);
   font-size: 15px;
   margin-top: 24px;
-}
-.fd-practice-pair,
-.fd-strata {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin: 24px 0;
-}
-.fd-practice-card {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-}
-.fd-stage h3 {
-  font-size: 15px;
-  margin: 0 0 12px;
-}
-.fd-waffle {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
-  margin: 20px 0;
-}
-.fd-waffle i {
-  aspect-ratio: 1;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  border-radius: 3px;
-}
-.fd-waffle .fd-practices {
-  background: var(--causal-path);
-  border-color: var(--causal-path);
-}
-.fd-practice-card > strong {
-  display: block;
-  font-size: 36px;
-  font-weight: 500;
-}
-.fd-practice-card > span {
-  font-size: 13px;
-}
-.fd-strata section {
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.fd-strata .fd-probability > div:first-child {
-  font-size: 12px;
-  gap: 5px;
-}
-.fd-pooling {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-top: -12px;
-  margin-bottom: 14px;
-}
-.fd-standardized {
-  background: var(--node-Y);
-  padding: 18px;
-  border-radius: 8px;
-}
-.fd-mixture-key {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  font-size: 13px;
-  margin: 18px 0 24px;
-}
-.fd-mixture-key > span {
-  border-bottom: 5px solid var(--border-strong);
-  padding-bottom: 5px;
-}
-.fd-mixture-key > span:last-child {
-  border-color: var(--causal-path);
-}
-.fd-mixture-row {
-  margin: 22px 0;
-}
-.fd-mixture {
-  display: flex;
-  min-height: 72px;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  overflow: hidden;
-}
-.fd-mixture > div {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  background: var(--surface-subtle);
-  padding: 7px 0;
-  border-top: 5px solid var(--border-strong);
-}
-.fd-mixture > div:last-child {
-  background: var(--node-M);
-  border-top-color: var(--causal-path);
-}
-.fd-mixture strong {
-  font-size: 22px;
-}
-.fd-mixture span {
-  font-size: 11px;
-}
-.fd-mixture-sum {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-  margin-top: 9px;
-}
-.fd-mixture-sum > strong {
-  font-size: 15px;
 }
 .fd-actions {
   display: flex;
@@ -392,33 +226,6 @@
   font-size: 14px;
 }
 @media (max-width: 720px) {
-  .fd-workspace {
-    grid-template-columns: 1fr;
-  }
-  .fd-world {
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-    padding: 20px;
-  }
-  .fd-world h2 {
-    max-width: none;
-    font-size: 20px;
-    margin-bottom: 4px;
-  }
-  .fd-world svg {
-    max-width: 330px;
-    margin: auto;
-  }
-  .fd-world p.small {
-    font-size: 12px;
-    margin: 8px 0;
-  }
-  .fd-exact {
-    padding-top: 8px;
-  }
-  .fd-exact br {
-    display: none;
-  }
   .fd-stage {
     padding: 20px;
     min-height: 0;
@@ -446,26 +253,6 @@
   .fd-actions > span {
     display: none;
   }
-  .fd-practice-pair,
-  .fd-strata {
-    gap: 10px;
-  }
-  .fd-practice-card,
-  .fd-strata section {
-    padding: 10px;
-  }
-  .fd-waffle {
-    gap: 3px;
-  }
-  .fd-strata .fd-probability > div:first-child {
-    flex-wrap: wrap;
-  }
-  .fd-mixture span {
-    font-size: 10px;
-  }
-  .fd-probability > div:first-child {
-    font-size: 12px;
-  }
 }
 
 .fd-page a {
@@ -480,4 +267,132 @@
 .fd-model-equations .fd-formula {
   justify-content: flex-start;
   background: var(--surface-subtle);
+}
+
+.fd-causal-story {
+  margin: 16px 0;
+  font-size: 13px;
+}
+.fd-causal-story #fd-graph {
+  max-width: 350px;
+  margin: auto;
+}
+.fd-causal-story p {
+  text-align: center;
+}
+.fd-causal-story svg {
+  display: block;
+  width: 100%;
+}
+.fd-student-key {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  margin: 24px 0 12px;
+  color: var(--text-secondary);
+}
+.fd-students {
+  width: 100%;
+  display: block;
+  overflow: visible;
+}
+.fd-population-panel {
+  fill: var(--surface-subtle);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.fd-population-group {
+  fill: var(--surface);
+}
+.fd-students text {
+  fill: var(--text);
+  font-family: inherit;
+}
+.fd-panel-title {
+  font-size: 16px;
+  font-weight: 650;
+}
+.fd-panel-subtitle {
+  font-size: 11px;
+  fill: var(--text-secondary) !important;
+}
+.fd-group-label {
+  font-size: 12px;
+}
+.fd-panel-rate {
+  font-size: 23px;
+  font-weight: 600;
+}
+.fd-student {
+  transition:
+    transform 900ms ease-in-out,
+    opacity 400ms;
+  cursor: pointer;
+}
+.fd-arm-0 {
+  color: var(--arm-0);
+}
+.fd-arm-1 {
+  color: var(--arm-1);
+}
+.fd-student-symbol {
+  fill: var(--surface);
+  stroke: currentColor;
+  stroke-width: 0.35;
+}
+.fd-student-symbol.fd-passed {
+  fill: currentColor;
+}
+.fd-student-halo {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 0.3;
+  opacity: 0;
+}
+.fd-selected .fd-student-halo {
+  opacity: 1;
+}
+.fd-follow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  background: var(--surface-subtle);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.fd-follow label {
+  white-space: nowrap;
+}
+.fd-follow input {
+  width: 72px;
+  padding: 5px;
+  margin-left: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: var(--text);
+  background: var(--surface);
+  font: inherit;
+}
+.fd-follow output {
+  line-height: 1.6;
+}
+#fd-population-note {
+  color: var(--text-secondary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fd-student {
+    transition: none;
+  }
+}
+@media (max-width: 720px) {
+  .fd-panel-title {
+    font-size: 14px;
+  }
+  .fd-group-label {
+    font-size: 11px;
+  }
 }

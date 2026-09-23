@@ -35,22 +35,97 @@ try {
   await page.getByRole("button", { name: "No", exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#fd-prediction")).toContainText("Right.");
+  await page.evaluate(() => {
+    window.firstStudent = document.querySelector(
+      '[data-student="1"][data-copy="0"]',
+    );
+  });
+  await expect(page.locator("[data-population-rate]")).toHaveText([
+    "24% pass",
+    "62% pass",
+  ]);
+  await page.locator("#fd-student").fill("800");
+  await expect(page.locator("#fd-journey")).toHaveText(
+    "Tutoring → regular practice → passed",
+  );
   await page.locator("#fd-next").click();
   await expect(page.locator("#fd-title")).toBeFocused();
-  await expect(page.locator(".fd-practices")).toHaveCount(18);
+  await expect(page.locator("[data-population-rate]")).toHaveText([
+    "20% practice regularly",
+    "70% practice regularly",
+  ]);
   await page.locator("#fd-next").click();
-  await expect(page.locator(".fd-standardized")).toContainText("25%");
-  await expect(page.locator(".fd-standardized")).toContainText("65%");
+  await expect(page.locator("[data-population-rate]")).toHaveText([
+    "21% pass",
+    "70% pass",
+  ]);
+  await page.locator("#fd-balance").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("[data-population-rate]")).toHaveText([
+    "25% pass",
+    "65% pass",
+  ]);
+  await expect(page.locator("#fd-balance")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator(".fd-group-label")).toHaveText([
+    "No tutoring · 50% · 16% pass",
+    "Tutoring · 50% · 34% pass",
+    "No tutoring · 50% · 56% pass",
+    "Tutoring · 50% · 74% pass",
+  ]);
   await page.locator("#fd-next").click();
+  await expect(page.locator('[data-effect="truth"]')).toHaveCount(0);
+  await page.locator("#fd-reveal").click();
   await expect(page.locator('[data-effect="front-door"]')).toHaveText("+20 pp");
   await expect(page.locator('[data-effect="truth"]')).toHaveText("+20 pp");
   await expect(page.locator(".fd-results .result")).toHaveCount(3);
   await expect(page.locator(".fd-effect-track")).toHaveCount(0);
-  await expect(page.locator(".fd-mixture-sum strong")).toHaveText([
-    "= 33% pass",
-    "= 53% pass",
+  await expect(page.locator("[data-population-rate]")).toHaveText([
+    "33% pass",
+    "53% pass",
   ]);
+  assert.ok(
+    await page.evaluate(
+      () =>
+        window.firstStudent ===
+        document.querySelector('[data-student="1"][data-copy="0"]'),
+    ),
+    "Student DOM identity persists through regrouping",
+  );
+  const weighted = await page.locator(".fd-student").evaluateAll((nodes) =>
+    [0, 1].map((panel) => {
+      const records = nodes.filter(
+        (node) =>
+          Number(node.dataset.panel) === panel && node.style.opacity === "1",
+      );
+      return {
+        count: records.length,
+        mass: records.reduce(
+          (sum, node) => sum + Number(node.dataset.weight),
+          0,
+        ),
+        passed: records.reduce(
+          (sum, node) =>
+            sum +
+            Number(node.dataset.weight) *
+              Number(node.dataset.record.split("/")[2]),
+          0,
+        ),
+      };
+    }),
+  );
+  weighted.forEach((panel, i) => {
+    assert.equal(panel.count, 1000);
+    assert.ok(Math.abs(panel.mass - 1000) < 1e-8);
+    assert.ok(Math.abs(panel.passed / panel.mass - [0.33, 0.53][i]) < 1e-10);
+  });
+  await expect(page.locator("#fd-journey")).toHaveText(
+    "Tutoring → regular practice → passed",
+  );
   await mkdir("test-results/front-door", { recursive: true });
+  await page.waitForTimeout(1000); // Capture the settled reconstructed populations.
   await page.screenshot({
     path: "test-results/front-door/desktop-combine.png",
     fullPage: true,
@@ -143,6 +218,7 @@ try {
           (width === 390 && step === 3) ||
           (width === 320 && step === 4)
         ) {
+          await page.waitForTimeout(1000); // Allow the regrouping transition to finish for visual review.
           await page.screenshot({
             path: `test-results/front-door/${width}-${theme}-step-${step}.png`,
             fullPage: true,
@@ -207,6 +283,24 @@ try {
       await page.locator("#fd-model > summary").click();
     }
   }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.locator('[data-step="2"]').click();
+  assert.equal(
+    await page
+      .locator(".fd-student")
+      .first()
+      .evaluate((node) => getComputedStyle(node).transitionDuration),
+    "0s",
+  );
+  await page.locator("#fd-restart").click();
+  await expect(page.locator("#fd-student")).toHaveValue("1");
+  await page.locator('[data-step="2"]').click();
+  await expect(page.locator("#fd-balance")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await page.locator('[data-step="3"]').click();
+  await expect(page.locator("#fd-reveal")).toBeVisible();
   await page.locator("#fd-restart").click();
   await expect(page.locator("#fd-title")).toHaveText(
     "The groups already differ",
