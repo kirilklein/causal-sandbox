@@ -24,7 +24,7 @@ try {
     .getByRole("link", { name: "Next: who remains after trimming? →" })
     .click();
   assert.equal(new URL(page.url()).searchParams.get("lesson"), "trimming");
-  await page.locator('[data-group="retained"]').waitFor();
+  await page.locator('#groups [data-group="retained"]').waitFor();
   const contents = page.getByRole("button", { name: "Contents" });
   assert.ok(await contents.isVisible());
   await contents.click();
@@ -36,37 +36,53 @@ try {
   await contents.click();
   const table = () => page.locator("#groups").innerText();
   const initial = await table();
+  const varyingTable = () => page.locator("#varying-groups").innerText();
+  const initialVarying = await varyingTable();
+  assert.ok(
+    await page
+      .getByRole("heading", { name: "2. When treatment effects vary" })
+      .isVisible(),
+  );
+  assert.match(
+    await page.locator("#varying-note").innerText(),
+    /Move the trimming threshold/,
+  );
   const histogram = () => page.locator("#histogram-bars").innerHTML();
   const initialHistogram = await histogram();
-  const check = async (
-    threshold,
-    selection = 3,
-    seed = 4217,
-    heterogeneous = false,
-  ) => {
-    const { rows, effects } = trimmingSample({
-      selection,
-      seed,
-      heterogeneous,
-    });
+  const check = async (threshold, selection = 3, seed = 4217) => {
+    const { rows, effects } = trimmingSample({ selection, seed });
     const result = trimmingResult(rows, effects, threshold);
-    for (const [key, group] of Object.entries(result.groups)) {
-      assert.equal(
-        await page.locator(`[data-group="${key}"] .count span`).innerText(),
-        String(group.n),
-      );
-      assert.equal(
-        await page.locator(`[data-group="${key}"] .count small`).innerText(),
-        group.counts.join(" / "),
-      );
-      assert.equal(
-        await page.locator(`[data-group="${key}"] .ipw`).innerText(),
-        group.available ? group.ipw.toFixed(2) : "Unavailable",
-      );
-      assert.equal(
-        await page.locator(`[data-group="${key}"] .group-truth`).innerText(),
-        group.n ? group.truth.toFixed(2) : "Unavailable",
-      );
+    const varying = trimmingSample({ selection, seed, heterogeneous: true });
+    const varyingResult = trimmingResult(
+      varying.rows,
+      varying.effects,
+      threshold,
+    );
+    assert.deepEqual(varyingResult.retained, result.retained);
+    assert.deepEqual(varyingResult.excluded, result.excluded);
+    for (const [tableId, groups] of [
+      ["groups", result.groups],
+      ["varying-groups", varyingResult.groups],
+    ]) {
+      for (const [key, group] of Object.entries(groups)) {
+        const row = page.locator(`#${tableId} [data-group="${key}"]`);
+        assert.equal(
+          await row.locator(".count span").innerText(),
+          String(group.n),
+        );
+        assert.equal(
+          await row.locator(".count small").innerText(),
+          group.counts.join(" / "),
+        );
+        assert.equal(
+          await row.locator(".ipw").innerText(),
+          group.available ? group.ipw.toFixed(2) : "Unavailable",
+        );
+        assert.equal(
+          await row.locator(".group-truth").innerText(),
+          group.n ? group.truth.toFixed(2) : "Unavailable",
+        );
+      }
     }
     assert.equal(
       await page.locator("#retained-ipw").innerText(),
@@ -121,7 +137,9 @@ try {
     );
   };
   await check(0);
-  const everyone = await page.locator('[data-group="everyone"]').innerText();
+  const everyone = await page
+    .locator('#groups [data-group="everyone"]')
+    .innerText();
   await page.getByLabel("Trimming threshold", { exact: true }).focus();
   await page.keyboard.press("ArrowRight");
   assert.equal(await page.locator("#threshold").inputValue(), "0.001");
@@ -130,7 +148,7 @@ try {
     await page.locator("#threshold").fill(threshold);
     await check(Number(threshold));
     assert.equal(
-      await page.locator('[data-group="everyone"]').innerText(),
+      await page.locator('#groups [data-group="everyone"]').innerText(),
       everyone,
     );
     if (threshold === "0.5")
@@ -142,6 +160,18 @@ try {
   assert.equal(await table(), initial);
   assert.equal(await histogram(), initialHistogram);
   await page.locator("#threshold").fill("0.1");
+  assert.notEqual(
+    await page
+      .locator('#varying-groups [data-group="retained"] .group-truth')
+      .innerText(),
+    await page
+      .locator('#varying-groups [data-group="everyone"] .group-truth')
+      .innerText(),
+  );
+  assert.match(
+    await page.locator("#varying-note").innerText(),
+    /changes the target population/,
+  );
   await page.locator("#selection").focus();
   await page.keyboard.press("ArrowRight");
   await check(0.1, 3.1);
@@ -158,21 +188,9 @@ try {
   assert.notEqual(await table(), unchanged);
   await page.getByRole("button", { name: "Restart", exact: true }).click();
   assert.equal(await table(), initial);
+  assert.equal(await varyingTable(), initialVarying);
   assert.equal(await histogram(), initialHistogram);
   await page.locator("#threshold").fill("0.1");
-  // Effects change; baseline profiles, assignments, scores and membership do not.
-  const constantHistogram = await histogram();
-  await page.locator("#heterogeneous-example summary").click();
-  await page.locator("#heterogeneous").focus();
-  await page.keyboard.press("Space");
-  await check(0.1, 3, 4217, true);
-  assert.equal(await histogram(), constantHistogram);
-  assert.notEqual(
-    await page.locator('[data-group="retained"] .group-truth').innerText(),
-    await page.locator('[data-group="everyone"] .group-truth').innerText(),
-  );
-  await page.locator("#heterogeneous-example summary").click();
-  assert.match(await page.locator("#effect-note").innerText(), /Effects vary/);
   await mkdir("test-results", { recursive: true });
   for (const theme of ["light", "dark"]) {
     await page.getByLabel("Color theme").selectOption(theme);
@@ -184,7 +202,18 @@ try {
         ),
         `${width}px overflow`,
       );
-      await check(0.1, 3, 4217, true);
+      await check(0.1, 3, 4217);
+      assert.ok(
+        await page
+          .getByRole("columnheader", { name: "Group truth" })
+          .nth(1)
+          .isVisible(),
+      );
+      assert.ok(
+        await page
+          .locator('#varying-groups [data-group="retained"] .count')
+          .isVisible(),
+      );
       await page.locator("#threshold").scrollIntoViewIfNeeded();
       const slider = await page.locator("#threshold").boundingBox();
       assert.ok(slider.height >= 44);
@@ -197,7 +226,6 @@ try {
         Number(await page.locator("#threshold").inputValue()),
         3,
         4217,
-        true,
       );
       await page.locator("#threshold").fill("0.1");
       await page.screenshot({
@@ -218,22 +246,16 @@ try {
   await page
     .getByRole("link", { name: "Next: who remains after trimming? →" })
     .click();
-  await page.locator('[data-group="retained"]').waitFor();
+  await page.locator('#groups [data-group="retained"]').waitFor();
   assert.equal(await table(), initial);
   await page.locator("#threshold").fill("0.2");
-  await page.locator("#heterogeneous-example summary").click();
-  await page.locator("#heterogeneous").check();
   await page.getByRole("button", { name: "Restart", exact: true }).click();
-  assert.equal(await page.locator("#heterogeneous").isChecked(), false);
-  assert.equal(
-    await page.locator("#heterogeneous-example").getAttribute("open"),
-    null,
-  );
   assert.equal(await table(), initial);
+  assert.equal(await varyingTable(), initialVarying);
   await page.locator("#threshold").fill("0.2");
   await page.getByRole("link", { name: "← Probability clipping" }).click();
   await page.goBack();
-  await page.locator('[data-group="retained"]').waitFor();
+  await page.locator('#groups [data-group="retained"]').waitFor();
   assert.equal(await table(), initial);
   await page.goto(`${appUrl}?lesson=overlap`);
   await page.locator("#lesson-menu-toggle").click();
@@ -243,7 +265,7 @@ try {
       exact: true,
     })
     .click();
-  await page.locator('[data-group="retained"]').waitFor();
+  await page.locator('#groups [data-group="retained"]').waitFor();
   assert.equal(await table(), initial);
   assert.deepEqual(errors, []);
   console.log(

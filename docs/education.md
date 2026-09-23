@@ -117,9 +117,10 @@ overlap, with a new 400-person sample and an unclipped starting point.
 
 [Trimming](trimming-experiment.md) follows clipping at `?lesson=trimming`, also
 linked from Contents. It separates everyone, retained, and excluded people and
-compares each IPW estimate with its own group’s truth. The optional varying-effect
-world shows how trimming can change that truth. Each chapter restores its own
-baseline on entry; samples and controls are not transferred between chapters.
+compares each IPW estimate with its own group’s truth. A visible second comparison
+uses varying effects to show how trimming can change that truth. Each chapter
+restores its own baseline on entry; samples and controls are not transferred between
+chapters.
 
 An optional [instruments and adjustment chapter](instruments.md) follows
 double robustness at `?lesson=instrument`. It introduces Z, its precision cost when

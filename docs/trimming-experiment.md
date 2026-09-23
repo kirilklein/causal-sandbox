@@ -3,8 +3,9 @@
 The published chapter at `?lesson=trimming` follows [probability clipping](clipping-experiment.md).
 It asks who the estimate describes after excluding people with extreme propensity
 scores. The retained group’s IPW estimate is compared with its own truth; everyone
-and the excluded group remain visible for context. An optional varying-effect
-example shows how those truths can differ.
+and the excluded group remain visible for context. A second, visible comparison
+uses the same sample and threshold with varying effects to show how those truths
+can differ.
 
 ## Chapter and checks
 
@@ -39,7 +40,7 @@ The same fitted scores define membership and weights. Threshold changes never
 refit either model or modify the remaining weights. Selection changes regenerate
 treatment and outcomes using paired background draws, then refit. Redraw changes
 the seed while retaining both sliders; restart restores seed 4217, selection 3,
-and threshold zero, with constant effects and closed details. Browser-history
+and threshold zero, with both effect comparisons and closed details. Browser-history
 re-entry uses the same baseline. Reading details or changing theme preserves the
 experiment. There is no threshold recommendation or optimization.
 
@@ -49,12 +50,14 @@ potential-outcome differences. The simulator is evaluated with the same noise
 under treatment forced off and on; only observed data enter fitting. Group truth
 never enters the trimming rule or estimate. Fitted-score-defined groups vary
 across samples. With the default constant effect, all nonempty groups have truth 2.
-The optional varying-effect world uses treatment effect `1 + C²`, with C uniform
+The second, varying-effect comparison uses treatment effect `1 + C²`, with C uniform
 on [-√3, √3]. Its population ATE is also 2 because E[C²] = 1. Each displayed truth
 averages the effects among that sample group’s people, so it can differ from 2.
 Trimming in the opening example retains profiles nearer C = 0 and lowers their
-mean true effect. Toggling this world changes outcomes and individual effects;
-it preserves covariates, assignments, fitted propensities, and trimming membership.
+mean true effect. Compared with the constant-effect world, outcomes and individual
+effects change; covariates, assignments, fitted propensities, and trimming
+membership are shared. At the starting threshold of zero, everyone is retained
+in both comparisons; the visible prompt asks learners to move the threshold.
 The unused outcome-model fit is not an estimator displayed in this chapter.
 
 Each group's IPW is its weighted treated mean minus its weighted untreated mean.

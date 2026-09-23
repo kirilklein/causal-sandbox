@@ -70,11 +70,6 @@ document.querySelector("#app").innerHTML =
         </p>
       </div>
     </div>
-    <details id="heterogeneous-example">
-      <summary>What if treatment effects differ between people?</summary>
-      <label class="effect-switch"><input type="checkbox" id="heterogeneous"> Let the treatment effect vary with the risk score</label>
-      <p class="help">In this example, treatment helps people near the extremes of C more. Trimming changes which effects enter the average. Treatment assignment and the sample’s risk scores stay fixed.</p>
-    </details>
     <div class="comparison">
       <figure aria-labelledby="histogram-title">
         <figcaption id="histogram-title">
@@ -158,7 +153,7 @@ document.querySelector("#app").innerHTML =
         </div>
         <p class="help" id="retained-status"></p>
         <p class="help">
-          <span id="effect-note"></span>
+          Treatment adds 2 to every person’s outcome, so every nonempty group has truth 2.
         </p>
         <p class="help">
           Redder estimates are farther from this group’s truth in this
@@ -167,9 +162,9 @@ document.querySelector("#app").innerHTML =
       </div>
     </div>
     <div class="group-summary">
-      <table aria-label="Everyone, retained and excluded groups">
+      <table aria-label="Constant-effect comparison for everyone, retained and excluded people">
         <caption>
-          Compare each estimate with its own group’s truth
+          1. Constant effect · compare each estimate with its group’s truth
         </caption>
         <thead>
           <tr>
@@ -187,6 +182,24 @@ document.querySelector("#app").innerHTML =
         calculable.
       </p>
       <p id="group-status" class="help"></p>
+    </div>
+    <div class="group-summary varying-comparison">
+      <h2>2. When treatment effects vary</h2>
+      <p class="help">Treatment helps people near the extremes of C more. The same threshold retains the same people, whose effects now differ.</p>
+      <table aria-label="Varying-effect comparison for everyone, retained and excluded people">
+        <caption>Compare each estimate with its group’s truth</caption>
+        <thead>
+          <tr>
+            <th scope="col">People</th>
+            <th scope="col">Count</th>
+            <th scope="col">IPW</th>
+            <th scope="col">Group truth</th>
+          </tr>
+        </thead>
+        <tbody id="varying-groups"></tbody>
+      </table>
+      <p id="varying-note" class="help"></p>
+      <p id="varying-status" class="help"></p>
     </div>
     <div class="actions">
       <button id="redraw">Draw another sample</button
@@ -234,9 +247,9 @@ setupLessonNavigation();
 
 const slider = document.querySelector("#threshold");
 const selectionSlider = document.querySelector("#selection");
-const heterogeneous = document.querySelector("#heterogeneous");
 let seed = 4217;
 let sample;
+let varyingSample;
 const labels = {
   everyone: "Everyone",
   retained: "Retained",
@@ -244,6 +257,25 @@ const labels = {
 };
 const number = (value) =>
   Number.isFinite(value) ? value.toFixed(2) : "Unavailable";
+
+function groupRows(groups) {
+  return Object.entries(groups)
+    .map(
+      ([key, group]) =>
+        `<tr data-group="${key}"><th scope="row">${labels[key]}</th><td class="count"><span>${group.n}</span><small>${group.counts.join(" / ")}</small></td><td class="ipw">${number(group.ipw)}</td><td class="group-truth">${number(group.truth)}</td></tr>`,
+    )
+    .join("");
+}
+
+function groupStatus(groups, includeRetained = false) {
+  return Object.entries(groups)
+    .filter(
+      ([key, group]) =>
+        (includeRetained || key !== "retained") && !group.available,
+    )
+    .map(([key, group]) => `${labels[key]}: ${group.reason}`)
+    .join(" ");
+}
 
 function update() {
   const threshold = Number(slider.value);
@@ -253,10 +285,12 @@ function update() {
       `${(100 * (Number(input.value) - Number(input.min))) / (Number(input.max) - Number(input.min))}%`,
     );
   }
-  document.querySelector("#effect-note").textContent = heterogeneous.checked
-    ? "Effects vary with the risk score. Compare the retained group’s truth with everyone’s truth below."
-    : "Treatment adds 2 to every person’s outcome, so every nonempty group has truth 2.";
   const result = trimmingResult(sample.rows, sample.effects, threshold);
+  const varyingResult = trimmingResult(
+    varyingSample.rows,
+    varyingSample.effects,
+    threshold,
+  );
   const range = `[${threshold.toFixed(3)}, ${(1 - threshold).toFixed(3)}]`;
   document.querySelector("#threshold-value").textContent =
     threshold === 0 ? "0.000 · keep everyone" : `Keep ${range}`;
@@ -293,18 +327,21 @@ function update() {
     .style.setProperty("--error-tint", `${comparison.tint}%`);
   document.querySelector("#retained-status").textContent =
     retained.reason ?? "";
-  document.querySelector("#groups").innerHTML = Object.entries(result.groups)
-    .map(
-      ([key, group]) =>
-        `<tr data-group="${key}"><th scope="row">${labels[key]}</th><td class="count"><span>${group.n}</span><small>${group.counts.join(" / ")}</small></td><td class="ipw">${number(group.ipw)}</td><td class="group-truth">${number(group.truth)}</td></tr>`,
-    )
-    .join("");
-  document.querySelector("#group-status").textContent = Object.entries(
+  document.querySelector("#groups").innerHTML = groupRows(result.groups);
+  document.querySelector("#group-status").textContent = groupStatus(
     result.groups,
-  )
-    .filter(([key, group]) => key !== "retained" && !group.available)
-    .map(([key, group]) => `${labels[key]}: ${group.reason}`)
-    .join(" ");
+  );
+  document.querySelector("#varying-groups").innerHTML = groupRows(
+    varyingResult.groups,
+  );
+  document.querySelector("#varying-status").textContent = groupStatus(
+    varyingResult.groups,
+    true,
+  );
+  document.querySelector("#varying-note").textContent =
+    threshold === 0
+      ? "Everyone is still retained. Move the trimming threshold above zero to see how the group’s truth changes."
+      : "The retained group’s truth can differ from everyone’s: trimming changes the target population. Excluded people have their own truth, but trimming cannot recover information about them.";
 
   const armLabels = ["Untreated", "Treated"];
   document.querySelector("#histogram-bars").innerHTML = result.histogram
@@ -351,12 +388,11 @@ function draw() {
   sample = trimmingSample({
     selection,
     seed,
-    heterogeneous: heterogeneous.checked,
   });
+  varyingSample = trimmingSample({ selection, seed, heterogeneous: true });
   update();
 }
 slider.addEventListener("input", update);
-heterogeneous.addEventListener("change", draw);
 selectionSlider.addEventListener("input", draw);
 document.querySelector("#redraw").addEventListener("click", () => {
   seed++;
@@ -366,7 +402,6 @@ function restart() {
   seed = 4217;
   selectionSlider.value = "3";
   slider.value = "0";
-  heterogeneous.checked = false;
   document.querySelectorAll(".trimming-page details").forEach((details) => {
     details.open = false;
   });
