@@ -681,7 +681,9 @@ function setupPrediction(prediction) {
     const choices = checkpoint.querySelector("fieldset");
     choices.replaceWith(choices.querySelector("#question"));
     const feedback = document.createElement("div");
-    feedback.innerHTML = `<p><strong>${encouragement}</strong> You predicted: “${prediction.choices[Number(selected.value)]}”</p><p>${observed}</p><p>${prediction.explanation}</p>`;
+    feedback.className = "prediction-feedback";
+    feedback.dataset.result = correct ? "correct" : "review";
+    feedback.innerHTML = `<p><span class="prediction-feedback-icon" aria-hidden="true">${correct ? "✓" : "!"}</span><strong>${encouragement}</strong> You predicted: “${prediction.choices[Number(selected.value)]}”</p><p>${observed}</p><p>${prediction.explanation}</p>`;
     feedback.setAttribute("tabindex", "-1");
     feedback.setAttribute("role", "region");
     feedback.setAttribute("aria-label", "Prediction explained");

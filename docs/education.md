@@ -172,7 +172,9 @@ returns focus to the toggle.
 
 Randomization, collider, and overlap place the prediction question with its answer
 choices immediately after the current graph. Answering removes the radio options,
-keeps the question, and names the selected answer in the feedback. The feedback is
+keeps the question, and names the selected answer in the feedback. A green check
+marks a correct prediction; an amber exclamation marks one to reconsider. The words
+remain explicit. A brief background highlight respects reduced-motion preferences. The feedback is
 anchored to the hint’s previous screen position so removing the options does not
 lose the learner’s reading position. A “Prediction and feedback” disclosure in the
 card’s top header collapses or restores the question and feedback below it without
