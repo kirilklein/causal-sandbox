@@ -30,7 +30,7 @@ try {
     "proxy for hidden fitness",
   );
   await expect(page.locator(".study-dot")).toHaveCount(60);
-  await expect(page.locator(".truth-label")).toHaveText("True effect: 2");
+  await expect(page.locator(".truth-label")).toHaveText("True effect");
   await expect(page.locator(".effect-legend li")).toHaveText([
     "One study",
     "Mean",
@@ -338,6 +338,21 @@ try {
           });
           await include.click();
           await expect(page.locator(".effect-truth")).toHaveCount(2);
+          assert.ok(
+            await page.locator("#effect-plot").evaluate((plot) => {
+              const axis = plot
+                .querySelector(".effect-axis")
+                .getBoundingClientRect();
+              return [...plot.querySelectorAll(".effect-truth")].every(
+                (line) =>
+                  Math.abs(
+                    line.getBoundingClientRect().x -
+                      (axis.x + (axis.width * 2) / 5),
+                  ) < 0.5,
+              );
+            }),
+            "Both rows align with the displayed axis",
+          );
         }
         assert.ok(
           await page.evaluate(

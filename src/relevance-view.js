@@ -109,16 +109,15 @@ export function relevancePlot(studies, included) {
   const x = (value) => 24 + (Math.max(0, Math.min(5, value)) / 5) * 312;
   const truth = studies[0].truth;
   const arms = included ? [0, 1] : [0];
-  const axisY = included ? 188 : 100;
   const fmt = (value) =>
     Number.isFinite(value) ? value.toFixed(2) : "Unavailable";
   const description = `Each dot is one of ${studies.length} studies; vertical spacing only separates dots. Dashed estimate lines mark means. Without adjustment: mean ${fmt(summaries[0].effect.mean)}, standard deviation ${fmt(summaries[0].effect.sd)}.${included ? ` With adjustment: mean ${fmt(summaries[1].effect.mean)}, standard deviation ${fmt(summaries[1].effect.sd)}.` : " Adjusted estimates have not been revealed."} True effect: ${truth} mobility points. The horizontal scale is fixed from 0 to 5; triangles indicate off-scale estimates.`;
-  return `<svg viewBox="0 0 360 ${axisY + 24}" role="img" aria-label="${description}">
-    <text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">True effect: ${truth}</text>
+  return `<div role="img" aria-label="${description}">
     ${arms
       .map((arm) => {
-        const y = 60 + arm * 88;
-        return `<text class="row-label" x="24" y="${y - 25}">${arm ? "With adjustment" : "Without adjustment"}</text>
+        const y = 46;
+        return `<div class="relevance-effect-row"><p class="row-label">${arm ? "With adjustment" : "Without adjustment"}</p><svg viewBox="0 0 360 88" aria-hidden="true">
+      ${arm === 0 ? `<text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">True effect</text>` : ""}
       <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="${y - 20}" y2="${y + 36}"/>
       ${studies
         .map((study, i) => {
@@ -133,10 +132,10 @@ export function relevancePlot(studies, included) {
             : `<circle ${attributes} cx="${xx}" cy="${yy}" r="2">${title}</circle>`;
         })
         .join("")}
-      <line class="effect-mean" data-arm="${arm}" x1="${x(summaries[arm].effect.mean)}" x2="${x(summaries[arm].effect.mean)}" y1="${y - 20}" y2="${y + 36}"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></line>`;
+      <line class="effect-mean" data-arm="${arm}" x1="${x(summaries[arm].effect.mean)}" x2="${x(summaries[arm].effect.mean)}" y1="${y - 20}" y2="${y + 36}"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></line></svg></div>`;
       })
       .join("")}
-    <line class="effect-axis" x1="24" x2="336" y1="${axisY}" y2="${axisY}"/>
-    ${[0, 1, 2, 3, 4, 5].map((tick) => `<text x="${x(tick)}" y="${axisY + 18}" text-anchor="middle">${tick}</text>`).join("")}
-  </svg>`;
+    <svg viewBox="0 0 360 26" aria-hidden="true"><line class="effect-axis" x1="24" x2="336" y1="2" y2="2"/>
+    ${[0, 1, 2, 3, 4, 5].map((tick) => `<text x="${x(tick)}" y="20" text-anchor="middle">${tick}</text>`).join("")}
+  </svg></div>`;
 }

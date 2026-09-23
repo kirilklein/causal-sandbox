@@ -111,8 +111,14 @@
   fill: var(--text);
 }
 #effect-plot .row-label {
+  margin: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
   font-weight: 600;
+}
+.relevance-effect-row + .relevance-effect-row {
+  margin-top: 12px;
 }
 .effect-axis-label {
   text-align: center;
@@ -125,7 +131,7 @@
 }
 #effect-plot .truth-label {
   fill: var(--truth);
-  font-weight: 650;
+  font-weight: 500;
 }
 .effect-axis {
   stroke: var(--border-strong);
@@ -284,8 +290,7 @@
   }
 }
 @media (max-width: 480px) {
-  #effect-plot text,
-  #effect-plot .row-label {
+  #effect-plot text {
     font-size: 18px;
   }
   .relevance-page main {

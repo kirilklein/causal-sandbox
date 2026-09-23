@@ -49,7 +49,8 @@ causes; geometry encodes neither time nor strength. The measured node retains
 its identity and appearance under adjustment.
 
 Each dot is an estimate from one simulated study, with one row per adjustment
-choice. The horizontal axis is the estimated program effect in mobility points,
+choice. Each row has a full-width caption outside its plotting area, separate
+from the true-effect annotation. The horizontal axis is the estimated program effect in mobility points,
 fixed at 0–5 across steps. Vertical offsets only separate dots. A dashed line
 marks the true effect (2) in revealed rows, dashed vertical estimate lines mark means, and error
 tint uses the shared 0–2 scale.
