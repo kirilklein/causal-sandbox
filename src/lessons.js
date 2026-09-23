@@ -79,7 +79,8 @@ const lessons = [
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
-    question: "Can we predict outcomes under each treatment?",
+    question:
+      "How do fitted treatment contrasts become an average population effect?",
     transition:
       "The confounded world stays the same. Both models now account for the risk score.",
     instruction: "Compare the estimates, then redraw to see how they vary.",
@@ -387,11 +388,12 @@ function enter(level, focus = true, callback = false, restart = false) {
   document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
+  const compactContext = [4, 5, 6, 11].includes(level);
   const position = availableLevels.indexOf(revisiting ? 6 : level);
   const previous = revisiting ? 6 : availableLevels[position - 1];
   const previousExperiment = previous === 14 ? 2 : previous;
   previousGraph =
-    !recap && previousExperiment
+    !recap && !compactContext && previousExperiment
       ? {
           state:
             state?.level === previousExperiment
@@ -431,7 +433,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
       <section class="experiment panel" aria-labelledby="question">${prediction ? "" : `<h2 id="question">${lesson.question}</h2>`}
         ${previousGraph && !lesson.prediction ? graphComparison(level, revisiting) : ""}
-        <div id="lesson-graph"></div>
+        <div id="lesson-graph"${compactContext ? ' class="method-context"' : ""}></div>
         <p class="lesson-instruction">${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
         <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
@@ -983,7 +985,9 @@ function renderLessonGraph() {
     }
   }
   if (!comparisonOpen) {
-    graph.innerHTML = lessonGraph(state);
+    graph.innerHTML = lessonGraph(state, {
+      compact: graph.classList.contains("method-context"),
+    });
     return;
   }
   const previous = previousGraph.state;
