@@ -87,8 +87,18 @@ collider example, no adjustment is needed and conditioning on V introduces bias.
 Sixty paired studies use seeds 100–159. Computation yields between batches and
 is abandoned when changing steps. Cache only estimates and truth, not patient
 records. Revisiting a step retains its prediction and adjustment selection;
-Restart clears those and the transfer answer. There are no progress/mastery
+Restart clears those and the practice answer. There are no progress/mastery
 writes. Theme and explanatory disclosures do not redraw data.
+
+Question mechanics match PR #263 on `dev`. Each question labels its choices;
+predictions require a choice before first inclusion, and practice uses a separate
+Check answer button. Submission replaces choices with compact feedback naming
+the selected answer, using a green check or amber reconsideration cue. Feedback
+keeps the hint's previous viewport position. Its header disclosure hides or shows
+the question and feedback without changing the experiment. Feedback persists
+through adjustment toggles and revisits; Restart clears answers and disclosure
+state. Shared `prediction.css` keeps core and optional lesson styling aligned,
+including reduced-motion behavior.
 
 ## Validation
 
@@ -96,7 +106,8 @@ The unchanged statistical tests independently reconstruct OLS and held-out RMSE,
 and check prediction, bias, and precision across 100 additional seeds. View and
 browser checks verify actual plotted estimates, common axes/truth, absence of
 adjusted marks before the action, graph invariance, paired means, prediction
-errors, step changes during loading, replay/reset, targeted feedback, navigation,
+errors, step changes during loading, replay/reset, targeted feedback, submission
+anchoring, collapse/expand, reduced motion, navigation,
 keyboard/touch, and desktop/phone light/dark layouts.
 
 Functional tests and screenshots do not establish comprehension. A learner

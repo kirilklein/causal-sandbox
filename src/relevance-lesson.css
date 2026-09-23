@@ -1,3 +1,5 @@
+@import "./prediction.css";
+
 .relevance-page main {
   max-width: 1120px;
 }
@@ -173,32 +175,35 @@
   font-weight: 600;
   max-width: 850px;
 }
-#relevance-guess {
+.relevance-page #question-choices {
   border: 0;
   padding: 0;
-  margin: 16px 0;
+  margin: 0;
+  min-width: 0;
+}
+.relevance-page #prediction-question {
+  margin: 0 0 12px;
+}
+.relevance-choices {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 18px;
 }
-#relevance-guess legend {
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-#relevance-guess label {
+.relevance-choices label {
   padding: 10px 0;
   cursor: pointer;
 }
-#relevance-guess input {
+.relevance-choices input {
   accent-color: var(--accent);
+}
+.relevance-transfer .relevance-choices {
+  display: grid;
 }
 .relevance-page button:disabled {
   opacity: 0.5;
-  cursor: wait;
+  cursor: default;
 }
-#guess-feedback:empty,
-#study-status:empty,
-#practice-feedback:empty {
+#study-status:empty {
   display: none;
 }
 #relevance-explanation {
@@ -251,24 +256,6 @@
   flex-wrap: wrap;
   align-items: center;
   margin: 24px 0;
-}
-.relevance-answers {
-  display: grid;
-  gap: 10px;
-  margin: 24px 0;
-  max-width: 650px;
-}
-.relevance-answers button {
-  text-align: left;
-}
-.relevance-answers button[aria-pressed="true"] {
-  background: var(--accent-surface);
-  border-color: var(--accent);
-}
-#practice-feedback {
-  padding: 16px;
-  border-left: 3px solid var(--accent);
-  background: var(--surface-subtle);
 }
 .relevance-real-world {
   border-top: 1px solid var(--border);

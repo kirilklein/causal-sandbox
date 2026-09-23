@@ -24,7 +24,7 @@ try {
   await page.getByRole("link", { name: `${title} →`, exact: true }).click();
   await expect(page.locator("h1")).toHaveText(title);
   const include = page.locator("#include-measurement");
-  await expect(include).toBeEnabled();
+  await expect(page.locator("#study-status")).toBeEmpty();
   await expect(page.locator("#relevance-graph")).toBeVisible();
   await expect(page.locator("#scene-title")).toContainText(
     "proxy for hidden fitness",
@@ -52,6 +52,73 @@ try {
     ),
   );
   await expect(page.locator('.relevance-steps [data-step="1"]')).toHaveCount(0);
+  await expect(include).toBeDisabled();
+  await expect(page.locator("#toggle-prediction")).toHaveCount(0);
+  const question = await page.locator("#prediction-question").innerText();
+  await expect(
+    page.getByRole("group", { name: question, exact: true }),
+  ).toHaveCount(1);
+  const answerAtAnchor = async (
+    target,
+    button,
+    feedback,
+    activate = () => button.click(),
+  ) => {
+    await button.scrollIntoViewIfNeeded();
+    await button.evaluate((el) =>
+      el.addEventListener(
+        "click",
+        () => {
+          window.relevanceFeedbackTop = document
+            .querySelector("#prediction-hint")
+            .getBoundingClientRect().top;
+        },
+        { capture: true, once: true },
+      ),
+    );
+    await activate();
+    await expect(feedback).toBeFocused();
+    const anchor = await target.evaluate(() => window.relevanceFeedbackTop);
+    const top = await feedback
+      .locator("p")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().top);
+    assert.ok(
+      Math.abs(top - anchor) <= 1,
+      `Feedback stays at the reading position: ${anchor} → ${top}`,
+    );
+    await expect(target.locator("#question-choices")).toHaveCount(0);
+  };
+  const checkCollapse = async (target, feedback) => {
+    const toggle = target.locator("#toggle-prediction");
+    const graph = await target
+      .locator("#relevance-graph")
+      .evaluateAll((els) => els.map((el) => el.innerHTML));
+    const plot = await target
+      .locator("#effect-plot")
+      .evaluateAll((els) => els.map((el) => el.innerHTML));
+    const message = await feedback.innerText();
+    await toggle.focus();
+    await target.keyboard.press("Enter");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(target.locator("#prediction-content")).toBeHidden();
+    await expect(toggle).toBeFocused();
+    assert.deepEqual(
+      await target
+        .locator("#relevance-graph")
+        .evaluateAll((els) => els.map((el) => el.innerHTML)),
+      graph,
+    );
+    assert.deepEqual(
+      await target
+        .locator("#effect-plot")
+        .evaluateAll((els) => els.map((el) => el.innerHTML)),
+      plot,
+    );
+    await target.keyboard.press("Space");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(feedback).toHaveText(message, { useInnerText: true });
+  };
   const beforeGraph = await page.locator("#relevance-graph").innerHTML();
   const beforeDots = await page
     .locator('.study-dot[data-arm="0"]')
@@ -63,7 +130,15 @@ try {
     .getByRole("radio", { name: "About the same", exact: true })
     .check();
   await include.focus();
-  await page.keyboard.press("Enter");
+  await answerAtAnchor(page, include, page.locator("#guess-feedback"), () =>
+    page.keyboard.press("Enter"),
+  );
+  await expect(page.locator("#guess-feedback")).toHaveAttribute(
+    "data-result",
+    "review",
+  );
+  await expect(page.locator("#guess-feedback")).toContainText("About the same");
+  await checkCollapse(page, page.locator("#guess-feedback"));
   await expect(include).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".study-dot")).toHaveCount(120);
   assert.equal(await page.locator("#relevance-graph").innerHTML(), beforeGraph);
@@ -123,7 +198,10 @@ try {
   await page.getByLabel("Color theme").selectOption("dark");
   assert.equal(await page.locator("#relevance-graph").innerHTML(), beforeGraph);
   await checkStudies("proxy");
+  const firstFeedback = await page.locator("#guess-feedback").textContent();
+  await page.locator("#toggle-prediction").click();
   await include.click();
+  await expect(page.locator("#guess-feedback")).toHaveText(firstFeedback);
   await expect(page.locator(".study-dot")).toHaveCount(60);
   await expect(page.locator("#relevance-explanation")).toBeEmpty();
   await include.click();
@@ -136,7 +214,8 @@ try {
     .getByText("Optional: why not adjust for every predictor?", { exact: true })
     .click();
   await page.locator('[data-step="1"]').click();
-  await expect(include).toBeEnabled();
+  await expect(page.locator("#study-status")).toBeEmpty();
+  await expect(include).toBeDisabled();
   await expect(page.locator("#scene-title")).toContainText("misleading clue");
   await expect(page.locator("#relevance-graph svg")).toHaveAttribute(
     "aria-label",
@@ -146,9 +225,15 @@ try {
   await page
     .getByRole("radio", { name: "Farther from truth", exact: true })
     .check();
-  await include.click();
+  await answerAtAnchor(page, include, page.locator("#guess-feedback"));
   const colliderStats = await checkStudies("collider");
-  await expect(page.locator("#guess-feedback")).toContainText("matches");
+  await expect(page.locator("#guess-feedback")).toHaveAttribute(
+    "data-result",
+    "correct",
+  );
+  await expect(page.locator("#guess-feedback")).toContainText(
+    "Farther from truth",
+  );
   assert.deepEqual(
     await page.locator(".prediction-bars strong").allTextContents(),
     colliderStats.map((s) => s.prediction.mean.toFixed(2)),
@@ -158,9 +243,13 @@ try {
   );
   await page.locator('[data-step="0"]').click();
   await expect(include).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.getByRole("radio", { name: "About the same", exact: true }),
-  ).toBeChecked();
+  await expect(page.locator('[name="guess"]')).toHaveCount(0);
+  await expect(page.locator("#toggle-prediction")).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  await page.locator("#toggle-prediction").click();
+  await expect(page.locator("#guess-feedback")).toContainText("About the same");
   await checkStudies("proxy");
   await page.locator('[data-step="2"]').click();
   await expect(page.locator("#relevance-graph")).toHaveCount(0);
@@ -169,8 +258,22 @@ try {
     ["reduced", "reduces confounding"],
     ["caused", "without causing the outcome"],
   ]) {
-    await page.locator(`[data-answer="${answer}"]`).click();
+    await page.locator("#restart-relevance").click();
+    await page.locator('[data-step="2"]').click();
+    await expect(page.locator("#submit-practice")).toBeDisabled();
+    await page.locator(`[name="practice"][value="${answer}"]`).check();
+    await answerAtAnchor(
+      page,
+      page.locator("#submit-practice"),
+      page.locator("#practice-feedback"),
+    );
     await expect(page.locator("#practice-feedback")).toContainText(text);
+    await expect(page.locator("#practice-feedback")).toHaveAttribute(
+      "data-result",
+      answer === "reduced" ? "correct" : "review",
+    );
+    await expect(page.locator("#submit-practice")).toHaveCount(0);
+    await checkCollapse(page, page.locator("#practice-feedback"));
   }
   assert.equal(
     await page.evaluate(() => localStorage.getItem("causal-sandbox-progress")),
@@ -178,10 +281,13 @@ try {
   );
   await page.locator("#restart-relevance").click();
   await expect(include).toHaveAttribute("aria-pressed", "false");
+  await expect(include).toBeDisabled();
   await expect(page.locator('[name="guess"]:checked')).toHaveCount(0);
   await expect(page.locator(".study-dot")).toHaveCount(60);
   await page.locator('[data-step="2"]').click();
-  await expect(page.locator("#practice-feedback")).toBeEmpty();
+  await expect(page.locator("#practice-feedback")).toHaveCount(0);
+  await expect(page.locator("#toggle-prediction")).toHaveCount(0);
+  await expect(page.locator("#submit-practice")).toBeDisabled();
 
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   await expect(page.locator('.optional-menu [aria-current="step"]')).toHaveText(
@@ -204,7 +310,7 @@ try {
   await expect(page.locator("h1")).toHaveText(title);
   await page.goto(`${url}?lesson=timing`);
   await page.getByRole("link", { name: `${title} →`, exact: true }).click();
-  await expect(include).toBeEnabled();
+  await expect(page.locator("#study-status")).toBeEmpty();
 
   await mkdir("test-results", { recursive: true });
   await page
@@ -215,7 +321,9 @@ try {
     for (const scene of [0, 1, 2]) {
       await page.locator(`[data-step="${scene}"]`).click();
       if (scene < 2) {
-        await expect(include).toBeEnabled();
+        await expect(page.locator("#study-status")).toBeEmpty();
+        if (await page.locator('[name="guess"]').count())
+          await page.locator('[name="guess"][value="closer"]').check();
         if ((await include.getAttribute("aria-pressed")) === "false")
           await include.click();
       }
@@ -265,9 +373,35 @@ try {
   await touch.waitForTimeout(150);
   await expect(touch.locator(".study-dot")).toHaveCount(0);
   await touch.locator('[data-step="0"]').tap();
-  await expect(touch.locator("#include-measurement")).toBeEnabled();
-  await touch.locator("#include-measurement").tap();
+  await expect(touch.locator("#study-status")).toBeEmpty();
+  await touch.locator('[name="guess"][value="closer"]').check();
+  await answerAtAnchor(
+    touch,
+    touch.locator("#include-measurement"),
+    touch.locator("#guess-feedback"),
+    () => touch.locator("#include-measurement").tap(),
+  );
   await expect(touch.locator(".study-dot")).toHaveCount(120);
+  await touch.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(
+    await touch
+      .locator("#guess-feedback")
+      .evaluate((el) => getComputedStyle(el).animationName),
+    "none",
+  );
+  await checkCollapse(touch, touch.locator("#guess-feedback"));
+  await touch.locator('[data-step="2"]').tap();
+  await touch.locator('[name="practice"][value="reduced"]').check();
+  await answerAtAnchor(
+    touch,
+    touch.locator("#submit-practice"),
+    touch.locator("#practice-feedback"),
+    () => touch.locator("#submit-practice").tap(),
+  );
+  await checkCollapse(touch, touch.locator("#practice-feedback"));
+  await touch
+    .locator(".lesson-prediction")
+    .screenshot({ path: "test-results/relevance-feedback-mobile.png" });
   assert.deepEqual(errors, []);
   console.log(
     "Relevance story: paired estimates, fixed graph/truth, prediction feedback, transfer, replay/reset, navigation, keyboard/touch, themes and phone layouts passed.",

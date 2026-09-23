@@ -70,6 +70,18 @@ let runId = 0;
 let included = [false, false];
 let guesses = [null, null];
 let answer = null;
+let completed = [false, false];
+let collapsed = [false, false, false];
+const guessChoices = {
+  closer: "Closer to truth",
+  same: "About the same",
+  farther: "Farther from truth",
+};
+const practiceChoices = {
+  removed: "The proxy removed the hidden confounding.",
+  reduced: "The proxy reduced the hidden confounding.",
+  caused: "The proxy itself caused the outcome.",
+};
 const fmt = (value) => value.toFixed(2);
 
 function predictionView(studies) {
@@ -83,7 +95,7 @@ function updateResults() {
   const scene = relevanceScenes[step];
   const active = included[step];
   el("effect-plot").innerHTML = relevancePlot(studies, active);
-  el("include-measurement").disabled = false;
+  el("include-measurement").disabled = !completed[step] && !guesses[step];
   el("include-measurement").setAttribute("aria-pressed", String(active));
   el("include-measurement").textContent =
     `${active ? "Remove" : "Include"} the ${scene.measurement}`;
@@ -91,12 +103,63 @@ function updateResults() {
   el("relevance-explanation").innerHTML = active
     ? `<p class="relevance-takeaway">${scene.takeaway}</p><p>${scene.explanation}</p><p class="small">${scene.limitation}</p>${step === 1 ? `<h3>Yet it predicts mobility better</h3>${predictionView(studies)}` : `<details><summary>Prediction is a separate question</summary>${predictionView(studies)}<p>Lower prediction error alone cannot show that a measurement is a useful proxy for a confounder. Its causal role matters.</p></details>`}`
     : "";
-  const direction = scene.expected === "closer" ? "closer to" : "farther from";
-  el("guess-feedback").textContent =
-    active && guesses[step]
-      ? `${guesses[step] === scene.expected ? "Your prediction matches this result." : `Here, adjustment moves the mean estimate ${direction} truth.`} Compare the mean markers with the fixed truth line.`
-      : "";
   el("study-status").textContent = "";
+}
+
+function showFeedback(
+  { selected, correct, message, practice = false },
+  anchorTop,
+) {
+  const choices = el("question-choices");
+  choices.replaceWith(el("prediction-question"));
+  const feedback = document.createElement("div");
+  feedback.id = practice ? "practice-feedback" : "guess-feedback";
+  feedback.className = "prediction-feedback";
+  feedback.dataset.result = correct ? "correct" : "review";
+  feedback.innerHTML = `<p><span class="prediction-feedback-icon" aria-hidden="true">${correct ? "✓" : "!"}</span><strong>${correct ? (practice ? "Correct." : "Good prediction!") : "Not quite."}</strong> ${practice ? "You answered" : "You predicted"}: “${selected}”</p><p>${message}</p>`;
+  feedback.tabIndex = -1;
+  feedback.setAttribute("role", "region");
+  feedback.setAttribute(
+    "aria-label",
+    practice ? "Answer explained" : "Prediction explained",
+  );
+  el("prediction-hint").replaceWith(feedback);
+  el("submit-practice")?.remove();
+  const content = el("prediction-content");
+  const toggle = document.createElement("button");
+  toggle.id = "toggle-prediction";
+  toggle.innerHTML = `<svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 2 4 4-4 4"/></svg><span>${practice ? "Question and feedback" : "Prediction and feedback"}</span>`;
+  toggle.setAttribute("aria-controls", content.id);
+  toggle.setAttribute("aria-expanded", String(!collapsed[step]));
+  content.hidden = collapsed[step];
+  toggle.addEventListener("click", () => {
+    collapsed[step] = !collapsed[step];
+    content.hidden = collapsed[step];
+    toggle.setAttribute("aria-expanded", String(!content.hidden));
+  });
+  document.querySelector(".prediction-header").replaceChildren(toggle);
+  if (anchorTop !== undefined) {
+    feedback.focus({ preventScroll: true });
+    // Preserve the reading position as choices disappear and results are revealed.
+    window.scrollBy({
+      top: feedback.firstElementChild.getBoundingClientRect().top - anchorTop,
+      behavior: "instant",
+    });
+  }
+}
+
+function showGuessFeedback(anchorTop) {
+  const scene = relevanceScenes[step];
+  const direction = scene.expected === "closer" ? "closer to" : "farther from";
+  const stats = relevanceSummaries(cache.get(step));
+  showFeedback(
+    {
+      selected: guessChoices[guesses[step]],
+      correct: guesses[step] === scene.expected,
+      message: `Adjustment moves the mean estimate ${direction} truth: ${fmt(stats[0].effect.mean)} → ${fmt(stats[1].effect.mean)}. Compare the mean lines with the true-effect line.`,
+    },
+    anchorTop,
+  );
 }
 
 async function showStep(next, focus = true) {
@@ -109,13 +172,26 @@ async function showStep(next, focus = true) {
   });
   if (step === 2) {
     el("relevance-scene").innerHTML =
-      `<section class="panel relevance-transfer" aria-labelledby="scene-title"><p class="eyebrow">02 · CHECK YOUR UNDERSTANDING</p><h2 id="scene-title" tabindex="-1">Closer to truth, but not all the way</h2><p>Across repeated studies, adjusting for the noisy proxy brings the average estimate closer to the true effect. A systematic gap remains.</p><p class="relevance-question">What does this show in the simulated example?</p><div class="relevance-answers" role="group" aria-label="Choose an answer"><button data-answer="removed">The proxy removed the hidden confounding.</button><button data-answer="reduced">The proxy reduced the hidden confounding.</button><button data-answer="caused">The proxy itself caused the outcome.</button></div><div id="practice-feedback" role="status"></div><div class="relevance-real-world"><h3>In real data, we do not know the true effect</h3><p>Here, we supplied the causal graph and the true effect. In a real study, a changed estimate alone cannot establish that a proxy helped. We need evidence that the measurement carries information about the hidden confounder, and assumptions about its other causal relationships.</p><details><summary>Does good outcome prediction establish a proxy’s role?</summary><p>No. A new wearable score might predict mobility without being a useful proxy for the hidden confounder. Study design, timing, and knowledge of how the score is produced help assess its causal role. The optional collider comparison shows why prediction alone is insufficient.</p></details></div></section>`;
-    document.querySelectorAll("[data-answer]").forEach((button) =>
-      button.addEventListener("click", () => {
-        answer = button.dataset.answer;
-        showAnswer();
+      `<section class="panel relevance-transfer" aria-labelledby="scene-title"><p class="eyebrow">02 · CHECK YOUR UNDERSTANDING</p><h2 id="scene-title" tabindex="-1">Closer to truth, but not all the way</h2><p>Across repeated studies, adjusting for the noisy proxy brings the average estimate closer to the true effect. A systematic gap remains.</p><div class="lesson-prediction"><div class="prediction-header">Your answer</div><div id="prediction-content"><fieldset id="question-choices" aria-describedby="prediction-hint"><legend><h3 id="prediction-question" class="relevance-question">What does this show in the simulated example?</h3></legend><div class="relevance-choices">${Object.entries(
+        practiceChoices,
+      )
+        .map(
+          ([value, label]) =>
+            `<label><input type="radio" name="practice" value="${value}"> ${label}</label>`,
+        )
+        .join(
+          "",
+        )}</div></fieldset><p id="prediction-hint" class="small">Choose an answer, then check it.</p><button id="submit-practice" disabled>Check answer</button></div></div><div class="relevance-real-world"><h3>In real data, we do not know the true effect</h3><p>Here, we supplied the causal graph and the true effect. In a real study, a changed estimate alone cannot establish that a proxy helped. We need evidence that the measurement carries information about the hidden confounder, and assumptions about its other causal relationships.</p><details><summary>Does good outcome prediction establish a proxy’s role?</summary><p>No. A new wearable score might predict mobility without being a useful proxy for the hidden confounder. Study design, timing, and knowledge of how the score is produced help assess its causal role. The optional collider comparison shows why prediction alone is insufficient.</p></details></div></section>`;
+    document.querySelectorAll('[name="practice"]').forEach((radio) =>
+      radio.addEventListener("change", () => {
+        el("submit-practice").disabled = false;
       }),
     );
+    el("submit-practice").addEventListener("click", () => {
+      const anchorTop = el("prediction-hint").getBoundingClientRect().top;
+      answer = document.querySelector('[name="practice"]:checked').value;
+      showAnswer(anchorTop);
+    });
     showAnswer();
   } else {
     const scene = relevanceScenes[step];
@@ -125,19 +201,18 @@ async function showStep(next, focus = true) {
       <h2 id="scene-title" tabindex="-1">${scene.title}</h2><p class="relevance-story">${scene.story}</p><div class="relevance-target"><span>THE EFFECT WE WANT TO ESTIMATE</span><p>What is the average total effect of rehabilitation on mobility after 12 weeks?</p><small>Fictional study population · program versus no program · higher mobility is better</small></div>
       <div class="relevance-workspace"><div class="relevance-world"><h3>The assumed world</h3><p class="small">Treat this graph as correct for the fictional study. Dashed nodes and arrows represent unmeasured causes.</p><div id="relevance-graph" class="relevance-graph">${relevanceGraph(scene)}</div><p class="relevance-graph-note">The ${scene.measurement} is recorded before treatment. It has no causal path to mobility.</p></div>
       <div class="relevance-analysis"><h3>Our estimate of the program’s effect</h3><p class="small">60 independent studies · same studies before and after adjustment</p><div id="effect-plot"></div><p class="small effect-axis-label">Estimated effect (mobility points)</p><ul class="effect-legend" aria-label="Chart legend"><li><svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3"/></svg>One study</li><li><svg viewBox="0 0 14 14" aria-hidden="true"><line class="effect-mean" x1="7" x2="7" y1="1" y2="13"/></svg>Mean</li></ul><p class="small plot-key">Vertical spacing separates studies. Redder dots indicate more error (0–2 points).</p></div></div>
-      <div class="relevance-action"><p class="relevance-question">${scene.question}</p><fieldset id="relevance-guess"><legend>Predict where the mean estimate will move:</legend>${[
-        ["closer", "Closer to truth"],
-        ["same", "About the same"],
-        ["farther", "Farther from truth"],
-      ]
+      <div class="lesson-prediction"><div class="prediction-header">Your prediction</div><div id="prediction-content"><fieldset id="question-choices" aria-describedby="prediction-hint"><legend><h3 id="prediction-question" class="relevance-question">${scene.question}</h3></legend><p class="small">Predict where the mean estimate will move:</p><div class="relevance-choices">${Object.entries(
+        guessChoices,
+      )
         .map(
           ([value, label]) =>
             `<label><input type="radio" name="guess" value="${value}" ${guesses[step] === value ? "checked" : ""}> ${label}</label>`,
         )
         .join(
           "",
-        )}</fieldset><button id="include-measurement" class="primary" aria-pressed="false" disabled>Include the ${scene.measurement}</button><p class="small">This changes the regression adjustment, not the people, their outcomes, or the true effect.</p><p id="study-status" role="status">Preparing 60 studies…</p><p id="guess-feedback" role="status"></p></div>
-      <div id="relevance-explanation" aria-live="polite" hidden></div>
+        )}</div></fieldset><p id="prediction-hint" class="small">Choose a prediction, then include the measurement. Any choice lets you continue.</p></div></div>
+      <div class="relevance-action"><button id="include-measurement" class="primary" aria-pressed="false" disabled>Include the ${scene.measurement}</button><p class="small">This changes the regression adjustment, not the people, their outcomes, or the true effect.</p><p id="study-status" role="status">Preparing 60 studies…</p></div>
+      <div id="relevance-explanation" hidden></div>
       <div class="relevance-forward"><button id="next-relevance">Check your understanding →</button></div>
     </section>`;
     document.querySelectorAll('[name="guess"]').forEach((radio) =>
@@ -147,8 +222,14 @@ async function showStep(next, focus = true) {
       }),
     );
     el("include-measurement").addEventListener("click", () => {
+      const firstAnswer = !completed[step];
+      const anchorTop = firstAnswer
+        ? el("prediction-hint").getBoundingClientRect().top
+        : undefined;
+      completed[step] = true;
       included[step] = !included[step];
       updateResults();
+      if (firstAnswer) showGuessFeedback(anchorTop);
     });
     el("next-relevance").addEventListener("click", () => showStep(2));
     if (!cache.has(step)) {
@@ -167,11 +248,13 @@ async function showStep(next, focus = true) {
       cache.set(step, studies);
     }
     updateResults();
+    if (completed[step]) showGuessFeedback();
   }
   if (focus && current === runId) el("scene-title").focus();
 }
 
-function showAnswer() {
+function showAnswer(anchorTop) {
+  if (!answer) return;
   const responses = {
     removed:
       "Some confounding remains: the mean estimate still misses truth. A noisy proxy does not make hidden fitness identical between the treated and untreated groups.",
@@ -180,15 +263,15 @@ function showAnswer() {
     caused:
       "A proxy can help without causing the outcome. Hidden fitness causes both the test score and mobility; changing the recorded score alone would not change mobility in this graph.",
   };
-  document
-    .querySelectorAll("[data-answer]")
-    .forEach((button) =>
-      button.setAttribute(
-        "aria-pressed",
-        String(button.dataset.answer === answer),
-      ),
-    );
-  el("practice-feedback").textContent = answer ? responses[answer] : "";
+  showFeedback(
+    {
+      selected: practiceChoices[answer],
+      correct: answer === "reduced",
+      message: responses[answer],
+      practice: true,
+    },
+    anchorTop,
+  );
 }
 
 document
@@ -202,6 +285,8 @@ el("restart-relevance").addEventListener("click", () => {
   included = [false, false];
   guesses = [null, null];
   answer = null;
+  completed = [false, false];
+  collapsed = [false, false, false];
   showStep(0);
 });
 showStep(0, false);

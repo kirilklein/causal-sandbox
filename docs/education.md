@@ -5,10 +5,12 @@ follows hidden confounding at `?lesson=causal-relevance`. It starts with the
 mechanism: an unobserved confounder affects treatment, outcome, and an observed
 proxy. Adjustment for the proxy can reduce bias without eliminating it. A
 rehabilitation example then names the hidden factor (fitness) and proxy (a noisy
-fitness test). Learners include the proxy and compare the same 60 study estimates
+fitness test). Learners predict the change, include the proxy, and compare the same 60 study estimates
 before and after. A practice question distinguishes partial bias reduction from
 complete control of confounding. The predictive-collider comparison and
-prediction-error metrics remain optional supporting material. Contents, the
+prediction-error metrics remain optional supporting material. Prediction and
+practice submissions use the shared compact, collapsible feedback style; Restart
+restores unanswered choices. Contents, the
 concept map, topics, search, hidden confounding, and Timing provide entry points.
 
 The core [uncertainty lesson](uncertainty.md) follows confounding and precedes
