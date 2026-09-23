@@ -5,7 +5,10 @@ import {
   stubGoatCounter,
 } from "./browser-setup.mjs";
 import assert from "node:assert/strict";
-import { instrumentAdjustment } from "../src/instrument-simulation.js";
+import {
+  instrumentAdjustment,
+  studySummary,
+} from "../src/instrument-simulation.js";
 import { effectComparison } from "../src/effect-comparison.js";
 
 const browser = await launchBrowser();
@@ -59,6 +62,58 @@ try {
   await page.keyboard.press("Space");
   assert.equal(await results(), initial);
 
+  const instrumentSlider = page.getByLabel("Z → treatment strength");
+  assert.equal(await instrumentSlider.inputValue(), "2");
+  await instrumentSlider.focus();
+  await page.keyboard.press("ArrowLeft");
+  assert.equal(await instrumentSlider.inputValue(), "1.9");
+  assert.equal(await page.locator("#instrument-value").innerText(), "1.9");
+  await instrumentSlider.fill("0");
+  assert.match(
+    await page.locator("#instrument-status").innerText(),
+    /no effect on treatment/,
+  );
+  assert.match(
+    await page.locator("#graph").getAttribute("aria-label"),
+    /no effect on A/,
+  );
+  assert.equal(
+    await page.locator("#ipw").innerText(),
+    instrumentAdjustment({ strength: 0 }).fits[0].values[3].toFixed(3),
+  );
+  assert.notEqual(await page.locator("#uptake").innerText(), uptake);
+  await page.locator("#repeat").click();
+  await page
+    .getByRole("button", { name: "Run another 200 studies", exact: true })
+    .waitFor();
+  const zeroValues = Array.from({ length: 3 }, () => [[], []]);
+  for (let seed = 100; seed < 300; seed++) {
+    instrumentAdjustment({ seed, strength: 0 }).fits.forEach((fit, j) => {
+      [3, 2, 4].forEach((index, k) => zeroValues[k][j].push(fit.values[index]));
+    });
+  }
+  assert.deepEqual(
+    await page.locator(".sd-row strong").allTextContents(),
+    zeroValues.flatMap((pair) =>
+      pair.map((values) => studySummary(values).sd.toFixed(3)),
+    ),
+  );
+  assert.match(
+    await page.locator("#study-results").innerText(),
+    /strength 0.0/,
+  );
+  await instrumentSlider.fill("1");
+  assert.equal(await page.locator("#study-results").innerText(), "");
+  assert.equal(
+    await page.locator("#ipw").innerText(),
+    instrumentAdjustment({ strength: 1 }).fits[0].values[3].toFixed(3),
+  );
+  await page.locator("#repeat").click();
+  await instrumentSlider.fill("2");
+  assert.equal(await page.locator("#study-results").innerText(), "");
+  assert.equal(await page.locator("#study-progress").innerText(), "");
+  assert.equal(await results(), initial);
+  assert.equal(await page.locator("#uptake").innerText(), uptake);
   assert.ok(await page.locator("#repeat").isVisible());
   assert.equal(
     await page.locator("#repeat").evaluate((node) => node.closest("details")),
@@ -161,6 +216,7 @@ try {
   );
   assert.equal(await page.locator("#study-results").innerText(), "");
   assert.equal(await adjust.isVisible(), false);
+  assert.equal(await instrumentSlider.isVisible(), false);
   assert.ok(await page.locator("#hidden-node").isVisible());
   const slider = page.getByLabel("Hidden confounding strength");
   const paired = () => page.locator("#paired-results").innerText();
@@ -330,6 +386,17 @@ try {
     viewport: { width: 320, height: 850 },
     hasTouch: true,
   });
+  await touch.goto(`${url}?lesson=instrument`);
+  const touchInstrument = touch.getByLabel("Z → treatment strength");
+  await touchInstrument.tap();
+  assert.ok(Number(await touchInstrument.inputValue()) < 2);
+  await touch
+    .getByRole("button", { name: "Restart section", exact: true })
+    .click();
+  assert.equal(await touchInstrument.inputValue(), "2");
+  await touchInstrument.fill("0");
+  await touch.reload();
+  assert.equal(await touchInstrument.inputValue(), "2");
   await touch.goto(`${url}?lesson=instrument-hidden-confounding`);
   const touchSlider = touch.getByLabel("Hidden confounding strength");
   await touchSlider.tap();

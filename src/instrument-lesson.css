@@ -315,22 +315,26 @@
   color: var(--on-accent);
 }
 
-.instrument-page #hidden-control {
+.instrument-page #hidden-control,
+.instrument-page #instrument-control {
   padding: 16px 0;
   border-block: 1px solid var(--border);
 }
-.instrument-page #hidden-control label {
+.instrument-page #hidden-control label,
+.instrument-page #instrument-control label {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   font-weight: 600;
 }
-.instrument-page #hidden-strength {
+.instrument-page #hidden-strength,
+.instrument-page #instrument-strength {
   width: 100%;
   margin: 20px 0;
   accent-color: var(--accent);
 }
-.instrument-page #hidden-node.inactive path {
+.instrument-page #hidden-node.inactive path,
+.instrument-page #instrument-path.inactive {
   opacity: 0.25;
 }
 .instrument-page .paired-truth {
@@ -352,11 +356,13 @@
   }
 }
 
-.instrument-page #hidden-strength::-webkit-slider-thumb {
+.instrument-page #hidden-strength::-webkit-slider-thumb,
+.instrument-page #instrument-strength::-webkit-slider-thumb {
   width: 24px;
   height: 24px;
 }
-.instrument-page #hidden-strength::-moz-range-thumb {
+.instrument-page #hidden-strength::-moz-range-thumb,
+.instrument-page #instrument-strength::-moz-range-thumb {
   width: 24px;
   height: 24px;
 }
@@ -399,4 +405,8 @@
 }
 .instrument-page .paired-truth {
   background: var(--node-Y);
+}
+
+.instrument-page #study-detail {
+  margin-top: 24px;
 }

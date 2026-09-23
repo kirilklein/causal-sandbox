@@ -134,3 +134,49 @@ test("amplification across slider strengths depends on Z supplying treatment var
     }
   }
 });
+
+test("instrument strength preserves people and noise while changing treatment uptake", () => {
+  const baseline = instrumentAdjustment({ strength: 0 });
+  const noise = makeNoise(2400, 4217);
+  for (const strength of [0.1, 1, 2]) {
+    const { data } = instrumentAdjustment({ strength });
+    data.forEach((d, i) => {
+      assert.equal(d.C, baseline.data[i].C);
+      assert.equal(d.Z, baseline.data[i].Z);
+      assert.equal(d.Y, 2 * d.A + 1.5 * d.C + noise[i].eY);
+      if (d.Z === 0) assert.deepEqual(d, baseline.data[i]);
+      else assert.ok(d.A >= baseline.data[i].A);
+    });
+    assert.ok(data.some((d, i) => d.A !== baseline.data[i].A));
+  }
+  assert.deepEqual(instrumentAdjustment({ strength: 0 }), baseline);
+});
+
+test("precision cost grows across instrument strengths without shifting study means", () => {
+  const ratios = [];
+  for (const strength of [0, 1, 2]) {
+    const values = Array.from({ length: 2 }, () =>
+      Array.from({ length: 3 }, () => []),
+    );
+    // Separate from the first displayed batch; paired seeds across strengths.
+    for (let seed = 600; seed < 800; seed++) {
+      instrumentAdjustment({ seed, strength }).fits.forEach((fit, j) => {
+        assert.equal(fit.clipped, 0);
+        [3, 2, 4].forEach((index, k) => values[j][k].push(fit.values[index]));
+      });
+    }
+    const stats = values.map((arm) => arm.map((v) => studySummary(v)));
+    for (const arm of stats)
+      for (const result of arm) {
+        assert.equal(result.unavailable, 0);
+        assert.ok(Math.abs(result.mean - 2) < 0.015);
+      }
+    ratios.push(stats[0].map((s, k) => stats[1][k].sd / s.sd));
+  }
+  for (let k = 0; k < 3; k++) {
+    assert.ok(Math.abs(ratios[0][k] - 1) < 0.02);
+    assert.ok(ratios[1][k] > ratios[0][k]);
+    assert.ok(ratios[2][k] > ratios[1][k]);
+    assert.ok(ratios[2][k] > 1.04);
+  }
+});

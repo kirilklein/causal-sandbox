@@ -27,8 +27,9 @@ noise draws generate:
 ```text
 C = +1 if C1 > 0, otherwise -1
 Z = 1[jitter < 0.5]
-A = 1[a < sigmoid(-0.8 + 1.2 C + 2 Z + h U)]
+A = 1[a < sigmoid(-0.8 + 1.2 C + s Z + h U)]
 Y = 2 A + 1.5 C + 1.5 h U + eY
+s = 2 by default; the introduction slider ranges from 0 to 2 in steps of 0.1
 h = 0 in the introduction; h ranges from 0 to 2 in the follow-on section
 ```
 
@@ -48,6 +49,14 @@ only in the introduction. Moving the slider changes treatment/outcome mechanisms
 while retaining the same exogenous draws. Returning to zero recovers the original
 sample exactly. U never enters the analyst data or either adjustment set.
 At zero, U’s label remains readable and its inactive paths are faded.
+
+The introduction places a Z → treatment strength slider beside the repeated-study
+experiment. Strength changes retain background draws but can change treatment,
+outcomes, and uptake. Zero turns off Z’s treatment effect; any observed uptake
+difference is then due to chance. Changing strength cancels and clears study
+results and resets the batch seed to 100, so reruns at different strengths share
+background draws. Restart and section entry restore strength 2. The later
+hidden-confounding section keeps instrument strength fixed at 2.
 
 ## Repeated studies
 
