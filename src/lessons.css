@@ -499,8 +499,7 @@
   color: var(--text-secondary);
   font-size: 12px;
 }
-.lesson-explanation,
-.outcome-numbers {
+.lesson-explanation {
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }

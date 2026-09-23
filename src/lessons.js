@@ -461,7 +461,6 @@ function enter(level, focus = true, callback = false, restart = false) {
       </section>
       ${previousGraph && lesson.prediction ? graphComparison(level, revisiting, true) : ""}
       <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
-      ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
       ${
@@ -805,9 +804,6 @@ function update() {
       document.querySelector("#propensity-preview"),
       result.propensityData,
     );
-  if (state.level === 4)
-    document.querySelector("#outcome-arithmetic").innerHTML =
-      outcomeCalculation(result.outcomePredictions);
   if (state.level === 6)
     document.querySelector("#aipw-arithmetic").innerHTML = aipwCalculation(
       result.aipwContributions,
@@ -902,22 +898,6 @@ function update() {
       : "We account for C only, leaving the total treatment effect intact. Try including the new variable.";
   }
   renderLessonGraph();
-}
-
-function outcomeCalculation(predictions) {
-  const person = predictions[0];
-  const number = (value) => value.toFixed(2);
-  const average =
-    predictions.reduce((sum, row) => sum + row.contrast, 0) /
-    predictions.length;
-  return `<p>Person ${person.person} received ${person.A ? "treatment" : "no treatment"}, so only that outcome was observed. The model predicts both outcomes at the same risk score, C = ${number(person.C)}.</p>
-    <table><caption>Current predictions for person ${person.person}</caption><tbody>
-      <tr><th scope="row">With treatment, Ŷ₁(Cᵢ)</th><td>${number(person.m1)}</td></tr>
-      <tr><th scope="row">Without treatment, Ŷ₀(Cᵢ)</th><td>${number(person.m0)}</td></tr>
-      <tr><th scope="row">Predicted difference</th><td>${number(person.contrast)}</td></tr>
-    </tbody></table>
-    <p><strong>Average predicted difference:</strong> <span id="outcome-worked-effect">${number(average)}</span> across all ${predictions.length.toLocaleString("en-US")} people.</p>
-    <p class="sample-note">Values are rounded; the estimate uses full precision.</p>`;
 }
 
 function overlapPanel() {
