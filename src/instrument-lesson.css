@@ -229,68 +229,83 @@
     font-size: 12px;
   }
 }
-.instrument-page .sd-method {
-  margin: 18px 0;
+.instrument-page .study-method {
+  margin: 24px 0;
 }
-.instrument-page .sd-method-header {
+.instrument-page .study-method h4 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.instrument-page .study-row {
+  color: var(--text-secondary);
+}
+.instrument-page .study-row.with-z {
+  color: var(--accent);
+}
+.instrument-page .study-row-label {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
 }
-.instrument-page .sd-method-header h4 {
-  font-size: 14px;
-  margin: 0;
+.instrument-page .study-sd {
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
 }
-.instrument-page .sd-change {
+.instrument-page .study-cloud,
+.instrument-page .study-axis {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.instrument-page .study-dot {
+  fill: currentColor;
+  fill-opacity: 0.65;
+}
+.instrument-page .study-truth {
+  stroke: var(--text);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.instrument-page .study-range {
+  stroke: currentColor;
+  stroke-width: 3;
+}
+.instrument-page .study-axis {
+  color: var(--text-secondary);
+  font:
+    11px system-ui,
+    sans-serif;
+}
+.instrument-page .study-axis line {
+  stroke: var(--border-strong);
+}
+.instrument-page .study-axis text {
+  fill: currentColor;
+}
+.instrument-page .study-key {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   font-size: 12px;
   color: var(--text-secondary);
 }
-.instrument-page .sd-row {
-  display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) 52px;
-  gap: 12px;
+.instrument-page .study-key > span {
+  display: inline-flex;
   align-items: center;
-  margin: 5px 0;
+  gap: 8px;
 }
-.instrument-page .sd-label {
-  font-size: 13px;
+.instrument-page .study-truth-key {
+  height: 16px;
+  border-left: 2px dashed var(--text);
 }
-.instrument-page .sd-track {
-  display: block;
-  height: 22px;
-  border-left: 1px solid var(--border-strong);
-}
-.instrument-page .sd-bar {
-  display: block;
-  height: 100%;
-  min-width: 1px;
-  border: 1px solid var(--border);
-  border-radius: 0 3px 3px 0;
-  background: color-mix(
-    in srgb,
-    var(--error-surface) var(--sd-tint),
-    var(--surface)
-  );
-}
-.instrument-page .sd-row strong {
-  font-size: 18px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-@media (max-width: 560px) {
-  .instrument-page .sd-row {
-    grid-template-columns: 64px minmax(0, 1fr) 44px;
-    gap: 7px;
-  }
-  .instrument-page .sd-label {
-    font-size: 12px;
-  }
-  .instrument-page .sd-row strong {
-    font-size: 16px;
-  }
+.instrument-page .study-range-key {
+  width: 22px;
+  border-top: 3px solid var(--text-secondary);
 }
 .instrument-page h3 {
   font-size: 16px;

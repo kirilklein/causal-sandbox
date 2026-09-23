@@ -62,7 +62,7 @@ hidden-confounding section keeps instrument strength fixed at 2.
 
 A visible next step after the single-sample comparison runs paired comparisons
 across 200 independent studies. The introduction distinguishes one estimate’s
-error from variability across studies; SD bars and their interpretation appear
+error from variability across studies; study-estimate clouds and their interpretation appear
 in the main learning path. Its mechanism explanation, means, and RMSE remain
 optional. The later hidden-confounding section retains its separate bias question.
 Later runs advance to the next seed batch. Each fit uses the same data as its
@@ -72,15 +72,18 @@ results; changing strength does the same, restarting the seed batches at 100.
 The next run uses the selected strength. Section links navigate to a fresh page. Returning from the browser's
 page cache also restores the section baseline.
 
-In the introduction, the main result shows compact stacked SD bars with shared origins and a fixed
-0–0.100 scale. Within each method, the smaller SD is nearly white and additional
-spread gets a pale red tint. The rule follows the values, not the adjustment
-labels. Numeric SD and relative change are retained; visual saturation is
-explicit. Means and RMSE are in optional detail. SD uses B - 1; RMSE uses B.
-Unavailable estimates are counted and excluded explicitly from the summaries.
-These are sampling summaries, not confidence intervals. A new batch can show
-different means and relative spread; variance alone does not imply that every
-estimate or every absolute-error comparison worsens.
+In the introduction, each method shows paired clouds of the 200 study estimates,
+with and without Z. Every dot’s horizontal position is its actual estimate;
+deterministic vertical spacing only separates dots. A dashed line marks truth
+at 2, and segments span the empirical 5th–95th percentiles (linear interpolation).
+These ranges describe the middle 90% of study estimates, not confidence intervals.
+All six rows share an effect axis, initially 1.75–2.25; it expands symmetrically
+in 0.25-unit steps if needed to keep all finite estimates visible.
+
+SD remains beside each row; means and RMSE are in optional detail. SD uses B - 1;
+RMSE uses B. Unavailable estimates are counted and excluded explicitly from the
+summaries and dots. A new batch can show different means and spread; variance
+alone does not imply that every estimate or absolute-error comparison worsens.
 
 In the follow-on section, mean estimates and signed mean-minus-truth values
 lead the repeated-study results, including the signed change after adding Z.
@@ -104,7 +107,7 @@ data separation, reproducibility, and hand-calculated SD/RMSE.
 
 Browser checks cover direct links and core navigation, unchanged uptake under
 adjustment, independent batches, reset/cancellation, theme invariance, aligned
-bars and tint ordering, optional means, and phone layout. Successful automated
+effect axes, study dots, and empirical ranges, optional means, and phone layout. Successful automated
 checks do not establish learner comprehension or screen-reader usability.
 
 Broader lesson scope remains tracked in [#38](https://github.com/kirilklein/causal-sandbox/issues/38).

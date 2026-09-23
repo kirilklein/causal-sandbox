@@ -1,4 +1,5 @@
 import "./instrument-lesson.css";
+import { studyDistributions } from "./instrument-study-view.js";
 import { themeControl } from "./theme.js";
 import { effectComparison } from "./effect-comparison.js";
 import icon from "./brand.svg?raw";
@@ -425,27 +426,8 @@ el("repeat").addEventListener("click", async () => {
     }
     if (current !== runId) return;
     const stats = values.map((arm) => arm.map((v) => studySummary(v)));
-    // Bar lengths share a fixed scale; tint compares SD within each pair.
-    const sdLimit = 0.1;
-    const sdRow = (sd, other, label) => {
-      const width = Number.isFinite(sd) ? Math.min(sd / sdLimit, 1) * 100 : 0;
-      const extra =
-        Number.isFinite(sd) && Number.isFinite(other) && sd > other
-          ? other > 0
-            ? 100 * (sd / other - 1)
-            : 27
-          : 0;
-      const tint = 1 + Math.min(extra, 27);
-      return `<div class="sd-row"><span class="sd-label">${label}</span><span class="sd-track" aria-hidden="true"><span class="sd-bar" style="width:${width}%;--sd-tint:${tint}%"></span></span><strong>${fmt(sd)}</strong></div>`;
-    };
-    const change = (before, after) => {
-      if (!Number.isFinite(before) || !Number.isFinite(after) || before === 0)
-        return "Change unavailable";
-      const percent = 100 * (after / before - 1);
-      return `${percent > 0 ? "+" : ""}${percent.toFixed(0)}% SD`;
-    };
     const spread =
-      `<h3>How much do estimates vary?</h3><p class="small">SD across 200 studies at Z → treatment strength ${strength.toFixed(1)}. Both analyses adjust for C; the second also adds Z.</p><div class="sd-comparison">${names.map((name, k) => `<section class="sd-method" aria-label="${name} standard deviation"><div class="sd-method-header"><h4>${name}</h4><span class="sd-change">${change(stats[0][k].sd, stats[1][k].sd)} with Z</span></div>${sdRow(stats[0][k].sd, stats[1][k].sd, "Without Z")}${sdRow(stats[1][k].sd, stats[0][k].sd, "With Z")}</section>`).join("")}</div><p class="small">Bars share a 0–0.100 SD scale. Light red marks extra spread within each pair. Seeds ${start}–${start + 199}.${stats.flat().some((s) => s.sd > sdLimit) ? " Bars stop at 0.100; numbers retain the full SD." : ""}</p>` +
+      `<h3>How much do estimates vary?</h3><p class="small">Each dot is one study’s estimate. Compare the widths with and without Z: a wider cloud means less precision.</p><p class="study-key"><span><span class="study-truth-key"></span> True effect: 2</span><span><span class="study-range-key"></span> Middle 90% of estimates</span></p>${studyDistributions(values, stats, names, start)}<p class="small">The ranges span the 5th–95th percentiles across studies, not confidence intervals. Vertical position only separates dots. All plots share the same effect axis.</p><p class="small">200 studies · Z → treatment strength ${strength.toFixed(1)} · Seeds ${start}–${start + 199}.</p>` +
       (state.step === 1
         ? `<details id="study-means"><summary>Are estimates still centered near truth?</summary><p>The mean shows where estimates are centered; the true total effect is 2. ${hidden ? "Here U creates bias, so greater spread is only part of the error." : "With confounding controlled and correctly specified models, both analyses are centered near truth across repeated studies. Compare the observed spread above; adding Z need not increase it in every batch or at every strength."}</p><table><thead><tr><th>Mean estimate</th><th>Without Z</th><th>With Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].mean)}</td><td>${fmt(stats[1][k].mean)}</td></tr>`).join("")}</tbody></table></details>`
         : "") +

@@ -9,6 +9,7 @@ import {
   instrumentAdjustment,
   studySummary,
 } from "../src/instrument-simulation.js";
+import { studyRange } from "../src/instrument-study-view.js";
 import { effectComparison } from "../src/effect-comparison.js";
 
 const browser = await launchBrowser();
@@ -93,7 +94,9 @@ try {
     });
   }
   assert.deepEqual(
-    await page.locator(".sd-row strong").allTextContents(),
+    (await page.locator(".study-sd").allTextContents()).map((s) =>
+      s.replace("SD ", ""),
+    ),
     zeroValues.flatMap((pair) =>
       pair.map((values) => studySummary(values).sd.toFixed(3)),
     ),
@@ -102,6 +105,16 @@ try {
     await page.locator("#study-results").innerText(),
     /strength 0.0/,
   );
+  await instrumentSlider.fill("0.3");
+  await page.locator("#repeat").click();
+  await page
+    .getByRole("button", { name: "Run another 200 studies", exact: true })
+    .waitFor();
+  await page.getByLabel("Color theme").selectOption("dark");
+  await page
+    .locator("#study-results")
+    .screenshot({ path: "/tmp/instruments-dots-weak-dark.png" });
+  await page.getByLabel("Color theme").selectOption("light");
   await instrumentSlider.fill("1");
   assert.equal(await page.locator("#study-results").innerText(), "");
   assert.equal(
@@ -131,20 +144,50 @@ try {
     await page.locator("#study-results").innerText(),
     /Seeds 100–299/,
   );
-  assert.equal(await page.locator(".sd-method").count(), 3);
+  assert.equal(await page.locator(".study-method").count(), 3);
   assert.equal(await page.locator("#study-means").getAttribute("open"), null);
-  const bars = await page.locator(".sd-bar").evaluateAll((nodes) =>
-    nodes.map((n) => ({
-      x: n.getBoundingClientRect().x,
-      width: n.getBoundingClientRect().width,
-      tint: parseFloat(n.style.getPropertyValue("--sd-tint")),
-    })),
-  );
-  for (let i = 0; i < 6; i += 2) {
-    assert.equal(bars[i].x, bars[i + 1].x);
-    assert.equal(bars[i].tint, 1);
-    assert.ok(bars[i + 1].tint > 1 && bars[i + 1].tint <= 28);
-    assert.ok(bars[i + 1].width > bars[i].width);
+  const expectedDots = Array.from({ length: 3 }, () => [[], []]);
+  for (let seed = 100; seed < 300; seed++) {
+    instrumentAdjustment({ seed }).fits.forEach((fit, j) => {
+      [3, 2, 4].forEach((index, k) =>
+        expectedDots[k][j].push(fit.values[index]),
+      );
+    });
+  }
+  const clouds = page.locator(".study-cloud");
+  assert.equal(await clouds.count(), 6);
+  for (let i = 0; i < 6; i++) {
+    const cloud = clouds.nth(i);
+    const values = expectedDots.flat()[i];
+    const actual = await cloud
+      .locator(".study-dot")
+      .evaluateAll((dots) => dots.map((dot) => Number(dot.dataset.estimate)));
+    assert.equal(actual.length, values.length);
+    actual.forEach((value, j) =>
+      assert.ok(Math.abs(value - values[j]) < 1e-10),
+    );
+    const range = cloud.locator(".study-range");
+    const endpoints = [
+      Number(await range.getAttribute("data-low")),
+      Number(await range.getAttribute("data-high")),
+    ];
+    const expectedRange = studyRange(values);
+    endpoints.forEach((value, j) =>
+      assert.ok(Math.abs(value - expectedRange[j]) < 1e-10),
+    );
+    assert.equal(await cloud.getAttribute("data-min"), "1.75");
+    assert.equal(await cloud.getAttribute("data-max"), "2.25");
+    assert.equal(await cloud.locator(".study-truth").getAttribute("x1"), "50%");
+    const dots = await cloud.locator(".study-dot").evaluateAll((nodes) =>
+      nodes.map((n) => ({
+        x: parseFloat(n.getAttribute("cx")),
+        value: Number(n.dataset.estimate),
+      })),
+    );
+    for (const dot of dots) {
+      assert.ok(Math.abs(dot.x - (4 + (92 * (dot.value - 1.75)) / 0.5)) < 1e-9);
+      assert.ok(dot.x >= 4 && dot.x <= 96);
+    }
   }
   await page
     .locator("#study-results")
