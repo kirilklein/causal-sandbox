@@ -14,9 +14,13 @@
   flex-wrap: wrap;
 }
 .tmle-diagnostics {
+  display: grid;
+  gap: 20px;
   margin-top: 24px;
-  padding-top: 4px;
+}
+.tmle-diagnostics > section + section {
   border-top: 1px solid var(--border);
+  padding-top: 4px;
 }
 .tmle-correction-readout {
   gap: 24px;

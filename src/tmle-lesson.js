@@ -42,23 +42,34 @@ export function tmlePath(rows, fraction) {
 function tmleControls() {
   return `<label for="targeting-progress">Apply the fitted update <output id="targeting-output">0%</output></label>
     <input id="targeting-progress" type="range" min="0" max="100" step="1" value="0" aria-describedby="targeting-help">
-    <div class="tmle-control-row"><span id="targeting-help" class="sample-note">0%: original predictions · 100%: TMLE</span><button id="apply-targeting">Apply full update</button></div>`;
+    <div class="tmle-control-row"><span id="targeting-help" class="sample-note">0%: no update · 1–99%: partial · 100%: full TMLE update</span><button id="apply-targeting">Apply full update</button></div>`;
 }
 
-export function tmlePanel() {
-  return `<section class="tmle-diagnostics" aria-labelledby="tmle-correction-title">
-    <h3 id="tmle-correction-title">The correction left to make</h3>
-    <p class="sample-note">The observed data determine the update. The slider below shows how the predictions change as we apply it.</p>
-    <div class="tmle-correction-readout" aria-live="polite" aria-atomic="true"><span>Before <strong id="tmle-before-correction"></strong></span><span aria-hidden="true">→</span><span>Now <strong id="tmle-current-correction"></strong></span></div>
-    <p class="sample-note">Average signed, propensity-weighted prediction error, in outcome units. Full targeting brings this to zero.</p>
-    <p id="tmle-status" role="status"></p>
+export function tmlePanel(effectResults) {
+  return `<section class="tmle-diagnostics" aria-label="Targeting experiment">
+    <section aria-labelledby="tmle-update-title">
+      <h3 id="tmle-update-title">1. Apply the fitted update</h3>
+      <p class="sample-note">The observed data determine the update. Move the slider to apply it to the predictions.</p>
+      <div class="lesson-controls">${tmleControls()}</div>
+      <p id="tmle-status" role="status"></p>
+    </section>
     <section class="tmle-curve-panel" aria-labelledby="tmle-prediction-title">
-    <h3 id="tmle-prediction-title">How the predictions change</h3>
-    <div class="lesson-controls">${tmleControls()}</div>
-    <div class="tmle-legend"><span><i class="tmle-key-before"></i>Before targeting</span><span><i class="tmle-key-current"></i>Current predictions</span></div>
-    <p class="sample-note">Each panel assumes everyone receives the treatment shown. Here, p is the fitted chance of treatment.</p>
-    <div id="tmle-predictions" class="tmle-predictions"></div>
-    <p class="sample-note">Observed prediction errors set the update’s direction. Treatment probabilities shape the bends. The target is the average effect, so individual predictions need not improve.</p>
+      <h3 id="tmle-prediction-title">2. Watch the predictions change</h3>
+      <div class="tmle-legend"><span><i class="tmle-key-before"></i>Before targeting</span><span><i class="tmle-key-current"></i>Current predictions</span></div>
+      <p class="sample-note">Each panel assumes everyone receives the treatment shown. Here, p is the fitted chance of treatment.</p>
+      <div id="tmle-predictions" class="tmle-predictions"></div>
+      <p class="sample-note">Observed prediction errors set the update’s direction. Treatment probabilities shape the bends. The target is the average effect, so individual predictions need not improve.</p>
+    </section>
+    <section aria-labelledby="tmle-correction-title">
+      <h3 id="tmle-correction-title">3. Check the remaining weighted error</h3>
+      <div class="tmle-correction-readout" aria-live="polite" aria-atomic="true"><span>Before <strong id="tmle-before-correction"></strong></span><span aria-hidden="true">→</span><span>Now <strong id="tmle-current-correction"></strong></span></div>
+      <p class="sample-note">Average signed, propensity-weighted prediction error, in outcome units. Full targeting brings this to zero.</p>
+      <p class="sample-note tmle-validity-note">A zero weighted error does not prove causal validity or guarantee an unbiased estimate.</p>
+    </section>
+    <section aria-labelledby="tmle-effect-title">
+      <h3 id="tmle-effect-title">4. Read the effect from the updated predictions</h3>
+      <p class="sample-note">Average each person’s predicted outcome with treatment minus their prediction without treatment. At 100%, this is the TMLE estimate.</p>
+      ${effectResults}
     </section>
   </section>`;
 }
@@ -176,10 +187,10 @@ export function renderTmle(rows, fraction, clipped) {
   document.querySelector("#tmle-status").textContent = !available
     ? "Targeting is unavailable for this sample. Redraw to try another sample."
     : fraction === 1
-      ? "Targeting complete: the average weighted error is zero, up to numerical rounding. This does not guarantee an unbiased estimate."
+      ? "Full update applied: the weighted error is zero, up to numerical rounding. The effect below is now the TMLE estimate."
       : fraction === 0
-        ? "Before and Now match because no update has been applied yet. Move the slider below toward 100%, or select Apply full update, to apply the fitted change to the predictions."
-        : "The update is partly applied. Move the slider below to 100%, or select Apply full update, to finish targeting.";
+        ? "No update applied: the current curves match the original predictions, and their average contrast is the outcome-regression estimate."
+        : "Partial update applied: the current curves, weighted error, and effect below reflect this fraction of the fitted update.";
   document.querySelector("#tmle-predictions").innerHTML = available
     ? predictionPlots(rows, view)
     : "";
