@@ -8,6 +8,7 @@ import {
 import { frontDoorPopulation, reconstructFrontDoor } from "./front-door.js";
 import {
   frontDoorGraph,
+  frontDoorFormulas,
   frontDoorWorlds,
   probabilityBar,
   effectPlot,
@@ -44,7 +45,7 @@ document.querySelector("#app").innerHTML =
       <nav class="fd-actions" aria-label="Move through experiment"><button id="fd-back">← Back</button><span id="fd-position"></span><button id="fd-next" class="primary"></button></nav>
     </section>
     <details class="fd-details"><summary>The four front-door conditions</summary><ol><li>Every causal path from A to Y passes through M.</li><li>There is no open back-door path from A to M.</li><li>Conditioning on A blocks every back-door path from M to Y.</li><li>The A/M combinations needed for both averages occur in the data.</li></ol><p>These conditions describe the assumed causal structure and support. An observed association or a successful fit cannot establish the graph. Consistency and no interference are also assumed.</p></details>
-    <details class="fd-details"><summary>The formula, connected to the pictures</summary><p>For binary Y, let r(m) = Σ<sub>a′</sub> P(Y=1 | M=m, A=a′) P(A=a′). The second relationship averages the within-group pass rates over the population’s tutoring mix.</p><p class="fd-formula">P(Y=1 | do(A=a)) = Σ<sub>m</sub> P(M=m | A=a) r(m)</p><p>The final reconstruction averages those responses over the practice mix produced by tutoring or no tutoring. Subtract the two risks to get the total effect. The a′ in the inner average ranges over both observed groups, regardless of the intervention a.</p><p>Simply adjusting Y for A and M and reading off A’s coefficient does not perform this reconstruction. Holding M fixed blocks the mediated route we want to include.</p></details>
+    <details id="fd-formulas" class="fd-details"><summary>The formula, connected to the pictures</summary>${frontDoorFormulas()}<p>Simply adjusting Y for A and M and reading off A’s coefficient does not perform this reconstruction. Holding M fixed blocks the mediated route we want to include.</p></details>
     <details class="fd-details"><summary>Model and source</summary><p>This is an invented example, not evidence about tutoring. U, A, M and Y are binary with independent background randomness. P(U=1)=0.5; P(A=1|U)=0.5+s(U−0.5); P(M=1|A)=0.2+0.5A; P(Y=1|M,U)=0.1+0.4M+0.3U. Initially s=0.6.</p><p>The direct-path world adds 0.15A to the outcome probability. The hidden-mediator-cause world adds 0.2U to the practice probability. The no-overlap world sets M=A. Truth comes from intervening on A in each model. The reconstruction receives only the observed A/M/Y distribution.</p><p>Exact enumeration isolates identification. In finite studies the probabilities must be estimated, adding sampling error and possibly model error.</p><p><a href="https://bayes.cs.ucla.edu/PRIMER/primer-ch3.pdf">Pearl, Glymour & Jewell, Causal Inference in Statistics: A Primer</a>, §3.4, definition and theorem 3.4.1.</p></details>
     <nav class="fd-footer" aria-label="Continue learning"><button id="fd-restart">Restart lesson</button><a href="?lesson=hidden-confounding">← Hidden confounding</a><a href="?lesson=topics">All topics</a><a href="?lesson=misspecification">Resume core lessons →</a></nav>
   </main></div>`;

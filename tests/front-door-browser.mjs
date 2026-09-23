@@ -122,6 +122,44 @@ try {
           });
         }
       }
+      const slider = page.locator("#fd-selection");
+      assert.ok(
+        await slider.evaluate((node) => {
+          const style = getComputedStyle(node);
+          return (
+            parseFloat(style.height) >= 6 &&
+            style.backgroundColor !== "rgba(0, 0, 0, 0)"
+          );
+        }),
+        `Slider has a visible track at ${width}/${theme}`,
+      );
+      await slider.scrollIntoViewIfNeeded();
+      const track = await slider.boundingBox();
+      await page.mouse.click(
+        track.x + track.width / 2,
+        track.y + track.height / 2,
+      );
+      await expect(slider).toHaveValue("0.4");
+      await expect(page.locator("#fd-selection-value")).toHaveText("0.4");
+      await page.locator("#fd-formulas > summary").click();
+      await expect(page.locator("#fd-formulas [role=math]")).toHaveCount(2);
+      assert.ok(
+        await page.locator("#fd-formulas").evaluate((node) => {
+          const bounds = node.getBoundingClientRect();
+          return (
+            node.scrollWidth <= node.clientWidth &&
+            [...node.querySelectorAll("math")].every((math) => {
+              const box = math.getBoundingClientRect();
+              return box.left >= bounds.left && box.right <= bounds.right;
+            })
+          );
+        }),
+        `Typeset equations fit at ${width}/${theme}`,
+      );
+      await page.locator("#fd-formulas").screenshot({
+        path: `test-results/front-door/${width}-${theme}-formulas.png`,
+      });
+      await page.locator("#fd-formulas > summary").click();
     }
   }
   await page.locator("#fd-restart").click();

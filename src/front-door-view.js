@@ -2,6 +2,24 @@ export const percent = (value) => `${(100 * value).toFixed(0)}%`;
 export const points = (value) =>
   `${(100 * value).toFixed(1).replace(/\.0$/, "")} pp`;
 
+export function frontDoorFormulas() {
+  return `<div class="fd-formula-block">
+    <h3>Average the within-group responses</h3>
+    <div class="fd-formula" role="math" aria-label="r of m equals the sum over a prime of P of Y equals 1 given M equals m and A equals a prime, times P of A equals a prime">
+      <math aria-hidden="true"><mi>r</mi><mo stretchy="false">(</mo><mi>m</mi><mo stretchy="false">)</mo><mo>=</mo></math>
+      <math aria-hidden="true"><munder><mo>∑</mo><msup><mi>a</mi><mo>′</mo></msup></munder><mi mathvariant="normal">P</mi><mo stretchy="false">(</mo><mi>Y</mi><mo>=</mo><mn>1</mn><mo>∣</mo><mi>M</mi><mo>=</mo><mi>m</mi><mo>,</mo><mi>A</mi><mo>=</mo><msup><mi>a</mi><mo>′</mo></msup><mo stretchy="false">)</mo></math>
+      <math aria-hidden="true"><mo>·</mo><mi mathvariant="normal">P</mi><mo stretchy="false">(</mo><mi>A</mi><mo>=</mo><msup><mi>a</mi><mo>′</mo></msup><mo stretchy="false">)</mo></math>
+    </div>
+    <p>Average the pass rates at practice level <math><mi>m</mi></math> over the population’s tutoring mix. Here <math><msup><mi>a</mi><mo>′</mo></msup></math> ranges over both observed groups.</p>
+    <h3>Rebuild the intervention risk</h3>
+    <div class="fd-formula" role="math" aria-label="P of Y equals 1 under do A equals a, equals the sum over m of P of M equals m given A equals a, times r of m">
+      <math aria-hidden="true"><mi mathvariant="normal">P</mi><mo stretchy="false">(</mo><mi>Y</mi><mo>=</mo><mn>1</mn><mo>∣</mo><mi mathvariant="normal">do</mi><mo stretchy="false">(</mo><mi>A</mi><mo>=</mo><mi>a</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo><mo>=</mo></math>
+      <math aria-hidden="true"><munder><mo>∑</mo><mi>m</mi></munder><mi mathvariant="normal">P</mi><mo stretchy="false">(</mo><mi>M</mi><mo>=</mo><mi>m</mi><mo>∣</mo><mi>A</mi><mo>=</mo><mi>a</mi><mo stretchy="false">)</mo><mo>·</mo><mi>r</mi><mo stretchy="false">(</mo><mi>m</mi><mo stretchy="false">)</mo></math>
+    </div>
+    <p>Weight those responses by the practice mix under each tutoring choice. Subtract the risk for <math><mi>a</mi><mo>=</mo><mn>0</mn></math> from the risk for <math><mi>a</mi><mo>=</mo><mn>1</mn></math> to get the total effect.</p>
+  </div>`;
+}
+
 export const frontDoorWorlds = {
   valid: {
     label: "Front-door assumptions hold",
