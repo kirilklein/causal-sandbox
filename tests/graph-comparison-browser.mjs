@@ -135,6 +135,55 @@ try {
   await page.locator("#opening-next").waitFor();
   assert.match(await page.locator("h1").innerText(), /How uncertain/);
 
+  // Method lessons keep context compact and the experiment on the current setup.
+  for (const width of [1280, 375, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const slug of [
+      "outcome-regression",
+      "misspecification",
+      "double-robustness",
+      "tmle",
+    ]) {
+      await page.goto(`${url}?lesson=${slug}`);
+      const context = page.locator("#lesson-graph.method-context");
+      await context.waitFor();
+      assert.equal(await toggle.count(), 0);
+      assert.match(await context.innerText(), /adjust for risk score C/);
+      assert.match(await context.innerText(), /whole population/);
+      const layout = await page.evaluate(() => {
+        const graph = document.querySelector("#lesson-graph");
+        const instruction = document.querySelector(".lesson-instruction");
+        return {
+          graphHeight: graph.querySelector("svg").getBoundingClientRect()
+            .height,
+          inOrder:
+            graph.getBoundingClientRect().bottom <=
+            instruction.getBoundingClientRect().top,
+          overflows: document.documentElement.scrollWidth > innerWidth,
+        };
+      });
+      assert.ok(
+        layout.graphHeight <= 91,
+        `${slug}: compact graph at ${width}px`,
+      );
+      assert.ok(layout.inOrder, `${slug}: context precedes instruction`);
+      assert.equal(layout.overflows, false, `${slug}: no horizontal overflow`);
+      const initial = await experiment();
+      await page.locator("#redraw").focus();
+      await page.keyboard.press("Enter");
+      assert.notEqual((await experiment()).sample, initial.sample);
+      assert.equal(await toggle.count(), 0);
+      await page.locator("#restart").focus();
+      await page.keyboard.press("Enter");
+      assert.deepEqual(await experiment(), initial);
+      if (width !== 320)
+        await page.screenshot({
+          path: `/tmp/266-${slug}-${width}.png`,
+          fullPage: true,
+        });
+    }
+  }
+
   // Check every core comparison at phone width, including stable geometry and
   // a fixed graph position when lesson titles wrap to different heights.
   await page.setViewportSize({ width: 320, height: 740 });
@@ -142,13 +191,9 @@ try {
   const transitions = [
     ["confounding", "A randomized experiment"],
     ["ipw", "A common cause"],
-    ["outcome-regression", "Adjustment with IPW"],
     ["mediator", "Adjustment with an outcome model"],
     ["collider", "A mediator"],
     ["hidden-confounding", "A collider"],
-    ["misspecification", "A hidden common cause"],
-    ["double-robustness", "When a model is too simple"],
-    ["tmle", "Double robustness"],
     ["overlap", "Targeting with TMLE"],
     ["double-robustness&revisit=hidden-confounding", "Double robustness"],
   ];
