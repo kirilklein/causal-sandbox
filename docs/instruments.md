@@ -63,16 +63,20 @@ hidden-confounding section keeps instrument strength fixed at 2.
 A visible next step after the single-sample comparison runs paired comparisons
 across 200 independent studies. The introduction distinguishes one estimate’s
 error from variability across studies; study-estimate clouds and their interpretation appear
-in the main learning path. Its mechanism explanation, means, and RMSE remain
-optional. The later hidden-confounding section retains its separate bias question.
+in the main learning path. Its mechanism explanation and means remain optional. The later hidden-confounding section retains its separate bias question.
 Later runs advance to the next seed batch. Each fit uses the same data as its
-paired alternative. Runs yield to the UI every ten studies, report progress,
-and preserve the single-study results. Restart cancels the run and clears its
+paired alternative. Runs yield to the UI every ten studies, announce progress to assistive technology,
+and preserve the single-study results. The introduction then reveals the paired
+estimates over four seconds, with a fixed axis determined from the full batch.
+The middle-90% ranges and SD appear after the reveal. Reduced-motion mode shows
+the completed plot immediately. Restart and strength changes cancel both computation
+and the reveal; pending completion cannot restore stale results. Restart cancels the run and clears its
 results; changing strength does the same, restarting the seed batches at 100.
 The next run uses the selected strength. Section links navigate to a fresh page. Returning from the browser's
 page cache also restores the section baseline.
 
-In the introduction, each method shows paired clouds of the 200 study estimates,
+In the introduction, IPW shows paired clouds of the 200 study estimates by default.
+“Compare other estimators” reveals outcome regression and AIPW,
 with and without Z. Every dot’s horizontal position is its actual estimate;
 deterministic vertical spacing only separates dots. A dashed line marks truth
 at 2, and segments span the empirical 5th–95th percentiles (linear interpolation).
@@ -80,15 +84,15 @@ These ranges describe the middle 90% of study estimates, not confidence interval
 All six rows share an effect axis, initially 1.75–2.25; it expands symmetrically
 in 0.25-unit steps if needed to keep all finite estimates visible.
 
-SD remains beside each row; means and RMSE are in optional detail. SD uses B - 1;
-RMSE uses B. Unavailable estimates are counted and excluded explicitly from the
+SD remains beside each row; means are in optional detail. SD uses B - 1.
+The RMSE table is removed; the simulation’s RMSE calculation is unchanged. Unavailable estimates are counted and excluded explicitly from the
 summaries and dots. A new batch can show different means and spread; variance
 alone does not imply that every estimate or absolute-error comparison worsens.
 
 In the follow-on section, mean estimates and signed mean-minus-truth values
 lead the repeated-study results, including the signed change after adding Z.
 Moving farther from truth establishes amplification in that batch; a positive
-signed change alone does not. SD and RMSE remain optional. Single-sample estimates
+signed change alone does not. Sampling spread remains optional. Single-sample estimates
 are not labeled bias. The explanation distinguishes the residual bias with C only
 from its amplification after adding Z, without claiming every sample must worsen.
 

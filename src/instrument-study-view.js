@@ -37,12 +37,11 @@ export function studyDistributions(values, stats, names, start) {
   ).join(
     "",
   )}<text x="50%" y="38" text-anchor="middle">Estimated treatment effect</text></svg>`;
-  return `<div class="study-distributions">${names
-    .map(
-      (
-        name,
-        k,
-      ) => `<section class="study-method" aria-label="${name} study estimates">
+  const plots = names.map(
+    (
+      name,
+      k,
+    ) => `<section class="study-method" aria-label="${name} study estimates">
     <h4>${name}</h4>
     ${["Without Z", "With Z"]
       .map((label, j) => {
@@ -65,7 +64,7 @@ export function studyDistributions(values, stats, names, start) {
                 52 *
                   (((i * 73) % estimates.length) /
                     Math.max(1, estimates.length - 1));
-              return `<circle class="study-dot" cx="${x(value)}%" cy="${y}" r="2.5" data-estimate="${value}"><title>Study ${start + i}: ${value.toFixed(3)}</title></circle>`;
+              return `<circle class="study-dot" cx="${x(value)}%" cy="${y}" r="2.5" style="--study-order:${i}" data-estimate="${value}"><title>Study ${start + i}: ${value.toFixed(3)}</title></circle>`;
             })
             .join("")}
           ${range ? `<g class="study-range" data-low="${range[0]}" data-high="${range[1]}"><title>Middle 90% of study estimates: ${interval}</title><line x1="${x(range[0])}%" x2="${x(range[1])}%" y1="79" y2="79"/><line x1="${x(range[0])}%" x2="${x(range[0])}%" y1="74" y2="84"/><line x1="${x(range[1])}%" x2="${x(range[1])}%" y1="74" y2="84"/></g>` : ""}
@@ -75,6 +74,6 @@ export function studyDistributions(values, stats, names, start) {
       .join("")}
     ${axis}
   </section>`,
-    )
-    .join("")}</div>`;
+  );
+  return `<div class="study-distributions">${plots[0]}${plots.length > 1 ? `<details id="study-other-methods" class="study-summary"><summary>Compare other estimators</summary>${plots.slice(1).join("")}</details>` : ""}</div>`;
 }

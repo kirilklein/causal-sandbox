@@ -84,9 +84,69 @@ try {
   );
   assert.notEqual(await page.locator("#uptake").innerText(), uptake);
   await page.locator("#repeat").click();
+  await page.waitForFunction(() => {
+    const dots = document.querySelectorAll(
+      ".study-distributions > .study-method .study-row:first-of-type .study-dot",
+    );
+    return (
+      dots.length === 200 &&
+      Number(getComputedStyle(dots[0]).opacity) > 0 &&
+      Number(getComputedStyle(dots[199]).opacity) === 0
+    );
+  });
+  const plotBeforeReveal = await page
+    .locator(".study-distributions > .study-method .study-dot")
+    .evaluateAll((dots) =>
+      dots.map((dot) => [dot.getAttribute("cx"), dot.getAttribute("cy")]),
+    );
+  const pairOpacity = await page
+    .locator(".study-distributions > .study-method .study-cloud")
+    .evaluateAll((clouds) =>
+      clouds.map((cloud) =>
+        [...cloud.querySelectorAll(".study-dot")].map(
+          (dot) => getComputedStyle(dot).opacity,
+        ),
+      ),
+    );
+  assert.deepEqual(pairOpacity[0], pairOpacity[1]);
+  assert.equal(await page.locator(".study-range").first().isVisible(), false);
+  assert.equal(
+    await page.locator("#study-results").getAttribute("aria-busy"),
+    "true",
+  );
+  assert.equal(
+    await page
+      .locator("#study-progress")
+      .evaluate((node) => getComputedStyle(node).clipPath),
+    "inset(50%)",
+  );
+  await page.locator("#study-results").screenshot({
+    path: "/tmp/instruments-dots-appearing.png",
+    animations: "allow",
+  });
   await page
     .getByRole("button", { name: "Run another 200 studies", exact: true })
     .waitFor();
+  assert.deepEqual(
+    await page
+      .locator(".study-distributions > .study-method .study-dot")
+      .evaluateAll((dots) =>
+        dots.map((dot) => [dot.getAttribute("cx"), dot.getAttribute("cy")]),
+      ),
+    plotBeforeReveal,
+  );
+  assert.equal(await page.locator(".study-range").first().isVisible(), true);
+  assert.equal(
+    await page.locator("#study-results").getAttribute("aria-busy"),
+    "false",
+  );
+  assert.equal(await page.locator(".study-method:visible").count(), 1);
+  assert.equal(
+    await page.locator("#study-other-methods").getAttribute("open"),
+    null,
+  );
+  assert.doesNotMatch(await page.locator("#study-results").innerText(), /RMSE/);
+
   const zeroValues = Array.from({ length: 3 }, () => [[], []]);
   for (let seed = 100; seed < 300; seed++) {
     instrumentAdjustment({ seed, strength: 0 }).fits.forEach((fit, j) => {
@@ -122,6 +182,7 @@ try {
     instrumentAdjustment({ strength: 1 }).fits[0].values[3].toFixed(3),
   );
   await page.locator("#repeat").click();
+  await page.locator("#study-results.studies-animating").waitFor();
   await instrumentSlider.fill("2");
   assert.equal(await page.locator("#study-results").innerText(), "");
   assert.equal(await page.locator("#study-progress").innerText(), "");
@@ -195,6 +256,12 @@ try {
   await page
     .locator("#study-detail")
     .screenshot({ path: "/tmp/instruments-flow-desktop.png" });
+  const compareMethods = page.locator("#study-other-methods summary");
+  await compareMethods.focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator(".study-method:visible").count(), 3);
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator(".study-method:visible").count(), 1);
   const studyResult = await page.locator("#study-results").innerText();
   await page.getByLabel("Color theme").selectOption("dark");
   assert.equal(await results(), initial);
@@ -211,6 +278,7 @@ try {
       .querySelector("#study-results")
       .textContent.includes("Seeds 300–499"),
   );
+  await page.waitForFunction(() => !document.querySelector("#repeat").disabled);
   await page.setViewportSize({ width: 320, height: 850 });
   assert.ok(
     await page.evaluate(
@@ -429,6 +497,7 @@ try {
     viewport: { width: 320, height: 850 },
     hasTouch: true,
   });
+  await touch.emulateMedia({ reducedMotion: "reduce" });
   await touch.goto(`${url}?lesson=instrument`);
   const touchInstrument = touch.getByLabel("Z → treatment strength");
   await touchInstrument.tap();
@@ -440,6 +509,23 @@ try {
   await touchInstrument.fill("0");
   await touch.reload();
   assert.equal(await touchInstrument.inputValue(), "2");
+  await touch.locator("#repeat").click();
+  await touch
+    .getByRole("button", { name: "Run another 200 studies", exact: true })
+    .waitFor();
+  assert.equal(
+    await touch.locator("#study-results.studies-animating").count(),
+    0,
+  );
+  assert.equal(await touch.locator(".study-range").first().isVisible(), true);
+  assert.equal(
+    await touch
+      .locator(".study-dot")
+      .first()
+      .evaluate((dot) => getComputedStyle(dot).animationName),
+    "none",
+  );
+  assert.equal(await touch.locator(".study-method:visible").count(), 1);
   await touch.goto(`${url}?lesson=instrument-hidden-confounding`);
   const touchSlider = touch.getByLabel("Hidden confounding strength");
   await touchSlider.tap();

@@ -158,7 +158,8 @@ document.querySelector("#app").innerHTML =
             C alone with C + Z using the same people in each paired comparison.
           </p>
           <button id="repeat">Run 200 studies</button>
-          <p id="study-progress" class="small" role="status"></p>
+          <p id="study-progress" class="study-progress" role="status"></p>
+          <p id="study-warning" class="small"></p>
           <div id="study-results"></div>
           <details id="study-reason">
             <summary id="study-reason-title"></summary>
@@ -361,6 +362,9 @@ function clearStudies() {
   el("repeat").disabled = false;
   el("repeat").textContent = "Run 200 studies";
   el("study-progress").textContent = "";
+  el("study-warning").textContent = "";
+  el("study-results").classList.remove("studies-animating");
+  el("study-results").setAttribute("aria-busy", "false");
   el("study-results").innerHTML = "";
 }
 function enter(step) {
@@ -406,6 +410,9 @@ el("repeat").addEventListener("click", async () => {
   const names = methods.map(([name]) => name);
   let clipped = 0;
   el("repeat").disabled = true;
+  el("repeat").textContent = "Running studies…";
+  el("study-warning").textContent = "";
+  el("study-results").setAttribute("aria-busy", "true");
   el("study-results").innerHTML = "";
   try {
     for (let i = 0; i < 200; i++) {
@@ -427,11 +434,12 @@ el("repeat").addEventListener("click", async () => {
     if (current !== runId) return;
     const stats = values.map((arm) => arm.map((v) => studySummary(v)));
     const spread =
-      `<h3>How much do estimates vary?</h3><p class="small">Each dot is one study’s estimate. Compare the widths with and without Z: a wider cloud means less precision.</p><p class="study-key"><span><span class="study-truth-key"></span> True effect: 2</span><span><span class="study-range-key"></span> Middle 90% of estimates</span></p>${studyDistributions(values, stats, names, start)}<p class="small">The ranges span the 5th–95th percentiles across studies, not confidence intervals. Vertical position only separates dots. All plots share the same effect axis.</p><p class="small">200 studies · Z → treatment strength ${strength.toFixed(1)} · Seeds ${start}–${start + 199}.</p>` +
+      `<h3>How much do estimates vary?</h3><p class="small">Each dot is one study’s estimate. Compare the widths with and without Z: a wider cloud means less precision.</p><p class="study-key"><span><span class="study-truth-key"></span> True effect: 2</span><span class="study-summary"><span class="study-range-key"></span> Middle 90% of estimates</span></p>${studyDistributions(values, stats, names, start)}<p class="small study-summary">The ranges span the 5th–95th percentiles across studies, not confidence intervals. Vertical position only separates dots. All plots share the same effect axis.</p><p class="small study-summary">200 studies · Z → treatment strength ${strength.toFixed(1)} · Seeds ${start}–${start + 199}.</p>` +
       (state.step === 1
-        ? `<details id="study-means"><summary>Are estimates still centered near truth?</summary><p>The mean shows where estimates are centered; the true total effect is 2. ${hidden ? "Here U creates bias, so greater spread is only part of the error." : "With confounding controlled and correctly specified models, both analyses are centered near truth across repeated studies. Compare the observed spread above; adding Z need not increase it in every batch or at every strength."}</p><table><thead><tr><th>Mean estimate</th><th>Without Z</th><th>With Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].mean)}</td><td>${fmt(stats[1][k].mean)}</td></tr>`).join("")}</tbody></table></details>`
+        ? `<details id="study-means" class="study-summary"><summary>Are estimates still centered near truth?</summary><p>The mean shows where estimates are centered; the true total effect is 2. ${hidden ? "Here U creates bias, so greater spread is only part of the error." : "With confounding controlled and correctly specified models, both analyses are centered near truth across repeated studies. Compare the observed spread above; adding Z need not increase it in every batch or at every strength."}</p><table><thead><tr><th>Mean estimate</th><th>Without Z</th><th>With Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].mean)}</td><td>${fmt(stats[1][k].mean)}</td></tr>`).join("")}</tbody></table></details>`
         : "") +
-      `<p class="small">SD is in outcome units; variance is SD squared. A new batch will give slightly different results. These are sampling summaries, not confidence intervals.</p><details><summary>Does more spread mean more error?</summary><p>When estimates are centered at truth, greater variance means greater mean squared error. Root mean squared error (RMSE) expresses that error in outcome units. It need not increase for every individual study.</p><table><thead><tr><th>Method</th><th>RMSE: C</th><th>RMSE: C + Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].rmse)}</td><td>${fmt(stats[1][k].rmse)}</td></tr>`).join("")}</tbody></table><p>With hidden confounding, error reflects both spread and systematic bias.</p><p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3254160/">Read more: adjustment for instruments, bias, and precision</a></p></details>`;
+      `<p class="small study-summary">${state.step === 1 ? "Greater spread means estimates are typically farther from truth, even though adding Z may bring an individual estimate closer." : "With hidden confounding, error reflects both spread and systematic bias."}</p>`;
+
     if (state.step === 2) {
       el("study-results").innerHTML =
         `<div id="bias-comparison"><h3>Where are estimates centered?</h3><p class="small">True effect: 2 · Strength: ${hidden.toFixed(1)} · 200 studies · Seeds ${start}–${start + 199}</p>${names
@@ -449,14 +457,30 @@ el("repeat").addEventListener("click", async () => {
           .join(
             "",
           )}<p class="small">The same red tint and darker strip now compare mean errors across studies. Bias is amplified when the mean moves farther from 2. The signed change is C + Z minus C only; a positive change alone does not establish amplification. A new batch can differ, and the pattern need not hold in every causal world.</p></div><details><summary>Sampling spread and other summaries</summary>${spread}</details>`;
-    } else el("study-results").innerHTML = spread;
+    } else {
+      el("study-results").innerHTML = spread;
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        el("repeat").textContent = "Showing study estimates…";
+        el("study-progress").textContent =
+          "Showing paired estimates from 200 studies.";
+        el("study-results").classList.add("studies-animating");
+        // Paired dots share their delay; the last pair finishes within four seconds.
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        if (current !== runId) return;
+        el("study-results").classList.remove("studies-animating");
+      }
+    }
     const unavailable = stats.flat().reduce((s, r) => s + r.unavailable, 0);
-    el("study-progress").textContent =
-      `200 studies complete.${unavailable ? " " + unavailable + " estimates unavailable; summaries use available estimates only." : ""}${clipped ? " " + clipped + " probabilities clipped across fits." : ""}`;
+    el("study-progress").textContent = "200 studies complete.";
+    el("study-warning").textContent =
+      `${unavailable ? unavailable + " estimates unavailable; summaries use available estimates only. " : ""}${clipped ? clipped + " probabilities clipped across fits." : ""}`;
     batchStart += 200;
     el("repeat").textContent = "Run another 200 studies";
   } finally {
-    if (current === runId) el("repeat").disabled = false;
+    if (current === runId) {
+      el("repeat").disabled = false;
+      el("study-results").setAttribute("aria-busy", "false");
+    }
   }
 });
 window.addEventListener("pageshow", (event) => {
