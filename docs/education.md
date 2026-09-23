@@ -1,14 +1,17 @@
 # Progressive education delivery
 
-The optional [Does this variable matter? chapter](causal-relevance.md) follows
-the causal-role material at `?lesson=causal-relevance`, linked from hidden
-confounding and Timing. Three paired comparisons distinguish an unrelated
-variable, an outcome predictor, a proxy, and a baseline collider. Learners
-compare prediction on new people with treatment-effect estimates, then reveal
-the stipulated graph and truth. The analyst view makes causal uncertainty
-explicit; a transfer question rejects automatic adjustment from prediction or
-timing alone. Direct effects, total effects, and missing paths are distinguished
-in optional detail, with a link to the existing cancellation experiment.
+The optional [Proxies for hidden confounders chapter](causal-relevance.md)
+follows hidden confounding at `?lesson=causal-relevance`. It starts with the
+mechanism: an unobserved confounder affects treatment, outcome, and an observed
+proxy. Adjustment for the proxy can reduce bias without eliminating it. A
+rehabilitation example then names the hidden factor (fitness) and proxy (a noisy
+fitness test). Learners predict the change, include the proxy, and compare the same 60 study estimates
+before and after. A practice question distinguishes partial bias reduction from
+complete control of confounding. The predictive-collider comparison and
+prediction-error metrics remain optional supporting material. Prediction and
+practice submissions use the shared compact, collapsible feedback style; Restart
+restores unanswered choices. Contents, the
+concept map, topics, search, hidden confounding, and Timing provide entry points.
 
 The core [uncertainty lesson](uncertainty.md) follows confounding and precedes
 IPW at `?lesson=uncertainty`. An optional bootstrap exploration at

@@ -97,12 +97,12 @@ export const optionalChapters = [
   },
   {
     id: "causal-relevance",
-    menuTitle: "Does this variable matter?",
+    menuTitle: "Proxies for hidden confounders",
     after: 9,
-    title: "Does this variable matter?",
+    title: "Proxies for hidden confounders",
     href: "?lesson=causal-relevance",
     description:
-      "Separate causing an outcome, predicting it, and helping estimate a treatment effect.",
+      "See how an observed consequence of a hidden confounder can help reduce bias, then try a noisy-proxy example.",
   },
   {
     id: "time-varying-confounding",
