@@ -79,12 +79,12 @@ const lessons = [
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
-    question: "Can we predict outcomes under each treatment?",
+    question: "How do predictions become an average effect?",
     transition:
       "The confounded world stays the same. Both models now account for the risk score.",
     instruction: "Compare the estimates, then redraw to see how they vary.",
     explanation:
-      "Here both models capture the correct relationships and C is the only common cause. Both methods can estimate the effect; neither must equal truth in a sample.",
+      "Here both models capture the correct relationships and C is the only common cause. Both methods can estimate the effect. Neither must equal truth in a sample.",
     next: "Both methods account for C. Should we also account for variables that treatment changes?",
   },
   {
@@ -276,7 +276,7 @@ function controls(level) {
   if (level === 3)
     return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
-    return '<p id="regression-explanation">We fit a model to predict the observed outcome from treatment received and risk score. For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
+    return '<p id="regression-explanation">Fit outcomes using treatment and risk score. Predict each person’s outcome with and without treatment, then average the differences.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
       ["simple", "Simple relationships", "Both models correctly specified"],
@@ -387,11 +387,12 @@ function enter(level, focus = true, callback = false, restart = false) {
   document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
+  const compactContext = [4, 5, 6, 11].includes(level);
   const position = availableLevels.indexOf(revisiting ? 6 : level);
   const previous = revisiting ? 6 : availableLevels[position - 1];
   const previousExperiment = previous === 14 ? 2 : previous;
   previousGraph =
-    !recap && previousExperiment
+    !recap && !compactContext && previousExperiment
       ? {
           state:
             state?.level === previousExperiment
@@ -431,7 +432,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
       <section class="experiment panel" aria-labelledby="question">${prediction ? "" : `<h2 id="question">${lesson.question}</h2>`}
         ${previousGraph && !lesson.prediction ? graphComparison(level, revisiting) : ""}
-        <div id="lesson-graph"></div>
+        <div id="lesson-graph"${compactContext ? ' class="method-context"' : ""}></div>
         <p class="lesson-instruction">${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
         <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
@@ -459,8 +460,7 @@ function enter(level, focus = true, callback = false, restart = false) {
         }
       </section>
       ${previousGraph && lesson.prediction ? graphComparison(level, revisiting, true) : ""}
-      <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
-      ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
+      <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For each person, compare the predicted outcomes with and without treatment at the same risk score. Average these differences over everyone. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
       ${
@@ -804,9 +804,6 @@ function update() {
       document.querySelector("#propensity-preview"),
       result.propensityData,
     );
-  if (state.level === 4)
-    document.querySelector("#outcome-arithmetic").innerHTML =
-      outcomeCalculation(result.outcomePredictions);
   if (state.level === 6)
     document.querySelector("#aipw-arithmetic").innerHTML = aipwCalculation(
       result.aipwContributions,
@@ -903,22 +900,6 @@ function update() {
   renderLessonGraph();
 }
 
-function outcomeCalculation(predictions) {
-  const person = predictions[0];
-  const number = (value) => value.toFixed(2);
-  const average =
-    predictions.reduce((sum, row) => sum + row.contrast, 0) /
-    predictions.length;
-  return `<p>Person ${person.person} received ${person.A ? "treatment" : "no treatment"}, so only that outcome was observed. The model predicts both outcomes at the same risk score, C = ${number(person.C)}.</p>
-    <table><caption>Current predictions for person ${person.person}</caption><tbody>
-      <tr><th scope="row">With treatment, Ŷ₁(Cᵢ)</th><td>${number(person.m1)}</td></tr>
-      <tr><th scope="row">Without treatment, Ŷ₀(Cᵢ)</th><td>${number(person.m0)}</td></tr>
-      <tr><th scope="row">Predicted difference</th><td>${number(person.contrast)}</td></tr>
-    </tbody></table>
-    <p><strong>Average predicted difference:</strong> <span id="outcome-worked-effect">${number(average)}</span> across all ${predictions.length.toLocaleString("en-US")} people.</p>
-    <p class="sample-note">Values are rounded; the estimate uses full precision.</p>`;
-}
-
 function overlapPanel() {
   return `<section class="overlap-diagnostics" aria-labelledby="overlap-title">
     <h3 id="overlap-title">Who supplies the comparison?</h3>
@@ -983,7 +964,9 @@ function renderLessonGraph() {
     }
   }
   if (!comparisonOpen) {
-    graph.innerHTML = lessonGraph(state);
+    graph.innerHTML = lessonGraph(state, {
+      compact: graph.classList.contains("method-context"),
+    });
     return;
   }
   const previous = previousGraph.state;
