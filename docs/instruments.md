@@ -79,7 +79,9 @@ page cache also restores the section baseline.
 In the introduction, IPW shows paired clouds of the 200 study estimates by default.
 “Compare other estimators” reveals outcome regression and AIPW,
 with and without Z. Every dot’s horizontal position is its actual estimate;
-deterministic vertical spacing only separates dots. A dashed line marks truth
+dots stack vertically where estimates concentrate. Packing uses a common
+reference width and vertical scale for all rows and never changes an estimate’s
+horizontal position. A short summary reports the relative change in SD. A dashed line marks truth
 at 2, and segments span the empirical 5th–95th percentiles (linear interpolation).
 These ranges describe the middle 90% of study estimates, not confidence intervals.
 All six rows share an effect axis, initially 1.75–2.25; it expands symmetrically

@@ -25,9 +25,59 @@ export function studyPlotDomain(values) {
   return [2 - radius, 2 + radius];
 }
 
+export function studyDotOffsets(values, [min, max]) {
+  const offsets = values.map(() => null);
+  const placed = [];
+  const spacing = 5.5;
+  // Pack on a shared reference width without changing any horizontal value.
+  const points = values
+    .map((value, index) => ({ value, index }))
+    .filter(({ value }) => Number.isFinite(value))
+    .sort((a, b) => a.value - b.value);
+  for (const { value, index } of points) {
+    const x = (552 * (value - min)) / (max - min);
+    const neighbors = placed.filter((point) => x - point.x < spacing);
+    const candidates = [0];
+    for (const point of neighbors) {
+      const dy = Math.sqrt(spacing ** 2 - (x - point.x) ** 2);
+      candidates.push(point.y - dy, point.y + dy);
+    }
+    candidates.sort((a, b) => Math.abs(a) - Math.abs(b));
+    const y = candidates.find((candidate) =>
+      neighbors.every(
+        (point) =>
+          (x - point.x) ** 2 + (candidate - point.y) ** 2 >=
+          spacing ** 2 - 1e-8,
+      ),
+    );
+    if (y === undefined) throw new Error("Could not place study dot");
+    offsets[index] = y;
+    placed.push({ x, y });
+  }
+  return offsets;
+}
+
 export function studyDistributions(values, stats, names, start) {
   const [min, max] = studyPlotDomain(values);
   const x = (value) => 4 + (92 * (value - min)) / (max - min);
+  const offsets = values.map((arm) =>
+    arm.map((studies) => studyDotOffsets(studies, [min, max])),
+  );
+  const tallest = Math.max(
+    1,
+    ...offsets.flat(2).filter(Number.isFinite).map(Math.abs),
+  );
+  const verticalScale = Math.min(1, 26 / tallest);
+  const spreadChange = (k) => {
+    const before = stats[0][k].sd,
+      after = stats[1][k].sd;
+    if (!Number.isFinite(before) || !Number.isFinite(after) || before <= 0)
+      return "Spread comparison unavailable.";
+    const percent = Math.round(100 * (after / before - 1));
+    return percent === 0
+      ? "Nearly the same spread (SD)."
+      : `${Math.abs(percent)}% ${percent > 0 ? "more" : "less"} spread with Z (SD).`;
+  };
   const axis = `<svg class="study-axis" height="40" aria-hidden="true">${Array.from(
     { length: 5 },
     (_, i) => {
@@ -43,6 +93,7 @@ export function studyDistributions(values, stats, names, start) {
       k,
     ) => `<section class="study-method" aria-label="${name} study estimates">
     <h4>${name}</h4>
+    <p class="study-spread-change study-summary">${spreadChange(k)}</p>
     ${["Without Z", "With Z"]
       .map((label, j) => {
         const estimates = values[j][k];
@@ -58,12 +109,7 @@ export function studyDistributions(values, stats, names, start) {
           ${estimates
             .map((value, i) => {
               if (!Number.isFinite(value)) return "";
-              // Deterministic vertical spacing separates studies; only x encodes an estimate.
-              const y =
-                9 +
-                52 *
-                  (((i * 73) % estimates.length) /
-                    Math.max(1, estimates.length - 1));
+              const y = 35 + offsets[j][k][i] * verticalScale;
               return `<circle class="study-dot" cx="${x(value)}%" cy="${y}" r="2.5" style="--study-order:${i}" data-estimate="${value}"><title>Study ${start + i}: ${value.toFixed(3)}</title></circle>`;
             })
             .join("")}
