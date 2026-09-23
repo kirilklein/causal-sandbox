@@ -115,10 +115,10 @@ export function relevancePlot(studies, included) {
   return `<div role="img" aria-label="${description}">
     ${arms
       .map((arm) => {
-        const y = 46;
+        const y = 54;
         return `<div class="relevance-effect-row"><p class="row-label">${arm ? "With adjustment" : "Without adjustment"}</p><svg viewBox="0 0 360 88" aria-hidden="true">
       ${arm === 0 ? `<text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">True effect</text>` : ""}
-      <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="${y - 20}" y2="${y + 36}"/>
+      <line class="effect-truth" x1="${x(truth)}" x2="${x(truth)}" y1="${y - 28}" y2="${y + 28}"/>
       ${studies
         .map((study, i) => {
           const value = study.fits[arm].effect;
@@ -132,7 +132,7 @@ export function relevancePlot(studies, included) {
             : `<circle ${attributes} cx="${xx}" cy="${yy}" r="2">${title}</circle>`;
         })
         .join("")}
-      <line class="effect-mean" data-arm="${arm}" x1="${x(summaries[arm].effect.mean)}" x2="${x(summaries[arm].effect.mean)}" y1="${y - 20}" y2="${y + 36}"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></line></svg></div>`;
+      <line class="effect-mean" data-arm="${arm}" x1="${x(summaries[arm].effect.mean)}" x2="${x(summaries[arm].effect.mean)}" y1="${y - 28}" y2="${y + 28}"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></line></svg></div>`;
       })
       .join("")}
     <svg viewBox="0 0 360 26" aria-hidden="true"><line class="effect-axis" x1="24" x2="336" y1="2" y2="2"/>
