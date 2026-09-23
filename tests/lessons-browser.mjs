@@ -1183,7 +1183,7 @@ try {
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
     const steps = page.locator(".tmle-diagnostics > section");
-    await expect(steps).toHaveCount(4);
+    await expect(steps).toHaveCount(3);
     const sequence = [
       "#targeting-progress",
       "#tmle-predictions",
@@ -1211,9 +1211,9 @@ try {
     );
   }
   await page.setViewportSize({ width: 1280, height: 900 });
-  await expect(page.locator("#tmle-status")).toContainText("No update applied");
+  await expect(page.locator("#tmle-status")).toBeEmpty();
   const progress = page.getByRole("slider", {
-    name: "Apply the fitted update",
+    name: "Update applied",
   });
   const correction = () => page.locator("#tmle-current-correction").innerText();
   const initialCorrection = Number(await correction());
@@ -1242,9 +1242,7 @@ try {
     beforePaths,
   );
   assert.equal(await page.locator("#lesson-graph").innerHTML(), graph);
-  await expect(page.locator("#tmle-status")).toContainText(
-    "Partial update applied",
-  );
+  await expect(page.locator("#tmle-status")).toBeEmpty();
   const half = await result();
   await page.locator(".tmle-formula-details > summary").click();
   assert.equal(await result(), half);
