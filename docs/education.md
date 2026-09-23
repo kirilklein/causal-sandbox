@@ -170,7 +170,20 @@ Selecting a lesson resets its baseline and focuses its heading. Opening Contents
 preserves the experiment. Clicking outside closes it; Escape closes it and
 returns focus to the toggle.
 
-Core causal experiments after randomization offer **Compare with previous** above the
+Randomization, collider, and overlap place the prediction question with its answer
+choices immediately after the current graph. Answering removes the radio options,
+keeps the question, and names the selected answer in the feedback. A green check
+marks a correct prediction; an amber exclamation marks one to reconsider. The words
+remain explicit. A brief background highlight respects reduced-motion preferences. The feedback is
+anchored to the hint’s previous screen position so removing the options does not
+lose the learner’s reading position. A “Prediction and feedback” disclosure in the
+card’s top header collapses or restores the question and feedback below it without
+changing the experiment. Its header space is present before answering.
+Collider and overlap offer their
+previous-graph comparison below the experiment only after answering. This separate
+comparison never replaces the current graph. Restart restores the unanswered view.
+
+Other core causal experiments after randomization offer **Compare with previous** above the
 diagram. Clicking opens a persistent Previous / Current switch and a short
 explanation of the lesson change. Shared nodes stay aligned and both views reserve
 the same space. The preview uses the preceding lesson's settings when arriving

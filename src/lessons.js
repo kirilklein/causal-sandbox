@@ -407,6 +407,8 @@ function enter(level, focus = true, callback = false, restart = false) {
   noise = recap ? null : makeNoise(state.n, state.seed);
   revealed = false;
   const lesson = revisiting ? hiddenCallback : lessons[level - 1];
+  const repeatedStudies = level <= 2 && location.hash === "#repeated-studies";
+  const prediction = repeatedStudies ? null : lesson.prediction;
   const next = availableLevels[position + 1];
   if (!restart)
     capture("lesson_started", {
@@ -427,8 +429,8 @@ function enter(level, focus = true, callback = false, restart = false) {
       ${level === 5 ? '<div id="model-specification"><p><strong>Causal specification:</strong> define the effect you want, the causal graph, and a valid adjustment set. Leaving out a confounder or adjusting for a mediator or collider can change what the comparison means.</p><p><strong>Statistical model specification:</strong> choose how the fitted models represent relationships among those variables. Missing a curve or interaction is <strong>functional-form misspecification</strong>, one type of statistical model misspecification.</p></div>' : ""}
       ${level === 1 ? "<p><strong>Observed outcome difference:</strong> In our study, each person receives only one treatment option. We calculate the average outcome among those treated minus the average among those untreated.</p><p>Here, we know the true effect because we set the simulation’s rules. In a real study, we would need to estimate it.</p>" : ""}
       ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
-      <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
-        ${previousGraph ? graphComparison(level, revisiting) : ""}
+      <section class="experiment panel" aria-labelledby="question">${prediction ? "" : `<h2 id="question">${lesson.question}</h2>`}
+        ${previousGraph && !lesson.prediction ? graphComparison(level, revisiting) : ""}
         <div id="lesson-graph"></div>
         <p class="lesson-instruction">${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
@@ -456,6 +458,7 @@ function enter(level, focus = true, callback = false, restart = false) {
             : ""
         }
       </section>
+      ${previousGraph && lesson.prediction ? graphComparison(level, revisiting, true) : ""}
       <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
       ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
@@ -596,8 +599,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       renderLessonGraph();
     });
   if (!recap) update();
-  const repeatedStudies = level <= 2 && location.hash === "#repeated-studies";
-  if (lesson.prediction && !repeatedStudies) setupPrediction(lesson.prediction);
+  if (prediction) setupPrediction(prediction);
   if (repeatedStudies) {
     const panel = document.querySelector("#repeated-studies");
     panel.open = true;
@@ -609,7 +611,7 @@ function enter(level, focus = true, callback = false, restart = false) {
 function setupPrediction(prediction) {
   const withheld = [
     ...document.querySelectorAll(
-      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next",
+      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next, .graph-comparison",
     ),
   ];
   if (state.level === 1) {
@@ -620,14 +622,18 @@ function setupPrediction(prediction) {
     element.hidden = true;
   });
   const checkpoint = document.createElement("div");
+  checkpoint.id = "lesson-prediction";
   checkpoint.className = "lesson-prediction";
   checkpoint.innerHTML = `
+    <div class="prediction-header">Your prediction</div>
+    <div id="prediction-content">
     <fieldset class="model-choices" aria-describedby="prediction-hint">
-      <legend>Your prediction</legend>
+      <legend><h2 id="question">${prediction.question}</h2></legend>
       ${prediction.choices.map((choice, index) => `<label class="lesson-switch"><input type="radio" name="prediction" value="${index}">${choice}</label>`).join("")}
     </fieldset>
     <p id="prediction-hint" class="sample-note">Choose a prediction to try the experiment. Any choice lets you continue.</p>
-    <button id="try-prediction" disabled>Try it</button>`;
+    <button id="try-prediction" disabled>Try it</button>
+    </div>`;
   document.querySelector("#lesson-graph").after(checkpoint);
   const button = checkpoint.querySelector("button");
   checkpoint.addEventListener("change", () => {
@@ -636,6 +642,9 @@ function setupPrediction(prediction) {
   button.addEventListener("click", () => {
     const selected = checkpoint.querySelector("input:checked");
     if (!selected) return;
+    const feedbackTop = checkpoint
+      .querySelector("#prediction-hint")
+      .getBoundingClientRect().top;
     const before = lessonResult(state, noise);
     if (state.level === 8) {
       state.postAdjusted = true;
@@ -669,12 +678,35 @@ function setupPrediction(prediction) {
       is_correct: correct,
     });
     const encouragement = correct ? "Good prediction!" : "Not quite.";
-    checkpoint.innerHTML = `<p><strong>${encouragement}</strong></p><p class="sample-note">Your prediction: ${prediction.choices[Number(selected.value)]}</p><p>${observed}</p><p>${prediction.explanation}</p>`;
-    checkpoint.setAttribute("tabindex", "-1");
-    checkpoint.setAttribute("role", "region");
-    checkpoint.setAttribute("aria-label", "Prediction explained");
-    document.querySelector(".lesson-results").after(checkpoint);
-    checkpoint.focus();
+    const choices = checkpoint.querySelector("fieldset");
+    choices.replaceWith(choices.querySelector("#question"));
+    const feedback = document.createElement("div");
+    feedback.className = "prediction-feedback";
+    feedback.dataset.result = correct ? "correct" : "review";
+    feedback.innerHTML = `<p><span class="prediction-feedback-icon" aria-hidden="true">${correct ? "✓" : "!"}</span><strong>${encouragement}</strong> You predicted: “${prediction.choices[Number(selected.value)]}”</p><p>${observed}</p><p>${prediction.explanation}</p>`;
+    feedback.setAttribute("tabindex", "-1");
+    feedback.setAttribute("role", "region");
+    feedback.setAttribute("aria-label", "Prediction explained");
+    checkpoint.querySelector("#prediction-hint").replaceWith(feedback);
+    button.remove();
+    const toggle = document.createElement("button");
+    toggle.id = "toggle-prediction";
+    toggle.innerHTML =
+      '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 2 4 4-4 4"/></svg><span>Prediction and feedback</span>';
+    toggle.setAttribute("aria-expanded", "true");
+    const content = checkpoint.querySelector("#prediction-content");
+    toggle.setAttribute("aria-controls", content.id);
+    toggle.addEventListener("click", () => {
+      content.hidden = !content.hidden;
+      toggle.setAttribute("aria-expanded", String(!content.hidden));
+    });
+    checkpoint.querySelector(".prediction-header").replaceChildren(toggle);
+    feedback.focus({ preventScroll: true });
+    // Keep the feedback where the hint was as the options disappear above it.
+    window.scrollBy({
+      top: feedback.firstElementChild.getBoundingClientRect().top - feedbackTop,
+      behavior: "instant",
+    });
   });
 }
 
@@ -940,7 +972,16 @@ function renderOverlap(arms) {
 }
 
 function renderLessonGraph() {
-  const graph = document.querySelector("#lesson-graph");
+  let graph = document.querySelector("#lesson-graph");
+  const comparison = document.querySelector("#comparison-graph");
+  if (comparison) {
+    graph.innerHTML = lessonGraph(state);
+    graph = comparison;
+    if (!comparisonOpen) {
+      graph.innerHTML = "";
+      return;
+    }
+  }
   if (!comparisonOpen) {
     graph.innerHTML = lessonGraph(state);
     return;
