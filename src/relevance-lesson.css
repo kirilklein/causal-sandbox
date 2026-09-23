@@ -137,9 +137,9 @@
   opacity: 0.75;
 }
 .effect-mean {
-  fill: var(--text);
-  stroke: var(--surface);
-  stroke-width: 1.5;
+  stroke: var(--estimate);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
 }
 .effect-legend {
   display: flex;

@@ -112,7 +112,7 @@ export function relevancePlot(studies, included) {
   const axisY = included ? 188 : 100;
   const fmt = (value) =>
     Number.isFinite(value) ? value.toFixed(2) : "Unavailable";
-  const description = `Each dot is one of ${studies.length} studies; vertical spacing only separates dots. Diamonds mark means. Without adjustment: mean ${fmt(summaries[0].effect.mean)}, standard deviation ${fmt(summaries[0].effect.sd)}.${included ? ` With adjustment: mean ${fmt(summaries[1].effect.mean)}, standard deviation ${fmt(summaries[1].effect.sd)}.` : " Adjusted estimates have not been revealed."} True effect: ${truth} mobility points. The horizontal scale is fixed from 0 to 5; triangles indicate off-scale estimates.`;
+  const description = `Each dot is one of ${studies.length} studies; vertical spacing only separates dots. Dashed estimate lines mark means. Without adjustment: mean ${fmt(summaries[0].effect.mean)}, standard deviation ${fmt(summaries[0].effect.sd)}.${included ? ` With adjustment: mean ${fmt(summaries[1].effect.mean)}, standard deviation ${fmt(summaries[1].effect.sd)}.` : " Adjusted estimates have not been revealed."} True effect: ${truth} mobility points. The horizontal scale is fixed from 0 to 5; triangles indicate off-scale estimates.`;
   return `<svg viewBox="0 0 360 ${axisY + 24}" role="img" aria-label="${description}">
     <text class="truth-label" x="${x(truth)}" y="17" text-anchor="middle">True effect: ${truth}</text>
     ${arms
@@ -133,7 +133,7 @@ export function relevancePlot(studies, included) {
             : `<circle ${attributes} cx="${xx}" cy="${yy}" r="2">${title}</circle>`;
         })
         .join("")}
-      <path class="effect-mean" data-arm="${arm}" d="M${x(summaries[arm].effect.mean)} ${y + 21}l4 5-4 5-4-5Z"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></path>`;
+      <line class="effect-mean" data-arm="${arm}" x1="${x(summaries[arm].effect.mean)}" x2="${x(summaries[arm].effect.mean)}" y1="${y - 20}" y2="${y + 36}"><title>Mean: ${fmt(summaries[arm].effect.mean)}</title></line>`;
       })
       .join("")}
     <line class="effect-axis" x1="24" x2="336" y1="${axisY}" y2="${axisY}"/>
