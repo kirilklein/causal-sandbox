@@ -14,8 +14,6 @@ test("finds named experiments and their specific starting states", () => {
     ["paths cancel", "?lesson=arrow-strength&example=paths-cancel"],
     ["causal relevance", "?lesson=causal-relevance"],
     ["proxy predictor", "?lesson=causal-relevance"],
-    ["frontdoor", "?lesson=front-door"],
-    ["front door", "?lesson=front-door"],
     ["TMLE IPW misspecification", "docs/tmle-robustness-preview.html"],
   ])
     assert.equal(searchTopics(query)[0].href, href, query);
@@ -143,5 +141,25 @@ test("uncertainty searches connect definitions with the lessons that teach them"
     const destinations = searchTopics(query).map(({ href }) => href);
     assert.ok(destinations.includes(`glossary/#${key}`), query);
     assert.ok(destinations.includes(`?lesson=${lesson}`), query);
+  }
+});
+
+test("advanced concept searches connect glossary definitions to lessons", () => {
+  for (const [query, key, lesson] of [
+    ["frontdoor", "front-door", "front-door"],
+    ["front door", "front-door", "front-door"],
+    ["proxy", "proxy", "causal-relevance"],
+    [
+      "time varying confounding",
+      "time-varying-confounding",
+      "time-varying-confounding",
+    ],
+    ["sequential IPTW", "sequential-weighting", "time-varying-confounding"],
+    ["sensitivity analysis", "sensitivity-analysis", "leaving-the-sandbox"],
+  ]) {
+    const destinations = searchTopics(query).map(({ href }) => href);
+    assert.ok(destinations.includes(`glossary/#${key}`), query);
+    assert.ok(destinations.includes(`?lesson=${lesson}`), query);
+    assert.equal(glossary[key].related.href, `?lesson=${lesson}`);
   }
 });
