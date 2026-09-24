@@ -200,7 +200,7 @@ lessons[10] = {
   transition:
     "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. The risk score is the only common cause.",
   instruction:
-    "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
+    "TMLE starts with outcome-regression predictions and <strong>applies an update</strong> based on observed prediction errors and inverse-probability weights.",
   explanation:
     "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
@@ -417,6 +417,8 @@ function enter(level, focus = true, callback = false, restart = false) {
       is_revisit: revisiting,
     });
   if (!revisiting) recordLessonStarted(lesson.slug);
+  const effectResults = `<div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
+        <p class="sample-note">Stronger red means farther from truth in this sample.</p>`;
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
@@ -435,13 +437,12 @@ function enter(level, focus = true, callback = false, restart = false) {
         <div id="lesson-graph"${compactContext ? ' class="method-context"' : ""}></div>
         <p class="lesson-instruction">${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
-        <p class="sample-note">Stronger red means farther from truth in this sample.</p>
+        ${level === 11 ? tmlePanel(effectResults) : effectResults}
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
         ${(level >= 4 && level <= 6) || level === 9 || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
-        ${level === 10 ? overlapPanel() : ""}${level === 11 ? tmlePanel() : ""}
+        ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Risk scores in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average risk score (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         ${level === 3 ? '<details id="weighting" hidden><summary>Why these weights?</summary><div id="weight-examples"></div><details id="ipw-calculation"><summary>How do weights become an effect?</summary><div id="ipw-arithmetic"></div></details></details>' : ""}
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>

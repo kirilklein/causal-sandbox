@@ -4,6 +4,7 @@ import {
   collectPageErrors,
 } from "./browser-setup.mjs";
 import assert from "node:assert/strict";
+import { expect } from "@playwright/test";
 const browser = await launchBrowser();
 const url = getAppUrl();
 try {
@@ -1141,8 +1142,41 @@ try {
   assert.match(await page.locator("h1").innerText(), /Targeting with TMLE/);
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 11 of 14/);
   const tmleBaseline = await result();
+  // Keep the action and its consequences in one visible reading sequence.
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const steps = page.locator(".tmle-diagnostics > section");
+    await expect(steps).toHaveCount(3);
+    const sequence = [
+      "#targeting-progress",
+      "#tmle-predictions",
+      "#tmle-current-correction",
+      "#tmle",
+    ];
+    let previousBottom = 0;
+    for (const selector of sequence) {
+      const element = page.locator(selector);
+      await expect(element).toBeVisible();
+      const box = await element.boundingBox();
+      assert.ok(
+        box.y >= previousBottom,
+        `${selector} reading order at ${width}px`,
+      );
+      previousBottom = box.y + box.height;
+      await expect(
+        page.locator(".tmle-diagnostics").locator(selector),
+      ).toHaveCount(1);
+    }
+    await expect(page.locator(".tmle-validity-note")).toBeVisible();
+    assert.equal(
+      await page.locator(".tmle-formula-details").getAttribute("open"),
+      null,
+    );
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(page.locator("#tmle-status")).toBeEmpty();
   const progress = page.getByRole("slider", {
-    name: "Apply the fitted update",
+    name: "Update applied",
   });
   const correction = () => page.locator("#tmle-current-correction").innerText();
   const initialCorrection = Number(await correction());
@@ -1171,6 +1205,7 @@ try {
     beforePaths,
   );
   assert.equal(await page.locator("#lesson-graph").innerHTML(), graph);
+  await expect(page.locator("#tmle-status")).toBeEmpty();
   const half = await result();
   await page.locator(".tmle-formula-details > summary").click();
   assert.equal(await result(), half);
@@ -1187,6 +1222,10 @@ try {
   assert.ok(
     Math.abs(Number(await page.locator("#tmle").innerText()) - 2) < 0.15,
   );
+  await expect(page.locator("#tmle-status")).toContainText(
+    "Full update applied",
+  );
+  await expect(page.locator(".tmle-validity-note")).toBeVisible();
   const complete = await result();
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
