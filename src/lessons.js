@@ -200,7 +200,7 @@ lessons[10] = {
   transition:
     "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. The risk score is the only common cause.",
   instruction:
-    "TMLE starts with outcome-regression predictions and uses observed prediction errors with inverse-probability weights to update them before estimating the average effect.",
+    "TMLE starts with outcome-regression predictions and <strong>applies an update</strong> based on observed prediction errors and inverse-probability weights.",
   explanation:
     "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
