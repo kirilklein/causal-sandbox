@@ -45,6 +45,7 @@ export function learningFrame(title, current, body) {
 }
 
 const background = {
+  "front-door": ["mediator", "hidden-confounding"],
   "trajectory-landscape": ["confounding"],
   uncertainty: ["randomization", "confounding"],
   "p-values": ["uncertainty"],
@@ -128,6 +129,7 @@ const groups = [
     ],
     advanced: [
       "misspecification",
+      "front-door",
       "double-robustness",
       "tmle",
       "tmle-robustness",

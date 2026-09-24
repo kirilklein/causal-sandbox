@@ -51,6 +51,15 @@ export const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "front-door",
+    menuTitle: "The front-door criterion",
+    after: 9,
+    title: "The front-door criterion",
+    href: "?lesson=front-door",
+    description:
+      "Rebuild a total effect through a mediator despite hidden confounding, then test the assumptions that make it possible.",
+  },
+  {
     id: "trajectory-landscape",
     menuTitle: "Patient trajectories",
     after: 2,

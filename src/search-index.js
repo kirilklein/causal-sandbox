@@ -11,6 +11,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "front-door": [
+    "Recover a total causal effect through a mediator under front-door assumptions, despite hidden confounding.",
+    "frontdoor front-door front door criterion identification mediator mediation hidden unmeasured confounding tutoring practice",
+  ],
   "trajectory-landscape": [
     "Unfold patient trajectories to see confounding by indication.",
     "patient trajectory futures landscape confounding indication severity counterfactual",
