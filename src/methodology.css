@@ -147,6 +147,7 @@
   stroke: var(--border-strong);
   stroke-width: 1;
 }
+.methodology-nodes .node-z,
 .methodology-nodes .node-c {
   fill: var(--node-C);
 }
