@@ -73,7 +73,12 @@ try {
         .evaluate((node) =>
           parseFloat(node.parentElement.style.getPropertyValue("--error-tint")),
         );
-      assert.equal(tint, effectComparison(value, population.effect).tint);
+      const expectedTint = effectComparison(value, population.effect).tint;
+      // Node and Chromium can differ in the last bits of the power calculation.
+      assert.ok(
+        Math.abs(tint - expectedTint) < 1e-10,
+        `${world}/${id}: expected tint ${expectedTint}, received ${tint}`,
+      );
     }
     await expect(page.locator('#fd-graph [data-edge="direct"]')).toHaveCount(
       world === "direct" ? 2 : 0,
