@@ -419,6 +419,76 @@ export const glossary = {
     ],
     related: { label: "Explore trimming", href: "?lesson=trimming" },
   },
+  "front-door": {
+    title: "Front-door identification",
+    aliases: ["Front-door criterion", "Frontdoor"],
+    summary:
+      "Front-door identification uses a mediator to recover a total causal effect despite hidden confounding between treatment and outcome, under specific assumptions.",
+    detail: [
+      "The mediator must carry every causal path from treatment to outcome. There must be no unblocked back-door path from treatment to mediator, and conditioning on treatment must block every back-door path from mediator to outcome. The required treatment–mediator combinations must also have support.",
+      "The lesson combines how treatment changes practice with how practice changes passing after adjusting for tutoring. Merely measuring a mediator is insufficient, and ordinary adjustment for it does not implement front-door identification.",
+    ],
+    related: {
+      label: "Explore the front-door criterion",
+      href: "?lesson=front-door",
+    },
+  },
+  proxy: {
+    title: "Proxies for hidden confounders",
+    aliases: ["Proxy variable", "Noisy proxy"],
+    summary:
+      "A proxy is a measured variable that carries information about an unmeasured variable, such as a noisy test reflecting hidden fitness.",
+    detail: [
+      "In the lesson, hidden fitness affects treatment and outcome, while the observed test measures fitness imperfectly. Adjusting for the test reduces bias in this toy model but leaves residual confounding. A proxy is not automatically a sufficient adjustment variable.",
+      "Its causal relationships matter, not just its predictive accuracy. In real data, a changed estimate after proxy adjustment does not establish that the estimate is closer to the causal effect.",
+    ],
+    related: {
+      label: "Explore proxies for hidden confounders",
+      href: "?lesson=causal-relevance",
+    },
+  },
+  "time-varying-confounding": {
+    title: "Time-varying confounding",
+    aliases: ["Treatment-confounder feedback", "Longitudinal confounding"],
+    summary:
+      "Time-varying confounding occurs when evolving covariates influence later treatment and the outcome. Those covariates may themselves be changed by earlier treatment.",
+    detail: [
+      "For example, an initial treatment changes severity, and severity then affects both the next treatment decision and the final outcome. Ignoring updated severity leaves the later treatment confounded, while ordinary outcome adjustment for it can block part of the earlier treatment’s effect.",
+      "Methods such as sequential weighting address this feedback when the relevant treatment and covariate histories are measured and the required causal assumptions hold.",
+    ],
+    related: {
+      label: "Explore treatment over time",
+      href: "?lesson=time-varying-confounding",
+    },
+  },
+  "sequential-weighting": {
+    title: "Sequential weighting",
+    aliases: ["Sequential IPTW", "Longitudinal IPW"],
+    summary:
+      "Sequential weighting multiplies inverse treatment-probability weights across treatment decisions, using the history available at each decision.",
+    detail: [
+      "In the two-decision lesson, the first factor uses the known probability of the received first treatment from randomization. The second uses the fitted probability of the received second treatment given first treatment and updated severity. Their product weights the observed treatment sequence.",
+      "Identifying effects of treatment sequences requires consistency, no unmeasured confounding at each decision given the observed past, and positivity at each decision. Estimated weights also need adequate treatment models. Extreme probabilities can compound into unstable weights.",
+    ],
+    related: {
+      label: "Explore sequential weights",
+      href: "?lesson=time-varying-confounding",
+    },
+  },
+  "sensitivity-analysis": {
+    title: "Sensitivity analysis",
+    aliases: ["Sensitivity to unmeasured confounding"],
+    summary:
+      "Sensitivity analysis examines how a conclusion changes when uncertain assumptions or analysis choices are varied.",
+    detail: [
+      "For unmeasured confounding, ask how strongly a hidden common cause would need to relate to treatment and outcome to change the practical conclusion. Use subject-matter knowledge to judge whether those relationships are plausible.",
+      "Comparing adjustment choices can reveal sensitivity, but it does not tell you which estimate is closer to truth. Stability across the assumptions examined does not prove that those assumptions hold or that all important sources of bias were considered.",
+    ],
+    related: {
+      label: "Connect assumptions to real data",
+      href: "?lesson=leaving-the-sandbox",
+    },
+  },
   instrument: {
     title: "Instrumental variable",
     aliases: ["Instrument", "IV"],
