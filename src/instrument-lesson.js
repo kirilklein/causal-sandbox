@@ -1,4 +1,5 @@
 import "./instrument-lesson.css";
+import { studyDistributions } from "./instrument-study-view.js";
 import { themeControl } from "./theme.js";
 import { effectComparison } from "./effect-comparison.js";
 import icon from "./brand.svg?raw";
@@ -27,7 +28,7 @@ document.querySelector("#app").innerHTML =
               <polygon points="0 0,7 3.5,0 7" fill="var(--causal-path)" />
             </marker>
           </defs>
-          <path d="M150 128H237" marker-end="url(#arrow)" />
+          <path id="instrument-path" d="M150 128H237" marker-end="url(#arrow)" />
           <path d="M345 128H470" marker-end="url(#arrow)" />
           <path d="M380 55L302 103" marker-end="url(#arrow)" />
           <path d="M402 55L513 103" marker-end="url(#arrow)" />
@@ -133,7 +134,7 @@ document.querySelector("#app").innerHTML =
             <div class="track"><div class="fill blue" id="bar1"></div></div>
             <span id="uptake1"></span>
           </div>
-          <p class="small">
+          <p class="small" id="uptake-note">
             Z changes how many people receive treatment. The treatment effect
             itself stays at 2.
           </p>
@@ -143,20 +144,28 @@ document.querySelector("#app").innerHTML =
           ><button id="reset">Restart section</button
           ><span class="small" id="sample"></span>
         </div>
-        <details id="study-detail">
-          <summary id="study-title">
-            Why can adjusting for Z increase variability?
-          </summary>
-          <p id="study-mechanism"></p>
+        <section id="study-detail" aria-labelledby="study-title">
+          <h2 id="study-title">Next: compare variability across studies</h2>
           <p id="study-explanation"></p>
+          <div id="instrument-control">
+            <label for="instrument-strength">Z → treatment strength <output id="instrument-value" for="instrument-strength">2.8</output></label>
+            <input id="instrument-strength" type="range" min="0" max="2.8" step="0.1" value="2.8" aria-describedby="instrument-help instrument-status" />
+            <p class="small" id="instrument-help">Lower the strength, then rerun the studies. The same people and random draws are retained; treatment and outcomes can change. The true effect stays at 2.</p>
+            <p class="small" id="instrument-status" role="status"></p>
+          </div>
           <p>
             Run 200 independent studies of 2,400 people. Compare adjustment for
             C alone with C + Z using the same people in each paired comparison.
           </p>
           <button id="repeat">Run 200 studies</button>
-          <p id="study-progress" class="small" role="status"></p>
+          <p id="study-progress" class="study-progress" role="status"></p>
+          <p id="study-warning" class="small"></p>
           <div id="study-results"></div>
-        </details>
+          <details id="study-reason">
+            <summary id="study-reason-title"></summary>
+            <p id="study-mechanism"></p>
+          </details>
+        </section>
       </section>
       <details>
         <summary id="detail-title"></summary>
@@ -176,14 +185,16 @@ setupLessonNavigation();
 
 import { instrumentAdjustment, studySummary } from "./instrument-simulation.js";
 const el = (id) => document.getElementById(id);
+const step =
+  new URLSearchParams(location.search).get("lesson") ===
+  "instrument-hidden-confounding"
+    ? 2
+    : 1;
 const state = {
-  step:
-    new URLSearchParams(location.search).get("lesson") ===
-    "instrument-hidden-confounding"
-      ? 2
-      : 1,
+  step,
   seed: 4217,
   adjust: false,
+  strength: step === 1 ? 2.8 : 2,
   hidden: 0,
 };
 let batchStart = 100,
@@ -213,7 +224,7 @@ const lessons = [
     instruction:
       "Add Z to the adjustment set, then remove it. The people, outcomes, and treatment uptake below stay fixed.",
     interpretation:
-      "Z is not a confounder. Adding it can change the estimates in this sample and increase their spread across studies, even when they remain centered near the true effect.",
+      "Z is not a confounder. Here, adjusting for C already controls confounding, so adding Z does not introduce confounding bias. It can reduce precision: estimates vary more across studies. One estimate cannot show that difference—compare repeated studies below.",
     detailTitle: "An example of an instrument",
     detail:
       "<p>Imagine randomly assigning an invitation to take treatment. The invitation is Z; receiving treatment is A. For the invitation to be an instrument, it must change uptake and affect Y only through receiving treatment. Random assignment makes it independent of baseline causes.</p><p>In a real study these conditions need justification. Here they are built into the simulation.</p><p>The checkbox adds Z to the IPW treatment model, the outcome-regression model, and both AIPW models. C remains included. This example uses a binary measured baseline factor C, so both treatment models are correctly specified when U is absent.</p>",
@@ -260,6 +271,22 @@ function render() {
       : "";
   const comparing = state.step === 2;
   el("hidden-control").hidden = !comparing;
+  el("instrument-control").hidden = comparing;
+  el("instrument-strength").value = state.strength;
+  el("instrument-strength").style.setProperty(
+    "--fill",
+    `${(100 * state.strength) / 2.8}%`,
+  );
+  el("instrument-value").textContent = state.strength.toFixed(1);
+  el("instrument-status").textContent =
+    state.strength === 0
+      ? "Z has no effect on treatment at zero; it is no longer an instrument."
+      : "Changing strength clears study results. Compare with and without Z at each strength.";
+  el("instrument-path").classList.toggle("inactive", state.strength === 0);
+  el("uptake-note").textContent =
+    state.strength === 0
+      ? "Any uptake difference at zero is due to chance. The treatment effect stays at 2."
+      : "Z changes how many people receive treatment. The treatment effect itself stays at 2.";
   el("paired-results").hidden = !comparing;
   el("single-results").hidden = comparing;
   el("adjust-control").hidden = comparing;
@@ -276,26 +303,31 @@ function render() {
   el("hidden-node").style.visibility = state.step === 2 ? "visible" : "hidden";
   el("graph").setAttribute(
     "aria-label",
-    `Instrument Z causes A, A causes Y, and measured C causes both A and Y.${state.step === 2 ? (state.hidden ? " Unmeasured U also causes A and Y." : " Unmeasured U is shown with both paths inactive at zero strength.") : ""}`,
+    `Z ${state.strength === 0 ? "has no effect on A" : "causes A"}, A causes Y, and measured C causes both A and Y.${state.step === 2 ? (state.hidden ? " Unmeasured U also causes A and Y." : " Unmeasured U is shown with both paths inactive at zero strength.") : ""}`,
   );
   el("adjust").checked = state.adjust;
   el("study-title").textContent =
     state.step === 1
-      ? "Why can adjusting for Z increase variability?"
+      ? "Next: compare variability across studies"
       : "Compare bias and spread across studies";
   el("study-explanation").textContent = comparing
     ? "Mean estimate minus truth estimates bias across studies. The C-only bias is already present; the change in bias after adding Z shows whether it is amplified. SD measures spread, not bias."
     : "The mean estimate shows where estimates are centered. Their standard deviation (SD) shows how much they vary between studies. Larger SD means less precision; it does not mean the average estimate is shifted away from truth.";
+  el("study-reason-title").textContent = comparing
+    ? "Which hidden-confounding strength is used?"
+    : "Why can adjusting for Z increase variability?";
   el("study-mechanism").textContent =
     state.step === 1
-      ? "Z predicts treatment but adds no outcome information once A and C are known. Adjusting for Z can leave less independent treatment variation and make IPW weights more uneven."
+      ? state.strength === 0
+        ? "At zero, Z predicts neither treatment nor outcome. Adding it can still change a finite-sample fit by chance, but there is no treatment variation supplied by Z to remove."
+        : "Z predicts treatment but adds no outcome information once A and C are known. Adjusting for Z can leave less independent treatment variation and make IPW weights more uneven."
       : `Both analyses use hidden confounding strength ${state.hidden.toFixed(1)}. Changing strength clears these results.`;
   el("model-note").textContent = comparing
     ? "IPW, outcome regression, and AIPW each compare C only with C + Z. U stays unavailable to their models."
     : `All three methods adjust for ${state.adjust ? "C and Z" : "C"}.`;
   const { data, fits } = instrumentAdjustment({
     seed: state.seed,
-    strength: 2,
+    strength: state.strength,
     hidden: state.hidden,
   });
   el("paired-values").innerHTML = methods
@@ -331,19 +363,28 @@ function clearStudies() {
   el("repeat").disabled = false;
   el("repeat").textContent = "Run 200 studies";
   el("study-progress").textContent = "";
+  el("study-warning").textContent = "";
+  el("study-results").classList.remove("studies-animating");
+  el("study-results").setAttribute("aria-busy", "false");
   el("study-results").innerHTML = "";
 }
 function enter(step) {
   clearStudies();
   state.hidden = 0;
+  state.strength = step === 1 ? 2.8 : 2;
   state.step = step;
   state.adjust = false;
   state.seed = 4217;
-  el("study-detail").open = false;
+  el("study-reason").open = false;
   el("detail").parentElement.open = false;
   render();
   el("title").focus();
 }
+el("instrument-strength").addEventListener("input", (e) => {
+  state.strength = Number(e.target.value);
+  clearStudies();
+  render();
+});
 el("hidden-strength").addEventListener("input", (e) => {
   state.hidden = Number(e.target.value);
   clearStudies();
@@ -362,6 +403,7 @@ el("reset").addEventListener("click", () => enter(state.step));
 el("repeat").addEventListener("click", async () => {
   const current = ++runId;
   const hidden = state.hidden;
+  const strength = state.strength;
   const start = batchStart;
   const values = Array.from({ length: 2 }, () =>
     Array.from({ length: 3 }, () => []),
@@ -369,11 +411,18 @@ el("repeat").addEventListener("click", async () => {
   const names = methods.map(([name]) => name);
   let clipped = 0;
   el("repeat").disabled = true;
+  el("repeat").textContent = "Running studies…";
+  el("study-warning").textContent = "";
+  el("study-results").setAttribute("aria-busy", "true");
   el("study-results").innerHTML = "";
   try {
     for (let i = 0; i < 200; i++) {
       if (current !== runId) return;
-      const { fits } = instrumentAdjustment({ seed: start + i, hidden });
+      const { fits } = instrumentAdjustment({
+        seed: start + i,
+        hidden,
+        strength,
+      });
       fits.forEach((f, j) => {
         clipped += f.clipped;
         [3, 2, 4].forEach((index, k) => values[j][k].push(f.values[index]));
@@ -385,31 +434,13 @@ el("repeat").addEventListener("click", async () => {
     }
     if (current !== runId) return;
     const stats = values.map((arm) => arm.map((v) => studySummary(v)));
-    // Bar lengths share a fixed scale; tint compares SD within each pair.
-    const sdLimit = 0.1;
-    const sdRow = (sd, other, label) => {
-      const width = Number.isFinite(sd) ? Math.min(sd / sdLimit, 1) * 100 : 0;
-      const extra =
-        Number.isFinite(sd) && Number.isFinite(other) && sd > other
-          ? other > 0
-            ? 100 * (sd / other - 1)
-            : 27
-          : 0;
-      const tint = 1 + Math.min(extra, 27);
-      return `<div class="sd-row"><span class="sd-label">${label}</span><span class="sd-track" aria-hidden="true"><span class="sd-bar" style="width:${width}%;--sd-tint:${tint}%"></span></span><strong>${fmt(sd)}</strong></div>`;
-    };
-    const change = (before, after) => {
-      if (!Number.isFinite(before) || !Number.isFinite(after) || before === 0)
-        return "Change unavailable";
-      const percent = 100 * (after / before - 1);
-      return `${percent > 0 ? "+" : ""}${percent.toFixed(0)}% SD`;
-    };
     const spread =
-      `<h3>How much do estimates vary?</h3><p class="small">SD across 200 studies. Both analyses adjust for C; the second also adds Z.</p><div class="sd-comparison">${names.map((name, k) => `<section class="sd-method" aria-label="${name} standard deviation"><div class="sd-method-header"><h4>${name}</h4><span class="sd-change">${change(stats[0][k].sd, stats[1][k].sd)} with Z</span></div>${sdRow(stats[0][k].sd, stats[1][k].sd, "Without Z")}${sdRow(stats[1][k].sd, stats[0][k].sd, "With Z")}</section>`).join("")}</div><p class="small">Bars share a 0–0.100 SD scale. Light red marks extra spread within each pair. Seeds ${start}–${start + 199}.${stats.flat().some((s) => s.sd > sdLimit) ? " Bars stop at 0.100; numbers retain the full SD." : ""}</p>` +
+      `<h3>How much do estimates vary?</h3><p class="small">Each dot is one study’s estimate. Compare the widths with and without Z: a wider cloud means less precision.</p><p class="study-key"><span><span class="study-truth-key"></span> True effect: 2</span><span class="study-summary"><span class="study-range-key"></span> Middle 90% of estimates</span></p>${studyDistributions(values, stats, names, start)}<p class="small study-summary">The ranges span the 5th–95th percentiles across studies, not confidence intervals. Dots stack where estimates concentrate. All plots share the same effect axis.</p><p class="small study-summary">200 studies · Z → treatment strength ${strength.toFixed(1)} · Seeds ${start}–${start + 199}.</p>` +
       (state.step === 1
-        ? `<details id="study-means"><summary>Are estimates still centered near truth?</summary><p>The mean shows where estimates are centered; the true total effect is 2. ${hidden ? "Here U creates bias, so greater spread is only part of the error." : "Here the means stay near truth even though adding Z increases sampling spread."}</p><table><thead><tr><th>Mean estimate</th><th>Without Z</th><th>With Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].mean)}</td><td>${fmt(stats[1][k].mean)}</td></tr>`).join("")}</tbody></table></details>`
+        ? `<details id="study-means" class="study-summary"><summary>Are estimates still centered near truth?</summary><p>The mean shows where estimates are centered; the true total effect is 2. ${hidden ? "Here U creates bias, so greater spread is only part of the error." : "With confounding controlled and correctly specified models, both analyses are centered near truth across repeated studies. Compare the observed spread above; adding Z need not increase it in every batch or at every strength."}</p><table><thead><tr><th>Mean estimate</th><th>Without Z</th><th>With Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].mean)}</td><td>${fmt(stats[1][k].mean)}</td></tr>`).join("")}</tbody></table></details>`
         : "") +
-      `<p class="small">SD is in outcome units; variance is SD squared. A new batch will give slightly different results. These are sampling summaries, not confidence intervals.</p><details><summary>Does more spread mean more error?</summary><p>When estimates are centered at truth, greater variance means greater mean squared error. Root mean squared error (RMSE) expresses that error in outcome units. It need not increase for every individual study.</p><table><thead><tr><th>Method</th><th>RMSE: C</th><th>RMSE: C + Z</th></tr></thead><tbody>${names.map((name, k) => `<tr><th scope="row">${name}</th><td>${fmt(stats[0][k].rmse)}</td><td>${fmt(stats[1][k].rmse)}</td></tr>`).join("")}</tbody></table><p>With hidden confounding, error reflects both spread and systematic bias.</p><p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3254160/">Read more: adjustment for instruments, bias, and precision</a></p></details>`;
+      `<p class="small study-summary">${state.step === 1 ? "Greater spread means estimates are typically farther from truth, even though adding Z may bring an individual estimate closer." : "With hidden confounding, error reflects both spread and systematic bias."}</p>`;
+
     if (state.step === 2) {
       el("study-results").innerHTML =
         `<div id="bias-comparison"><h3>Where are estimates centered?</h3><p class="small">True effect: 2 · Strength: ${hidden.toFixed(1)} · 200 studies · Seeds ${start}–${start + 199}</p>${names
@@ -427,14 +458,30 @@ el("repeat").addEventListener("click", async () => {
           .join(
             "",
           )}<p class="small">The same red tint and darker strip now compare mean errors across studies. Bias is amplified when the mean moves farther from 2. The signed change is C + Z minus C only; a positive change alone does not establish amplification. A new batch can differ, and the pattern need not hold in every causal world.</p></div><details><summary>Sampling spread and other summaries</summary>${spread}</details>`;
-    } else el("study-results").innerHTML = spread;
+    } else {
+      el("study-results").innerHTML = spread;
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        el("repeat").textContent = "Showing study estimates…";
+        el("study-progress").textContent =
+          "Showing paired estimates from 200 studies.";
+        el("study-results").classList.add("studies-animating");
+        // Paired dots share their delay; the last pair finishes within four seconds.
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        if (current !== runId) return;
+        el("study-results").classList.remove("studies-animating");
+      }
+    }
     const unavailable = stats.flat().reduce((s, r) => s + r.unavailable, 0);
-    el("study-progress").textContent =
-      `200 studies complete.${unavailable ? " " + unavailable + " estimates unavailable; summaries use available estimates only." : ""}${clipped ? " " + clipped + " probabilities clipped across fits." : ""}`;
+    el("study-progress").textContent = "200 studies complete.";
+    el("study-warning").textContent =
+      `${unavailable ? unavailable + " estimates unavailable; summaries use available estimates only. " : ""}${clipped ? clipped + " probabilities clipped across fits." : ""}`;
     batchStart += 200;
     el("repeat").textContent = "Run another 200 studies";
   } finally {
-    if (current === runId) el("repeat").disabled = false;
+    if (current === runId) {
+      el("repeat").disabled = false;
+      el("study-results").setAttribute("aria-busy", "false");
+    }
   }
 });
 window.addEventListener("pageshow", (event) => {
