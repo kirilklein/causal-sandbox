@@ -148,6 +148,22 @@ const guides = [
 export const searchEntries = [
   { ...conceptMap, type: "Concept map" },
   { ...openingLesson, type: "Opening lesson" },
+  {
+    title: "Starting-point quiz",
+    aliases: ["Quiz", "Entry quiz"],
+    type: "Quiz",
+    href: "?lesson=quiz",
+    description: "Check your understanding and get suggested lessons.",
+    keywords: "assessment practice",
+  },
+  {
+    title: "Final quiz",
+    type: "Quiz",
+    href: "?lesson=final-quiz",
+    description:
+      "Apply what you learned in the core course and review feedback.",
+    keywords: "assessment practice",
+  },
   ...lessonExperiments.map((experiment) => ({
     ...experiment,
     type: "Experiment",
