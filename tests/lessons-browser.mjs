@@ -83,7 +83,7 @@ try {
         await explanation.locator("summary").click();
       await explanation.locator("summary").focus();
       await page.keyboard.press("Enter");
-      assert.equal(await explanation.evaluate((el) => el.open), true);
+      await expect(explanation).toHaveJSProperty("open", true);
       await checkClippingStatus(false);
       assert.equal(await page.locator(".lesson-results").innerText(), before);
       assert.equal(await page.locator("#sample-label").innerText(), sample);
