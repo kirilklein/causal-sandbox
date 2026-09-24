@@ -1,0 +1,399 @@
+.inference-page .inference-result {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface-subtle);
+  border-radius: 10px;
+  margin: 18px 0;
+}
+.inference-result strong {
+  display: block;
+  font-size: clamp(23px, 4vw, 32px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.inference-result span {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.inference-page .inference-chart {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.inference-chart text {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+.inference-chart path {
+  fill: none;
+}
+.inference-chart .inference-grid {
+  stroke: var(--grid);
+}
+.inference-chart .inference-truth {
+  stroke: var(--truth);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.inference-interval {
+  stroke: var(--estimate);
+  fill: var(--estimate);
+  stroke-width: 2;
+}
+.inference-interval.missed {
+  stroke: var(--error-mark);
+  fill: var(--error-mark);
+}
+.inference-interval.missed > path {
+  stroke-dasharray: 3 2;
+}
+.inference-density {
+  stroke: var(--estimate);
+  stroke-width: 2;
+}
+.inference-chart .inference-tail {
+  fill: color-mix(in srgb, var(--accent) 35%, var(--surface));
+  stroke: var(--accent);
+}
+.inference-observed {
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.null-dot {
+  fill: var(--estimate);
+}
+.inference-page .inference-controls {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+.inference-controls label {
+  display: block;
+  font-weight: 600;
+}
+.inference-controls label output {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+.inference-controls input[type="range"] {
+  width: 100%;
+  margin-top: 14px;
+  accent-color: var(--accent);
+  background: var(--border-strong);
+  height: 6px;
+  margin-block: 18px;
+}
+.inference-controls input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+}
+.inference-controls input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+}
+.inference-controls input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+.inference-page .inference-takeaway {
+  border-left: 3px solid var(--truth);
+  background: var(--surface-subtle);
+  padding: 14px 18px;
+}
+.inference-page .inference-check button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  text-align: left;
+}
+.inference-page .inference-check button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
+.inference-page button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+@media (max-width: 560px) {
+  .inference-page .inference-result {
+    padding: 12px;
+    gap: 10px;
+  }
+  .inference-page .inference-chart text {
+    font-size: 11px;
+  }
+}
+
+.bootstrap-bar {
+  fill: var(--estimate);
+  opacity: 0.65;
+}
+
+.inference-page .experiment-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.inference-page .experiment-heading h2 {
+  margin: 0;
+}
+.experiment-tag,
+.plot-heading {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.inference-page .inference-prompt {
+  font-weight: 600;
+  margin: 18px 0 8px;
+}
+.plot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 12px 0;
+}
+.legend-truth {
+  color: var(--truth);
+}
+.legend-miss {
+  color: var(--error-mark);
+}
+.inference-chart .estimate-label {
+  font-size: 18px;
+  font-weight: 600;
+  fill: var(--text);
+}
+.coverage-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.coverage-readout strong,
+.p-readout strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.coverage-readout > span,
+.p-readout > span {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.coverage-bar {
+  width: 100%;
+  height: 7px;
+  background: var(--error-mark);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.coverage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--estimate);
+}
+.assignment-chart {
+  max-width: 330px;
+  margin: 0 auto;
+}
+.assignment-chart .assignment-edges {
+  stroke: var(--causal-path);
+  stroke-width: 2;
+}
+.assignment-chart marker path {
+  fill: var(--causal-path);
+}
+.assignment-chart .node-c {
+  fill: var(--node-C);
+}
+.assignment-chart .node-a {
+  fill: var(--node-A);
+}
+.assignment-chart .node-y {
+  fill: var(--node-Y);
+}
+.assignment-chart text {
+  fill: var(--text);
+}
+.resample-trace {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.resample-person {
+  padding: 10px;
+  background: var(--surface-subtle);
+  border-radius: 8px;
+}
+.person-copies {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+.person-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  border: 1.5px solid;
+  border-radius: 50%;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.person-token.arm-0 {
+  color: var(--arm-0);
+}
+.person-token.arm-1 {
+  color: var(--arm-1);
+  border-radius: 3px;
+}
+.resampled-copies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.person-omitted {
+  font-size: 22px;
+  color: var(--text-secondary);
+}
+.person-pending {
+  color: var(--text-secondary);
+}
+.observed-chain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 20px 0;
+}
+.observed-chain > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.observed-chain div span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.observed-chain strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.p-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.paired-inference {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 20px;
+}
+.inference-page .plot-heading {
+  margin-bottom: 8px;
+}
+@media (max-width: 560px) {
+  .resample-trace {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .resample-person {
+    padding: 8px;
+  }
+  .person-copies {
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .observed-chain {
+    gap: 5px;
+  }
+  .observed-chain strong {
+    font-size: 22px;
+  }
+  .paired-inference {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .observed-chain div span {
+    font-size: 11px;
+  }
+}
+
+.arm-key-0 {
+  color: var(--arm-0);
+}
+.arm-key-1 {
+  color: var(--arm-1);
+}
+.bootstrap-first {
+  fill: var(--text);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+
+.bootstrap-se-path {
+  stroke: var(--estimate);
+  stroke-width: 2;
+}
+.bootstrap-se-reference {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+.bootstrap-se-current {
+  fill: var(--estimate);
+}
+
+.inference-zero {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.opening-estimate {
+  fill: var(--estimate);
+}
+.opening-interval {
+  stroke: var(--estimate);
+  stroke-width: 2.5;
+}
+
+.sampling-stage {
+  position: relative;
+}
+.sampling-stage .inference-interval {
+  stroke-width: 1.2;
+}
+#sampling-prompt {
+  position: absolute;
+  top: 40%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  pointer-events: none;
+}
+#sampling-prompt span {
+  display: inline-block;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: 8px;
+}
+#sampling-progress {
+  font-variant-numeric: tabular-nums;
+}

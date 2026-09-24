@@ -1,27 +1,24 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { graphPreset } from "../src/graph-presets.js";
 import { simulateGraph, analyzeGraph } from "../src/graph-simulation.js";
 
-const appUrl = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
+const appUrl = getAppUrl();
+const browser = await launchBrowser();
 try {
   const page = await browser.newPage({
     viewport: { width: 1360, height: 1100 },
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await page.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  collectPageErrors(page, errors);
+  await stubGoatCounter(page);
   await mkdir("artifacts", { recursive: true });
   const values = () => page.locator(".lab-estimate-value").allTextContents();
   const truth = () => page.locator("#lab-truth").innerText();

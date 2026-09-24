@@ -1,0 +1,86 @@
+.concept-map-card {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: center;
+  gap: 24px;
+  margin: 28px 0;
+  padding: 30px 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 90% 50%, var(--accent-surface), transparent 70%),
+    var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.concept-map-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px var(--shadow-soft);
+}
+.concept-map-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
+}
+.map-kicker {
+  display: block;
+  font-size: 10px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+.learning .concept-map-card h2 {
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin: 12px 0;
+}
+.concept-map-card p {
+  max-width: 390px;
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.map-card-action {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--accent);
+}
+.map-preview {
+  width: 100%;
+  overflow: visible;
+}
+.map-preview-path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.map-preview circle {
+  fill: var(--surface);
+  stroke: var(--accent);
+}
+.map-preview text {
+  fill: var(--text);
+  font: 11px monospace;
+  text-anchor: middle;
+}
+@media (max-width: 600px) {
+  .concept-map-card {
+    grid-template-columns: 1fr;
+    padding: 24px;
+    gap: 6px;
+  }
+  .concept-map-card .map-preview {
+    max-width: 320px;
+    height: 115px;
+    justify-self: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .concept-map-card {
+    transition: none;
+  }
+}

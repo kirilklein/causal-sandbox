@@ -11,19 +11,29 @@ const changes = {
   10: "Same causal graph; we return to simple relationships and explore stronger treatment selection.",
 };
 
-export function graphComparison(level, revisiting) {
+export function graphComparison(level, revisiting, separate = false) {
   const change = revisiting
     ? "We return to the graph with unmeasured U, now comparing AIPW too. U’s influence starts at zero."
     : changes[level];
-  return `<div class="graph-comparison">
-    <button id="compare-graph" aria-expanded="false" aria-controls="graph-comparison-options">Compare with previous</button>
+  const target = separate ? "comparison-graph" : "lesson-graph";
+  const label =
+    separate && level === 8
+      ? "How is this different from a mediator?"
+      : separate
+        ? "Compare with the TMLE setup"
+        : level === 3
+          ? "Compare with common cause"
+          : "Compare with previous";
+  return `<div class="graph-comparison${separate ? " graph-comparison-separate" : ""}">
+    <button id="compare-graph" aria-expanded="false" aria-controls="graph-comparison-options">${label}</button>
     <div id="graph-comparison-options" hidden>
       <p>${change}</p>
       <div class="graph-comparison-switch" role="group" aria-label="Diagram view">
-        <button data-graph-view="previous" aria-pressed="false" aria-controls="lesson-graph">Previous</button>
-        <button data-graph-view="current" aria-pressed="true" aria-controls="lesson-graph">Current</button>
+        <button data-graph-view="previous" aria-pressed="false" aria-controls="${target}">Previous</button>
+        <button data-graph-view="current" aria-pressed="true" aria-controls="${target}">Current</button>
       </div>
-      <p class="sample-note">Controls and results below stay on the current lesson.</p>
+      <p class="sample-note">${separate ? "The experiment above stays on the current lesson." : "Controls and results below stay on the current lesson."}</p>
+      ${separate ? '<div id="comparison-graph"></div>' : ""}
     </div>
   </div>`;
 }

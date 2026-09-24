@@ -1,4 +1,6 @@
 import {
+  conceptMap,
+  openingLesson,
   coreLessons,
   lessonHref,
   optionalChapters,
@@ -9,6 +11,22 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "front-door": [
+    "Recover a total causal effect through a mediator under front-door assumptions, despite hidden confounding.",
+    "frontdoor front-door front door criterion identification mediator mediation hidden unmeasured confounding tutoring practice",
+  ],
+  "trajectory-landscape": [
+    "Unfold patient trajectories to see confounding by indication.",
+    "patient trajectory futures landscape confounding indication severity counterfactual",
+  ],
+  uncertainty: [
+    "Read confidence intervals, explore repeated-study coverage, and distinguish precision from bias.",
+    "uncertainty confidence interval CI standard error sampling variability coverage precision bias bootstrap bootstrapping resampling",
+  ],
+  "p-values": [
+    "Compare results with a zero-effect world and connect p-values to confidence intervals.",
+    "p value pvalue p-value significance hypothesis test null probability precision",
+  ],
   randomization: [
     "Compare treatment groups when treatment is assigned at random.",
     "randomized experiment RCT",
@@ -38,8 +56,8 @@ const lessonDetails = {
     "unmeasured confounding exchangeability",
   ],
   misspecification: [
-    "Compare models that can and cannot capture the outcome pattern.",
-    "model specification flexibility interaction",
+    "Separate causal assumptions from how models represent outcome and treatment relationships.",
+    "causal statistical model specification functional form misspecification flexibility quadratic interaction",
   ],
   "double-robustness": [
     "Combine treatment and outcome models to see how double robustness works.",
@@ -76,6 +94,10 @@ const lessonDetails = {
   "time-varying-confounding": [
     "Explore treatment decisions linked across two visits.",
     "longitudinal time varying confounding sequential IPTW treatment confounder feedback",
+  ],
+  "causal-relevance": [
+    "Adjust for an observed proxy of a hidden confounder and see why bias can decrease without disappearing.",
+    "causal relevance irrelevant irrelevance unknown non-contributing proxy predictor prediction feature importance direct total effect adjustment usefulness",
   ],
   instrument: [
     "Explore how adjusting for an instrument can amplify hidden-confounding bias.",
@@ -124,6 +146,24 @@ const guides = [
 
 // Pages that also host lessons use the lesson's single canonical destination.
 export const searchEntries = [
+  { ...conceptMap, type: "Concept map" },
+  { ...openingLesson, type: "Opening lesson" },
+  {
+    title: "Starting-point quiz",
+    aliases: ["Quiz", "Entry quiz"],
+    type: "Quiz",
+    href: "?lesson=quiz",
+    description: "Check your understanding and get suggested lessons.",
+    keywords: "assessment practice",
+  },
+  {
+    title: "Final quiz",
+    type: "Quiz",
+    href: "?lesson=final-quiz",
+    description:
+      "Apply what you learned in the core course and review feedback.",
+    keywords: "assessment practice",
+  },
   ...lessonExperiments.map((experiment) => ({
     ...experiment,
     type: "Experiment",

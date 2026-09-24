@@ -27,6 +27,7 @@ import {
   recordPredictionAnswer,
 } from "./progress.js";
 import "./tmle-lesson.css";
+import { conceptMapCard } from "./concept-map-card.js";
 
 const lessons = [
   {
@@ -46,11 +47,11 @@ const lessons = [
     question:
       "With random assignment, will the observed outcome difference equal the true effect?",
     transition:
-      "<strong>True effect:</strong> Imagine the same population under two alternatives: everyone receives treatment, or nobody does. The true effect is the average outcome under the first alternative minus the average under the second.",
+      "<strong>True effect:</strong> Imagine the same population under two alternatives: everyone receives treatment, or nobody does. The true effect is the average outcome under the first alternative minus the average under the second. This experiment uses a new population of 2,400 people and an adjustable effect.",
     instruction:
       "Change the treatment effect, then redraw the sample to see how estimates vary.",
     explanation:
-      "Random assignment makes the groups comparable before treatment in the population. The unadjusted difference can estimate the treatment effect without adjustment. A finite sample still has chance differences, so its estimate need not equal the truth.",
+      "Random assignment makes the groups comparable before treatment in the population. The treated group’s average estimates the population average under treatment; the untreated group’s average estimates it without treatment. Their difference estimates the average effect, while individual counterfactuals remain unobserved. A finite sample still has chance differences, so its estimate need not equal the truth.",
     next: "In practice, a person's health can affect whether they receive treatment. What changes then?",
   },
   {
@@ -62,7 +63,7 @@ const lessons = [
       "Increase how strongly the risk score influences treatment assignment. Compare the outcome difference with the true effect.",
     explanation:
       "When the risk score affects both treatment and outcome, it is a common cause, or confounder. The groups differ before treatment, so their outcome difference mixes the treatment effect with the risk score's influence. Returning the slider to zero restores random assignment, though C still affects the outcome. With sampling variation, the estimate need not move steadily away from truth.",
-    next: "How can we compare the groups while accounting for their different risk scores?",
+    next: "Bias shifts the comparison; sampling variation makes estimates fluctuate. What can one study tell us about its precision?",
   },
   {
     question:
@@ -78,23 +79,27 @@ const lessons = [
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
   },
   {
-    question: "Can we predict outcomes under each treatment?",
+    question: "How do predictions become an average effect?",
     transition:
       "The confounded world stays the same. Both models now account for the risk score.",
     instruction: "Compare the estimates, then redraw to see how they vary.",
     explanation:
-      "Here both models capture the correct relationships and C is the only common cause. Both methods can estimate the effect; neither must equal truth in a sample.",
+      "Here both models capture the correct relationships and C is the only common cause. Both methods can estimate the effect. Neither must equal truth in a sample.",
     next: "Both methods account for C. Should we also account for variables that treatment changes?",
   },
   {
     question: "Which relationship does each method need to model?",
     transition:
-      "Here, we explore what happens when one of the models is misspecified. We return to the simple scenario with one measured confounder, a risk score (C).",
+      "We return to one measured confounder, a risk score (C). Both models adjust for it. Is choosing the right variable enough?",
     instruction:
-      "Make the outcome relationship more complex, then make treatment assignment more complex. Compare which estimates are affected.",
-    explanation:
-      "A model is misspecified when it cannot represent the true relationship in the data. Here, making treatment assignment more complex misspecifies the simple propensity-score model, while making the outcome relationship more complex misspecifies the simple outcome model. A more flexible model is needed to capture either relationship correctly.",
-    next: "We may not know which model is adequate. Can we combine the two approaches?",
+      "Change which relationship is complex. Which method’s estimate is affected?",
+    explanation: [
+      "<strong>Simple relationships:</strong> Both models can represent the relationships generating the data. Estimates can still differ from truth because of sampling variation.",
+      "<strong>Complex outcome relationship:</strong> The outcome model misses the added curve. Outcome regression loses its correct-model guarantee; IPW still uses a correctly specified treatment model.",
+      "<strong>Complex treatment assignment:</strong> The treatment model misses the added pattern. IPW loses its correct-model guarantee; outcome regression still uses a correctly specified outcome model.",
+      "Choosing the right adjustment variables is not enough—the model must also represent the relevant relationship. One sample cannot establish a method’s bias.",
+    ],
+    next: "Outcome regression and IPW each rely on a different model. Could one method use both and still work when one model is wrong?",
   },
   {
     question: "Can combining the models help when one is too simple?",
@@ -103,7 +108,14 @@ const lessons = [
     instruction:
       "Make either model too simple by unchecking it. Then uncheck both. What happens to AIPW?",
     explanation:
-      "With confounding controlled and overlap—people with similar risk scores can receive either treatment—AIPW can approach the true effect as samples grow if either model is correctly specified. It need not be exact or closest to truth in this sample. If both models are wrong, that protection is lost. Double robustness does not repair missing confounders or invalid adjustment.",
+      "With valid causal assumptions and sufficient overlap, AIPW can approach the true effect as samples grow if either the outcome model or the treatment propensity model consistently learns the correct relationship. This is double robustness. It does not fix an invalid adjustment set or unmeasured confounding, and it need not give the closest estimate in this sample.",
+    intuition: {
+      title: "Precise guarantee and limits",
+      paragraphs: [
+        'Under causal identification assumptions and regularity conditions, AIPW is consistent if either model is correctly specified and consistently estimated. Positivity requires that people at each relevant combination of adjustment variables can receive either treatment. See <a href="https://pubmed.ncbi.nlm.nih.gov/16401269/">Bang &amp; Robins (2005)</a>.',
+        'If both models are misspecified, there is no general guarantee, although particular errors can cancel. Double robustness also does not guarantee lower mean squared error than other estimators. See <a href="https://doi.org/10.1214/07-STS227">Kang &amp; Schafer (2007)</a>.',
+      ],
+    },
     next: "One correct model can protect against model mismatch. Revisit hidden confounding to see the limit of that protection, or continue to see how TMLE builds the correction into the predictions.",
   },
   {
@@ -188,12 +200,14 @@ lessons[10] = {
   transition:
     "Same curved world as AIPW. The treatment model captures the relationship, while the initial outcome model misses the curve. The risk score is the only common cause.",
   instruction:
-    "Apply the fitted update. Watch the predictions change and the remaining weighted error approach zero.",
+    "TMLE starts with outcome-regression predictions and <strong>applies an update</strong> based on observed prediction errors and inverse-probability weights.",
   explanation:
     "TMLE updates the outcome predictions in a direction determined by the treatment probabilities. It fits the size of that update from observed outcomes, then averages the updated treated-versus-untreated predictions. Making the weighted error zero is not proof of a correct causal estimate: confounding must be controlled, overlap must hold, and at least one model must be adequate.",
   next: "Targeting uses treatment probabilities too. What happens when comparable people rarely receive the opposite treatment?",
 };
 lessons[11] = {};
+// The uncertainty chapter has its own renderer and retains a stable numeric ID.
+lessons[13] = {};
 for (const [id, slug, title] of coreLessons)
   Object.assign(lessons[id - 1], { slug, title });
 const availableLevels = coreLessons.map(([id]) => id);
@@ -201,7 +215,7 @@ const hiddenCallback = {
   ...lessons[8],
   title: "Revisit hidden confounding with AIPW",
   transition:
-    "We return to the hidden-confounding experiment from level 7, with simple relationships and smoking’s influence reset to zero. Both models use C; neither can use smoking status. AIPW is now included in the comparison.",
+    "We return to the hidden-confounding experiment from the hidden-common-cause lesson, with simple relationships and smoking’s influence reset to zero. Both models use C; neither can use smoking status. AIPW is now included in the comparison.",
   explanation:
     "AIPW combines the same predictions and weights as before. A correct model for one part of an identified causal problem can protect against the other model being wrong; it cannot supply missing confounding information. As smoking’s influence grows, all three estimates can miss the true effect. Agreement between methods does not establish that confounding has been controlled.",
   next: "Return to the fixed model experiment, or continue to targeting: can we build the correction into the outcome predictions?",
@@ -234,7 +248,7 @@ function enterFromUrl(focus = true) {
     );
     return;
   }
-  const named = lessons.findIndex((lesson) => lesson.slug === topic) + 1;
+  const named = lessons.findIndex((lesson) => lesson?.slug === topic) + 1;
   const requested = topic ? named : Number(params.get("level"));
   const level = availableLevels.includes(requested) ? requested : 1;
   const callback =
@@ -262,16 +276,24 @@ function controls(level) {
   if (level === 3)
     return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
-    return '<p id="regression-explanation">We fit a model to predict the observed outcome from treatment received and risk score. For each person, we observe the outcome under the treatment they received. What would have happened under the alternative is their counterfactual outcome. The model predicts outcomes under both treatment options at fixed risk score, and we average the predicted differences to estimate the average treatment effect.</p>';
+    return '<p id="regression-explanation">Fit outcomes using treatment and risk score. Predict each person’s outcome with and without treatment, then average the differences.</p>';
   if (level === 5)
     return `<fieldset id="model-experiment"><legend>Choose an experiment</legend>${[
-      ["simple", "Simple relationships"],
-      ["outcome", "More complex outcome relationship"],
-      ["treatment", "More complex treatment assignment"],
+      ["simple", "Simple relationships", "Both models correctly specified"],
+      [
+        "outcome",
+        "More complex outcome relationship",
+        "Outcome model misspecified",
+      ],
+      [
+        "treatment",
+        "More complex treatment assignment",
+        "Treatment model misspecified",
+      ],
     ]
       .map(
-        ([value, label]) =>
-          `<label class="lesson-switch"><input type="radio" name="model-experiment" value="${value}" ${value === "simple" ? "checked" : ""}>${label}</label>`,
+        ([value, label, status]) =>
+          `<div class="model-experiment-option"><label class="lesson-switch"><input type="radio" name="model-experiment" value="${value}" aria-describedby="${value}-model-status" ${value === "simple" ? "checked" : ""}>${label}</label><span class="sample-note" id="${value}-model-status">${status}</span></div>`,
       )
       .join(
         "",
@@ -324,14 +346,15 @@ function enterIntroduction(focus = true, animate = false) {
         <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
           <h1 tabindex="-1" id="intro-title">See what<br>causes what.</h1>
           <p class="intro-context">Learn through experiments, explore simulated worlds, or build your own causal graphs.</p>
+          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start here: one patient, two possible futures →</a>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
           <g class="intro-orbits"><circle cx="230" cy="170" r="125"/><circle cx="230" cy="170" r="85"/><path d="M30 170h400M230 20v280"/></g>
           <g class="intro-edges" fill="none" marker-end="url(#intro-arrow)"><path pathLength="1" d="M209 86 116 211"/><path pathLength="1" d="m251 86 93 125"/><path pathLength="1" d="M135 240h188"/></g>
-          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text><text class="intro-node-label" x="230" y="115">Context</text></g>
-          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text><text class="intro-node-label" x="94" y="296">Treatment</text></g>
-          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text><text class="intro-node-label" x="366" y="296">Outcome</text></g>
+          <g class="intro-node intro-node-c"><circle cx="230" cy="58" r="34"/><text x="230" y="59">C</text></g>
+          <g class="intro-node intro-node-a"><circle cx="94" cy="240" r="34"/><text x="94" y="241">A</text></g>
+          <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text></g>
         </svg>
       </section>
       <nav class="intro-paths" aria-label="Choose your way in">
@@ -348,6 +371,7 @@ function enterIntroduction(focus = true, animate = false) {
           <h2>Build</h2><p>Draw a causal graph and explore what your assumptions imply.</p><span class="intro-path-detail">Build a graph <span aria-hidden="true">→</span></span>
         </a>
       </nav>
+      ${conceptMapCard()}
       ${filmPreview()}
     </main>`;
   setupFilmPreview();
@@ -356,17 +380,25 @@ function enterIntroduction(focus = true, animate = false) {
 }
 
 function enter(level, focus = true, callback = false, restart = false) {
+  if (level === 14) {
+    location.assign(lessonUrl(level));
+    return;
+  }
   document.querySelector("#intro-film video")?.pause();
   revisiting = callback;
   const recap = level === 12;
+  const compactContext = [4, 5, 6, 11].includes(level);
   const position = availableLevels.indexOf(revisiting ? 6 : level);
   const previous = revisiting ? 6 : availableLevels[position - 1];
+  const previousExperiment = previous === 14 ? 2 : previous;
   previousGraph =
-    !recap && previous
+    !recap && !compactContext && previousExperiment
       ? {
           state:
-            state?.level === previous ? { ...state } : lessonBaseline(previous),
-          visited: state?.level === previous,
+            state?.level === previousExperiment
+              ? { ...state }
+              : lessonBaseline(previousExperiment),
+          visited: state?.level === previousExperiment,
         }
       : null;
   comparisonOpen = false;
@@ -376,6 +408,8 @@ function enter(level, focus = true, callback = false, restart = false) {
   noise = recap ? null : makeNoise(state.n, state.seed);
   revealed = false;
   const lesson = revisiting ? hiddenCallback : lessons[level - 1];
+  const repeatedStudies = level <= 2 && location.hash === "#repeated-studies";
+  const prediction = repeatedStudies ? null : lesson.prediction;
   const next = availableLevels[position + 1];
   if (!restart)
     capture("lesson_started", {
@@ -383,6 +417,8 @@ function enter(level, focus = true, callback = false, restart = false) {
       is_revisit: revisiting,
     });
   if (!revisiting) recordLessonStarted(lesson.slug);
+  const effectResults = `<div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
+        <p class="sample-note">Stronger red means farther from truth in this sample.</p>`;
   app.innerHTML = `
     <header class="lesson-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${themeControl()}</header>
     <main class="learning${level === 11 ? " tmle-learning" : ""}">
@@ -393,20 +429,20 @@ function enter(level, focus = true, callback = false, restart = false) {
           ? leavingTheSandbox()
           : `
       <p class="lesson-transition">${lesson.transition}</p>
+      ${level === 5 ? '<div id="model-specification"><p><strong>Causal specification:</strong> define the effect you want, the causal graph, and a valid adjustment set. Leaving out a confounder or adjusting for a mediator or collider can change what the comparison means.</p><p><strong>Statistical model specification:</strong> choose how the fitted models represent relationships among those variables. Missing a curve or interaction is <strong>functional-form misspecification</strong>, one type of statistical model misspecification.</p></div>' : ""}
       ${level === 1 ? "<p><strong>Observed outcome difference:</strong> In our study, each person receives only one treatment option. We calculate the average outcome among those treated minus the average among those untreated.</p><p>Here, we know the true effect because we set the simulation’s rules. In a real study, we would need to estimate it.</p>" : ""}
       ${level === 11 ? "<p>AIPW adds a correction to the final estimate. TMLE uses the same kind of weighted prediction errors to update the outcome predictions first, then averages their treated-versus-untreated differences.</p>" : ""}
-      <section class="experiment panel" aria-labelledby="question"><h2 id="question">${lesson.prediction?.question || lesson.question}</h2>
-        ${previousGraph ? graphComparison(level, revisiting) : ""}
-        <div id="lesson-graph"></div>
+      <section class="experiment panel" aria-labelledby="question">${prediction ? "" : `<h2 id="question">${lesson.question}</h2>`}
+        ${previousGraph && !lesson.prediction ? graphComparison(level, revisiting) : ""}
+        <div id="lesson-graph"${compactContext ? ' class="method-context"' : ""}></div>
         <p class="lesson-instruction">${lesson.instruction}</p>
         ${level === 11 ? "" : `<div class="lesson-controls">${controls(level)}</div>`}
-        <div class="lesson-results" aria-live="polite" aria-atomic="true"><div class="lesson-result truth-result"><span>True total effect</span><strong id="known-effect"></strong></div>${level <= 4 ? '<div class="lesson-result"><span>Unadjusted difference</span><strong id="unadjusted"></strong></div>' : ""}<div id="ipw-result" class="lesson-result" tabindex="-1" hidden><span>IPW estimate</span><strong id="ipw"></strong></div>${level >= 4 ? '<div id="regression-result" class="lesson-result" hidden><span>Outcome regression</span><strong id="regression"></strong></div>' : ""}${showsAipw(level) ? '<div id="aipw-result" class="lesson-result" hidden><span>AIPW estimate</span><strong id="aipw"></strong></div>' : ""}${level === 11 ? '<div class="lesson-result"><span id="tmle-estimate-label">Current prediction contrast</span><strong id="tmle"></strong></div>' : ""}</div>
-        <p class="sample-note">Stronger red means farther from truth in this sample.</p>
+        ${level === 11 ? tmlePanel(effectResults) : effectResults}
         ${level === 7 ? '<p class="sample-note">True effect breakdown: 2 direct + 1 through the intermediate response = 3 total.</p>' : ""}
         ${level === 7 || level === 8 ? '<p id="adjustment-note" aria-live="polite"></p>' : ""}
         ${level === 6 ? '<p id="robustness-note" aria-live="polite"></p>' : ""}
         ${(level >= 4 && level <= 6) || level === 9 || level === 10 ? '<p id="model-weight-note" class="sample-note" aria-live="polite"></p>' : ""}
-        ${level === 10 ? overlapPanel() : ""}${level === 11 ? tmlePanel() : ""}
+        ${level === 10 ? overlapPanel() : ""}
         <div id="balance" hidden><h3>Risk scores in the two groups</h3><p>Compare their average C before and after weighting. More similar averages indicate better balance of this variable.</p><table><caption>Average risk score (C)</caption><thead><tr><th scope="col">Comparison</th><th scope="col">Untreated</th><th scope="col">Treated</th></tr></thead><tbody><tr><th scope="row">Before weighting</th><td id="before-0"></td><td id="before-1"></td></tr><tr><th scope="row">After weighting</th><td id="after-0"></td><td id="after-1"></td></tr></tbody></table><p id="weight-note"></p></div>
         ${level === 3 ? '<details id="weighting" hidden><summary>Why these weights?</summary><div id="weight-examples"></div><details id="ipw-calculation"><summary>How do weights become an effect?</summary><div id="ipw-arithmetic"></div></details></details>' : ""}
         <div class="sample-actions"><button id="redraw">Redraw sample</button><span id="sample-label"></span></div>
@@ -424,17 +460,27 @@ function enter(level, focus = true, callback = false, restart = false) {
             : ""
         }
       </section>
-      <details class="lesson-explanation"><summary>Explain what is happening</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For person i with risk score Cᵢ, Ŷ₁ and Ŷ₀ are fitted outcomes with and without treatment; n is the sample size. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
-      ${level === 4 ? '<details class="outcome-numbers"><summary>See the numbers</summary><div id="outcome-arithmetic"></div></details>' : ""}
+      ${previousGraph && lesson.prediction ? graphComparison(level, revisiting, true) : ""}
+      <details class="lesson-explanation"><summary>${level === 5 ? "Why did the estimates change?" : "Explain what is happening"}</summary>${(Array.isArray(lesson.explanation) ? lesson.explanation : [lesson.explanation]).map((paragraph) => `<p>${paragraph}</p>`).join("")}${level === 4 ? '<math id="outcome-formula" display="block" aria-label="Outcome regression estimate: average over all people of Y hat one at C i minus Y hat zero at C i"><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>[</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>1</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mover><mi>Y</mi><mo>^</mo></mover><mn>0</mn></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow></math><p>For each person, compare the predicted outcomes with and without treatment at the same risk score. Average these differences over everyone. These are predictions, not two observed outcomes.</p>' : ""}${level === 3 ? '<div id="propensity-preview" class="ps-preview"></div><p>Without C, fitted treatment probabilities would be equal, so weighting would leave the unadjusted difference unchanged.</p>' : ""}</details>
       ${lesson.intuition ? `<details class="lesson-intuition"><summary>${lesson.intuition.title}</summary>${lesson.intuition.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</details>` : ""}
       ${level === 11 ? tmleFormula() : ""}
-      ${level >= 5 && level <= 6 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>Outcome regression fits an additive model of outcome using treatment and C, then averages predicted treated-minus-untreated outcomes. The treatment model is logistic: its linear predictor is converted to a probability, never used directly as one.</p>${level >= 5 ? "<p>Here, the true relationship includes C² − 1. A linear model using only C cannot capture this curve. It needs a C² term and an intercept to represent the relationship correctly.</p>" : ""}<p>IPW normalizes weights within each treatment group. ${level === 6 ? "IPW and AIPW clip" : "IPW clips"} fitted probabilities to [0.02, 0.98]. Clipping can introduce bias even with a correct treatment model; these examples are designed to avoid it, and any clipping is reported beside the estimates.</p></details>` : ""}
-      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in level 4, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
+      ${
+        level >= 5 && level <= 6
+          ? `<details class="lesson-details model-specification-details">
+        <summary>Model details (optional)</summary>
+        <p><strong>Outcome model.</strong> The simple model uses treatment and <math><mi>C</mi></math>. The more complex outcome relationship adds <math aria-label="C squared minus one"><msup><mi>C</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></math>; including <math aria-label="C squared"><msup><mi>C</mi><mn>2</mn></msup></math> and an intercept lets the fitted model represent that curve.</p>
+        <p><strong>Treatment model.</strong> The complex experiment adds a quadratic term, <math aria-label="C squared minus one"><msup><mi>C</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></math>, to the treatment log odds. The simple fitted model includes only <math><mi>C</mi></math> and an intercept, so it cannot represent that added pattern.</p>
+        <p>These experiments use a valid adjustment set and sufficient overlap. More flexible models cannot repair unmeasured confounding or an invalid adjustment set.</p>
+        ${level === 5 ? '<p><a href="?sandbox&scenario=treatment-model">Explore a two-covariate example →</a><br>In this scenario, one covariate’s effect on treatment assignment depends on the other. Both variables are included, but the model needs their interaction, <math aria-label="C one times C two"><msub><mi>C</mi><mn>1</mn></msub><mo>×</mo><msub><mi>C</mi><mn>2</mn></msub></math>, to capture this relationship.</p>' : ""}
+      </details>`
+          : ""
+      }
+      ${level === 7 || level === 8 ? `<details class="lesson-details"><summary>Model details (optional)</summary><p>We fit outcome using treatment and C${level === 7 ? ", optionally adding M" : ", optionally adding K"}. As in the outcome-regression lesson, we average predicted treated-minus-untreated outcomes, holding the other included variables fixed.</p><p>${level === 7 ? "This additive simulation has independent errors: M = A + error and Y = 2A + 1.5C + M + error. If we specifically wanted a controlled direct effect, we would instead compare treatment choices while fixing M at a specified value. Regression including M estimates that effect of 2 here: the outcome model is correct, C is adjusted for, and the errors are independent. Mediator adjustment does not generally identify a direct effect. Unmeasured common causes of M and Y can bias it; treatment–mediator interactions can make the effect depend on the value at which M is fixed." : "The baseline outcome is Y = 2A + 1.5C + error. The follow-up score is K = A + Y + independent error. It is measured after Y, so there is no arrow from K to Y. Including K changes the comparison, not the population total effect."}</p></details>` : ""}
       <p class="lesson-next">${lesson.next}</p>
       `
       }
       ${level === 6 ? '<button id="revisit-hidden">Revisit hidden confounding with AIPW</button>' : ""}
-      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=introduction" data-introduction>← Introduction</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-exit" class="primary" href="?sandbox">Explore scenarios ↗</a>'}</nav>
+      <nav class="lesson-actions" aria-label="Continue learning">${previous ? `<button id="back">${revisiting ? "← Return to double robustness" : "← Back"}</button>` : '<a href="?lesson=what-if">← What if?</a>'}${recap ? "" : '<button id="restart">Restart level</button>'}${next ? `<button id="continue" class="primary">Continue: ${lessons[next - 1].title} →</button>` : '<a id="recap-quiz" class="primary" href="?lesson=final-quiz">Take the final quiz →</a><a id="recap-exit" href="?sandbox">Explore scenarios ↗</a>'}</nav>
       ${
         !revisiting
           ? optionalChapters
@@ -537,14 +583,16 @@ function enter(level, focus = true, callback = false, restart = false) {
     capture("lesson_advanced", { lesson: lesson.slug });
     navigate(next);
   });
-  document.querySelector("#recap-exit")?.addEventListener("click", () => {
-    recordLessonCompleted(lesson.slug);
-    void capture(
-      "lesson_advanced",
-      { lesson: lesson.slug },
-      { transport: "sendBeacon" },
-    );
-  });
+  document.querySelectorAll("#recap-exit, #recap-quiz").forEach((link) =>
+    link.addEventListener("click", () => {
+      recordLessonCompleted(lesson.slug);
+      void capture(
+        "lesson_advanced",
+        { lesson: lesson.slug },
+        { transport: "sendBeacon" },
+      );
+    }),
+  );
   if (previousGraph)
     setupGraphComparison((open, view) => {
       comparisonOpen = open;
@@ -552,8 +600,7 @@ function enter(level, focus = true, callback = false, restart = false) {
       renderLessonGraph();
     });
   if (!recap) update();
-  const repeatedStudies = level <= 2 && location.hash === "#repeated-studies";
-  if (lesson.prediction && !repeatedStudies) setupPrediction(lesson.prediction);
+  if (prediction) setupPrediction(prediction);
   if (repeatedStudies) {
     const panel = document.querySelector("#repeated-studies");
     panel.open = true;
@@ -565,7 +612,7 @@ function enter(level, focus = true, callback = false, restart = false) {
 function setupPrediction(prediction) {
   const withheld = [
     ...document.querySelectorAll(
-      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next",
+      ".lesson-instruction, .lesson-controls, .sample-actions, .sampling-variation, .lesson-explanation, .lesson-intuition, .lesson-details, .lesson-next, .graph-comparison",
     ),
   ];
   if (state.level === 1) {
@@ -576,14 +623,18 @@ function setupPrediction(prediction) {
     element.hidden = true;
   });
   const checkpoint = document.createElement("div");
+  checkpoint.id = "lesson-prediction";
   checkpoint.className = "lesson-prediction";
   checkpoint.innerHTML = `
+    <div class="prediction-header">Your prediction</div>
+    <div id="prediction-content">
     <fieldset class="model-choices" aria-describedby="prediction-hint">
-      <legend>Your prediction</legend>
+      <legend><h2 id="question">${prediction.question}</h2></legend>
       ${prediction.choices.map((choice, index) => `<label class="lesson-switch"><input type="radio" name="prediction" value="${index}">${choice}</label>`).join("")}
     </fieldset>
     <p id="prediction-hint" class="sample-note">Choose a prediction to try the experiment. Any choice lets you continue.</p>
-    <button id="try-prediction" disabled>Try it</button>`;
+    <button id="try-prediction" disabled>Try it</button>
+    </div>`;
   document.querySelector("#lesson-graph").after(checkpoint);
   const button = checkpoint.querySelector("button");
   checkpoint.addEventListener("change", () => {
@@ -592,6 +643,9 @@ function setupPrediction(prediction) {
   button.addEventListener("click", () => {
     const selected = checkpoint.querySelector("input:checked");
     if (!selected) return;
+    const feedbackTop = checkpoint
+      .querySelector("#prediction-hint")
+      .getBoundingClientRect().top;
     const before = lessonResult(state, noise);
     if (state.level === 8) {
       state.postAdjusted = true;
@@ -625,12 +679,35 @@ function setupPrediction(prediction) {
       is_correct: correct,
     });
     const encouragement = correct ? "Good prediction!" : "Not quite.";
-    checkpoint.innerHTML = `<p><strong>${encouragement}</strong></p><p class="sample-note">Your prediction: ${prediction.choices[Number(selected.value)]}</p><p>${observed}</p><p>${prediction.explanation}</p>`;
-    checkpoint.setAttribute("tabindex", "-1");
-    checkpoint.setAttribute("role", "region");
-    checkpoint.setAttribute("aria-label", "Prediction explained");
-    document.querySelector(".lesson-results").after(checkpoint);
-    checkpoint.focus();
+    const choices = checkpoint.querySelector("fieldset");
+    choices.replaceWith(choices.querySelector("#question"));
+    const feedback = document.createElement("div");
+    feedback.className = "prediction-feedback";
+    feedback.dataset.result = correct ? "correct" : "review";
+    feedback.innerHTML = `<p><span class="prediction-feedback-icon" aria-hidden="true">${correct ? "✓" : "!"}</span><strong>${encouragement}</strong> You predicted: “${prediction.choices[Number(selected.value)]}”</p><p>${observed}</p><p>${prediction.explanation}</p>`;
+    feedback.setAttribute("tabindex", "-1");
+    feedback.setAttribute("role", "region");
+    feedback.setAttribute("aria-label", "Prediction explained");
+    checkpoint.querySelector("#prediction-hint").replaceWith(feedback);
+    button.remove();
+    const toggle = document.createElement("button");
+    toggle.id = "toggle-prediction";
+    toggle.innerHTML =
+      '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 2 4 4-4 4"/></svg><span>Prediction and feedback</span>';
+    toggle.setAttribute("aria-expanded", "true");
+    const content = checkpoint.querySelector("#prediction-content");
+    toggle.setAttribute("aria-controls", content.id);
+    toggle.addEventListener("click", () => {
+      content.hidden = !content.hidden;
+      toggle.setAttribute("aria-expanded", String(!content.hidden));
+    });
+    checkpoint.querySelector(".prediction-header").replaceChildren(toggle);
+    feedback.focus({ preventScroll: true });
+    // Keep the feedback where the hint was as the options disappear above it.
+    window.scrollBy({
+      top: feedback.firstElementChild.getBoundingClientRect().top - feedbackTop,
+      behavior: "instant",
+    });
   });
 }
 
@@ -669,6 +746,10 @@ function leavingTheSandbox() {
 }
 function navigate(level, callback = false) {
   const url = lessonUrl(level);
+  if (level === 14) {
+    location.assign(url);
+    return;
+  }
   history.pushState(
     null,
     "",
@@ -724,9 +805,6 @@ function update() {
       document.querySelector("#propensity-preview"),
       result.propensityData,
     );
-  if (state.level === 4)
-    document.querySelector("#outcome-arithmetic").innerHTML =
-      outcomeCalculation(result.outcomePredictions);
   if (state.level === 6)
     document.querySelector("#aipw-arithmetic").innerHTML = aipwCalculation(
       result.aipwContributions,
@@ -762,13 +840,19 @@ function update() {
   }
   if (state.level === 10) renderOverlap(result.overlap);
   if (
-    (state.level >= 4 && state.level <= 6) ||
+    (state.level >= 3 && state.level <= 6) ||
     state.level === 9 ||
     state.level === 10
   ) {
-    document.querySelector("#model-weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}.`
-      : "No treatment probabilities were clipped in this sample.";
+    const active = result.clipped > 0;
+    const showStatus = state.level !== 3 || revealed;
+    const note = document.querySelector(
+      state.level === 3 ? "#weight-note" : "#model-weight-note",
+    );
+    note.hidden = !showStatus || !active;
+    note.textContent = active
+      ? `For ${result.clipped.toLocaleString("en-US")} of ${state.n.toLocaleString("en-US")} people, fitted treatment probabilities were clipped for ${showsAipw(state.level) ? "IPW and AIPW" : "IPW"}. Probabilities below 0.02 are raised to 0.02, and those above 0.98 are lowered to 0.98 before weights are calculated. This limits extreme weights but can introduce bias.`
+      : "";
   }
   if (showsAipw(state.level)) {
     document.querySelector("#aipw-result").hidden = false;
@@ -804,9 +888,6 @@ function update() {
         document.querySelector(`#${when}-${arm}`).textContent =
           value.toFixed(2);
       });
-    document.querySelector("#weight-note").textContent = result.clipped
-      ? `${result.clipped} treatment probabilities were clipped to [0.02, 0.98]; clipping can affect the comparison.`
-      : "No treatment probabilities were clipped in this sample.";
   }
   document.querySelector("#sample-label").textContent =
     `2,400 people · Sample seed ${state.seed}`;
@@ -818,22 +899,6 @@ function update() {
       : "We account for C only, leaving the total treatment effect intact. Try including the new variable.";
   }
   renderLessonGraph();
-}
-
-function outcomeCalculation(predictions) {
-  const person = predictions[0];
-  const number = (value) => value.toFixed(2);
-  const average =
-    predictions.reduce((sum, row) => sum + row.contrast, 0) /
-    predictions.length;
-  return `<p>Person ${person.person} received ${person.A ? "treatment" : "no treatment"}, so only that outcome was observed. The model predicts both outcomes at the same risk score, C = ${number(person.C)}.</p>
-    <table><caption>Current predictions for person ${person.person}</caption><tbody>
-      <tr><th scope="row">With treatment, Ŷ₁(Cᵢ)</th><td>${number(person.m1)}</td></tr>
-      <tr><th scope="row">Without treatment, Ŷ₀(Cᵢ)</th><td>${number(person.m0)}</td></tr>
-      <tr><th scope="row">Predicted difference</th><td>${number(person.contrast)}</td></tr>
-    </tbody></table>
-    <p><strong>Average predicted difference:</strong> <span id="outcome-worked-effect">${number(average)}</span> across all ${predictions.length.toLocaleString("en-US")} people.</p>
-    <p class="sample-note">Values are rounded; the estimate uses full precision.</p>`;
 }
 
 function overlapPanel() {
@@ -889,9 +954,20 @@ function renderOverlap(arms) {
 }
 
 function renderLessonGraph() {
-  const graph = document.querySelector("#lesson-graph");
-  if (!comparisonOpen) {
+  let graph = document.querySelector("#lesson-graph");
+  const comparison = document.querySelector("#comparison-graph");
+  if (comparison) {
     graph.innerHTML = lessonGraph(state);
+    graph = comparison;
+    if (!comparisonOpen) {
+      graph.innerHTML = "";
+      return;
+    }
+  }
+  if (!comparisonOpen) {
+    graph.innerHTML = lessonGraph(state, {
+      compact: graph.classList.contains("method-context"),
+    });
     return;
   }
   const previous = previousGraph.state;

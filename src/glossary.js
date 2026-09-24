@@ -15,7 +15,7 @@ export const glossary = {
     summary:
       "The simple sandbox model includes C₁ + C₂; the more flexible model also includes C₁ × C₂, so one covariate’s influence can depend on the other.",
     detail: [
-      "For treatment assignment, the terms describe log odds that are converted to probabilities.",
+      "For treatment assignment, these terms enter the logistic linear predictor (log odds), which is converted to a probability. Logistic regression already gives nonlinear probabilities. Omitting an active C₁ × C₂ interaction in the log odds is the functional-form mismatch in the treatment-model scenario.",
       "The sandbox feedback checks only whether a model can capture the world’s measured C relationships. Extra flexibility is unnecessary when the interaction is absent or inactive. It cannot repair hidden confounding or invalid adjustment, and it does not guarantee an estimate equal to truth.",
     ],
     related: {
@@ -283,11 +283,12 @@ export const glossary = {
   },
   misspecification: {
     title: "Model misspecification",
-    aliases: ["Model mismatch"],
+    aliases: ["Model mismatch", "Functional-form misspecification"],
     summary:
       "A model is misspecified when the relationships it can represent do not include the relevant relationship in the data-generating process.",
     detail: [
-      "For example, a model with only a straight-line term cannot represent a curved relationship. Outcome regression is vulnerable to a wrong outcome model and IPW to a wrong treatment model. Misspecification is distinct from random sampling error and from missing confounders.",
+      "Functional-form misspecification is one type: the model omits a needed curve or interaction among the chosen variables. The simple models omit C² in the guided lesson and C₁ × C₂ in the scenario sandbox. Outcome regression relies on the outcome model and IPW on the treatment model.",
+      "Causal specification concerns the target effect, causal graph, and adjustment set. Statistical model specification concerns how the fitted models represent relationships among the selected variables. A more flexible fit cannot repair invalid adjustment, unmeasured confounding, or absent overlap. Neither kind of misspecification is random sampling error.",
     ],
     related: {
       label: "Make a model too simple",
@@ -418,6 +419,76 @@ export const glossary = {
     ],
     related: { label: "Explore trimming", href: "?lesson=trimming" },
   },
+  "front-door": {
+    title: "Front-door identification",
+    aliases: ["Front-door criterion", "Frontdoor"],
+    summary:
+      "Front-door identification uses a mediator to recover a total causal effect despite hidden confounding between treatment and outcome, under specific assumptions.",
+    detail: [
+      "The mediator must carry every causal path from treatment to outcome. There must be no unblocked back-door path from treatment to mediator, and conditioning on treatment must block every back-door path from mediator to outcome. The required treatment–mediator combinations must also have support.",
+      "The lesson combines how treatment changes practice with how practice changes passing after adjusting for tutoring. Merely measuring a mediator is insufficient, and ordinary adjustment for it does not implement front-door identification.",
+    ],
+    related: {
+      label: "Explore the front-door criterion",
+      href: "?lesson=front-door",
+    },
+  },
+  proxy: {
+    title: "Proxies for hidden confounders",
+    aliases: ["Proxy variable", "Noisy proxy"],
+    summary:
+      "A proxy is a measured variable that carries information about an unmeasured variable, such as a noisy test reflecting hidden fitness.",
+    detail: [
+      "In the lesson, hidden fitness affects treatment and outcome, while the observed test measures fitness imperfectly. Adjusting for the test reduces bias in this toy model but leaves residual confounding. A proxy is not automatically a sufficient adjustment variable.",
+      "Its causal relationships matter, not just its predictive accuracy. In real data, a changed estimate after proxy adjustment does not establish that the estimate is closer to the causal effect.",
+    ],
+    related: {
+      label: "Explore proxies for hidden confounders",
+      href: "?lesson=causal-relevance",
+    },
+  },
+  "time-varying-confounding": {
+    title: "Time-varying confounding",
+    aliases: ["Treatment-confounder feedback", "Longitudinal confounding"],
+    summary:
+      "Time-varying confounding occurs when evolving covariates influence later treatment and the outcome. Those covariates may themselves be changed by earlier treatment.",
+    detail: [
+      "For example, an initial treatment changes severity, and severity then affects both the next treatment decision and the final outcome. Ignoring updated severity leaves the later treatment confounded, while ordinary outcome adjustment for it can block part of the earlier treatment’s effect.",
+      "Methods such as sequential weighting address this feedback when the relevant treatment and covariate histories are measured and the required causal assumptions hold.",
+    ],
+    related: {
+      label: "Explore treatment over time",
+      href: "?lesson=time-varying-confounding",
+    },
+  },
+  "sequential-weighting": {
+    title: "Sequential weighting",
+    aliases: ["Sequential IPTW", "Longitudinal IPW"],
+    summary:
+      "Sequential weighting multiplies inverse treatment-probability weights across treatment decisions, using the history available at each decision.",
+    detail: [
+      "In the two-decision lesson, the first factor uses the known probability of the received first treatment from randomization. The second uses the fitted probability of the received second treatment given first treatment and updated severity. Their product weights the observed treatment sequence.",
+      "Identifying effects of treatment sequences requires consistency, no unmeasured confounding at each decision given the observed past, and positivity at each decision. Estimated weights also need adequate treatment models. Extreme probabilities can compound into unstable weights.",
+    ],
+    related: {
+      label: "Explore sequential weights",
+      href: "?lesson=time-varying-confounding",
+    },
+  },
+  "sensitivity-analysis": {
+    title: "Sensitivity analysis",
+    aliases: ["Sensitivity to unmeasured confounding"],
+    summary:
+      "Sensitivity analysis examines how a conclusion changes when uncertain assumptions or analysis choices are varied.",
+    detail: [
+      "For unmeasured confounding, ask how strongly a hidden common cause would need to relate to treatment and outcome to change the practical conclusion. Use subject-matter knowledge to judge whether those relationships are plausible.",
+      "Comparing adjustment choices can reveal sensitivity, but it does not tell you which estimate is closer to truth. Stability across the assumptions examined does not prove that those assumptions hold or that all important sources of bias were considered.",
+    ],
+    related: {
+      label: "Connect assumptions to real data",
+      href: "?lesson=leaving-the-sandbox",
+    },
+  },
   instrument: {
     title: "Instrumental variable",
     aliases: ["Instrument", "IV"],
@@ -428,6 +499,87 @@ export const glossary = {
     ],
     related: { label: "Explore instruments", href: "?lesson=instrument" },
   },
+  uncertainty: {
+    title: "Sampling uncertainty",
+    aliases: ["Statistical uncertainty"],
+    summary:
+      "Sampling uncertainty arises because an estimate would change if we drew another sample from the same population under the same study design.",
+    detail: [
+      "Standard errors and confidence intervals describe this variation under specified assumptions. They do not automatically account for confounding, measurement error, or selection bias. A precise estimate can still describe the wrong causal comparison.",
+    ],
+    related: { label: "Explore uncertainty", href: "?lesson=uncertainty" },
+  },
+  "standard-error": {
+    title: "Standard error",
+    aliases: ["SE"],
+    summary:
+      "A standard error estimates the standard deviation of an estimator across repeated samples.",
+    detail: [
+      "Outcome standard deviation describes differences among people; standard error describes sampling variation in an estimate. Its value depends on the estimator, sample size, variability, and study design. For the independent-group mean difference in the uncertainty lesson, we combine the two groups’ sample variances and sizes.",
+    ],
+    sources: [
+      {
+        label: "Altman & Bland (2005)",
+        href: "https://www.bmj.com/content/331/7521/903",
+      },
+    ],
+    related: { label: "Read a standard error", href: "?lesson=uncertainty" },
+  },
+  "confidence-interval": {
+    title: "Confidence interval",
+    aliases: ["CI", "95% confidence interval"],
+    summary:
+      "A 95% confidence interval comes from a procedure designed to cover its target in 95% of repeated samples under its assumptions.",
+    detail: [
+      "After observing an interval, the frequentist 95% is not a probability assigned to the fixed parameter inside it. The interval is not a range containing 95% of individual outcomes or treatment effects. Approximate methods may fall short of nominal coverage; an interval around a confounded association need not cover the causal effect.",
+    ],
+    sources: [
+      {
+        label: "Greenland et al. (2016)",
+        href: "https://link.springer.com/article/10.1007/s10654-016-0149-3",
+      },
+    ],
+    related: {
+      label: "Explore interval coverage",
+      href: "?lesson=uncertainty",
+    },
+  },
+  "p-value": {
+    title: "P-value",
+    aliases: ["P values", "P-values", "pvalue", "Statistical significance"],
+    summary:
+      "A p-value is the probability, under the null hypothesis and test assumptions, of a test statistic at least as extreme as the one observed.",
+    detail: [
+      "It is not the probability that the null hypothesis is true or that a result was caused by chance. A small p-value does not establish a large, important, or causal effect; a large one does not establish no effect. The optional lesson uses a two-sided normal test of a zero mean difference.",
+    ],
+    sources: [
+      {
+        label: "Greenland et al. (2016)",
+        href: "https://link.springer.com/article/10.1007/s10654-016-0149-3",
+      },
+    ],
+    related: { label: "Interpret a p-value", href: "?lesson=p-values" },
+  },
+  bootstrap: {
+    title: "Bootstrap",
+    aliases: ["Bootstrapping", "Resampling"],
+    summary:
+      "The nonparametric bootstrap repeatedly samples observed units with replacement and recomputes an estimate to approximate its sampling variation.",
+    detail: [
+      "With replacement means a selected unit can be drawn again. The lesson resamples people separately within treatment groups and uses the spread of the mean differences as a standard error. More repetitions reduce simulation noise, not the uncertainty from having only one original sample.",
+      "The sample must adequately represent the population and the resampling must respect the study design. Resampling individual rows ignores clustering or repeated measurements. It cannot remove confounding, and ordinary bootstrap estimates do not form a zero-effect null distribution.",
+    ],
+    sources: [
+      {
+        label: "Hesterberg, What Teachers Should Know about the Bootstrap",
+        href: "https://arxiv.org/abs/1411.5279",
+      },
+    ],
+    related: {
+      label: "Resample an observed study",
+      href: "?lesson=uncertainty#bootstrap",
+    },
+  },
   error: {
     title: "Sampling variation and bias",
     aliases: ["Random error", "Sampling variability"],
@@ -435,11 +587,11 @@ export const glossary = {
     summary:
       "Sampling variation moves estimates between repeated samples; bias is systematic average error relative to the target.",
     detail: [
-      "The difference from truth in one sample is not itself a measurement of statistical bias. Causal Sandbox uses repeated studies to separate random spread from persistent displacement. Its main plots show point estimates, not confidence intervals or significance tests.",
+      "The difference from truth in one sample is not itself a measurement of statistical bias. Causal Sandbox uses repeated studies to separate random spread from persistent displacement. The uncertainty lesson adds confidence intervals for an unadjusted mean difference; the estimator sandbox shows point estimates.",
     ],
     related: {
-      label: "Compare repeated randomized studies",
-      href: "?lesson=randomization",
+      label: "Explore sampling uncertainty and bias",
+      href: "?lesson=uncertainty",
     },
   },
 };

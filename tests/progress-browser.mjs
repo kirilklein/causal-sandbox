@@ -1,11 +1,8 @@
-import { chromium } from "@playwright/test";
+import { launchBrowser, getAppUrl } from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 
 try {
   const page = await browser.newPage({
@@ -22,6 +19,10 @@ try {
 
   await page.locator(".intro-path").first().click();
   await page.getByRole("link", { name: /Start from scratch/ }).click();
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await page.locator('input[name="prediction"]').first().check();
   await page.locator("#try-prediction").click();
   await page.locator("#continue").click();
@@ -29,10 +30,12 @@ try {
   await page.locator("#lesson-menu-toggle").click();
   assert.equal(
     await page.locator(".lesson-progress label").innerText(),
-    "1 of 12 guided lessons complete",
+    "1 of 13 guided lessons complete",
   );
   assert.equal(
-    await page.locator('[data-level="1"]').getAttribute("aria-describedby"),
+    await page
+      .locator('#lesson-menu [data-level="1"]')
+      .getAttribute("aria-describedby"),
     "lesson-complete-description",
   );
   await page.screenshot({ path: "/tmp/learning-progress-desktop.png" });

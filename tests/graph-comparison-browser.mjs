@@ -1,18 +1,19 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   const toggle = page.locator("#compare-graph");
   const previous = page.getByRole("button", { name: "Previous", exact: true });
   const current = page.getByRole("button", { name: "Current", exact: true });
@@ -57,6 +58,7 @@ try {
   await page.locator("#post-adjustment").check();
   await page.locator("#redraw").click();
   const before = await experiment();
+  const currentGraph = await page.locator("#lesson-graph").innerHTML();
   await toggle.focus();
   await page.keyboard.press("Enter");
   assert.equal(await toggle.getAttribute("aria-expanded"), "true");
@@ -73,6 +75,7 @@ try {
     await visibleView.locator("svg").getAttribute("aria-label"),
     /response, which causes outcome/,
   );
+  assert.equal(await page.locator("#lesson-graph").innerHTML(), currentGraph);
   const previousNodes = await nodes();
   for (const variable of ["A", "C", "Y"])
     assert.deepEqual(
@@ -112,13 +115,15 @@ try {
     /and treatment/,
   );
   await page.locator("#continue").click();
+  await page.locator("#opening-next").waitFor();
+  await page.locator("#continue").click();
   assert.equal(await toggle.getAttribute("aria-expanded"), "false");
   await toggle.click();
   await previous.click();
-  assert.match(await visibleView.innerText(), /As you left it/);
+  assert.match(await visibleView.innerText(), /Starting view/);
   assert.match(
     await visibleView.locator("svg").getAttribute("aria-label"),
-    /and treatment/,
+    /risk score causes outcome/,
   );
   await page.locator("#reveal-ipw").click();
   assert.equal(await previous.getAttribute("aria-pressed"), "true");
@@ -127,7 +132,57 @@ try {
   await page.locator("#restart").click();
   assert.equal(await toggle.getAttribute("aria-expanded"), "false");
   await page.goBack();
-  assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+  await page.locator("#opening-next").waitFor();
+  assert.match(await page.locator("h1").innerText(), /How uncertain/);
+
+  // Method lessons keep context compact and the experiment on the current setup.
+  for (const width of [1280, 375, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const slug of [
+      "outcome-regression",
+      "misspecification",
+      "double-robustness",
+      "tmle",
+    ]) {
+      await page.goto(`${url}?lesson=${slug}`);
+      const context = page.locator("#lesson-graph.method-context");
+      await context.waitFor();
+      assert.equal(await toggle.count(), 0);
+      assert.match(await context.innerText(), /adjust for risk score C/);
+      assert.match(await context.innerText(), /whole population/);
+      const layout = await page.evaluate(() => {
+        const graph = document.querySelector("#lesson-graph");
+        const instruction = document.querySelector(".lesson-instruction");
+        return {
+          graphHeight: graph.querySelector("svg").getBoundingClientRect()
+            .height,
+          inOrder:
+            graph.getBoundingClientRect().bottom <=
+            instruction.getBoundingClientRect().top,
+          overflows: document.documentElement.scrollWidth > innerWidth,
+        };
+      });
+      assert.ok(
+        layout.graphHeight <= 91,
+        `${slug}: compact graph at ${width}px`,
+      );
+      assert.ok(layout.inOrder, `${slug}: context precedes instruction`);
+      assert.equal(layout.overflows, false, `${slug}: no horizontal overflow`);
+      const initial = await experiment();
+      await page.locator("#redraw").focus();
+      await page.keyboard.press("Enter");
+      assert.notEqual((await experiment()).sample, initial.sample);
+      assert.equal(await toggle.count(), 0);
+      await page.locator("#restart").focus();
+      await page.keyboard.press("Enter");
+      assert.deepEqual(await experiment(), initial);
+      if (width !== 320)
+        await page.screenshot({
+          path: `/tmp/266-${slug}-${width}.png`,
+          fullPage: true,
+        });
+    }
+  }
 
   // Check every core comparison at phone width, including stable geometry and
   // a fixed graph position when lesson titles wrap to different heights.
@@ -136,20 +191,25 @@ try {
   const transitions = [
     ["confounding", "A randomized experiment"],
     ["ipw", "A common cause"],
-    ["outcome-regression", "Adjustment with IPW"],
     ["mediator", "Adjustment with an outcome model"],
     ["collider", "A mediator"],
     ["hidden-confounding", "A collider"],
-    ["misspecification", "A hidden common cause"],
-    ["double-robustness", "When a model is too simple"],
-    ["tmle", "Double robustness"],
     ["overlap", "Targeting with TMLE"],
     ["double-robustness&revisit=hidden-confounding", "Double robustness"],
   ];
   for (const [slug, title] of transitions) {
     await page.goto(`${url}?lesson=${slug}`);
+    const prediction = page.locator("#try-prediction");
+    if (await prediction.isVisible()) {
+      assert.equal(await toggle.isVisible(), false);
+      await page.locator('input[name="prediction"]').first().check();
+      await prediction.click();
+    }
+    const mainGraph = await page.locator("#lesson-graph").innerHTML();
     await toggle.tap();
     await previous.tap();
+    if (["collider", "overlap"].includes(slug))
+      assert.equal(await page.locator("#lesson-graph").innerHTML(), mainGraph);
     assert.match(
       await visibleView.innerText(),
       new RegExp(`Previous: ${title}`),

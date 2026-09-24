@@ -1,12 +1,13 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { coreAssumptionKeys, glossary } from "../src/glossary.js";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const root = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const root = getAppUrl();
 const pages = [
   {
     path: "confounding/",
@@ -84,7 +85,7 @@ try {
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
 
   await page.goto(root);
   const structuredData = JSON.parse(
@@ -300,7 +301,7 @@ try {
       /Created by Kiril Klein, PhD/,
     );
     const references = page.locator(".site-references");
-    assert.equal(await references.locator("li").count(), 10);
+    assert.equal(await references.locator("li").count(), 11);
     await references.locator("summary").click();
 
     for (const width of [1280, 390]) {
@@ -319,14 +320,23 @@ try {
   await page.locator("#selection").fill("1.2");
   assert.equal(await page.locator("#selection-output").innerText(), "1.2");
   await page.locator("#continue").click();
+  await page.locator("#opening-next").waitFor();
+  assert.equal(page.url(), new URL("?lesson=uncertainty", root).href);
+  await page.locator("#continue").click();
+  await page.locator("#reveal-ipw").waitFor();
   assert.equal(
     page.url(),
     new URL("inverse-probability-weighting/", root).href,
   );
   assert.equal(await page.locator("h1").innerText(), "Adjustment with IPW");
   await page.goBack();
-  assert.equal(await page.locator("h1").innerText(), "A common cause");
+  await page.locator("#opening-next").waitFor();
+  assert.equal(
+    await page.locator("h1").innerText(),
+    "How uncertain is this estimate?",
+  );
   await page.goForward();
+  await page.locator("#reveal-ipw").waitFor();
   assert.equal(await page.locator("h1").innerText(), "Adjustment with IPW");
 
   await page.goto(new URL("collider-bias/", root).href);

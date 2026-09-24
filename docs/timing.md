@@ -100,8 +100,10 @@ recording can describe an earlier condition; a measurement before today's dose
 may reflect previous treatment. Timing cannot establish a sufficient adjustment
 set, instrument validity, or the absence of hidden confounding.
 
-Unknown causal relevance remains [#82](https://github.com/kirilklein/causal-sandbox/issues/82);
-there is no “X = non-contributing” category. The
+The separate [Proxies for hidden confounders chapter](causal-relevance.md)
+introduces proxy adjustment and distinguishes causal effects, prediction, and
+adjustment usefulness for #82;
+there is no “X = non-contributing” category in Timing. The
 [time-varying confounding chapter](time-varying-confounding.md) extends this
 experiment to repeated treatment; survival remains a later topic.
 References: [DAGitty causal roles](https://dagitty.net/learn/graphs/roles.html) and

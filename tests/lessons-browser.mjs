@@ -1,20 +1,93 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const url = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+import { expect } from "@playwright/test";
+const browser = await launchBrowser();
+const url = getAppUrl();
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 900 },
     hasTouch: true,
   });
+  await page.route("**/gc.zgo.at/count.js", (route) =>
+    route.fulfill({ contentType: "application/javascript", body: "" }),
+  );
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+  collectPageErrors(page, errors);
   async function tryPrediction() {
     await page.locator('input[name="prediction"]').first().check();
     await page.locator("#try-prediction").click();
+  }
+  async function checkClippingStatus(active) {
+    const warning = page
+      .locator("#model-weight-note, #weight-note")
+      .filter({ visible: true });
+    assert.doesNotMatch(
+      await page.locator(".learning").textContent(),
+      /No treatment probabilities were clipped/,
+    );
+    assert.equal(
+      await warning.count(),
+      active ? 1 : 0,
+      `${page.url()}: ${await warning.allTextContents()}`,
+    );
+    if (active) {
+      assert.match(
+        await warning.innerText(),
+        /^For [1-9][\d,]* of 2,400 people, fitted treatment probabilities were clipped for IPW and AIPW\./,
+      );
+      assert.match(
+        await warning.innerText(),
+        /Probabilities below 0\.02 are raised to 0\.02, and those above 0\.98 are lowered to 0\.98 before weights are calculated\. This limits extreme weights but can introduce bias\./,
+      );
+    } else {
+      assert.equal(
+        await page
+          .locator("#weight-note")
+          .evaluate((el) => el.getBoundingClientRect().height),
+        0,
+      );
+    }
+  }
+  // Inactive clipping is absent from both the experiment and its explanation.
+  for (const query of [
+    "lesson=ipw",
+    "lesson=outcome-regression",
+    "lesson=misspecification",
+    "lesson=double-robustness",
+    "lesson=hidden-confounding",
+    "lesson=double-robustness&revisit=hidden-confounding",
+    "lesson=overlap",
+  ]) {
+    await page.goto(`${url}?${query}`);
+    const reveal = page.locator("#reveal-ipw");
+    if (await reveal.isVisible()) await reveal.click();
+    for (const action of [null, "#redraw", "#restart"]) {
+      if (action) await page.locator(action).click();
+      if (await page.locator("#try-prediction").isVisible()) {
+        await tryPrediction();
+        await page
+          .getByRole("radio", { name: "Moderate selection", exact: true })
+          .check();
+      }
+      if ((await reveal.isVisible()) && (await reveal.isEnabled()))
+        await reveal.click();
+      await checkClippingStatus(false);
+      const before = await page.locator(".lesson-results").innerText();
+      const sample = await page.locator("#sample-label").innerText();
+      const explanation = page.locator(".lesson-explanation");
+      if (await explanation.evaluate((el) => el.open))
+        await explanation.locator("summary").click();
+      await explanation.locator("summary").focus();
+      await page.keyboard.press("Enter");
+      await expect(explanation).toHaveJSProperty("open", true);
+      await checkClippingStatus(false);
+      assert.equal(await page.locator(".lesson-results").innerText(), before);
+      assert.equal(await page.locator("#sample-label").innerText(), sample);
+    }
   }
   // Every choice reveals feedback and the experiment without blocking navigation.
   for (const topic of ["randomization", "collider", "overlap"]) {
@@ -26,6 +99,30 @@ try {
       await page.goto(`${url}?lesson=${topic}`);
       await page.locator("#try-prediction").waitFor();
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
+      assert.equal(await page.locator("#toggle-prediction").count(), 0);
+      const question = await page.locator("#question").innerText();
+      assert.equal(
+        await page.getByRole("group", { name: question, exact: true }).count(),
+        1,
+      );
+      assert.equal(await page.locator(".experiment > h2").count(), 0);
+      assert.equal(
+        await page.locator("#question").evaluate((heading) => {
+          const graph = document.querySelector("#lesson-graph");
+          const choices = document.querySelector('input[name="prediction"]');
+          return (
+            graph.getBoundingClientRect().bottom <=
+              heading.getBoundingClientRect().top &&
+            heading.getBoundingClientRect().bottom <=
+              choices.getBoundingClientRect().top &&
+            choices.getBoundingClientRect().top -
+              heading.getBoundingClientRect().bottom <
+              60
+          );
+        }),
+        true,
+      );
+      assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(
         await page.locator(".lesson-explanation").isVisible(),
         false,
@@ -101,14 +198,50 @@ try {
         await page.keyboard.press("ArrowDown");
         await page.keyboard.press("ArrowDown");
         await page.keyboard.press("Tab");
-        await page.keyboard.press("Enter");
       } else {
         await choices.nth(choice).check();
-        await page.locator("#try-prediction").click();
+        await page.locator("#try-prediction").scrollIntoViewIfNeeded();
       }
+      // Measure at activation, after Playwright's click preparation scrolls.
+      await page.evaluate(() => {
+        document.querySelector("#try-prediction").addEventListener(
+          "click",
+          () => {
+            window.predictionViewportBefore = {
+              feedbackTop: document
+                .querySelector("#prediction-hint")
+                .getBoundingClientRect().top,
+            };
+          },
+          { capture: true, once: true },
+        );
+      });
+      if (choice === 2) await page.keyboard.press("Enter");
+      else await page.locator("#try-prediction").click();
       const feedback = page.getByRole("region", {
         name: "Prediction explained",
       });
+      const beforeAnswer = await page.evaluate(
+        () => window.predictionViewportBefore,
+      );
+      const feedbackTop = await feedback
+        .locator("p")
+        .first()
+        .evaluate((p) => p.getBoundingClientRect().top);
+      // Removing the options should not move the feedback's reading position.
+      assert.ok(
+        Math.abs(feedbackTop - beforeAnswer.feedbackTop) <= 1,
+        `${topic}/${choice}: feedback stays in place (${beforeAnswer.feedbackTop} → ${feedbackTop})`,
+      );
+      assert.equal(await choices.count(), 0);
+      assert.equal(
+        await feedback.locator("strong").evaluate((message) => {
+          const bounds = message.getBoundingClientRect();
+          return bounds.top >= 0 && bounds.bottom <= window.innerHeight;
+        }),
+        true,
+        `${topic}: feedback starts in view without scrolling`,
+      );
       assert.ok((await feedback.innerText()).includes(selected));
       assert.equal(
         await feedback.locator("strong").innerText(),
@@ -119,6 +252,21 @@ try {
         true,
       );
       assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(await page.locator("#question").innerText(), question);
+      if (topic !== "randomization") {
+        assert.equal(await page.locator("#compare-graph").isVisible(), true);
+        assert.equal(
+          await page
+            .locator(".graph-comparison")
+            .evaluate(
+              (comparison) =>
+                comparison.getBoundingClientRect().top >=
+                document.querySelector(".experiment").getBoundingClientRect()
+                  .bottom,
+            ),
+          true,
+        );
+      }
       assert.equal(await page.locator("#sample-label").textContent(), seed);
       if (topic === "collider")
         assert.equal(await page.locator("#post-adjustment").isChecked(), true);
@@ -135,6 +283,61 @@ try {
           fullPage: true,
         });
       const firstFeedback = await feedback.innerText();
+      const toggle = page.locator("#toggle-prediction");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(
+        await toggle.getAttribute("aria-controls"),
+        "prediction-content",
+      );
+      assert.equal(
+        await toggle.evaluate((button) => {
+          const content = document.getElementById(
+            button.getAttribute("aria-controls"),
+          );
+          return (
+            button.closest(".lesson-prediction") === content.parentElement &&
+            button.getBoundingClientRect().bottom <=
+              content.getBoundingClientRect().top
+          );
+        }),
+        true,
+        "Disclosure header is inside the card, above the content it controls",
+      );
+      const beforeCollapse = await page.locator(".lesson-results").innerText();
+      const graphBeforeCollapse = await page
+        .locator("#lesson-graph")
+        .innerHTML();
+      await toggle.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await toggle.innerText(), "Prediction and feedback");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+      assert.equal(await feedback.isVisible(), false);
+      assert.equal(await page.locator("#question").isVisible(), false);
+      assert.equal(await page.locator("#lesson-graph").isVisible(), true);
+      assert.equal(await page.locator(".lesson-controls").isVisible(), true);
+      assert.equal(
+        await toggle.evaluate((el) => el === document.activeElement),
+        true,
+      );
+      assert.equal(
+        await page.locator(".lesson-results").innerText(),
+        beforeCollapse,
+      );
+      assert.equal(
+        await page.locator("#lesson-graph").innerHTML(),
+        graphBeforeCollapse,
+      );
+      assert.equal(await page.locator("#sample-label").textContent(), seed);
+      if (choice === 2)
+        await page.screenshot({
+          path: `/tmp/prediction-${topic}-collapsed-mobile.png`,
+          fullPage: true,
+        });
+      await page.keyboard.press("Space");
+      assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+      assert.equal(await toggle.innerText(), "Prediction and feedback");
+      assert.equal(await feedback.innerText(), firstFeedback);
+      assert.equal(await choices.count(), 0);
       await page.locator("#redraw").click();
       assert.equal(await feedback.innerText(), firstFeedback);
       assert.ok(
@@ -148,6 +351,8 @@ try {
           fullPage: true,
         });
       await page.locator("#restart").click();
+      assert.equal(await page.locator("#toggle-prediction").count(), 0);
+      assert.equal(await page.locator("#compare-graph").isVisible(), false);
       assert.equal(await page.locator("#try-prediction").isDisabled(), true);
       if (topic === "overlap") {
         assert.equal(
@@ -208,7 +413,7 @@ try {
     await page.locator("#lesson-graph svg text").allTextContents(),
     ["Treatment (A)", "Outcome (Y)"],
   );
-  assert.equal(await page.locator("input").count(), 1);
+  assert.equal(await page.locator("input:enabled").count(), 1);
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
   assert.equal(await result(), first);
@@ -312,6 +517,9 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#ipw-result").isVisible(), false);
   await page.locator("#continue").click();
+  await page.locator("#opening-next").waitFor();
+  assert.match(await page.locator("h1").innerText(), /How uncertain/);
+  await page.locator("#continue").click();
   const third = await result();
   assert.equal(await page.locator("#balance").isVisible(), false);
   const unweightedGraph = await page
@@ -410,8 +618,8 @@ try {
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), weighted);
   await page.locator("#back").click();
-  assert.equal(await result(), second);
-  assert.equal(await selection.inputValue(), "0");
+  await page.locator("#opening-next").waitFor();
+  assert.match(await page.locator("h1").innerText(), /How uncertain/);
   await page.goBack();
   assert.equal(await result(), third);
   assert.equal(await page.locator("#balance").isVisible(), false);
@@ -454,10 +662,8 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#regression-explanation").isVisible(), true);
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
-  assert.equal(await page.locator(".learning details").count(), 2);
+  assert.equal(await page.locator(".learning details").count(), 1);
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
-  const outcomeNumbers = page.locator(".outcome-numbers");
-  assert.equal(await outcomeNumbers.getAttribute("open"), null);
   const outcomeSeed = await page.locator("#sample-label").innerText();
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
@@ -490,46 +696,11 @@ try {
   await page.locator(".lesson-explanation summary").tap();
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   assert.equal(await result(), fourth);
-  const numberToggle = outcomeNumbers.locator("summary");
-  await numberToggle.focus();
-  await page.keyboard.press("Enter");
-  assert.equal(await outcomeNumbers.getAttribute("open"), "");
-  assert.equal(await result(), fourth);
-  assert.equal(await page.locator("#sample-label").innerText(), outcomeSeed);
-  assert.match(
-    await outcomeNumbers.innerText(),
-    /only that outcome was observed.*same risk score/s,
-  );
-  const reconcilesOutcome = async () =>
-    assert.equal(
-      await page.locator("#outcome-worked-effect").innerText(),
-      await page.locator("#regression").innerText(),
-    );
-  await reconcilesOutcome();
-  const initialNumbers = await page.locator("#outcome-arithmetic").innerText();
-  for (const width of [1280, 320]) {
-    await page.setViewportSize({ width, height: width === 320 ? 740 : 900 });
-    assert.ok(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    );
-    await outcomeNumbers.screenshot({
-      path: `/tmp/causal-outcome-numbers-${width}.png`,
-    });
-  }
   await page.locator("#redraw").tap();
-  assert.equal(await outcomeNumbers.getAttribute("open"), "");
-  assert.notEqual(
-    await page.locator("#outcome-arithmetic").innerText(),
-    initialNumbers,
-  );
-  await reconcilesOutcome();
   assert.notEqual(await result(), fourth);
   await page.locator("#restart").tap();
   assert.equal(await result(), fourth);
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
-  assert.equal(await outcomeNumbers.getAttribute("open"), null);
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.ok(
     await page.evaluate(
@@ -554,11 +725,11 @@ try {
     assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${level - 2} of 13`),
+      new RegExp(`Level ${level - 1} of 14`),
     );
     roleBaselines.push([level, baseline]);
     assert.equal(await page.locator(".lesson-result:visible").count(), 2);
-    assert.equal(await page.locator("input").count(), 1);
+    assert.equal(await page.locator("input:enabled").count(), 1);
     assert.equal(await page.locator("#post-adjustment").isChecked(), false);
     assert.equal(await page.locator("#model-weight-note").count(), 0);
     assert.equal(
@@ -666,10 +837,10 @@ try {
   await page.locator("#continue").click();
   assert.equal(await page.locator("h1").innerText(), "A hidden common cause");
   assert.equal(await page.locator(".lesson-intuition").count(), 0);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 7 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 14/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
   assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
-  assert.equal(await page.locator("input").count(), 1);
+  assert.equal(await page.locator("input:enabled").count(), 1);
   const ninth = await result();
   assert.equal(await page.locator("#aipw").count(), 0);
   assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
@@ -774,7 +945,7 @@ try {
   assert.equal(await result(), ninth);
   await page.locator("#continue").tap();
   const fifth = await result();
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 14/);
   assert.doesNotMatch(
     await page.locator("#lesson-graph svg").textContent(),
     /Smoking|Intermediate response|Follow-up score/,
@@ -862,7 +1033,7 @@ try {
     .check();
   await page.locator("#continue").tap();
   const sixth = await result();
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 9 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 14/);
   assert.equal(await page.locator("#aipw-result").isVisible(), true);
   assert.equal(await page.locator("#outcome-quadratic").isChecked(), true);
   assert.equal(await page.locator("#treatment-quadratic").isChecked(), true);
@@ -927,7 +1098,7 @@ try {
   );
   assert.match(
     await page.locator(".lesson-nav").innerText(),
-    /Level 9 of 13.*Optional revisit/,
+    /Level 10 of 14.*Optional revisit/,
   );
   assert.equal(await page.locator("#hidden-strength").inputValue(), "0");
   assert.equal(await page.locator("#aipw-result").isVisible(), true);
@@ -969,10 +1140,43 @@ try {
   // TMLE follows AIPW and its callback, with its own complete baseline.
   await page.locator("#continue").click();
   assert.match(await page.locator("h1").innerText(), /Targeting with TMLE/);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 10 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 11 of 14/);
   const tmleBaseline = await result();
+  // Keep the action and its consequences in one visible reading sequence.
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const steps = page.locator(".tmle-diagnostics > section");
+    await expect(steps).toHaveCount(3);
+    const sequence = [
+      "#targeting-progress",
+      "#tmle-predictions",
+      "#tmle-current-correction",
+      "#tmle",
+    ];
+    let previousBottom = 0;
+    for (const selector of sequence) {
+      const element = page.locator(selector);
+      await expect(element).toBeVisible();
+      const box = await element.boundingBox();
+      assert.ok(
+        box.y >= previousBottom,
+        `${selector} reading order at ${width}px`,
+      );
+      previousBottom = box.y + box.height;
+      await expect(
+        page.locator(".tmle-diagnostics").locator(selector),
+      ).toHaveCount(1);
+    }
+    await expect(page.locator(".tmle-validity-note")).toBeVisible();
+    assert.equal(
+      await page.locator(".tmle-formula-details").getAttribute("open"),
+      null,
+    );
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(page.locator("#tmle-status")).toBeEmpty();
   const progress = page.getByRole("slider", {
-    name: "Apply the fitted update",
+    name: "Update applied",
   });
   const correction = () => page.locator("#tmle-current-correction").innerText();
   const initialCorrection = Number(await correction());
@@ -1001,6 +1205,7 @@ try {
     beforePaths,
   );
   assert.equal(await page.locator("#lesson-graph").innerHTML(), graph);
+  await expect(page.locator("#tmle-status")).toBeEmpty();
   const half = await result();
   await page.locator(".tmle-formula-details > summary").click();
   assert.equal(await result(), half);
@@ -1017,6 +1222,10 @@ try {
   assert.ok(
     Math.abs(Number(await page.locator("#tmle").innerText()) - 2) < 0.15,
   );
+  await expect(page.locator("#tmle-status")).toContainText(
+    "Full update applied",
+  );
+  await expect(page.locator(".tmle-validity-note")).toBeVisible();
   const complete = await result();
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -1058,7 +1267,7 @@ try {
   // Overlap removes curvature and restores both simple, correctly specified models.
   await page.locator("#continue").click();
   assert.match(await page.locator("h1").innerText(), /Too little overlap/);
-  assert.match(await page.locator(".lesson-nav").innerText(), /Level 11 of 13/);
+  assert.match(await page.locator(".lesson-nav").innerText(), /Level 12 of 14/);
   const tenth = await result();
   const diagnostics = () => page.locator("#overlap-summary").innerText();
   const moderateDiagnostics = await diagnostics();
@@ -1068,11 +1277,9 @@ try {
     .check();
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
-  assert.equal(await page.locator("input").count(), 2);
-  assert.match(
-    await page.locator("#model-weight-note").innerText(),
-    /No treatment/,
-  );
+  assert.equal(await page.locator("input:enabled").count(), 2);
+  assert.equal(await page.locator("#model-weight-note").isVisible(), false);
+  await checkClippingStatus(false);
   await page
     .getByRole("radio", { name: "Moderate selection", exact: true })
     .focus();
@@ -1088,14 +1295,16 @@ try {
   assert.equal(await page.locator("#known-effect").innerText(), "2.00");
   assert.match(
     await page.locator("#model-weight-note").innerText(),
-    /clipped.*IPW and AIPW/,
+    /^For 1,279 of 2,400 people, fitted treatment probabilities were clipped for IPW and AIPW\./,
   );
+  await checkClippingStatus(true);
   const strongOverlap = await result();
   const strongDiagnostics = await diagnostics();
   await page.locator(".overlap-details summary").focus();
   await page.keyboard.press("Enter");
   await page.locator(".lesson-explanation summary").click();
   assert.equal(await result(), strongOverlap);
+  await checkClippingStatus(true);
   assert.equal(await diagnostics(), strongDiagnostics);
   await page.screenshot({
     path: "/tmp/causal-overlap-desktop.png",
@@ -1107,10 +1316,12 @@ try {
     .tap();
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
+  await checkClippingStatus(false);
   await page
     .getByRole("radio", { name: "Strong selection", exact: true })
     .tap();
   assert.equal(await result(), strongOverlap);
+  await checkClippingStatus(true);
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -1123,9 +1334,11 @@ try {
   await page.locator("#redraw").tap();
   assert.notEqual(await result(), strongOverlap);
   assert.notEqual(await diagnostics(), strongDiagnostics);
+  await checkClippingStatus(true);
   await page.locator("#restart").tap();
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
+  await checkClippingStatus(false);
   await page.locator("#back").tap();
   assert.equal(await result(), tmleBaseline);
   assert.equal(await page.locator("#propensity-histogram").count(), 0);
@@ -1144,7 +1357,7 @@ try {
     await page.setViewportSize({ width, height: 900 });
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      /Level 12 of 13/,
+      /Level 13 of 14/,
     );
     assert.equal(
       await page.locator("input, #restart, .lesson-results, #redraw").count(),
@@ -1184,6 +1397,7 @@ try {
   await page.goto(`${url}?level=10`);
   assert.equal(await result(), tenth);
   assert.equal(await diagnostics(), moderateDiagnostics);
+  await checkClippingStatus(false);
   for (const [id, expected, position] of [
     [4, fourth, 4],
     [5, fifth, 8],
@@ -1196,7 +1410,7 @@ try {
     assert.equal(await result(), expected);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${position} of 13`),
+      new RegExp(`Level ${position + 1} of 14`),
     );
   }
   // Contents and the forward journey agree, including after a sandbox visit.
@@ -1217,11 +1431,16 @@ try {
   await page
     .getByRole("link", { name: "Start from scratch", exact: false })
     .click();
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await tryPrediction();
   assert.equal(await result(), first);
   const titles = [
     "A randomized experiment",
     "A common cause",
+    "How uncertain is this estimate?",
     "Adjustment with IPW",
     "Adjustment with an outcome model",
     "A mediator",
@@ -1238,12 +1457,15 @@ try {
     titles,
   );
   for (let i = 0; i < titles.length; i++) {
+    await page
+      .getByRole("heading", { level: 1, name: titles[i], exact: true })
+      .waitFor();
     assert.equal(await page.locator("h1").innerText(), titles[i]);
     assert.match(
       await page.locator(".lesson-nav").innerText(),
-      new RegExp(`Level ${i + 1} of 13`),
+      new RegExp(`Level ${i + 1} of 14`),
     );
-    if (i < 8)
+    if (i < 9)
       assert.doesNotMatch(
         await page.locator(".learning").textContent(),
         /AIPW/,
@@ -1364,11 +1586,19 @@ try {
     await page.locator("#lesson-menu-toggle").click();
     assert.equal(await page.locator("#lesson-menu").isVisible(), true);
     const panelBounds = await page.locator("#lesson-menu").boundingBox();
-    assert.equal(panelBounds.x, headingPosition.x);
+    const navBounds = await page.locator(".lesson-nav").boundingBox();
+    assert.ok(
+      Math.abs(
+        panelBounds.x + panelBounds.width - (navBounds.x + navBounds.width),
+      ) < 1,
+    );
     const toggleBounds = await page
       .locator("#lesson-menu-toggle")
       .boundingBox();
-    assert.equal(toggleBounds.x, panelBounds.x);
+    const backBounds = await page.locator(".lesson-heading-back").boundingBox();
+    assert.equal(backBounds.x, headingPosition.x);
+    assert.ok(backBounds.width >= 44 && backBounds.height >= 44);
+    assert.ok(toggleBounds.x >= backBounds.x + backBounds.width);
     assert.ok(toggleBounds.y + toggleBounds.height <= panelBounds.y);
     assert.equal(
       (await page.locator(".brand").boundingBox()).x,

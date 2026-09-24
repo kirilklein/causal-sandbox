@@ -1,3 +1,5 @@
+@import "./prediction.css";
+
 .lesson-header {
   max-width: 752px;
   width: calc(100% - 48px);
@@ -99,10 +101,6 @@
   dominant-baseline: middle;
   fill: var(--text);
   font-size: 21px;
-}
-.intro-node .intro-node-label {
-  font-size: 12px;
-  fill: var(--text-secondary);
 }
 .intro-paths {
   display: grid;
@@ -344,15 +342,18 @@
   padding: 24px;
   margin: 24px 0 12px;
 }
-#lesson-graph {
+#lesson-graph,
+#comparison-graph {
   max-width: 540px;
   margin: 12px auto;
 }
-#lesson-graph svg {
+#lesson-graph svg,
+#comparison-graph svg {
   width: 100%;
   display: block;
 }
-#lesson-graph text {
+#lesson-graph text,
+#comparison-graph text {
   text-anchor: middle;
   fill: var(--text);
   font-size: 16px;
@@ -360,6 +361,10 @@
 .graph-comparison {
   max-width: 540px;
   margin: 16px auto 0;
+}
+.graph-comparison-separate {
+  max-width: none;
+  margin: 12px 0;
 }
 .graph-comparison > button {
   min-height: 44px;
@@ -494,8 +499,7 @@
   color: var(--text-secondary);
   font-size: 12px;
 }
-.lesson-explanation,
-.outcome-numbers {
+.lesson-explanation {
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
@@ -503,9 +507,13 @@
   border-bottom: 1px solid var(--border);
   padding: 8px 0;
 }
-.aipw-calculation math {
+.aipw-calculation math,
+.model-specification-details math {
   margin: 0;
   font-family: "STIX Two Math", "Cambria Math", math;
+}
+.model-specification-details math {
+  white-space: nowrap;
 }
 .aipw-formula {
   display: flex;
@@ -721,6 +729,20 @@
   font-weight: 600;
   margin-bottom: 8px;
 }
+.model-experiment-option {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+.model-experiment-option .lesson-switch {
+  margin: 0;
+}
+.model-experiment-option input {
+  margin: 0;
+}
+.model-experiment-option .sample-note {
+  margin: 0 0 0 34px;
+}
 .model-preview {
   margin: 16px 0;
   max-width: 440px;
@@ -744,7 +766,7 @@
   font-size: 12px;
 }
 .model-legend span:first-child {
-  color: var(--accent);
+  color: var(--truth);
 }
 .model-legend span:last-child {
   color: var(--fitted);
@@ -872,24 +894,27 @@
   margin-top: 8px;
 }
 
-.lesson-prediction {
-  margin: 20px 0;
-  padding: 18px;
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
+#lesson-graph.method-context {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: none;
 }
-.lesson-prediction .lesson-switch {
-  padding: 4px 8px;
-  border-radius: 6px;
+#lesson-graph.method-context svg {
+  width: 240px;
+  max-width: 100%;
+  flex-shrink: 0;
 }
-.lesson-prediction .lesson-switch:has(input:checked) {
-  background: var(--page);
-  outline: 1px solid var(--border-strong);
+#lesson-graph.method-context text {
+  font-size: 16px;
 }
-.lesson-prediction p:last-child {
-  margin-bottom: 0;
+#lesson-graph.method-context .sample-note {
+  margin: 0;
 }
-.lesson-prediction button:disabled {
-  opacity: 0.55;
-  cursor: default;
+@media (max-width: 600px) {
+  #lesson-graph.method-context {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }

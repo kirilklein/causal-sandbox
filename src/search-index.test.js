@@ -12,6 +12,8 @@ test("finds named experiments and their specific starting states", () => {
     ["repeated studies bias", "?lesson=confounding#repeated-studies"],
     ["bias amplification", "?lesson=instrument-hidden-confounding"],
     ["paths cancel", "?lesson=arrow-strength&example=paths-cancel"],
+    ["causal relevance", "?lesson=causal-relevance"],
+    ["proxy predictor", "?lesson=causal-relevance"],
     ["TMLE IPW misspecification", "docs/tmle-robustness-preview.html"],
   ])
     assert.equal(searchTopics(query)[0].href, href, query);
@@ -124,5 +126,40 @@ test("indexes every current lesson and glossary anchor with one entry per URL", 
   for (const entry of searchEntries) {
     assert.ok(entry.title && entry.type && entry.description && entry.href);
     assert.ok(!entry.href.startsWith("/"), entry.href);
+  }
+});
+
+test("uncertainty searches connect definitions with the lessons that teach them", () => {
+  for (const [query, key, lesson] of [
+    ["uncertainty", "uncertainty", "uncertainty"],
+    ["standard error", "standard-error", "uncertainty"],
+    ["confidence interval", "confidence-interval", "uncertainty"],
+    ["p-value", "p-value", "p-values"],
+    ["bootstrap", "bootstrap", "uncertainty"],
+    ["resampling", "bootstrap", "uncertainty"],
+  ]) {
+    const destinations = searchTopics(query).map(({ href }) => href);
+    assert.ok(destinations.includes(`glossary/#${key}`), query);
+    assert.ok(destinations.includes(`?lesson=${lesson}`), query);
+  }
+});
+
+test("advanced concept searches connect glossary definitions to lessons", () => {
+  for (const [query, key, lesson] of [
+    ["frontdoor", "front-door", "front-door"],
+    ["front door", "front-door", "front-door"],
+    ["proxy", "proxy", "causal-relevance"],
+    [
+      "time varying confounding",
+      "time-varying-confounding",
+      "time-varying-confounding",
+    ],
+    ["sequential IPTW", "sequential-weighting", "time-varying-confounding"],
+    ["sensitivity analysis", "sensitivity-analysis", "leaving-the-sandbox"],
+  ]) {
+    const destinations = searchTopics(query).map(({ href }) => href);
+    assert.ok(destinations.includes(`glossary/#${key}`), query);
+    assert.ok(destinations.includes(`?lesson=${lesson}`), query);
+    assert.equal(glossary[key].related.href, `?lesson=${lesson}`);
   }
 });

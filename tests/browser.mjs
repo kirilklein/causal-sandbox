@@ -1,13 +1,14 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { defaults, makeNoise, simulate, estimate } from "../src/simulation.js";
 import { scenarios, scenarioState } from "../src/sandbox-scenarios.js";
 import { sandboxOverlap } from "../src/sandbox-overlap.js";
 import { glossary } from "../src/glossary.js";
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
+const browser = await launchBrowser();
 try {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1000 },
@@ -15,10 +16,8 @@ try {
     hasTouch: true,
   });
   const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto(
-    `${process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/"}?sandbox`,
-  );
+  collectPageErrors(page, errors);
+  await page.goto(`${getAppUrl()}?sandbox`);
   await page.locator(".effect-row").last().waitFor();
   const contextualGlossary = Object.values(glossary).filter(
     (term) => term.contextual,
@@ -46,7 +45,7 @@ try {
   );
   const references = sourceFooter.locator(".site-references");
   assert.equal(await references.getAttribute("open"), null);
-  assert.equal(await references.locator("li").count(), 10);
+  assert.equal(await references.locator("li").count(), 11);
   assert.ok(
     await references
       .locator("li")
@@ -124,7 +123,7 @@ try {
     );
   const unadjustedStyles = await estimateStyles();
   assert.ok(
-    unadjustedStyles.every((style) => style.tint > 75 && style.tint < 85),
+    unadjustedStyles.every((style) => style.tint > 80 && style.tint < 89),
   );
   assert.ok(
     unadjustedStyles.every(

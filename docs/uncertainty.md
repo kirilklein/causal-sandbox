@@ -1,0 +1,175 @@
+# Uncertainty and p-values
+
+Issue: [#230](https://github.com/kirilklein/causal-sandbox/issues/230).
+
+The core lesson `?lesson=uncertainty` follows confounding and precedes IPW.
+Its numeric identity is 14; existing numeric IDs retain their meanings.
+The optional `?lesson=p-values` returns to uncertainty or continues to IPW.
+Both are in Contents, the topic browser, and search.
+
+The learner question is: how precise is one study's estimate, and what could
+still make it wrong? A point estimate alone cannot show the interval procedure's
+coverage; repeated interval rows make the distinction visible. The true-effect line is visible before sampling begins. Independent repeated studies calculate
+their own intervals; the observed coverage count is not scripted to 95%.
+Increasing sample size while introducing confounding shows precision without
+causal validity. Individual outcome spread, heterogeneity of effects, sampling
+uncertainty, and systematic error are explicitly distinguished.
+
+## Visual teaching flow
+
+ATE, randomization, and confounding are prerequisites. A central question frames
+the opening: can an effect estimate be distinguished from zero? Illustrative
+study A starts at +0.20, followed by B at +1.00 on the same axis. Revealing their
+normal intervals (SE 0.05 and 0.70) shows that A excludes zero while B includes it.
+Dots do not move when intervals appear. Compatibility with zero is not proof of
+no effect. The subsequent sampling experiment appears after this reveal.
+
+The sampling experiment keeps the true-effect line fixed from the start. One
+estimate and its interval begin a 100-row plot inside the same card. Repeat
+adds 99 fresh population samples, slowly at first then accelerating, over 2.8
+seconds. All intervals remain visible; fixed plot dimensions and x-axis bounds
+preserve their positions. Misses are marked as they appear. A live count tracks
+crossings, then the completed batch reveals its measured percentage alongside
+"about 95% over many repetitions, under the assumptions." Reduced-motion mode
+reveals the whole batch immediately. Running another batch keeps the initial
+observed sample and draws 99 new ones. Starting with a new sample clears the batch.
+A sample-size slider above this same chart changes every plotted study from
+200 to 3,200 people. The displayed sample count and average interval width update
+immediately. Study seeds, row positions, and axis bounds stay fixed, so returning
+to a sample size restores the results. Redrawing and repeating retain the selected
+size; controls are disabled during the batch animation. After the first batch,
+the confounding toggle appears: adding C → A moves the unadjusted comparison away
+from causal truth. The coverage caveat changes with the assignment mechanism.
+
+The optional bootstrap starts with a concrete resample. Six original participant
+IDs visibly become zero, one, or multiple copies, using their actual selection
+counts. These are the first six people, not a handpicked example; every resample
+still uses all 200 draws. Repeating the process reveals its histogram and SE.
+The first resample is marked on the histogram to connect the two views.
+
+The p-value lesson keeps the observed estimate → SE → z calculation, zero-effect
+reference curve, and shaded tails in one panel. The precision exercise pairs the
+outcome-scale interval with the standardized null curve; both respond to the same
+controls. Descriptions of assumptions, formulas, and interpretation limits stay
+in disclosures. The uncertainty interpretation check appears after precision
+and bias have been explored. Animation starts only after a button press.
+
+## Statistical contract
+
+`src/uncertainty.js` reuses `simulateLesson` with the common-cause baseline:
+independent people, C uniform with variance 1, independent N(0,1) outcome error,
+Y = effect × A + 1.5C + error. Treatment probability is
+logistic(−0.8 + selection × C). Selection is 0 (randomized) or 1.2 (confounded).
+The causal target is the population average effect, constant across people.
+The analyst uses treatment and observed outcome only.
+
+The estimate is the difference in arm means. Its SE is
+√(s₁²/n₁ + s₀²/n₀), with unbiased sample variances computed separately by arm.
+The 95% interval is estimate ± 1.959963984540054 × SE. The two-sided test uses
+z = estimate/SE and the standard normal tail. These are large-sample
+approximations, not Welch t inference or exact finite-sample intervals.
+They do not extend inference to IPW, regression, AIPW, or TMLE.
+
+Insufficient arm counts or zero estimated variance produce an explicit
+unavailable result. Invalid input throws. Numerical Recipes' complementary
+error-function approximation evaluates small tails directly; displayed small
+p-values use an inequality instead of rounding to zero.
+
+The uncertainty lesson starts with n=200, effect=2, seed=4217. Redraw advances
+that study's seed. Each coverage batch retains that sample plus 99 new studies,
+using successive seeds starting at 12000. The graph and count include all 100.
+Sample-size and confounding changes reuse the currently plotted study seeds
+(n=200–3200). Each interval estimates uncertainty from
+its own sample; the across-study spread is never substituted for its SE.
+
+The p-value lesson simulates batches of 100 null studies (effect=0, seeds starting
+at 20000) and a separate observed study (effect=0.1, seed=4217). The observed
+truth is disclosed only in simulation details and never enters inference.
+The curve and shaded tails use the standard normal reference, not empirical
+dot counts. A separate, explicitly illustrative exercise holds estimated
+magnitude, arm proportions, and outcome spread fixed while changing sample
+size: SE(n)=SE(200)√(200/n). Its sliders do not claim to generate new study data.
+Matching interval inclusion and p-values change continuously across 0.05.
+
+## Optional bootstrap exploration
+
+`?lesson=uncertainty#bootstrap` opens the optional disclosure directly. Its source
+study stays at 200 people, using the sampling experiment's initial-study seed;
+changing its own confounding toggle
+regenerates that source with selection=1.2 and the same seed. Each batch draws
+resamples of observed people with replacement, separately within treatment arms,
+preserving the original arm sizes. The calculation uses only A and Y. Redrawing
+the original study or changing the bootstrap world clears the previous results.
+
+The histogram uses fixed −1 to 5 x-axis bounds and 24 fixed bins. Out-of-range
+draws are reported separately and still enter the SE. Bar heights use the current
+maximum count; the x positions and bin boundaries do not change. The observed
+estimate and truth remain fixed anchors when adding resamples.
+
+Draw once shows its participant copies. Show 10 includes that first draw, then
+Add 10 extends the same sequence to 20, 30, and onward. After 20, Build to 1,000
+provides a shortcut. Reusing the seed preserves all earlier draws. Starting a new
+resample resets the sequence with a new seed; changing the source resets both
+views. SE is unavailable for a single resample and uses divisor B−1 thereafter.
+
+A second graph plots the running bootstrap SE against the number of resamples.
+Each point is the sample SD of the first B estimates (divisor B−1), starting at
+B=2. Adding draws preserves the earlier sequence; the 1,000-draw shortcut includes
+every intermediate prefix. A dashed line shows the same study's formula SE as
+a reference, not an exact limit: finite empirical arm variances differ slightly
+from the unbiased variances used by the formula. The running estimate may rise or
+fall; more resamples stabilize its calculation without making the study more precise.
+The horizontal axis initially spans 0–100 and expands with larger batches.
+Starting a new resample or changing the source starts a new trajectory.
+
+The inspection table and percentile-interval disclosure have been removed.
+Participant copies and interval/null-study graphs carry the patterns; long
+learner-facing data tables are prohibited in AGENTS.md.
+
+The learning objective is to distinguish generating independent studies from
+resampling one observed study. More resamples reduce Monte Carlo noise without
+adding information about the population. Confounding remains in the resampled
+comparison; independent-row resampling does not handle dependent observations.
+The ordinary bootstrap distribution is not a zero-effect null distribution.
+
+The glossary defines sampling uncertainty, SE, CI, p-values, and bootstrap with
+links back to the relevant lessons. Search indexes the definitions automatically
+and includes bootstrap/resampling keywords for the uncertainty lesson.
+
+Validation covers preserved arm sizes, first-resample reconstruction, deterministic
+seeds, constant-effect shifts, and the exact conditional variance of resampled
+means. Another 800 independent studies compare bootstrap SE with empirical
+sampling spread and check persistent confounding, each using 500 resamples. Browser checks follow search → glossary
+→ the expanded bootstrap disclosure and inspect desktop/mobile in both themes.
+
+## Presentation and validation
+
+Uncertainty interval charts share a fixed −1 to 5 outcome-unit axis, with off-scale bounds
+marked by arrows and numeric bounds attached to the plotted marks. Truth uses the shared
+truth color and a dashed vertical line. Missed intervals use the shared error
+mark plus a broken horizontal line, with an explicit coverage legend.
+This encoding describes coverage, not a test of causal validity. Before truth
+is revealed, the first interval has no truth-dependent styling.
+The p-value precision interval uses a fixed −1.6 to 1.6 outcome-unit axis.
+Null plots span z=−4 to 4; their displayed range does not truncate the p-value.
+
+Both chapters use native controls and disclosures, keep answer retries and
+first-answer scoring, and reset the experiment on entry or Restart. Only the
+core lesson affects guided completion; opening the optional chapter from its
+preview also completes uncertainty. Theme changes do not change study data.
+
+Unit checks cover hand-calculated inference, reference normal probabilities,
+interval/test agreement, invalid and degenerate input, constant-effect shifts,
+coverage and null calibration across 5,000 samples, and persistent confounding
+bias across 600 samples. Browser checks cover routes, Continue/Back, reset,
+repeated batches, actual numeric results, keyboard/touch, disclosures, feedback,
+and desktop/phone rendering. Human learner comprehension remains untested.
+
+## References
+
+- [Hernán & Robins, Causal Inference: What If, Chapter 10](https://miguelhernan.org/whatifbook): random variability and systematic bias.
+- [Greenland et al. (2016)](https://link.springer.com/article/10.1007/s10654-016-0149-3): confidence-interval and p-value interpretations and misinterpretations.
+- [Altman & Bland (2005)](https://www.bmj.com/content/331/7521/903): outcome standard deviation versus standard error.
+- [Rafi & Greenland (2020)](https://link.springer.com/article/10.1186/s12874-020-01105-9): compatibility, analysis assumptions, and avoiding binary significance conclusions.
+
+- [Hesterberg, What Teachers Should Know about the Bootstrap](https://arxiv.org/abs/1411.5279): resampling mechanics, standard errors, and limitations.

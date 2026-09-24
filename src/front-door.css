@@ -1,0 +1,354 @@
+.fd-page header,
+.fd-page main {
+  max-width: 1120px;
+}
+.fd-page header {
+  max-width: 1072px;
+}
+.fd-page h1 {
+  margin-bottom: 12px;
+}
+.fd-takeaway {
+  max-width: 780px;
+}
+.fd-page .fd-experiment {
+  padding: 0;
+  overflow: hidden;
+}
+.fd-node-label {
+  font-size: 20px;
+  font-weight: 650;
+  fill: var(--text);
+}
+.fd-graph-label {
+  font-size: 13px;
+  fill: var(--text);
+}
+.fd-edge {
+  fill: none;
+  stroke: var(--causal-path);
+  stroke-width: 2.5;
+}
+.fd-hidden {
+  stroke-dasharray: 5 4;
+}
+.fd-dim {
+  opacity: 0.35;
+}
+.fd-stage {
+  min-width: 0;
+  padding: 28px;
+}
+.fd-stage h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 10px 0 16px;
+}
+.fd-stage p {
+  line-height: 1.55;
+}
+.fd-page .eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+}
+.fd-page .fd-results {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+}
+.fd-results .result > span {
+  display: block;
+}
+.fd-results .result > strong {
+  font-size: 24px;
+  margin-block: 6px;
+}
+.fd-results .effect-difference {
+  font-size: 12px;
+}
+.fd-results .fd-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--page)
+  );
+}
+.fd-results .fd-truth {
+  background: var(--node-Y);
+}
+:root[data-theme="dark"] .fd-results .fd-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+:root[data-theme="dark"] .fd-results .fd-truth {
+  background: var(--truth-surface);
+}
+.fd-question {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 0;
+}
+.fd-question legend {
+  font-weight: 650;
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.fd-question button {
+  margin: 0 6px 8px 0;
+}
+.fd-feedback {
+  font-size: 14px;
+}
+.fd-feedback:empty {
+  display: none;
+}
+.fd-insight {
+  padding: 14px 16px;
+  background: var(--accent-surface);
+  border-left: 3px solid var(--accent);
+  font-size: 15px;
+  margin-top: 24px;
+}
+.fd-control {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.fd-control select,
+.fd-control input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+.fd-control select {
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.fd-control input[type="range"] {
+  height: 6px;
+  margin-block: 20px;
+  background: var(--border-strong);
+  accent-color: var(--accent);
+}
+.fd-control input[type="range"]::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+}
+.fd-control input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
+.fd-control output {
+  float: right;
+}
+.fd-details {
+  margin-top: 15px;
+}
+.fd-details p,
+.fd-details li {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.fd-formula-block {
+  container-type: inline-size;
+}
+.fd-formula-block h3 {
+  margin: 22px 0 12px;
+  font-size: 15px;
+}
+.fd-formula {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 12px 8px;
+  padding: 16px;
+  font-size: clamp(16px, 5cqi, 22px);
+  background: var(--node-M);
+  border-radius: 8px;
+}
+.fd-formula math {
+  font-size: inherit;
+  math-style: normal;
+}
+.fd-transfer {
+  margin-top: 24px;
+}
+.fd-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px 24px;
+  align-items: center;
+  margin: 30px 0;
+  font-size: 14px;
+}
+@media (max-width: 720px) {
+  .fd-stage {
+    padding: 20px;
+    min-height: 0;
+  }
+  .fd-stage h2 {
+    font-size: 23px;
+  }
+}
+
+.fd-page a {
+  color: var(--accent);
+}
+
+.fd-model-equations {
+  container-type: inline-size;
+  display: grid;
+  gap: 12px;
+}
+.fd-model-equations .fd-formula {
+  justify-content: flex-start;
+  background: var(--surface-subtle);
+}
+
+.fd-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 228px;
+  gap: 28px;
+  align-items: center;
+  margin: 24px 0;
+}
+#fd-graph svg {
+  display: block;
+  width: 100%;
+}
+#fd-graph .fd-graph-mobile {
+  display: none;
+}
+.fd-link-value {
+  fill: var(--text);
+  font-size: 22px;
+  font-weight: 650;
+}
+.fd-link-label {
+  fill: var(--text-secondary);
+  font-size: 15px;
+}
+.fd-page #fd-results .fd-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 0;
+}
+#fd-results .result {
+  padding: 12px 16px;
+}
+#fd-results .small {
+  font-size: 11px;
+  margin: 10px 0 0;
+}
+.fd-explanation {
+  font-size: 16px;
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  margin: 24px 0;
+}
+.fd-invalid {
+  border-color: var(--warning);
+}
+.fd-controls {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+.fd-controls .fd-control {
+  margin-bottom: 0;
+}
+.fd-controls .small {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.fd-comparisons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-block: 20px;
+}
+.fd-comparisons > div {
+  background: var(--surface-subtle);
+  padding: 16px;
+  border-radius: 6px;
+}
+.fd-comparisons h3 {
+  font-size: 16px;
+  margin: 0;
+}
+.fd-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.fd-pair strong {
+  margin-left: auto;
+}
+@media (max-width: 720px) {
+  .fd-main {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .fd-page #fd-results .fd-results {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  #fd-results .result {
+    padding: 12px 10px;
+  }
+  #fd-results .result > span {
+    font-size: 11px;
+  }
+  #fd-results .result > strong {
+    font-size: 22px;
+  }
+  .fd-controls {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+@media (max-width: 480px) {
+  #fd-graph .fd-graph-desktop {
+    display: none;
+  }
+  #fd-graph .fd-graph-mobile {
+    display: block;
+    max-width: 350px;
+    margin: auto;
+  }
+  .fd-page #fd-results .fd-results {
+    grid-template-columns: 1fr;
+  }
+  #fd-results .result {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    align-items: center;
+  }
+  #fd-results .result > strong {
+    margin: 0;
+  }
+  #fd-results .effect-difference {
+    grid-column: 1 / -1;
+  }
+  .fd-comparisons {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fd-link-value.fd-unavailable {
+  font-size: 20px;
+}

@@ -120,7 +120,11 @@ presentation changes.
 
 The true total effect uses the constant Outcome Y fill (`--node-Y`). Estimates
 blend from neutral `--page` at zero absolute error to muted red `--error-surface` at an
-absolute error of 2 outcome units, saturating beyond 2. This fixed scale applies
+absolute error of 2 outcome units, saturating beyond 2. Tint follows
+`min(abs(error) / 2, 1) ** 0.75`: modest differences remain visible without a
+minimum tint or a jump at zero. Errors of 0.08, 0.15, 0.3, and 1 receive about
+9%, 14%, 24%, and 59% tint. Dark mode uses a stronger burgundy endpoint while preserving
+text contrast. This fixed, nonlinear scale applies
 across lessons, estimators, slider changes, and redraws. It is a display scale,
 not a statistical threshold; it never divides by truth or rescales to other
 estimates. Equal errors above and below truth receive equal tint.

@@ -1,12 +1,14 @@
-import { chromium } from "@playwright/test";
+import {
+  launchBrowser,
+  getAppUrl,
+  collectPageErrors,
+  stubGoatCounter,
+} from "./browser-setup.mjs";
 import assert from "node:assert/strict";
 import { gunzipSync } from "node:zlib";
 
-const browser = await chromium.launch({
-  headless: true,
-  channel: process.env.CI ? undefined : "chrome",
-});
-const appUrl = process.env.APP_URL || "http://127.0.0.1:5173/causal-sandbox/";
+const browser = await launchBrowser();
+const appUrl = getAppUrl();
 try {
   const page = await browser.newPage({
     userAgent:
@@ -31,7 +33,7 @@ try {
   });
   const requests = [];
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  collectPageErrors(page, errors);
   await page.route("https://analytics.invalid/**", async (route) => {
     requests.push({
       url: route.request().url(),
@@ -43,12 +45,7 @@ try {
       body: "{}",
     });
   });
-  await page.route("**/*.goatcounter.com/**", (route) =>
-    route.fulfill({ contentType: "application/json", body: '{"count":"0"}' }),
-  );
-  await page.route("**/gc.zgo.at/count.js", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  await stubGoatCounter(page);
 
   await page.goto(
     `${appUrl}?private=do-not-send&utm_source=linkedin&utm_medium=social&utm_term=private&utm_content=private%40example.com`,
@@ -65,6 +62,11 @@ try {
   assert.doesNotMatch(page.url(), /private|do-not-send|utm_term|utm_content/);
   assert.equal(requests.length, 0, "the chooser should not contact PostHog");
   await page.getByRole("link", { name: /Start from scratch/ }).click();
+  assert.equal(requests.length, 0, "the opening should not contact PostHog");
+  await page.locator('[data-chapter="3"]').click();
+  await page
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await page.waitForFunction(() => document.querySelector("#try-prediction"));
   const request = await eventRequest;
   assert.deepEqual(errors, []);
@@ -116,6 +118,10 @@ try {
     const postStart = page.waitForRequest("https://analytics.invalid/**");
     await page.getByRole("link", { name: "Learn", exact: true }).click();
     await page.getByRole("link", { name: /Start from scratch/ }).click();
+    await page.locator('[data-chapter="3"]').click();
+    await page
+      .getByRole("link", { name: "Start with a randomized experiment" })
+      .click();
     const postPayload = JSON.parse(
       gunzipSync((await postStart).postDataBuffer()).toString(),
     ).batch[0];
@@ -191,7 +197,7 @@ try {
   const blocked = await browser.newPage();
   const blockedErrors = [];
   let blockedModules = 0;
-  blocked.on("pageerror", (error) => blockedErrors.push(error.message));
+  collectPageErrors(blocked, blockedErrors);
   await blocked.route("**/assets/posthog-*.js", (route) => {
     blockedModules += 1;
     return route.abort("blockedbyclient");
@@ -199,6 +205,10 @@ try {
   await blocked.goto(appUrl);
   await blocked.getByRole("link", { name: "Learn", exact: true }).click();
   await blocked.getByRole("link", { name: /Start from scratch/ }).click();
+  await blocked.locator('[data-chapter="3"]').click();
+  await blocked
+    .getByRole("link", { name: "Start with a randomized experiment" })
+    .click();
   await blocked.locator("#try-prediction").waitFor();
   await blocked.locator("#continue").click();
   await blocked.waitForFunction(() =>

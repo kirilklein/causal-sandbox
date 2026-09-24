@@ -1,6 +1,9 @@
 .learning-entry {
   max-width: 1000px;
 }
+.lesson-header.learning-entry-header {
+  max-width: 952px;
+}
 .learning-entry .lesson-nav {
   position: relative;
 }

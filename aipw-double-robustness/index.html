@@ -80,10 +80,10 @@
     <article class="concept-content" aria-labelledby="aipw-heading">
       <h2 id="aipw-heading">What does double robustness guarantee?</h2>
       <p class="concept-answer">
-        AIPW can consistently estimate an identified effect when either the
-        outcome model or the treatment model is correctly specified, even if the
-        other is wrong. It combines predictions with weighted residuals rather
-        than choosing one adjustment strategy.
+        With valid causal assumptions and sufficient overlap, AIPW can approach
+        the true effect as samples grow if either the outcome model or the
+        treatment propensity model consistently learns the correct relationship.
+        This is double robustness.
       </p>
       <h3>Try it in the experiment</h3>
       <ol>
@@ -94,14 +94,39 @@
         <li>Make both too simple and redraw several samples.</li>
       </ol>
       <p class="concept-note">
-        Double robustness is not protection against every causal failure. It
-        does not fix unmeasured confounding, invalid adjustment, absent overlap,
-        or two misspecified models. Nor does it promise that AIPW is closest to
-        truth in every finite sample.
+        Double robustness does not fix an invalid adjustment set, unmeasured
+        confounding, or absent overlap. It need not give the closest estimate in
+        this sample.
       </p>
+      <details>
+        <summary>Precise guarantee and limits</summary>
+        <p>
+          Under causal identification assumptions and regularity conditions,
+          AIPW is consistent if either model is correctly specified and
+          consistently estimated. Positivity requires that people at each
+          relevant combination of adjustment variables can receive either
+          treatment. See
+          <a href="https://pubmed.ncbi.nlm.nih.gov/16401269/"
+            >Bang &amp; Robins (2005)</a
+          >.
+        </p>
+        <p>
+          If both models are misspecified, there is no general guarantee,
+          although particular errors can cancel. Double robustness also does not
+          guarantee lower mean squared error than other estimators. See
+          <a href="https://doi.org/10.1214/07-STS227"
+            >Kang &amp; Schafer (2007)</a
+          >.
+        </p>
+      </details>
       <nav class="concept-links" aria-label="Related causal inference concepts">
         <h3>Continue exploring</h3>
         <ul>
+          <li>
+            <a href="?lesson=misspecification"
+              >Separate causal specification from model misspecification</a
+            >
+          </li>
           <li>
             <a href="inverse-probability-weighting/"
               >Review the weighting component</a

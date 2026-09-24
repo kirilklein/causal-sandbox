@@ -3,6 +3,7 @@ import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
 import { setupFeedback } from "./feedback.js";
 import { setupSearch } from "./search.js";
+import icon from "./brand.svg?raw";
 
 setupTheme();
 setupSearch();
@@ -13,7 +14,10 @@ const page = document.body.dataset.page;
 const staticPageTheme = document.querySelector(
   "#methodology-theme, #glossary-theme",
 );
-if (staticPageTheme) staticPageTheme.outerHTML = themeControl();
+if (staticPageTheme) {
+  staticPageTheme.outerHTML = themeControl();
+  document.querySelector(".methodology-header .brand img").outerHTML = icon;
+}
 
 if (page === "glossary") {
   await import("./glossary-page.js");
@@ -22,13 +26,28 @@ if (page === "glossary") {
     await import("./graph-lab.js");
   } else if (params.has("sandbox")) {
     await import("./sandbox.js");
+  } else if (lesson === "concept-map") {
+    await import("./concept-map.js");
+  } else if (lesson === "final-quiz") {
+    await import("./final-quiz.js");
   } else if (params.has("quiz") || lesson === "quiz") {
     await import("./quiz.js");
   } else if (["learn", "topics"].includes(lesson)) {
     const { renderLearning } = await import("./learning.js");
     renderLearning(lesson);
+  } else if (
+    lesson === "uncertainty" ||
+    (!lesson && params.get("level") === "14")
+  ) {
+    await import("./uncertainty-lesson.js");
+  } else if (lesson === "p-values") {
+    await import("./p-values-lesson.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
+  } else if (lesson === "what-if") {
+    await import("./what-if.js");
+  } else if (lesson === "trajectory-landscape") {
+    await import("./trajectory-landscape.js");
   } else if (lesson === "propensity-score") {
     await import("./propensity-lesson.js");
   } else if (lesson === "assumptions") {
@@ -41,6 +60,10 @@ if (page === "glossary") {
     await import("./trimming-lesson.js");
   } else if (lesson === "timing") {
     await import("./timing-lesson.js");
+  } else if (lesson === "causal-relevance") {
+    await import("./relevance-lesson.js");
+  } else if (lesson === "front-door") {
+    await import("./front-door-lesson.js");
   } else if (lesson === "time-varying-confounding") {
     await import("./longitudinal-lesson.js");
   } else {
@@ -49,6 +72,11 @@ if (page === "glossary") {
 }
 
 const references = [
+  [
+    "Confidence intervals and p-values",
+    "Greenland et al. (2016), A guide to statistical misinterpretations",
+    "https://link.springer.com/article/10.1007/s10654-016-0149-3",
+  ],
   [
     "Randomization and outcome regression",
     "Hernán & Robins (2020), Causal Inference: What If",

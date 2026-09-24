@@ -1,9 +1,30 @@
+export const conceptMap = {
+  id: "concept-map",
+  title: "How the pieces fit together",
+  href: "?lesson=concept-map",
+  description:
+    "Explore a visual map connecting causal questions, valid comparisons, estimation methods, and evidence.",
+  keywords:
+    "concept map atlas overview big picture curriculum learning path causal inference introduction",
+};
+
+export const openingLesson = {
+  id: "what-if",
+  title: "What if?",
+  href: "?lesson=what-if",
+  description:
+    "Follow one patient’s two possible futures, then ask what treatment changes on average.",
+  keywords:
+    "counterfactual potential outcomes average treatment effect patient trajectory introduction start",
+};
+
 export const coreGroups = [
   {
     title: "Foundations",
     lessons: [
       [1, "randomization", "A randomized experiment"],
       [2, "confounding", "A common cause"],
+      [14, "uncertainty", "How uncertain is this estimate?"],
       [3, "ipw", "Adjustment with IPW", "inverse-probability-weighting/"],
       [4, "outcome-regression", "Adjustment with an outcome model"],
     ],
@@ -30,6 +51,33 @@ export const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "front-door",
+    menuTitle: "The front-door criterion",
+    after: 9,
+    title: "The front-door criterion",
+    href: "?lesson=front-door",
+    description:
+      "Rebuild a total effect through a mediator despite hidden confounding, then test the assumptions that make it possible.",
+  },
+  {
+    id: "trajectory-landscape",
+    menuTitle: "Patient trajectories",
+    after: 2,
+    title: "Why a helpful treatment can look harmful",
+    href: "?lesson=trajectory-landscape",
+    description:
+      "Follow two possible futures, unfold severity, and see how a helpful treatment can look harmful.",
+  },
+  {
+    id: "p-values",
+    menuTitle: "P-values",
+    after: 14,
+    title: "What does a p-value tell us?",
+    href: "?lesson=p-values",
+    description:
+      "Compare a result with a zero-effect world, then connect its p-value to precision and confidence intervals.",
+  },
+  {
     id: "propensity-score",
     menuTitle: "Propensity scores",
     after: 3,
@@ -55,6 +103,15 @@ export const optionalChapters = [
     href: "?lesson=timing",
     description:
       "See why measuring a variable before treatment does not make it safe to adjust for.",
+  },
+  {
+    id: "causal-relevance",
+    menuTitle: "Proxies for hidden confounders",
+    after: 9,
+    title: "Proxies for hidden confounders",
+    href: "?lesson=causal-relevance",
+    description:
+      "See how an observed consequence of a hidden confounder can help reduce bias, then try a noisy-proxy example.",
   },
   {
     id: "time-varying-confounding",

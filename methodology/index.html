@@ -77,12 +77,12 @@
       <div class="methodology-layout">
         <nav class="methodology-contents" aria-label="On this page">
           <strong>On this page</strong>
-          <a href="#causal-world">The causal world</a>
-          <a href="#target">Target effect</a>
-          <a href="#estimators">Estimators</a>
-          <a href="#tmle-method">TMLE targeting</a>
-          <a href="#assumptions">Assumptions</a>
-          <a href="#limitations">Limitations</a>
+          <a href="methodology/#causal-world">The causal world</a>
+          <a href="methodology/#target">Target effect</a>
+          <a href="methodology/#estimators">Estimators</a>
+          <a href="methodology/#tmle-method">TMLE targeting</a>
+          <a href="methodology/#assumptions">Assumptions</a>
+          <a href="methodology/#limitations">Limitations</a>
         </nav>
 
         <article class="methodology-article">
@@ -94,6 +94,8 @@
               C₁ and C₂ are observed; U is an unobserved common cause. Treatment
               A can affect outcome Y directly and through mediator M. A and Y
               both cause K, making K a collider measured after the outcome.
+              Instrument Z affects Y only through A when its Z → A strength is
+              nonzero.
             </p>
 
             <figure class="methodology-graph">
@@ -108,7 +110,9 @@
                 <desc id="methodology-graph-desc">
                   Observed baseline covariates C and unobserved U cause
                   treatment A and outcome Y. A causes mediator M and outcome Y;
-                  M causes Y. A and Y cause collider K.
+                  M causes Y. A and Y cause collider K. Independent instrument Z
+                  causes A and has no other outgoing arrows. An arrow has no
+                  effect when its strength is zero.
                 </desc>
                 <defs>
                   <marker
@@ -124,6 +128,7 @@
                   </marker>
                 </defs>
                 <g class="methodology-edges">
+                  <path d="M 307 72 L 307 110" />
                   <path d="M 106 92 L 276 127" />
                   <path d="M 101 105 C 220 220, 330 240, 469 224" />
                   <path class="hidden-edge" d="M 105 245 L 278 157" />
@@ -135,6 +140,11 @@
                   <path d="M 529 229 L 661 194" />
                 </g>
                 <g class="methodology-nodes">
+                  <g transform="translate(307 42)">
+                    <circle class="node-z" r="30" />
+                    <text class="node-symbol">Z</text>
+                    <text class="node-name" x="-85" y="4">INSTRUMENT</text>
+                  </g>
                   <g transform="translate(78 87)">
                     <circle class="node-c" r="30" />
                     <text class="node-symbol">C</text>
@@ -169,7 +179,8 @@
               </svg>
               <figcaption>
                 Dashed arrows originate from U because this common cause is
-                hidden from the analyst.
+                hidden from the analyst. An arrow has no effect when its
+                strength is zero.
               </figcaption>
             </figure>
 
@@ -203,7 +214,7 @@
                 <span>Treatment assignment</span>
                 <math
                   display="block"
-                  aria-label="Probability of treatment equals expit of minus 0.8 plus alpha C A times S i plus tau A I i, plus alpha U A times U i"
+                  aria-label="Probability of treatment equals expit of minus 0.8 plus alpha C A times the quantity S i plus tau A times I i, plus alpha U A times U i, plus alpha Z A times Z i"
                 >
                   <mrow>
                     <mi>P</mi><mo>(</mo><msub><mi>A</mi><mi>i</mi></msub
@@ -219,6 +230,10 @@
                     ><msub
                       ><mi>α</mi><mrow><mi>U</mi><mi>A</mi></mrow></msub
                     ><msub><mi>U</mi><mi>i</mi></msub
+                    ><mo>+</mo
+                    ><msub
+                      ><mi>α</mi><mrow><mi>Z</mi><mi>A</mi></mrow></msub
+                    ><msub><mi>Z</mi><mi>i</mi></msub
                     ><mo>]</mo>
                   </mrow>
                 </math>
@@ -291,7 +306,11 @@
             <p class="methodology-note">
               C₁ and C₂ are independent uniform variables on [−√3, √3], giving
               each mean 0 and variance 1. U and the three error terms are
-              independent standard normal variables.
+              independent standard normal variables. Z is Bernoulli(0.5),
+              independent of all other background draws. Its
+              treatment-assignment coefficient α<sub>ZA</sub> corresponds to
+              <code>za</code> in the simulator; setting it to zero removes Z’s
+              influence on treatment.
             </p>
 
             <details class="methodology-detail">
@@ -832,8 +851,20 @@
             <h2>What the sandbox does not establish</h2>
             <ul class="limitation-list">
               <li>
-                Results are finite-sample point estimates. The app provides no
-                confidence intervals, standard errors, or hypothesis tests.
+                The estimator sandbox provides finite-sample point estimates.
+                The <a href="../?lesson=uncertainty">uncertainty lesson</a>
+                adds estimated standard errors and approximate 95% normal
+                intervals for the unadjusted difference in means. The optional
+                <a href="../?lesson=p-values">p-value lesson</a> uses the
+                matching two-sided normal test. An optional
+                <a href="../?lesson=uncertainty#bootstrap"
+                  >bootstrap exploration</a
+                >
+                resamples people within treatment groups to estimate a standard
+                error while gradually building a distribution on a fixed x-axis.
+                These calculations assume independent people and adequate group
+                sizes; they do not account for uncontrolled confounding or other
+                systematic biases.
               </li>
               <li>
                 A fixed draw makes changes easy to compare. One seeded sample
