@@ -48,7 +48,7 @@ function tmleControls() {
 export function tmlePanel(effectResults) {
   return `<section class="tmle-diagnostics" aria-label="Targeting experiment">
     <section class="tmle-curve-panel" aria-labelledby="tmle-prediction-title">
-      <h3 id="tmle-prediction-title">Apply the update and watch the predictions change</h3>
+      <h3 id="tmle-prediction-title">How targeting changes the predictions</h3>
       <div class="lesson-controls tmle-targeting-controls">${tmleControls()}</div>
       <p id="tmle-status" role="status"></p>
       <div class="tmle-legend"><span><i class="tmle-key-before"></i>Before targeting</span><span><i class="tmle-key-current"></i>Current predictions</span></div>
