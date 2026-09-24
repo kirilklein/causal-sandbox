@@ -29,7 +29,8 @@ document.querySelector("#app").innerHTML =
 <main>${lessonNavigation({ currentOptional: "front-door" })}
 <p class="eyebrow">ADVANCED · IDENTIFICATION</p>
 <h1 tabindex="-1">The front-door criterion</h1>
-<p class="intro fd-takeaway">A suitable mediator reveals the total effect through the changes it carries—even when treatment and outcome share a hidden cause.</p>
+<p class="intro fd-takeaway">Front-door learns a treatment’s effect by following what it changes in the middle.</p>
+<p class="fd-takeaway">Hidden causes can make treated and untreated people different from the start. We learn how treatment changes an intermediate step (the mediator), then how that step changes the outcome. If we can identify both links and the whole effect passes through that step, we can combine them without measuring the hidden causes.</p>
 <section class="panel fd-experiment" aria-labelledby="fd-title">
   <div class="fd-stage">
     <p class="eyebrow">FICTIONAL TUTORING STUDY · EXACT POPULATION PROPORTIONS</p>
