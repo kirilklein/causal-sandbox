@@ -26,7 +26,7 @@ export function graphMarkup(
         const hidden = question.unmeasured?.includes(id);
         const selectable = interactive && !hidden && !["A", "Y"].includes(id);
         const label = question.facts?.find(([node]) => node === id)?.[1] || id;
-        return `<g ${selectable ? `role="button" tabindex="0" aria-label="Adjust for ${id}: ${label}" aria-pressed="false" data-adjust-node="${id}"` : ""}>${selectable ? `<rect class="adjustment-hit" x="${x - 45}" y="${y - 45}" width="90" height="90" fill="transparent"/>` : ""}<circle cx="${x}" cy="${y}" r="27" ${hidden ? 'stroke="var(--text-secondary)" stroke-width="2" stroke-dasharray="5 4"' : ""} fill="var(--node-${id}, var(--node-C))"/><text x="${x}" y="${y}">${id}</text>${selectable ? `<text class="adjustment-check" aria-hidden="true" x="${x + 20}" y="${y - 24}">✓</text>` : ""}</g>`;
+        return `<g ${selectable ? `role="button" tabindex="0" aria-label="Adjust for ${id}: ${label}" aria-pressed="false" data-adjust-node="${id}"` : ""}>${selectable ? `<rect class="adjustment-hit" x="${x - 45}" y="${y - 45}" width="90" height="90" fill="transparent"/>` : ""}<circle cx="${x}" cy="${y}" r="27" ${hidden ? 'stroke="var(--text-secondary)" stroke-width="2" stroke-dasharray="5 4"' : ""} fill="var(--node-${id}, var(--node-C))"/><text x="${x}" y="${y}">${id}</text></g>`;
       })
       .join("")}</svg></figure>`;
 }

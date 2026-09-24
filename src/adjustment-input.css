@@ -19,14 +19,6 @@
   stroke-width: 5;
   stroke-dasharray: 4 3;
 }
-.adjustment-input .adjustment-check {
-  display: none;
-  font-size: 15px;
-  font-weight: 800;
-}
-.adjustment-input [aria-pressed="true"] .adjustment-check {
-  display: block;
-}
 .adjustment-input [aria-disabled="true"] {
   cursor: default;
 }
