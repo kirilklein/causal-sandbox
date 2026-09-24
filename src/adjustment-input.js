@@ -8,7 +8,7 @@ import "./adjustment-input.css";
 
 export function adjustmentMarkup(question) {
   const facts = `<dl class="quiz-facts">${(question.facts || []).map(([id, label]) => `<div><dt>${id}</dt><dd>${label}</dd></div>`).join("")}</dl>`;
-  return `<div class="adjustment-input"><div class="quiz-diagram">${graphMarkup(question, { interactive: true })}${facts}</div><p class="sample-note">Click or tap nodes to select variables; click again to remove them. A and Y are fixed.${question.unmeasured?.length ? " Dashed nodes are unmeasured." : ""}</p><p class="adjustment-summary" aria-live="polite">Adjusting for: none selected</p><div class="quiz-choices">${[
+  return `<div class="adjustment-input"><p><strong>Choose how to answer:</strong> click or tap nodes in the graph to select the variables to adjust for, or choose one of the three options below.</p><div class="quiz-diagram">${graphMarkup(question, { interactive: true })}${facts}</div><p class="sample-note">Click a selected node again to remove it. A and Y are fixed.${question.unmeasured?.length ? " Dashed nodes are unmeasured." : ""}</p><p class="adjustment-summary" aria-live="polite">Adjusting for: none selected</p><p><strong>Or choose one option below:</strong></p><div class="quiz-choices">${[
     ["none", "No adjustment needed"],
     ["impossible", "No valid measured adjustment set exists"],
     ["unsure", "I’m not sure"],
