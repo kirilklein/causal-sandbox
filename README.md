@@ -82,4 +82,4 @@ Ideas and corrections are welcome. [Open an issue](https://github.com/kirilklein
 
 MIT
 
-[![Causal Sandbox cumulative site views over time, updated daily from GoatCounter](https://raw.githubusercontent.com/kirilklein/causal-sandbox/site-views/docs/site-views.svg)](https://kirilklein.github.io/causal-sandbox/)
+[![Causal Sandbox cumulative site views over time, updated daily from GoatCounter](https://raw.githubusercontent.com/kirilklein/causal-sandbox/site-views/docs/site-views.svg?v=2026-09-24)](https://kirilklein.github.io/causal-sandbox/)
