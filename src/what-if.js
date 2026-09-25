@@ -50,17 +50,7 @@ let animation = null;
 let pausedAt = null;
 let populationAnimations = [];
 const motion = matchMedia("(prefers-reduced-motion: reduce)");
-let view = {
-  step: 0,
-  severity: 7,
-  selection: 1,
-  prognosis: 1,
-  unfold: 0,
-  pool: 0,
-  twins: 0,
-  frequency: 0,
-  day: 0,
-};
+let view = { day: 0, twins: 0 };
 document.title = "What if? — Causal Sandbox";
 document.body.classList.add("trajectory-mode");
 document.querySelector("#app").innerHTML =
@@ -119,7 +109,7 @@ function replay() {
   $("trajectory-pause").textContent = "Ⅱ Pause";
   $("trajectory-pause").setAttribute("aria-label", "Pause animation");
   $("trajectory-pause").hidden = motion.matches || step >= 2;
-  view = { ...view, step, day: 12, twins: Number(step === 1) };
+  view = { ...view, day: 12, twins: Number(step === 1) };
   if (step >= 2 || motion.matches) return draw();
   animation = { start: performance.now(), duration: step === 0 ? 4500 : 3500 };
   frame = requestAnimationFrame(tick);

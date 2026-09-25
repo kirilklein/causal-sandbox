@@ -77,11 +77,12 @@ development server.
 
 ## Where things live
 
-| Area                       | Files                                                                     |
-| -------------------------- | ------------------------------------------------------------------------- |
-| Lesson text and flow       | `src/lessons.js`, `docs/education.md`                                     |
-| Simulation and estimators  | `src/simulation.js`, `src/lesson-simulation.js`, `methodology/index.html` |
-| TMLE                       | `src/tmle.js`, `src/tmle-lesson.js`, `docs/tmle.md`                       |
-| Scenario sandbox           | `src/sandbox.js`, `docs/sandbox.md`                                       |
-| Glossary                   | `src/glossary.js`                                                         |
-| Colors and visual language | `docs/color-conventions.md`                                               |
+| Area                       | Files                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| Lesson text and flow       | `src/lessons.js`, `docs/education.md`                                                 |
+| Simulation and estimators  | `src/simulation.js`, `src/lesson-simulation.js`, `methodology/index.html`             |
+| Patient trajectories       | [Reusable simulation, renderer, and rotation controls](docs/trajectory-components.md) |
+| TMLE                       | `src/tmle.js`, `src/tmle-lesson.js`, `docs/tmle.md`                                   |
+| Scenario sandbox           | `src/sandbox.js`, `docs/sandbox.md`                                                   |
+| Glossary                   | `src/glossary.js`                                                                     |
+| Colors and visual language | `docs/color-conventions.md`                                                           |
