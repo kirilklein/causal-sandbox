@@ -41,7 +41,7 @@ document.querySelector("#app").innerHTML = `
     ${lessonNavigation({ currentOptional: "positivity-sensitivity" })}
     <p class="eyebrow">ADVANCED · POSITIVITY</p>
     <h1 tabindex="-1">${title}</h1>
-    <p class="intro">Keep the target as all treated patients. Use bounds and sensitivity analysis to find which assumptions would rule out average harm.</p>
+    <p class="intro">In this fictional study of a medicine, “recovered” means symptom-free after 30 days. We use bounds to compare recovery with and without treatment.</p>
     <p class="small">Target: the average effect on all treated patients (ATT). Builds on <a href="?lesson=trimming">trimming</a>.</p>
     <section class="panel ps-experiment" aria-labelledby="ps-study-title">
       <p class="eyebrow">FICTIONAL RECOVERY STUDY · EXACT POPULATION PROPORTIONS</p>
@@ -52,10 +52,10 @@ document.querySelector("#app").innerHTML = `
     </section>
     <section class="panel ps-experiment" aria-labelledby="ps-method-title">
       <p class="eyebrow">METHOD · BOUNDS AND SENSITIVITY ANALYSIS</p>
-      <h2 id="ps-method-title">How strong an assumption would rule out harm?</h2>
+      <h2 id="ps-method-title">When can we rule out fewer recoveries with treatment?</h2>
       <p class="small">Start by allowing any untreated recovery rate in the excluded group. Then set an upper limit you could justify.</p>
       <div id="ps-exploration">
-        <p class="ps-task"><strong>Try it:</strong> find the largest upper limit that rules out average harm. The right-hand dots show the most untreated recovery your limit allows.</p>
+        <p class="ps-task"><strong>Try it:</strong> find the largest upper limit that rules out fewer recoveries with treatment. The right-hand dots show the most untreated recovery your limit allows.</p>
         <figure class="ps-recovery" aria-label="Recovery with and without treatment for the same target population, illustrated per 100 treated patients">
           <figcaption class="ps-key"><span><i class="ps-person ps-recovered" aria-hidden="true"></i> Recovered</span><span><i class="ps-person" aria-hidden="true"></i> Did not recover</span></figcaption>
           <div class="ps-worlds">
@@ -128,7 +128,7 @@ document.querySelector("#app").innerHTML = `
     </details>
     <details class="ps-detail">
       <summary>Assumptions and sources</summary>
-      <p>This fictional binary outcome assumes consistency, no interference, and valid adjustment with support in the retained group. Exact population rates omit sampling uncertainty. Baseline groups, treated shares, and follow-up stay fixed.</p>
+      <p>Recovery means being symptom-free at 30 days, measured the same way in both groups. We assume consistency, no interference, and valid adjustment with support in the retained group. Exact population rates omit sampling uncertainty. Baseline groups, treated shares, and follow-up stay fixed.</p>
       <p>The plot uses known treatment probabilities for six retained profiles (0.15–0.65) and one always-treated profile (1). Each arm is normalized separately. The final bin’s treated mass is all at score 1. In real data, an empty region of fitted scores can also reflect a small sample or model misspecification.</p>
       <p>Excluded patients always receive treatment. The slider restricts their untreated recovery probability to a range from zero to your chosen maximum. This assumption is not testable from these data and must be justified externally.</p>
       <ul>
@@ -194,11 +194,11 @@ function render() {
   el("ps-result").textContent = `Overall ATT: ${pp(lower)} to ${pp(upper)}`;
   el("ps-interpretation").textContent =
     maxRecoveries === excludedCount
-      ? "With no extra outcome restriction, both harm and benefit remain possible."
+      ? "The data allow either fewer or more patients to recover with treatment than without it."
       : difference < 0
-        ? "This assumption still allows average harm. Lower the limit to see when that changes."
+        ? "This assumption still allows fewer patients to recover with treatment. Lower the limit to see when that changes."
         : difference === 0
-          ? `At most ${maxRecoveries} of ${excludedCount} (${percent(maxRecoveries / excludedCount)}) is the tipping point: the lower bound reaches zero. Average harm is ruled out only if this assumption holds.`
+          ? `At most ${maxRecoveries} of ${excludedCount} (${percent(maxRecoveries / excludedCount)}) is the tipping point: the lower bound reaches zero. If this assumption holds, at least as many patients recover with treatment as without it.`
           : `Treatment adds at least ${difference} recoveries per 100 patients, if this upper limit is justified.`;
   el("ps-arithmetic").setAttribute(
     "aria-label",

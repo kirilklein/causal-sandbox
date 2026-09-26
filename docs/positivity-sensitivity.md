@@ -9,7 +9,7 @@ everyone in each retained/excluded group.
 Objective: keep the original ATT target when controls are absent for some
 patients. Derive bounds, then explore how an externally justified upper limit on
 untreated recovery narrows them. The advanced task is to find the weakest upper
-limit that rules out average harm, not to repeat the earlier overlap diagnosis.
+limit that rules out fewer recoveries with treatment, not to repeat the earlier overlap diagnosis.
 
 The propensity histogram supplies the starting context. Known probabilities,
 within-arm percentages, and a hatched treated-only mass at score 1 identify the
@@ -37,7 +37,9 @@ alternative targets and evidence, calendar-time comparisons, and sources.
 
 ## Exact model
 
-Y is binary recovery at a fixed follow-up time. S identifies a baseline-defined
+The example is a fictional medicine study. Y=1 means symptom-free at 30 days
+(recovered), and Y=0 means not symptom-free. This is the patient outcome, not
+recovery of an estimand or deterioration of an estimator. S identifies a baseline-defined
 retained group. P(S=1 | A=1)=0.6. Within S=1, treatment is exchangeable with the
 potential outcomes and both treatments are possible. Recovery is 0.6 under
 treatment and 0.4 without it, so ATT_retained=0.2. In S=0, everyone is treated

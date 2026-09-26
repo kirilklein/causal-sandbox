@@ -67,7 +67,7 @@ try {
     "Overall ATT: -4 pp to +36 pp",
   );
   await expect(page.locator("#ps-interpretation")).toContainText(
-    "no extra outcome restriction",
+    "either fewer or more patients to recover",
   );
   await expect(page.locator("[data-prediction]")).toHaveCount(0);
   const fixedIds = [
@@ -104,7 +104,7 @@ try {
     "Overall ATT: -2 pp to +36 pp",
   );
   await expect(page.locator("#ps-interpretation")).toContainText(
-    "still allows average harm",
+    "still allows fewer patients to recover with treatment",
   );
   await expect(page.locator("#ps-untreated-total")).toHaveText("24–62 recover");
   await page.keyboard.press("ArrowLeft");
