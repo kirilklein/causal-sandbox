@@ -11,6 +11,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  uplift: [
+    "Learn uplift modelling, compare conversion and incremental benefit, fit a T-learner, and evaluate fixed targeting rules on a randomized holdout.",
+    "uplift modeling modelling CATE heterogeneous treatment effects targeting conversion purchase probability propensity marketing persuadables T-learner Qini AUUC policy value",
+  ],
   "front-door": [
     "Recover a total causal effect through a mediator under front-door assumptions, despite hidden confounding.",
     "frontdoor front-door front door criterion identification mediator mediation hidden unmeasured confounding tutoring practice",
@@ -191,7 +195,7 @@ export const searchEntries = [
   })),
   ...optionalChapters.map((chapter) => ({
     title: chapter.title,
-    type: "Optional chapter",
+    type: chapter.track ? "Optional track" : "Optional chapter",
     href: chapter.href,
     description: chapter.description || lessonDetails[chapter.id][0],
     keywords: lessonDetails[chapter.id][1],

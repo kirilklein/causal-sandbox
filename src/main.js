@@ -64,6 +64,8 @@ if (page === "glossary") {
     await import("./relevance-lesson.js");
   } else if (lesson === "front-door") {
     await import("./front-door-lesson.js");
+  } else if (lesson === "uplift") {
+    await import("./uplift-lesson.js");
   } else if (lesson === "time-varying-confounding") {
     await import("./longitudinal-lesson.js");
   } else {

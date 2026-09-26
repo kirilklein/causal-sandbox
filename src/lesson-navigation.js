@@ -39,11 +39,13 @@ export function lessonNavigation({
     : introduction
       ? "Introduction"
       : currentOptional
-        ? ["propensity-score", "assumptions", "p-values"].includes(
-            currentOptional,
-          )
-          ? "Refresher"
-          : "Advanced lesson"
+        ? optionalChapters.find(({ id }) => id === currentOptional)?.track
+          ? "Optional track"
+          : ["propensity-score", "assumptions", "p-values"].includes(
+                currentOptional,
+              )
+            ? "Refresher"
+            : "Advanced lesson"
         : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
   const previous = coreLessons[revisiting ? position : position - 1];
   const backLabel = `Back to ${previous ? previous[2] : openingLesson.title}`;
@@ -70,7 +72,22 @@ export function lessonNavigation({
       .join("")}
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=final-quiz" ${learningPage === "final-quiz" ? 'aria-current="step"' : ""}>Final quiz</a>
     <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2>
-      ${optionalChapters.map(({ id, menuTitle, href }) => `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`).join("")}
+      ${optionalChapters
+        .filter(({ track }) => !track)
+        .map(
+          ({ id, menuTitle, href }) =>
+            `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`,
+        )
+        .join("")}
+    </section>
+    <section class="concept-menu" aria-label="Optional tracks"><h2>Optional tracks</h2>
+      ${optionalChapters
+        .filter(({ track }) => track)
+        .map(
+          ({ id, menuTitle, href }) =>
+            `<a href="${href}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`,
+        )
+        .join("")}
     </section>
     <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
       <a href="glossary/">Glossary</a>

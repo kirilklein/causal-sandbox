@@ -51,6 +51,16 @@ export const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "uplift",
+    menuTitle: "Uplift modelling",
+    track: true,
+    after: 1,
+    title: "Uplift modelling: from effects to decisions",
+    href: "?lesson=uplift",
+    description:
+      "Compare purchase prediction with incremental benefit, then estimate uplift and test targeting rules on an independent holdout.",
+  },
+  {
     id: "front-door",
     menuTitle: "The front-door criterion",
     after: 9,
