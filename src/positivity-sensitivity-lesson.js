@@ -29,8 +29,8 @@ document.querySelector("#app").innerHTML = `
     ${lessonNavigation({ currentOptional: "positivity-sensitivity" })}
     <p class="eyebrow">ADVANCED · POSITIVITY</p>
     <h1 tabindex="-1">${title}</h1>
-    <p class="intro">Trimming can give us a supported comparison for the patients who remain. What can we say about everyone who was treated?</p>
-    <p class="small">Builds on <a href="?lesson=trimming">trimming</a>. Here the target is the average treatment effect on the treated (ATT).</p>
+    <p class="intro">Trimming leaves the excluded group’s effect unknown. See how assumptions about that effect can turn an overall benefit into harm, without changing the observed data.</p>
+    <p class="small">Target: the average effect on all treated patients (ATT). Builds on <a href="?lesson=trimming">trimming</a>.</p>
     <section class="panel ps-experiment" aria-labelledby="ps-study-title">
       <p class="eyebrow">FICTIONAL RECOVERY STUDY · EXACT POPULATION PROPORTIONS</p>
       <h2 id="ps-study-title">Some treated patients have no comparable controls</h2>
@@ -44,7 +44,7 @@ document.querySelector("#app").innerHTML = `
           <p><strong>Excluded patients</strong><span>${percent(population.excludedTreated)} recover with treatment. There are no controls with their baseline profile.</span><b>Without treatment: unknown</b></p>
         </div>
       </div>
-      <p class="small">Assume valid adjustment within the retained group. These exact proportions isolate missing support from sampling error.</p>
+      <p class="small">Assume valid adjustment for retained patients. Exact proportions remove sampling error from this example.</p>
       <fieldset id="ps-prediction" class="ps-question">
         <legend>Does the retained effect establish a +20-point benefit for all treated patients?</legend>
         <button data-prediction="yes">Yes, the treated recovery rates are equal</button>
@@ -55,44 +55,47 @@ document.querySelector("#app").innerHTML = `
         <p id="ps-feedback-text" tabindex="-1"></p>
       </details>
       <div id="ps-exploration" hidden>
-        <h3>Change an assumption. Keep the observations fixed.</h3>
+        <h3>Can the overall effect turn harmful?</h3>
         <label class="ps-slider-label" for="ps-effect">Assumed effect among excluded patients <output id="ps-effect-value" for="ps-effect"></output></label>
         <input id="ps-effect" type="range" min="-40" max="60" step="5" value="20" aria-describedby="ps-effect-help">
-        <p id="ps-effect-help" class="small">Percentage points in recovery. Start with the same effect as the retained group, then try harm.</p>
+        <p id="ps-effect-help" class="small">Move toward harm (negative values). Watch the effect on all treated patients cross zero.</p>
         <div id="ps-chart"></div>
-        <p class="small">Bars show the full range compatible with these observations and a binary outcome. They are not confidence intervals. Open circles mark your assumption and its implication.</p>
+        <p class="small">Bars: effects compatible with the observations, not confidence intervals. Open circles: your assumption and its implication.</p>
         <p id="ps-result" class="ps-result" role="status"></p>
         <p id="ps-counterfactual" class="small"></p>
       </div>
     </section>
     <details class="ps-detail" id="ps-calculation">
       <summary>How the two groups combine</summary>
-      <p>Average effects using each group’s share of treated patients, not its share of the combined treated-and-control sample.</p>
+      <p>Weight each group’s effect by its share of treated patients.</p>
       <div class="ps-equation" role="math" aria-label="Overall ATT equals retained share times retained ATT plus excluded share times excluded ATT">
-        <span>ATT<sub>all</sub> =</span><span>p × ATT<sub>retained</sub></span><span>+ (1 − p) × ATT<sub>excluded</sub></span>
+        <math aria-hidden="true"><msub><mi>τ</mi><mtext>all</mtext></msub><mo>=</mo></math>
+        <math aria-hidden="true"><mi>p</mi><mo>·</mo><msub><mi>τ</mi><mtext>retained</mtext></msub></math>
+        <math aria-hidden="true"><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><mo>·</mo><msub><mi>τ</mi><mtext>excluded</mtext></msub></math>
       </div>
-      <p id="ps-arithmetic"></p>
+      <p class="small">Each <math><mi>τ</mi></math> is a group’s ATT. <math><mi>p</mi></math> is the retained share, here 60%.</p>
+      <div id="ps-arithmetic" class="ps-equation ps-arithmetic" role="math" hidden></div>
+      <p id="ps-tipping" hidden></p>
       <p id="ps-bounds"></p>
-      <p>Matching ages or comorbidities in a Table 1 does not establish equal effects. Trimming changes the target even when those summaries look similar.</p>
     </details>
     <details class="ps-detail">
       <summary>What can we do next?</summary>
       <ul>
-        <li><strong>Seek relevant controls.</strong> With rare but possible untreated patients, a larger or better-targeted study can help. If a profile always receives treatment, enlarging the same study cannot create that comparison.</li>
-        <li><strong>Report a narrower target.</strong> Estimate the ATT among retained treated patients and describe who was excluded. This leaves the excluded group’s effect unresolved.</li>
-        <li><strong>Make extrapolation explicit.</strong> An outcome model can predict into the unsupported group, but its accuracy there needs assumptions beyond the observed comparison. Use a justified range of assumptions to show whether the conclusion changes.</li>
+        <li><strong>Find relevant controls.</strong> More data can help when controls are rare. If a profile always receives treatment, enlarging the same study cannot supply them.</li>
+        <li><strong>Narrow the target.</strong> Report the retained-group ATT and describe who was excluded. Similar baseline summaries do not establish equal effects.</li>
+        <li><strong>State the extrapolation assumptions.</strong> Predictions for excluded patients need assumptions beyond the observed comparisons. Show how plausible alternatives change the conclusion.</li>
       </ul>
-      <p>Weight clipping, a different estimator, or double robustness cannot supply an absent counterfactual comparison. Overlap weighting also changes whom the result represents.</p>
+      <p>Clipping or double robustness cannot replace missing controls. Overlap weighting changes the target population.</p>
     </details>
     <details class="ps-detail">
       <summary>Can controls come from another calendar period?</summary>
-      <p>Possibly, if they represent what would have happened without treatment in the target period after valid adjustment. Similar recorded profiles alone do not establish that.</p>
-      <p>If background care, diagnosis, or outcome measurement changes over time, removing calendar time from the propensity model can hide confounding. If time only predicts treatment and is unnecessary for confounding control, including it may worsen precision. The causal role of time decides this, not how much overlap its removal produces.</p>
-      <p>Inspect uptake and support within clinically meaningful periods. A transition period with both treatments may support a narrower question. Align eligibility and follow-up in both groups. Time since diagnosis is a separate design issue.</p>
+      <p>Only if they represent untreated outcomes in the target period after valid adjustment.</p>
+      <p>Changes in care or diagnosis can make calendar time a confounder. Dropping it may hide bias. If time only predicts treatment and is unnecessary for adjustment, including it may worsen precision.</p>
+      <p>A period with both treatments may support a narrower comparison. Align eligibility and follow-up across groups.</p>
     </details>
     <details class="ps-detail" id="ps-practice">
       <summary>Check your understanding</summary>
-      <fieldset class="ps-question"><legend>A much larger study gives a very precise retained-group effect, but still has no controls for excluded patients. What changes?</legend>
+      <fieldset class="ps-question"><legend>A larger study improves precision for retained patients but adds no controls for excluded patients. What changes?</legend>
         <button data-practice="all">The overall ATT is now identified</button>
         <button data-practice="retained">Only the retained-group estimate becomes more precise</button>
       </fieldset>
@@ -100,13 +103,13 @@ document.querySelector("#app").innerHTML = `
     </details>
     <details class="ps-detail">
       <summary>Assumptions and sources</summary>
-      <p>This is an invented binary recovery outcome at one fixed follow-up time. The baseline-defined groups and their treated shares stay fixed. Consistency, no interference, and exchangeability with adequate support within the retained group are stipulated.</p>
-      <p>The excluded group always receives treatment. Its untreated recovery probability is unconstrained between 0 and 1. Each slider position changes only that unobserved probability, so all positions agree with the same observed data. There is no fitted propensity model, estimated cutoff, or confidence interval here. In a finite study, estimating the supported effect and group shares introduces additional uncertainty.</p>
+      <p>This fictional binary outcome assumes consistency, no interference, and exchangeability with support in the retained group. Baseline groups, treated shares, and follow-up stay fixed.</p>
+      <p>Excluded patients always receive treatment. The slider changes only their unobserved recovery without treatment. Real studies also have uncertainty from estimating effects and group shares, omitted here.</p>
       <ul>
         <li><a href="https://academic.oup.com/biomet/article/105/2/487/4930690">Yang & Ding (2018)</a>: trimming targets and inference after estimated selection.</li>
         <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4107929/">Petersen et al. (2012)</a>: diagnosing and responding to positivity violations.</li>
         <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3659185/">Mack et al. (2013)</a>: calendar-time-specific propensity scores.</li>
-        <li><a href="https://pubmed.ncbi.nlm.nih.gov/39246144/">Liu et al. (2024)</a>: OWATT as further reading. This lesson does not implement OWATT.</li>
+        <li><a href="https://pubmed.ncbi.nlm.nih.gov/39246144/">Liu et al. (2024)</a>: further reading on OWATT.</li>
       </ul>
     </details>
     <nav class="ps-footer" aria-label="Continue learning"><button id="ps-restart">Restart lesson</button><a href="?lesson=trimming">← Trimming</a><a href="?lesson=topics">All topics</a><a href="?lesson=leaving-the-sandbox">Leaving the sandbox →</a></nav>
@@ -138,15 +141,24 @@ function render() {
   el("ps-chart").innerHTML = effectChart(result);
   el("ps-result").textContent =
     Math.abs(result.overallEffect) < 1e-10
-      ? "Under this assumption, benefit among retained patients and harm among excluded patients cancel: the overall ATT is 0 pp."
-      : `Under this assumption, the overall ATT is ${pp(result.overallEffect)}. The retained effect stays ${pp(result.retainedEffect)}.`;
+      ? "Overall ATT: 0 pp. Benefit and harm cancel under this assumption."
+      : `Overall ATT: ${pp(result.overallEffect)} under this assumption. The observed data have not changed.`;
   el("ps-counterfactual").textContent =
-    `This assumes ${percent(result.excludedUntreated)} of excluded patients would recover without treatment. Their observed recovery with treatment stays ${percent(population.excludedTreated)}.`;
-  el("ps-arithmetic").textContent = answered
-    ? `${percent(population.retainedShare)} × (${pp(result.retainedEffect)}) + ${percent(1 - population.retainedShare)} × (${pp(result.excludedEffect)}) = ${pp(result.overallEffect)}. The overall effect reaches zero if the excluded effect is ${pp(result.tippingEffect)}.`
-    : "Here, 60% of treated patients contribute the supported effect. The remaining 40% contribute an effect we have not identified.";
+    `Excluded patients’ recovery without treatment: ${percent(result.excludedUntreated)} assumed. With treatment: ${percent(population.excludedTreated)} observed.`;
+  el("ps-arithmetic").hidden = !answered;
+  el("ps-arithmetic").setAttribute(
+    "aria-label",
+    `60 percent times ${pp(result.retainedEffect)} plus 40 percent times ${pp(result.excludedEffect)} equals ${pp(result.overallEffect)}`,
+  );
+  el("ps-arithmetic").innerHTML = `
+    <math aria-hidden="true"><mn>0.6</mn><mo>×</mo><mn>${Math.round(result.retainedEffect * 100)}</mn></math>
+    <math aria-hidden="true"><mo>+</mo><mn>0.4</mn><mo>×</mo><mo>(</mo><mn>${Math.round(result.excludedEffect * 100)}</mn><mo>)</mo></math>
+    <math aria-hidden="true"><mo>=</mo><mn>${Math.round(result.overallEffect * 1000) / 10}</mn><mspace width="0.3em"/><mtext>pp</mtext></math>`;
+  el("ps-tipping").hidden = !answered;
+  el("ps-tipping").textContent =
+    `The overall effect reaches zero at an excluded-group effect of ${pp(result.tippingEffect)}.`;
   el("ps-bounds").textContent =
-    `With ${percent(population.excludedTreated)} recovering under treatment, an untreated recovery rate from 0% to 100% permits an excluded-group effect from ${pp(result.excludedBounds[0])} to ${pp(result.excludedBounds[1])}. This gives an overall ATT from ${pp(result.overallBounds[0])} to ${pp(result.overallBounds[1])}. These bounds do not include sampling uncertainty.`;
+    `Untreated recovery could be 0–100%. With ${percent(population.excludedTreated)} observed recovery under treatment, this allows an excluded effect from ${pp(result.excludedBounds[0])} to ${pp(result.excludedBounds[1])}, and an overall ATT from ${pp(result.overallBounds[0])} to ${pp(result.overallBounds[1])}.`;
 }
 
 document.querySelectorAll("[data-prediction]").forEach((button) => {
@@ -157,7 +169,7 @@ document.querySelectorAll("[data-prediction]").forEach((button) => {
     el("ps-feedback").hidden = false;
     el("ps-feedback").dataset.result = correct ? "correct" : "review";
     el("ps-feedback-text").textContent =
-      `${correct ? "✓ Correct." : "! Not quite."} You chose: “${button.textContent}”. Equal recovery under treatment does not reveal recovery without treatment. Move the assumption slider to see what remains possible.`;
+      `${correct ? "✓ Correct." : "! Not quite."} You chose: “${button.textContent}”. Equal recovery under treatment leaves recovery without treatment unknown.`;
     el("ps-exploration").hidden = false;
     render();
     el("ps-feedback-text").focus({ preventScroll: true });
@@ -171,7 +183,7 @@ document.querySelectorAll("[data-practice]").forEach((button) => {
         choice.setAttribute("aria-pressed", String(choice === button)),
       );
     el("ps-practice-feedback").textContent =
-      `${button.dataset.practice === "retained" ? "✓ Correct." : "! Not quite."} Greater precision within the retained group leaves the excluded counterfactual missing. More data from the same supported profiles do not identify the overall ATT.`;
+      `${button.dataset.practice === "retained" ? "✓ Correct." : "! Not quite."} A more precise retained effect still leaves the excluded effect unknown.`;
   });
 });
 el("ps-effect").addEventListener("input", render);

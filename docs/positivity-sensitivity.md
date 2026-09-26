@@ -8,13 +8,17 @@ everyone in each retained/excluded group.
 
 Misconception: a precise effect after trimming also determines the effect on all
 treated patients, especially if retained and excluded groups look similar.
-Takeaway: excluded patients still contribute to the original ATT. Without their
-counterfactual comparison, the overall effect needs further evidence or assumptions.
+Takeaway: assumptions about the excluded effect can turn an overall benefit into
+harm without changing the observed data. The opening states this purpose and the
+slider asks learners to find where the overall effect crosses zero.
 
 Flow: read one fixed recovery example, predict whether the retained effect
 generalizes, vary an excluded-group effect assumption, and explain why more data
 only from supported profiles cannot identify the missing effect. Sources,
 arithmetic, and calendar-time considerations are optional disclosures.
+The calculation uses native MathML for the weighted-average identity and current
+numeric example. Terms align over two lines on phones, with the numeric example
+stacked separately. The current calculation appears after the prediction.
 
 The split strip widths encode shares of treated patients. The three effect tracks
 share a fixed −40 to +60 percentage-point scale. A filled marker is the supported

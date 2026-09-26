@@ -25,6 +25,7 @@ try {
     .click();
   await expect(page.locator("h1")).toHaveText(title);
   await expect(page.locator("#ps-exploration")).toBeHidden();
+  await expect(page.locator("#ps-arithmetic")).toBeHidden();
   const observed = await page.locator("#ps-observed").innerHTML();
   await page.locator('[data-prediction="yes"]').focus();
   await page.keyboard.press("Enter");
@@ -33,6 +34,11 @@ try {
   await expect(page.locator("#ps-exploration")).toBeVisible();
   await expect(page.locator("#ps-effect-value")).toHaveText("+20 pp");
   await page.locator("#ps-calculation > summary").click();
+  await expect(page.locator("#ps-calculation math msub")).toHaveCount(3);
+  await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
+    "aria-label",
+    "60 percent times +20 pp plus 40 percent times +20 pp equals +20 pp",
+  );
   await page.locator("#ps-effect").focus();
   await page.keyboard.press("Home");
   await expect(page.locator("#ps-result")).toContainText("-4 pp");
@@ -42,6 +48,10 @@ try {
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("#ps-result")).toContainText("cancel");
   await expect(page.locator("#ps-effect-value")).toHaveText("-30 pp");
+  await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
+    "aria-label",
+    "60 percent times +20 pp plus 40 percent times -30 pp equals 0 pp",
+  );
   await page.keyboard.press("End");
   await expect(page.locator("#ps-result")).toContainText("+36 pp");
   await expect(page.locator("#ps-counterfactual")).toContainText("0%");
@@ -99,12 +109,28 @@ try {
         path: `test-results/positivity-sensitivity/${width}-${theme}.png`,
       });
       await page.locator("#ps-calculation > summary").click();
+      await expect(page.locator("#ps-arithmetic")).toBeVisible();
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
         `${width}/${theme} formula fits`,
       );
+      assert.ok(
+        await page.locator("#ps-calculation").evaluate((node) => {
+          const bounds = node.getBoundingClientRect();
+          return [...node.querySelectorAll(".ps-equation math")].every(
+            (math) => {
+              const box = math.getBoundingClientRect();
+              return box.left >= bounds.left && box.right <= bounds.right;
+            },
+          );
+        }),
+        `${width}/${theme} equations fit the disclosure`,
+      );
+      await page.locator("#ps-calculation").screenshot({
+        path: `test-results/positivity-sensitivity/formulas-${width}-${theme}.png`,
+      });
       await page.locator("#ps-calculation > summary").click();
     }
   }
@@ -112,6 +138,7 @@ try {
   await page.locator("#ps-restart").click();
   await expect(page.locator("h1")).toBeFocused();
   await expect(page.locator("#ps-effect")).toHaveValue("20");
+  await expect(page.locator("#ps-arithmetic")).toBeHidden();
   await expect(page.locator("#ps-exploration")).toBeHidden();
   await expect(page.locator("#ps-prediction")).toBeVisible();
   await expect(page.locator("#ps-practice-feedback")).toBeEmpty();

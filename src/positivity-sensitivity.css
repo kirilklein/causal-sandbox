@@ -193,16 +193,26 @@
   margin-block: 10px;
 }
 .ps-equation {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: center;
+  align-items: baseline;
+  gap: 12px 8px;
+  margin-block: 20px 12px;
+  padding: 20px 16px;
   border-radius: 8px;
   background: var(--surface-subtle);
-  font-size: 16px;
+  font-size: 24px;
+  color: var(--text);
 }
-.ps-equation span {
-  white-space: nowrap;
+.ps-equation math {
+  font-size: inherit;
+  math-style: normal;
+}
+.ps-arithmetic {
+  background: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
 }
 .ps-footer {
   display: flex;
@@ -233,5 +243,19 @@
   }
   .ps-population > div {
     padding: 10px;
+  }
+  .ps-equation {
+    grid-template-columns: repeat(2, max-content);
+    font-size: 22px;
+  }
+  .ps-equation > math:last-child {
+    grid-column: 2;
+  }
+  .ps-arithmetic {
+    grid-template-columns: max-content;
+    justify-items: start;
+  }
+  .ps-arithmetic > math:last-child {
+    grid-column: 1;
   }
 }
