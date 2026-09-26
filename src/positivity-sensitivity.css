@@ -1,0 +1,328 @@
+.positivity-page a {
+  color: var(--accent);
+}
+.positivity-page [hidden] {
+  display: none !important;
+}
+/* Shared axes and arm normalization expose missing comparison groups. */
+.ps-propensity {
+  margin: 24px auto 16px;
+  max-width: 620px;
+}
+.ps-propensity figcaption {
+  font-weight: 600;
+}
+.ps-propensity .small {
+  margin-top: 4px;
+}
+.ps-histogram-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-block: 18px;
+  font-size: 13px;
+}
+.ps-histogram-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ps-histogram-key i {
+  width: 16px;
+  height: 12px;
+  border: 2px solid var(--arm-1);
+}
+.ps-histogram-key .ps-control-swatch {
+  border-color: var(--arm-0);
+}
+.ps-treated-swatch {
+  background: var(--arm-1);
+}
+.ps-excluded-swatch {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--node-Y) 0 3px,
+    var(--arm-1) 3px 5px
+  );
+}
+#ps-propensity-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+#ps-propensity-chart text {
+  fill: var(--text-secondary);
+  font-size: 13px;
+}
+.ps-control-bar {
+  fill: var(--surface);
+  stroke: var(--arm-0);
+  stroke-width: 1.5px;
+}
+.ps-treated-bar {
+  fill: var(--arm-1);
+}
+.ps-excluded-bar {
+  fill: url(#ps-excluded-hatch);
+  stroke: var(--arm-1);
+  stroke-width: 1.5px;
+}
+.ps-propensity .ps-axis-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.ps-x-label {
+  text-align: center;
+}
+.ps-support-note {
+  font-size: 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--arm-1);
+}
+.ps-question {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 20px 0 0;
+  padding: 18px 0 0;
+}
+.ps-question legend {
+  font-weight: 600;
+  padding: 0;
+}
+.ps-question button {
+  margin: 8px 8px 0 0;
+  text-align: left;
+}
+.ps-task {
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  font-size: 14px;
+}
+.ps-result strong {
+  font-size: 20px;
+}
+.ps-result p {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+/* Both columns show the same 100-patient target, split into groups of 60 and 40. */
+.ps-recovery {
+  margin: 24px auto 0;
+  max-width: 620px;
+}
+.ps-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+.ps-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ps-key .ps-person {
+  width: 12px;
+  height: 12px;
+}
+.ps-worlds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+.ps-worlds h4 {
+  margin: 0;
+  font-size: 18px;
+  text-align: center;
+}
+.ps-worlds .ps-group {
+  grid-column: 1 / -1;
+  margin: 20px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ps-group span {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.ps-recovery-cell {
+  min-width: 0;
+  padding: 12px;
+  border: 2px solid transparent;
+}
+.ps-recovery-cell p,
+.ps-recovery-cell label {
+  display: block;
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.ps-recovery-cell strong,
+.ps-recovery-cell small {
+  display: block;
+}
+.ps-recovery-cell small {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ps-people {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 200px;
+}
+.ps-person {
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid var(--text-secondary);
+  border-radius: 50%;
+}
+.ps-recovered {
+  background: var(--text);
+  border-color: var(--text);
+}
+.ps-missing {
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  background: var(--accent-surface);
+}
+#ps-recoveries {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--accent);
+  background: var(--border-strong);
+  margin: 24px 0 8px;
+}
+#ps-recoveries::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+}
+#ps-recoveries::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
+.ps-slider-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ps-missing #ps-recoveries-help {
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+.ps-total {
+  margin-top: 16px;
+  padding: 12px;
+  border-top: 2px solid var(--text-secondary);
+}
+.ps-total strong,
+.ps-total span {
+  display: block;
+}
+.ps-total strong {
+  font-size: 24px;
+  margin: 4px 0;
+}
+.ps-total small,
+.ps-total span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ps-result {
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  background: var(--accent-surface);
+}
+.ps-detail {
+  margin-block: 16px;
+}
+.ps-detail p,
+.ps-detail li {
+  font-size: 14px;
+}
+.ps-detail li {
+  margin-block: 10px;
+}
+.ps-equation {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: center;
+  align-items: baseline;
+  gap: 12px 8px;
+  margin-block: 20px 12px;
+  padding: 20px 16px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font-size: 24px;
+  color: var(--text);
+}
+.ps-equation math {
+  font-size: inherit;
+  math-style: normal;
+}
+.ps-arithmetic {
+  background: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+}
+.ps-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-block: 28px;
+  font-size: 14px;
+}
+@media (max-width: 560px) {
+  .positivity-page main {
+    padding: 20px 16px;
+  }
+  .positivity-page .panel {
+    padding: 18px 14px;
+  }
+  .ps-worlds {
+    column-gap: 8px;
+  }
+  .ps-worlds h4 {
+    font-size: 15px;
+  }
+  .ps-recovery-cell,
+  .ps-total {
+    padding: 8px 4px;
+  }
+  .ps-recovery-cell p,
+  .ps-recovery-cell label {
+    font-size: 14px;
+  }
+  .ps-people {
+    gap: 3px;
+  }
+  .ps-total strong {
+    font-size: 19px;
+  }
+  #ps-propensity-chart text {
+    font-size: 18px;
+  }
+  .ps-equation {
+    grid-template-columns: repeat(2, max-content);
+    font-size: 22px;
+  }
+  .ps-equation > math:last-child {
+    grid-column: 2;
+  }
+  .ps-arithmetic {
+    grid-template-columns: max-content;
+    justify-items: start;
+  }
+  .ps-arithmetic > math:last-child {
+    grid-column: 1;
+  }
+}

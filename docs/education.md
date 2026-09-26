@@ -141,6 +141,16 @@ uses varying effects to show how trimming can change that truth. Each chapter
 restores its own baseline on entry; samples and controls are not transferred between
 chapters.
 
+The advanced [Beyond trimming](positivity-sensitivity.md) chapter at
+`?lesson=positivity-sensitivity` follows trimming. It switches explicitly to ATT:
+the learner varies an assumed effect among excluded treated patients while all
+observed recovery proportions stay fixed. A common effect scale shows the
+supported, assumed, and implied effects, with logical bounds distinguished from
+confidence intervals. Prediction precedes exploration, followed by a precision
+versus identification check. Optional detail covers calendar-time comparisons
+and responses to missing support. Trimming, Contents, topics, and search provide
+entry points; core lesson order is unchanged.
+
 An optional [instruments and adjustment chapter](instruments.md) follows
 double robustness at `?lesson=instrument`. It introduces Z, its precision cost when
 included in adjustment, and a follow-on hidden-confounding strength experiment. The

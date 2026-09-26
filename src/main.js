@@ -58,6 +58,8 @@ if (page === "glossary") {
     await import("./clipping-lesson.js");
   } else if (lesson === "trimming") {
     await import("./trimming-lesson.js");
+  } else if (lesson === "positivity-sensitivity") {
+    await import("./positivity-sensitivity-lesson.js");
   } else if (lesson === "timing") {
     await import("./timing-lesson.js");
   } else if (lesson === "causal-relevance") {
