@@ -13,8 +13,9 @@ The learner question is: **Which contacts create extra purchases?** The supporte
 inference is that ranking people by purchase probability can differ from ranking
 them by incremental benefit. The paired probability chart keeps customer groups
 fixed while highlighting the groups a policy contacts. Horizontal distance
-between the no-contact circle and contact triangle represents uplift. Vertical
-separation only keeps markers distinct, and the chart states this explicitly.
+between the no-contact circle and contact triangle represents uplift. Both
+markers sit on one horizontal baseline. At equal probabilities, the triangle
+fits inside the open circle at their shared position.
 
 Learners predict the better rule before changing budgets and worlds, then answer
 a transfer question about attributed purchases. The first two steps explicitly

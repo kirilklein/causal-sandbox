@@ -154,22 +154,25 @@
 }
 .uplift-connector {
   stroke: var(--text-secondary);
-  stroke-width: 0.6;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 .uplift-probability span {
   position: absolute;
-  width: 9px;
-  height: 9px;
+  top: 16px;
   transform: translate(-50%, -50%);
 }
 .uplift-no-contact {
-  background: var(--arm-0);
-  top: 9px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--arm-0);
+  background: var(--surface);
   border-radius: 50%;
 }
 .uplift-contact {
+  width: 10px;
+  height: 10px;
   background: var(--arm-1);
-  top: 23px;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 .uplift-page main a {

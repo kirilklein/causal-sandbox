@@ -86,7 +86,7 @@ setupLessonNavigation();
 
 function groupChart(values, contacts = null, observed = false) {
   return `<figure class="uplift-cohort"><figcaption>${observed ? "Fitted purchase chances · randomized training study" : "Simulator truth · purchase chances in each group"}</figcaption>
-    <p class="small uplift-legend"><span>● No contact</span><span>▲ Contact</span><span>pp = percentage points</span></p>
+    <p class="small uplift-legend"><span>○ No contact</span><span>▲ Contact</span><span>pp = percentage points</span></p>
     <div class="uplift-axis"><span>Purchase chance</span><div><span>0%</span><span>50%</span><span>100%</span></div><span>Uplift</span></div>
     ${population
       .map((group, i) => {
@@ -94,14 +94,14 @@ function groupChart(values, contacts = null, observed = false) {
         const change = p1 - p0;
         return `<div class="uplift-group" ${contacts ? `data-contacted="${contacts[i] > 0}"` : ""}>
         <div><strong>${group.name}</strong><small>${observed ? "400 per study arm" : contacts ? `${number(contacts[i])} of 100 contacted` : "100 customers"}</small></div>
-        <div><div class="uplift-probability" aria-hidden="true"><svg viewBox="0 0 100 32" preserveAspectRatio="none"><path class="uplift-grid" d="M0 0V32 M50 0V32 M100 0V32"/><path class="uplift-connector" d="M${p0 * 100} 9 L${p1 * 100} 23"/></svg><span class="uplift-no-contact" style="left:${p0 * 100}%"></span><span class="uplift-contact" style="left:${p1 * 100}%"></span></div>
+        <div><div class="uplift-probability" aria-hidden="true"><svg viewBox="0 0 100 32" preserveAspectRatio="none"><path class="uplift-grid" d="M0 8V24 M50 8V24 M100 8V24"/><path class="uplift-connector" d="M${p0 * 100} 16 H${p1 * 100}"/></svg><span class="uplift-no-contact" style="left:${p0 * 100}%"></span><span class="uplift-contact" style="left:${p1 * 100}%"></span></div>
         <span class="small">${percent(p0)} without → ${percent(p1)} with contact</span></div>
         <strong class="uplift-difference">${signed(change * 100)}<small>pp</small></strong>
       </div>`;
       })
       .join(
         "",
-      )}<p class="small">Horizontal position shows purchase chance. Vertical spacing only separates the two markers.</p></figure>`;
+      )}<p class="small">The horizontal gap is uplift. Equal chances share one position.</p></figure>`;
 }
 
 function renderEvidence() {
