@@ -18,6 +18,8 @@ Learn causal inference through experiments. Free, in your browser, with nothing 
 
 Build intuition through guided experiments, one concept at a time.
 
+Try the optional [Uplift modelling track](https://kirilklein.github.io/causal-sandbox/?lesson=uplift): compare who will buy with whose purchase a campaign changes, then estimate and evaluate targeting rules.
+
 Try [TMLE vs IPW: when models are wrong](https://kirilklein.github.io/causal-sandbox/docs/tmle-robustness-preview.html): explore how model errors interact across two heatmaps.
 
 [![A guided mediator lesson with a causal graph, an adjustment checkbox, and the estimated and true total effects](docs/lessons.png)](https://kirilklein.github.io/causal-sandbox/?lesson=mediator)

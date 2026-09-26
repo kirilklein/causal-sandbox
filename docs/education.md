@@ -1,5 +1,13 @@
 # Progressive education delivery
 
+The optional [Uplift modelling track](uplift.md) at `?lesson=uplift` connects
+potential outcomes to targeting decisions. One campaign runs through four steps:
+what uplift means, whom to contact at a fixed budget, fitting two outcome models,
+and evaluating fixed policies on an independent randomized holdout. The track
+starts after randomization without changing core order. It has its own Contents
+section and is linked from topics, search, and the concept map. Simulator truth,
+training estimates, and evaluation evidence are explicitly separated.
+
 The advanced [front-door lesson](front-door.md) at `?lesson=front-door` follows
 hidden confounding. One persistent tutoring → practice → passing graph shows
 how a mediator carries a total effect. Hidden-readiness selection changes the
