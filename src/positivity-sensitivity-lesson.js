@@ -10,9 +10,10 @@ import {
   recoveryPopulation,
   propensityDistribution,
   positivitySensitivity,
+  positivityBounds,
 } from "./positivity-sensitivity.js";
 
-const title = "Beyond trimming: who is still missing?";
+const title = "Beyond trimming: bounds and sensitivity";
 const el = (id) => document.getElementById(id);
 const pp = (value) => {
   const rounded = Math.round(value * 1000) / 10;
@@ -32,11 +33,6 @@ const excludedRecoveries = Math.round(
   excludedCount * population.excludedTreated,
 );
 const treatedRecoveries = retainedRecoveries + excludedRecoveries;
-const initialAssumption = Math.round(
-  excludedCount * population.retainedUntreated,
-);
-let answered = false;
-
 document.title = `${title} · Causal Sandbox`;
 document.querySelector("#app").innerHTML = `
 <div class="instrument-page positivity-page">
@@ -45,31 +41,21 @@ document.querySelector("#app").innerHTML = `
     ${lessonNavigation({ currentOptional: "positivity-sensitivity" })}
     <p class="eyebrow">ADVANCED · POSITIVITY</p>
     <h1 tabindex="-1">${title}</h1>
-    <p class="intro">Trimming leaves the excluded group’s effect unknown. See how assumptions about that effect can turn an overall benefit into harm, without changing the observed data.</p>
+    <p class="intro">Keep the target as all treated patients. Use bounds and sensitivity analysis to find which assumptions would rule out average harm.</p>
     <p class="small">Target: the average effect on all treated patients (ATT). Builds on <a href="?lesson=trimming">trimming</a>.</p>
     <section class="panel ps-experiment" aria-labelledby="ps-study-title">
       <p class="eyebrow">FICTIONAL RECOVERY STUDY · EXACT POPULATION PROPORTIONS</p>
-      <h2 id="ps-study-title">Some treated patients have no comparable controls</h2>
+      <h2 id="ps-study-title">Start from the missing comparison</h2>
       <div id="ps-observed">
         ${propensityChart()}
-        <div class="ps-evidence">
-          <p><strong>Retained · ${percent(population.retainedShare)} of treated patients</strong><span>${percent(population.retainedTreated)} recover with treatment, versus ${percent(population.retainedUntreated)} among comparable controls.</span><b>Supported effect: ${pp(population.retainedTreated - population.retainedUntreated)}</b></p>
-          <p><strong>Excluded · ${percent(1 - population.retainedShare)} of treated patients</strong><span>${percent(population.excludedTreated)} recover with treatment. There are no controls with their baseline profile.</span><b>Without treatment: unknown</b></p>
-        </div>
       </div>
-      <p class="small">Assume valid adjustment for retained patients. Exact proportions remove sampling error from this example.</p>
-      <fieldset id="ps-prediction" class="ps-question">
-        <legend>Does the retained effect establish a +20-point benefit for all treated patients?</legend>
-        <button data-prediction="yes">Yes, the treated recovery rates are equal</button>
-        <button data-prediction="no">No, the excluded group’s effect is missing</button>
-      </fieldset>
-      <details id="ps-feedback" class="ps-feedback" hidden open>
-        <summary>Prediction and feedback</summary>
-        <p id="ps-feedback-text" tabindex="-1"></p>
-      </details>
-      <div id="ps-exploration" hidden>
-        <h3>What if these patients had not been treated?</h3>
-        <p class="small">Increase the missing recovery count. Could more patients recover <em>without</em> treatment?</p>
+    </section>
+    <section class="panel ps-experiment" aria-labelledby="ps-method-title">
+      <p class="eyebrow">METHOD · BOUNDS AND SENSITIVITY ANALYSIS</p>
+      <h2 id="ps-method-title">How strong an assumption would rule out harm?</h2>
+      <p class="small">Start by allowing any untreated recovery rate in the excluded group. Then set an upper limit you could justify.</p>
+      <div id="ps-exploration">
+        <p class="ps-task"><strong>Try it:</strong> find the largest upper limit that rules out average harm. The right-hand dots show the most untreated recovery your limit allows.</p>
         <figure class="ps-recovery" aria-label="Recovery with and without treatment for the same target population, illustrated per 100 treated patients">
           <figcaption class="ps-key"><span><i class="ps-person ps-recovered" aria-hidden="true"></i> Recovered</span><span><i class="ps-person" aria-hidden="true"></i> Did not recover</span></figcaption>
           <div class="ps-worlds">
@@ -89,18 +75,18 @@ document.querySelector("#app").innerHTML = `
               ${recoveryDots(excludedCount, excludedRecoveries, "Excluded with treatment, observed")}
             </div>
             <div class="ps-recovery-cell ps-missing">
-              <label for="ps-recoveries"><strong><output id="ps-recoveries-value" for="ps-recoveries"></output> recover</strong><small>Your assumption</small></label>
+              <label for="ps-recoveries"><strong>At most <output id="ps-recoveries-value" for="ps-recoveries"></output></strong><small>recover, assumed</small></label>
               <div id="ps-missing-dots"></div>
-              <input id="ps-recoveries" type="range" min="0" max="${excludedCount}" step="2" value="${initialAssumption}" aria-label="Assumed recoveries without treatment among the 40 excluded patients" aria-describedby="ps-recoveries-help">
+              <input id="ps-recoveries" type="range" min="0" max="${excludedCount}" step="2" value="${excludedCount}" aria-label="Upper limit on recoveries without treatment among the 40 excluded patients" aria-describedby="ps-recoveries-help">
               <div class="ps-slider-ends" aria-hidden="true"><span>None</span><span>All ${excludedCount}</span></div>
-              <p id="ps-recoveries-help" class="small">No controls. You choose this missing count.</p>
+              <p id="ps-recoveries-help" class="small">Allow 0 up to this many. Move left to strengthen the assumption.</p>
             </div>
             <div class="ps-total"><small>All 100 patients</small><strong>${treatedRecoveries} recover</strong><span>${retainedRecoveries} + ${excludedRecoveries} observed</span></div>
             <div class="ps-total"><small>All 100 patients</small><strong id="ps-untreated-total"></strong><span id="ps-untreated-sum"></span></div>
           </div>
         </figure>
-        <p id="ps-result" class="ps-result" role="status"></p>
-        <p class="small">Counts illustrate population rates, not individual outcomes. Observed recoveries stay fixed.</p>
+        <div class="ps-result" role="status"><strong id="ps-result"></strong><p id="ps-interpretation"></p></div>
+        <p class="small">These are bounds on the overall ATT, not confidence intervals. Counts illustrate population rates. The observed data stay fixed.</p>
       </div>
     </section>
     <details class="ps-detail" id="ps-calculation">
@@ -112,12 +98,13 @@ document.querySelector("#app").innerHTML = `
         <math aria-hidden="true"><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><mo>·</mo><msub><mi>τ</mi><mtext>excluded</mtext></msub></math>
       </div>
       <p class="small">Each <math><mi>τ</mi></math> is a group’s ATT. <math><mi>p</mi></math> is the retained share, here 60%.</p>
-      <div id="ps-arithmetic" class="ps-equation ps-arithmetic" role="math" hidden></div>
-      <p id="ps-tipping" hidden></p>
+      <p>The lower bound uses the most untreated recovery you allow:</p>
+      <div id="ps-arithmetic" class="ps-equation ps-arithmetic" role="math"></div>
+      <p id="ps-tipping"></p>
       <p id="ps-bounds"></p>
     </details>
     <details class="ps-detail">
-      <summary>What can we do next?</summary>
+      <summary>Other routes: change the target or the evidence</summary>
       <ul>
         <li><strong>Find relevant controls.</strong> More data can help when controls are rare. If a profile always receives treatment, enlarging the same study cannot supply them.</li>
         <li><strong>Narrow the target.</strong> Report the retained-group ATT and describe who was excluded. Similar baseline summaries do not establish equal effects.</li>
@@ -132,18 +119,18 @@ document.querySelector("#app").innerHTML = `
       <p>A period with both treatments may support a narrower comparison. Align eligibility and follow-up across groups.</p>
     </details>
     <details class="ps-detail" id="ps-practice">
-      <summary>Check your understanding</summary>
-      <fieldset class="ps-question"><legend>A larger study improves precision for retained patients but adds no controls for excluded patients. What changes?</legend>
-        <button data-practice="all">The overall ATT is now identified</button>
-        <button data-practice="retained">Only the retained-group estimate becomes more precise</button>
+      <summary>Apply the method</summary>
+      <fieldset class="ps-question"><legend>Suppose clinical evidence justifies at most 80% untreated recovery in the excluded group. What can you report for all treated patients?</legend>
+        <button data-practice="point">An ATT of exactly +4 pp</button>
+        <button data-practice="bounds">An ATT between +4 and +36 pp, conditional on that bound</button>
       </fieldset>
       <p id="ps-practice-feedback" role="status"></p>
     </details>
     <details class="ps-detail">
       <summary>Assumptions and sources</summary>
-      <p>This fictional binary outcome assumes consistency, no interference, and exchangeability with support in the retained group. Baseline groups, treated shares, and follow-up stay fixed.</p>
+      <p>This fictional binary outcome assumes consistency, no interference, and valid adjustment with support in the retained group. Exact population rates omit sampling uncertainty. Baseline groups, treated shares, and follow-up stay fixed.</p>
       <p>The plot uses known treatment probabilities for six retained profiles (0.15–0.65) and one always-treated profile (1). Each arm is normalized separately. The final bin’s treated mass is all at score 1. In real data, an empty region of fitted scores can also reflect a small sample or model misspecification.</p>
-      <p>Excluded patients always receive treatment. The slider changes only their unobserved recovery without treatment. Real studies also have uncertainty from estimating effects and group shares, omitted here.</p>
+      <p>Excluded patients always receive treatment. The slider restricts their untreated recovery probability to a range from zero to your chosen maximum. This assumption is not testable from these data and must be justified externally.</p>
       <ul>
         <li><a href="https://academic.oup.com/biomet/article/105/2/487/4930690">Yang & Ding (2018)</a>: trimming targets and inference after estimated selection.</li>
         <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4107929/">Petersen et al. (2012)</a>: diagnosing and responding to positivity violations.</li>
@@ -174,7 +161,7 @@ function propensityChart() {
       <text x="40" y="219" text-anchor="middle">0</text><text x="220" y="219" text-anchor="middle">0.5</text><text x="400" y="219" text-anchor="middle">1</text>
     </svg>
     <p class="ps-axis-label ps-x-label">Propensity score · probability of treatment</p>
-    <p class="ps-support-note"><strong>The hatched group has score 1: always treated, no controls.</strong> These are the excluded ${percent(1 - population.retainedShare)} of treated patients below.</p>
+    <p class="ps-support-note"><strong>Hatched: the excluded ${percent(1 - population.retainedShare)} of treated patients.</strong> Always treated (score 1), with no controls.</p>
   </figure>`;
 }
 
@@ -183,59 +170,50 @@ function recoveryDots(total, recovered, label) {
 }
 
 function render() {
-  const assumedRecoveries = Number(el("ps-recoveries").value);
+  const maxRecoveries = Number(el("ps-recoveries").value);
   const result = positivitySensitivity(
-    population.excludedTreated - assumedRecoveries / excludedCount,
+    population.excludedTreated - maxRecoveries / excludedCount,
   );
-  const untreatedRecoveries = supportedRecoveries + assumedRecoveries;
+  const untreatedRecoveries = supportedRecoveries + maxRecoveries;
+  const [lower, upper] = positivityBounds(maxRecoveries / excludedCount);
   const difference = treatedRecoveries - untreatedRecoveries;
-  el("ps-recoveries-value").textContent = assumedRecoveries;
+  el("ps-recoveries-value").textContent = maxRecoveries;
   el("ps-recoveries").setAttribute(
     "aria-valuetext",
-    `${assumedRecoveries} of ${excludedCount} excluded patients recover without treatment, assumed`,
+    `At most ${maxRecoveries} of ${excludedCount} excluded patients recover without treatment, assumed upper limit`,
   );
   el("ps-missing-dots").innerHTML = recoveryDots(
     excludedCount,
-    assumedRecoveries,
-    "Excluded without treatment, assumed",
+    maxRecoveries,
+    "Excluded without treatment at your assumed upper limit",
   );
-  el("ps-untreated-total").textContent = `${untreatedRecoveries} recover`;
+  el("ps-untreated-total").textContent =
+    `${supportedRecoveries}–${untreatedRecoveries} recover`;
   el("ps-untreated-sum").textContent =
-    `${supportedRecoveries} supported + ${assumedRecoveries} assumed`;
-  el("ps-result").textContent =
-    difference === 0
-      ? "Equal recovery overall: benefit and harm cancel under this assumption (ATT: 0 pp)."
-      : `${Math.abs(difference)} ${difference > 0 ? "more" : "fewer"} recoveries with treatment per 100 patients, under your assumption (ATT: ${pp(result.overallEffect)}).`;
-  el("ps-arithmetic").hidden = !answered;
+    `${supportedRecoveries} supported + 0–${maxRecoveries} assumed`;
+  el("ps-result").textContent = `Overall ATT: ${pp(lower)} to ${pp(upper)}`;
+  el("ps-interpretation").textContent =
+    maxRecoveries === excludedCount
+      ? "With no extra outcome restriction, both harm and benefit remain possible."
+      : difference < 0
+        ? "This assumption still allows average harm. Lower the limit to see when that changes."
+        : difference === 0
+          ? `At most ${maxRecoveries} of ${excludedCount} (${percent(maxRecoveries / excludedCount)}) is the tipping point: the lower bound reaches zero. Average harm is ruled out only if this assumption holds.`
+          : `Treatment adds at least ${difference} recoveries per 100 patients, if this upper limit is justified.`;
   el("ps-arithmetic").setAttribute(
     "aria-label",
-    `60 percent times ${pp(result.retainedEffect)} plus 40 percent times ${pp(result.excludedEffect)} equals ${pp(result.overallEffect)}`,
+    `Lower bound: 60 percent times ${pp(result.retainedEffect)} plus 40 percent times ${pp(result.excludedEffect)} equals ${pp(result.overallEffect)}`,
   );
   el("ps-arithmetic").innerHTML = `
     <math aria-hidden="true"><mn>0.6</mn><mo>×</mo><mn>${Math.round(result.retainedEffect * 100)}</mn></math>
     <math aria-hidden="true"><mo>+</mo><mn>0.4</mn><mo>×</mo><mo>(</mo><mn>${Math.round(result.excludedEffect * 100)}</mn><mo>)</mo></math>
     <math aria-hidden="true"><mo>=</mo><mn>${Math.round(result.overallEffect * 1000) / 10}</mn><mspace width="0.3em"/><mtext>pp</mtext></math>`;
-  el("ps-tipping").hidden = !answered;
   el("ps-tipping").textContent =
-    `The overall effect reaches zero at an excluded-group effect of ${pp(result.tippingEffect)}.`;
+    `At most 36 of 40 excluded recoveries (90%) gives a lower bound of zero. A stricter upper limit implies a positive overall ATT.`;
   el("ps-bounds").textContent =
-    `Untreated recovery could be 0–100%. With ${percent(population.excludedTreated)} observed recovery under treatment, this allows an excluded effect from ${pp(result.excludedBounds[0])} to ${pp(result.excludedBounds[1])}, and an overall ATT from ${pp(result.overallBounds[0])} to ${pp(result.overallBounds[1])}.`;
+    `Without the added restriction, overall bounds are ${pp(result.overallBounds[0])} to ${pp(result.overallBounds[1])}. The upper bound stays ${pp(upper)} because zero untreated recoveries in the excluded group remains allowed.`;
 }
 
-document.querySelectorAll("[data-prediction]").forEach((button) => {
-  button.addEventListener("click", () => {
-    answered = true;
-    const correct = button.dataset.prediction === "no";
-    el("ps-prediction").hidden = true;
-    el("ps-feedback").hidden = false;
-    el("ps-feedback").dataset.result = correct ? "correct" : "review";
-    el("ps-feedback-text").textContent =
-      `${correct ? "✓ Correct." : "! Not quite."} You chose: “${button.textContent}”. Equal recovery under treatment leaves recovery without treatment unknown.`;
-    el("ps-exploration").hidden = false;
-    render();
-    el("ps-feedback-text").focus({ preventScroll: true });
-  });
-});
 document.querySelectorAll("[data-practice]").forEach((button) => {
   button.addEventListener("click", () => {
     document
@@ -244,18 +222,12 @@ document.querySelectorAll("[data-practice]").forEach((button) => {
         choice.setAttribute("aria-pressed", String(choice === button)),
       );
     el("ps-practice-feedback").textContent =
-      `${button.dataset.practice === "retained" ? "✓ Correct." : "! Not quite."} A more precise retained effect still leaves the excluded effect unknown.`;
+      `${button.dataset.practice === "bounds" ? "✓ Correct." : "! Not quite."} 80% allows 0–32 excluded recoveries without treatment. The overall ATT is therefore bounded by +4 and +36 pp. It is not a point estimate, and depends on that assumption.`;
   });
 });
 el("ps-recoveries").addEventListener("input", render);
 el("ps-restart").addEventListener("click", () => {
-  answered = false;
-  el("ps-recoveries").value = initialAssumption;
-  el("ps-prediction").hidden = false;
-  el("ps-feedback").hidden = true;
-  el("ps-feedback").open = true;
-  el("ps-feedback-text").textContent = "";
-  el("ps-exploration").hidden = true;
+  el("ps-recoveries").value = excludedCount;
   el("ps-practice-feedback").textContent = "";
   document
     .querySelectorAll("[data-practice]")

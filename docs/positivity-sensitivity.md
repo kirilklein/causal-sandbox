@@ -1,4 +1,4 @@
-# Beyond trimming: who is still missing?
+# Beyond trimming: bounds and sensitivity
 
 ## Teaching contract
 
@@ -6,42 +6,34 @@ Route: `?lesson=positivity-sensitivity`. Prerequisites: overlap and trimming.
 This chapter uses ATT, whereas the preceding trimming experiment averages over
 everyone in each retained/excluded group.
 
-Misconception: a precise effect after trimming also determines the effect on all
-treated patients, especially if retained and excluded groups look similar.
-Takeaway: assumptions about the excluded effect can turn an overall benefit into
-harm without changing the observed data. The opening states this purpose and the
-slider asks whether more patients could recover without treatment.
+Objective: keep the original ATT target when controls are absent for some
+patients. Derive bounds, then explore how an externally justified upper limit on
+untreated recovery narrows them. The advanced task is to find the weakest upper
+limit that rules out average harm, not to repeat the earlier overlap diagnosis.
 
-Flow: locate the unsupported group in a propensity-score histogram, read the
-fixed recovery example, predict whether the retained effect
-generalizes, vary the excluded group’s untreated recovery count, and explain why more data
-only from supported profiles cannot identify the missing effect. Sources,
-arithmetic, and calendar-time considerations are optional disclosures.
-The calculation uses native MathML for the weighted-average identity and current
-numeric example. Terms align over two lines on phones, with the numeric example
-stacked separately. The current calculation appears after the prediction.
+The propensity histogram supplies the starting context. Known probabilities,
+within-arm percentages, and a hatched treated-only mass at score 1 identify the
+excluded 40%. It stays fixed throughout the sensitivity analysis. An empty region
+of fitted scores alone does not establish a structural violation.
 
-The opening histogram shows known propensity scores, not fitted estimates. Bar
-heights are percentages within each treatment arm on shared axes. Outlined green
-bars identify controls and filled blue bars identify treated patients. Hatching
-marks the excluded treated mass at score 1. The caption connects it to the same
-40% of treated patients in the recovery comparison. An empty region in a fitted
-score plot alone does not establish a structural violation.
+The recovery display opens immediately, with no preliminary yes/no gate or
+separate paragraphs repeating the same evidence. Two columns compare the same
+target population per 100 treated patients. Sixty are retained and forty excluded.
+Filled and hollow dots show aggregate recovery counts, not paired individual
+potential outcomes. The right-hand dots depict the maximum untreated recovery
+allowed by the learner's bound, not an estimated counterfactual.
 
-Learner question: could the same observed recoveries be compatible with overall
-harm? The interaction compares recovery with and without treatment for the same
-target population, expressed as counts per 100 treated patients. Sixty are retained
-and forty excluded. Filled dots mean recovery, hollow dots mean no recovery.
-Their counts encode the group proportions, not identified individual outcomes.
-Dot positions never pair a person's potential outcomes or assert who benefits.
+Observed recovery stays 36 + 24 = 60. Controls support 24 retained recoveries
+without treatment. Starting at 40 permits 0–40 excluded recoveries, so untreated
+total recovery lies between 24 and 64 and the overall ATT between −4 and +36 pp.
+The slider sets an upper limit, leaving zero as the lower limit. At 36 (90%), the
+ATT lower bound reaches zero. At 32 (80%), it is +4 pp. The upper ATT bound stays
++36 pp because zero excluded untreated recoveries remain allowed.
 
-The with-treatment column stays fixed at 36 + 24 = 60 recoveries. Without treatment,
-controls support 24 retained recoveries. A slider inside the dashed missing-data
-cell sets the assumed 0–40 excluded recoveries in steps of two. Only that cell and
-the implied total change. At 38 assumed recoveries, learners see 60 with treatment
-versus 62 without: two fewer recoveries per 100 under that assumption. The two
-columns stay side by side on phones, with direct labels for observed, supported,
-and assumed counts. Mathematical bounds remain in the optional calculation.
+The result explicitly depends on the assumption and excludes sampling uncertainty.
+A transfer question asks learners to distinguish an ATT interval from a point
+estimate under an 80% upper limit. Optional details give native MathML arithmetic,
+alternative targets and evidence, calendar-time comparisons, and sources.
 
 ## Exact model
 
@@ -69,12 +61,11 @@ ATT_excluded = 0.6 − q                    in [−0.4, 0.6]
 ATT_all = 0.6 × 0.2 + 0.4 × ATT_excluded in [−0.04, 0.36]
 ```
 
-The slider starts at 16 of 40 recovering without treatment (q=0.4,
-ATT_excluded=0.2, the equal-effects assumption). At 36 of 40, q=0.9,
-ATT_excluded=−0.3 and ATT_all=0. No overall truth is selected or estimated.
-Bounds are sharp for this stipulated model. They exclude sampling uncertainty.
-There is no fitted propensity score, trimming threshold, or estimator ranking.
-OWATT is linked as further reading and is not implemented.
+For a chosen upper limit u on excluded untreated recovery, q lies in [0,u].
+The identified set becomes [0.36 − 0.4u, 0.36]. These bounds are sharp in this model.
+The slider starts at u=1, so it initially adds no outcome restriction. No overall
+point truth is selected or estimated. There is no fitted propensity score,
+trimming threshold, or estimator ranking. OWATT remains further reading.
 
 ## Validation
 
@@ -82,7 +73,7 @@ OWATT is linked as further reading and is not implemented.
 normalization, the same 60/40 treated split, independently calculated effects,
 bound endpoints, the zero-effect threshold, valid probabilities, and distinct
 complete potential-outcome worlds with identical observed data. Browser checks
-cover the trimming link, topic/search/Contents discovery, prediction and practice,
+cover the trimming link, topic/search/Contents discovery, bound interpretation and practice,
 unchanged observations, keyboard/touch controls, disclosure invariance, restart,
 history, and desktop/phone light/dark layouts.
 

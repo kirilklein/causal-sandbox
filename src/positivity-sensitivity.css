@@ -81,22 +81,6 @@
   padding-left: 12px;
   border-left: 3px solid var(--arm-1);
 }
-.ps-evidence {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 24px;
-}
-.ps-evidence p {
-  font-size: 14px;
-}
-.ps-evidence strong,
-.ps-evidence span,
-.ps-evidence b {
-  display: block;
-}
-.ps-evidence span {
-  margin: 8px 0;
-}
 .ps-question {
   border: 0;
   border-top: 1px solid var(--border);
@@ -111,19 +95,17 @@
   margin: 8px 8px 0 0;
   text-align: left;
 }
-.ps-feedback {
-  margin-top: 20px;
-  border-left: 3px solid var(--success);
-  padding-left: 14px;
-}
-.ps-feedback[data-result="review"] {
-  border-color: var(--warning);
-}
-.ps-feedback p {
+.ps-task {
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
   font-size: 14px;
 }
-.ps-feedback summary {
-  cursor: pointer;
+.ps-result strong {
+  font-size: 20px;
+}
+.ps-result p {
+  margin: 6px 0 0;
+  font-size: 14px;
 }
 /* Both columns show the same 100-patient target, split into groups of 60 and 40. */
 .ps-recovery {
@@ -305,14 +287,6 @@
   }
   .positivity-page .panel {
     padding: 18px 14px;
-  }
-  .ps-evidence {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  .ps-evidence p + p {
-    border-top: 1px solid var(--border);
-    padding-top: 14px;
   }
   .ps-worlds {
     column-gap: 8px;

@@ -8,14 +8,14 @@ import {
   stubGoatCounter,
 } from "./browser-setup.mjs";
 import {
-  positivitySensitivity,
+  positivityBounds,
   recoveryPopulation,
   propensityDistribution,
 } from "../src/positivity-sensitivity.js";
 
 const browser = await launchBrowser();
 const url = getAppUrl();
-const title = "Beyond trimming: who is still missing?";
+const title = "Beyond trimming: bounds and sensitivity";
 try {
   const page = await browser.newPage({
     viewport: { width: 1280, height: 1100 },
@@ -28,7 +28,7 @@ try {
     .getByRole("link", { name: "Beyond trimming →", exact: true })
     .click();
   await expect(page.locator("h1")).toHaveText(title);
-  await expect(page.locator("#ps-exploration")).toBeHidden();
+  await expect(page.locator("#ps-exploration")).toBeVisible();
   await expect(page.locator("#ps-arithmetic")).toBeHidden();
   await expect(page.locator("#ps-propensity-chart")).toBeVisible();
   await expect(page.locator("#ps-propensity-chart")).toHaveAttribute(
@@ -61,14 +61,15 @@ try {
     ) < 1e-12,
   );
   const observed = await page.locator("#ps-observed").innerHTML();
-  await page.locator('[data-prediction="yes"]').focus();
-  await page.keyboard.press("Enter");
-  await expect(page.locator("#ps-feedback-text")).toContainText("Not quite.");
-  await expect(page.locator("#ps-feedback-text")).toBeFocused();
-  await expect(page.locator("#ps-exploration")).toBeVisible();
-  await expect(page.locator("#ps-recoveries-value")).toHaveText("16");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("40 recover");
-  await expect(page.locator("#ps-result")).toContainText("20 more recoveries");
+  await expect(page.locator("#ps-recoveries-value")).toHaveText("40");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64 recover");
+  await expect(page.locator("#ps-result")).toHaveText(
+    "Overall ATT: -4 pp to +36 pp",
+  );
+  await expect(page.locator("#ps-interpretation")).toContainText(
+    "no extra outcome restriction",
+  );
+  await expect(page.locator("[data-prediction]")).toHaveCount(0);
   const fixedIds = [
     "ps-retained-treated",
     "ps-retained-untreated",
@@ -91,27 +92,36 @@ try {
   await expect(page.locator("#ps-calculation math msub")).toHaveCount(3);
   await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
     "aria-label",
-    "60 percent times +20 pp plus 40 percent times +20 pp equals +20 pp",
+    "Lower bound: 60 percent times +20 pp plus 40 percent times -40 pp equals -4 pp",
   );
   await page.locator("#ps-recoveries").focus();
   await page.keyboard.press("End");
-  await expect(page.locator("#ps-result")).toContainText("4 fewer recoveries");
   await expect(page.locator("#ps-result")).toContainText("-4 pp");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("64 recover");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64 recover");
   await expect(page.locator("#ps-calculation")).toHaveAttribute("open", "");
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("#ps-result")).toContainText("2 fewer recoveries");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("62 recover");
+  await expect(page.locator("#ps-result")).toHaveText(
+    "Overall ATT: -2 pp to +36 pp",
+  );
+  await expect(page.locator("#ps-interpretation")).toContainText(
+    "still allows average harm",
+  );
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–62 recover");
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("#ps-result")).toContainText("cancel");
+  await expect(page.locator("#ps-result")).toHaveText(
+    "Overall ATT: 0 pp to +36 pp",
+  );
+  await expect(page.locator("#ps-interpretation")).toContainText(
+    "90%) is the tipping point",
+  );
   await expect(page.locator("#ps-recoveries-value")).toHaveText("36");
   await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
     "aria-label",
-    "60 percent times +20 pp plus 40 percent times -30 pp equals 0 pp",
+    "Lower bound: 60 percent times +20 pp plus 40 percent times -30 pp equals 0 pp",
   );
   await page.keyboard.press("Home");
   await expect(page.locator("#ps-result")).toContainText("+36 pp");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24 recover");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–24 recover");
 
   // Reconcile every possible count with the causal model and actual filled dots.
   const excludedCount = Math.round(
@@ -133,30 +143,24 @@ try {
       node.value = value;
       node.dispatchEvent(new Event("input", { bubbles: true }));
     }, String(count));
-    const expected = positivitySensitivity(
-      recoveryPopulation.excludedTreated - count / excludedCount,
-    );
+    const [lower, upper] = positivityBounds(count / excludedCount);
     await expect(page.locator("#ps-missing-dots .ps-recovered")).toHaveCount(
       count,
     );
     await expect(page.locator("#ps-missing-dots .ps-people")).toHaveAttribute(
       "aria-label",
-      `Excluded without treatment, assumed: ${count} of ${excludedCount} recover`,
+      `Excluded without treatment at your assumed upper limit: ${count} of ${excludedCount} recover`,
     );
     await expect(page.locator("#ps-untreated-total")).toHaveText(
-      `${supportedRecoveries + count} recover`,
+      `${supportedRecoveries}–${supportedRecoveries + count} recover`,
     );
     assert.ok(
-      Math.abs(
-        treatedRecoveries -
-          supportedRecoveries -
-          count -
-          expected.overallEffect * 100,
-      ) < 1e-10,
+      Math.abs(treatedRecoveries - supportedRecoveries - count - lower * 100) <
+        1e-10,
     );
-    const effect = Math.round(expected.overallEffect * 100);
-    await expect(page.locator("#ps-result")).toContainText(
-      `${effect > 0 ? "+" : ""}${effect} pp`,
+    const effect = Math.round(lower * 100);
+    await expect(page.locator("#ps-result")).toHaveText(
+      `Overall ATT: ${effect > 0 ? "+" : ""}${effect} pp to +${Math.round(upper * 100)} pp`,
     );
     assert.deepEqual(
       await Promise.all(
@@ -167,14 +171,12 @@ try {
   }
   assert.equal(await page.locator("#ps-observed").innerHTML(), observed);
   await page.locator("#ps-practice > summary").click();
-  await page.locator('[data-practice="all"]').click();
+  await page.locator('[data-practice="point"]').click();
   await expect(page.locator("#ps-practice-feedback")).toContainText(
     "Not quite.",
   );
-  await page.locator('[data-practice="retained"]').click();
+  await page.locator('[data-practice="bounds"]').click();
   await expect(page.locator("#ps-practice-feedback")).toContainText("Correct.");
-  await page.locator("#ps-feedback > summary").click();
-  await expect(page.locator("#ps-feedback-text")).toBeHidden();
   await expect(page.locator("#ps-recoveries")).toHaveValue("40");
   await page.locator("#ps-calculation > summary").click();
   await page.locator("#ps-practice > summary").click();
@@ -251,14 +253,14 @@ try {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.locator("#ps-restart").click();
   await expect(page.locator("h1")).toBeFocused();
-  await expect(page.locator("#ps-recoveries")).toHaveValue("16");
+  await expect(page.locator("#ps-recoveries")).toHaveValue("40");
   await expect(page.locator("#ps-arithmetic")).toBeHidden();
-  await expect(page.locator("#ps-exploration")).toBeHidden();
-  await expect(page.locator("#ps-prediction")).toBeVisible();
+  await expect(page.locator("#ps-exploration")).toBeVisible();
+  await expect(page.locator("#ps-result")).toHaveText(
+    "Overall ATT: -4 pp to +36 pp",
+  );
   await expect(page.locator("#ps-practice-feedback")).toBeEmpty();
   await expect(page.locator(".ps-detail[open]")).toHaveCount(0);
-  await page.locator('[data-prediction="no"]').click();
-  await expect(page.locator("#ps-feedback-text")).toContainText("Correct.");
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   await expect(page.locator('#lesson-menu a[aria-current="step"]')).toHaveText(
     "Beyond trimming",
@@ -271,7 +273,9 @@ try {
     .click();
   await page.getByRole("link", { name: title, exact: false }).click();
   await expect(page.locator("h1")).toHaveText(title);
-  await expect(page.locator("#ps-prediction")).toBeVisible();
+  await expect(page.locator("#ps-result")).toHaveText(
+    "Overall ATT: -4 pp to +36 pp",
+  );
   await page.goBack();
   await expect(page.locator("h1")).toHaveText("Refresh & go deeper");
   await page.goForward();
@@ -293,18 +297,19 @@ try {
   const phone = await touch.newPage();
   collectPageErrors(phone, errors);
   await phone.goto(`${url}?lesson=positivity-sensitivity`);
-  await phone.locator('[data-prediction="no"]').tap();
   await phone.locator("#ps-recoveries").scrollIntoViewIfNeeded();
   const box = await phone.locator("#ps-recoveries").boundingBox();
   await phone.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect(phone.locator("#ps-recoveries")).toHaveValue("20");
-  await expect(phone.locator("#ps-result")).toContainText("+16 pp");
+  await expect(phone.locator("#ps-result")).toHaveText(
+    "Overall ATT: +16 pp to +36 pp",
+  );
   await phone.getByRole("link", { name: "← Trimming", exact: true }).tap();
   await expect(phone.locator("h1")).toHaveText("Who remains after trimming?");
   assert.deepEqual(errors, []);
   await touch.close();
   console.log(
-    "Advanced positivity: recovery counts, fixed observations, all assumptions, prediction, practice, discovery, reset, history, keyboard/touch and responsive themes passed.",
+    "Advanced positivity: recovery counts, fixed observations, all upper bounds, tipping point, practice, discovery, reset, history, keyboard/touch and responsive themes passed.",
   );
 } finally {
   await browser.close();

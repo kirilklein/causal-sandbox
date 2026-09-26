@@ -4,6 +4,7 @@ import {
   positivitySensitivity,
   recoveryPopulation,
   propensityDistribution,
+  positivityBounds,
 } from "./positivity-sensitivity.js";
 
 const close = (actual, expected) =>
@@ -136,5 +137,24 @@ test("impossible or nonnumeric effects fail explicitly", () => {
     "0.2",
   ]) {
     assert.throws(() => positivitySensitivity(value), RangeError);
+  }
+});
+
+test("untreated recovery upper limits narrow the ATT set with attainable endpoints", () => {
+  for (let limit = 0; limit <= 20; limit++) {
+    const u = limit / 20;
+    const [lower, upper] = positivityBounds(u);
+    close(lower, (60 - (24 + 40 * u)) / 100);
+    close(upper, (60 - 24) / 100);
+    for (let fraction = 0; fraction <= 10; fraction++) {
+      const q = (u * fraction) / 10;
+      const effect = positivitySensitivity(0.6 - q).overallEffect;
+      assert.ok(effect >= lower - 1e-12 && effect <= upper + 1e-12);
+    }
+  }
+  close(positivityBounds(0.9)[0], 0);
+  close(positivityBounds(0.8)[0], 0.04);
+  for (const invalid of [-0.01, 1.01, NaN, Infinity, undefined, "0.8"]) {
+    assert.throws(() => positivityBounds(invalid), RangeError);
   }
 });

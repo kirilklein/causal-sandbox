@@ -171,10 +171,10 @@ export const optionalChapters = [
   {
     id: "positivity-sensitivity",
     menuTitle: "Beyond trimming",
-    title: "Beyond trimming: who is still missing?",
+    title: "Beyond trimming: bounds and sensitivity",
     href: "?lesson=positivity-sensitivity",
     description:
-      "Keep observed outcomes fixed and explore what missing controls leave unknown about the effect on all treated patients.",
+      "Bound the effect on all treated patients and test how strong an assumption would rule out average harm.",
   },
 ];
 

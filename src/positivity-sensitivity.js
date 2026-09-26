@@ -77,3 +77,20 @@ export function positivitySensitivity(excludedEffect) {
     tippingEffect: -retainedContribution / (1 - retainedShare),
   };
 }
+
+// Bound E[Y(0) | A=1, excluded] from above, leaving its lower bound at zero.
+export function positivityBounds(maxExcludedUntreated) {
+  if (
+    !Number.isFinite(maxExcludedUntreated) ||
+    maxExcludedUntreated < 0 ||
+    maxExcludedUntreated > 1
+  ) {
+    throw new RangeError(
+      "The upper recovery limit must be a probability between 0 and 1.",
+    );
+  }
+  const result = positivitySensitivity(
+    recoveryPopulation.excludedTreated - maxExcludedUntreated,
+  );
+  return [result.overallEffect, result.overallBounds[1]];
+}
