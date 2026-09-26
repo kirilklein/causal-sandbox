@@ -19,6 +19,21 @@ const pp = (value) => {
 };
 const percent = (value) => `${Math.round(value * 100)}%`;
 const population = recoveryPopulation;
+const retainedCount = Math.round(100 * population.retainedShare);
+const excludedCount = 100 - retainedCount;
+const retainedRecoveries = Math.round(
+  retainedCount * population.retainedTreated,
+);
+const supportedRecoveries = Math.round(
+  retainedCount * population.retainedUntreated,
+);
+const excludedRecoveries = Math.round(
+  excludedCount * population.excludedTreated,
+);
+const treatedRecoveries = retainedRecoveries + excludedRecoveries;
+const initialAssumption = Math.round(
+  excludedCount * population.retainedUntreated,
+);
 let answered = false;
 
 document.title = `${title} · Causal Sandbox`;
@@ -55,14 +70,39 @@ document.querySelector("#app").innerHTML = `
         <p id="ps-feedback-text" tabindex="-1"></p>
       </details>
       <div id="ps-exploration" hidden>
-        <h3>Can the overall effect turn harmful?</h3>
-        <label class="ps-slider-label" for="ps-effect">Assumed effect among excluded patients <output id="ps-effect-value" for="ps-effect"></output></label>
-        <input id="ps-effect" type="range" min="-40" max="60" step="5" value="20" aria-describedby="ps-effect-help">
-        <p id="ps-effect-help" class="small">Move toward harm (negative values). Watch the effect on all treated patients cross zero.</p>
-        <div id="ps-chart"></div>
-        <p class="small">Bars: effects compatible with the observations, not confidence intervals. Open circles: your assumption and its implication.</p>
+        <h3>What if these patients had not been treated?</h3>
+        <p class="small">Increase the missing recovery count. Could more patients recover <em>without</em> treatment?</p>
+        <figure class="ps-recovery" aria-label="Recovery with and without treatment for the same target population, illustrated per 100 treated patients">
+          <figcaption class="ps-key"><span><i class="ps-person ps-recovered" aria-hidden="true"></i> Recovered</span><span><i class="ps-person" aria-hidden="true"></i> Did not recover</span></figcaption>
+          <div class="ps-worlds">
+            <h4>With treatment</h4><h4>Without treatment</h4>
+            <p class="ps-group">Retained <span>${retainedCount} of 100 patients</span></p>
+            <div class="ps-recovery-cell" id="ps-retained-treated">
+              <p><strong>${retainedRecoveries} recover</strong><small>Observed</small></p>
+              ${recoveryDots(retainedCount, retainedRecoveries, "Retained with treatment, observed")}
+            </div>
+            <div class="ps-recovery-cell" id="ps-retained-untreated">
+              <p><strong>${supportedRecoveries} recover</strong><small>From controls</small></p>
+              ${recoveryDots(retainedCount, supportedRecoveries, "Retained without treatment, supported by controls")}
+            </div>
+            <p class="ps-group">Excluded <span>${excludedCount} of 100 patients</span></p>
+            <div class="ps-recovery-cell" id="ps-excluded-treated">
+              <p><strong>${excludedRecoveries} recover</strong><small>Observed</small></p>
+              ${recoveryDots(excludedCount, excludedRecoveries, "Excluded with treatment, observed")}
+            </div>
+            <div class="ps-recovery-cell ps-missing">
+              <label for="ps-recoveries"><strong><output id="ps-recoveries-value" for="ps-recoveries"></output> recover</strong><small>Your assumption</small></label>
+              <div id="ps-missing-dots"></div>
+              <input id="ps-recoveries" type="range" min="0" max="${excludedCount}" step="2" value="${initialAssumption}" aria-label="Assumed recoveries without treatment among the 40 excluded patients" aria-describedby="ps-recoveries-help">
+              <div class="ps-slider-ends" aria-hidden="true"><span>None</span><span>All ${excludedCount}</span></div>
+              <p id="ps-recoveries-help" class="small">No controls. You choose this missing count.</p>
+            </div>
+            <div class="ps-total"><small>All 100 patients</small><strong>${treatedRecoveries} recover</strong><span>${retainedRecoveries} + ${excludedRecoveries} observed</span></div>
+            <div class="ps-total"><small>All 100 patients</small><strong id="ps-untreated-total"></strong><span id="ps-untreated-sum"></span></div>
+          </div>
+        </figure>
         <p id="ps-result" class="ps-result" role="status"></p>
-        <p id="ps-counterfactual" class="small"></p>
+        <p class="small">Counts illustrate population rates, not individual outcomes. Observed recoveries stay fixed.</p>
       </div>
     </section>
     <details class="ps-detail" id="ps-calculation">
@@ -117,34 +157,34 @@ document.querySelector("#app").innerHTML = `
 </div>`;
 setupLessonNavigation();
 
-function effectChart(result) {
-  const position = (value) => (value + 0.4) * 100;
-  const rows = [
-    ["Retained", "Supported", result.retainedEffect, null],
-    ["Excluded", "Assumed", result.excludedEffect, result.excludedBounds],
-    ["All treated", "Implied", result.overallEffect, result.overallBounds],
-  ];
-  return `<figure class="ps-effects" aria-label="Effects on recovery on a shared scale from minus 40 to plus 60 percentage points">
-    ${rows.map(([name, kind, value, bounds]) => `<div class="ps-effect-row"><div class="ps-effect-label"><span>${name} <small>${kind}</small></span><strong>${pp(value)}</strong></div><div class="ps-track" role="img" aria-label="${name}: ${kind.toLowerCase()} effect ${pp(value)}${bounds ? `, compatible range ${pp(bounds[0])} to ${pp(bounds[1])}` : ""}"><i class="ps-zero"></i>${bounds ? `<i class="ps-range" style="left:${position(bounds[0])}%;width:${position(bounds[1]) - position(bounds[0])}%"></i>` : ""}<i class="ps-dot ${bounds ? "ps-assumed-dot" : ""}" style="left:${position(value)}%"></i></div></div>`).join("")}
-    <div class="ps-axis">${[-40, -20, 0, 20, 40, 60].map((value) => `<span style="left:${value + 40}%">${value > 0 ? "+" : ""}${value}</span>`).join("")}</div>
-    <figcaption>Effect on recovery (percentage points)<br>Negative = harm · Positive = benefit</figcaption>
-  </figure>`;
+function recoveryDots(total, recovered, label) {
+  return `<div class="ps-people" role="img" aria-label="${label}: ${recovered} of ${total} recover">${Array.from({ length: total }, (_, i) => `<i class="ps-person${i < recovered ? " ps-recovered" : ""}" aria-hidden="true"></i>`).join("")}</div>`;
 }
 
 function render() {
-  const result = positivitySensitivity(Number(el("ps-effect").value) / 100);
-  el("ps-effect-value").textContent = pp(result.excludedEffect);
-  el("ps-effect").setAttribute(
-    "aria-valuetext",
-    `${pp(result.excludedEffect)} assumed effect among excluded patients`,
+  const assumedRecoveries = Number(el("ps-recoveries").value);
+  const result = positivitySensitivity(
+    population.excludedTreated - assumedRecoveries / excludedCount,
   );
-  el("ps-chart").innerHTML = effectChart(result);
+  const untreatedRecoveries = supportedRecoveries + assumedRecoveries;
+  const difference = treatedRecoveries - untreatedRecoveries;
+  el("ps-recoveries-value").textContent = assumedRecoveries;
+  el("ps-recoveries").setAttribute(
+    "aria-valuetext",
+    `${assumedRecoveries} of ${excludedCount} excluded patients recover without treatment, assumed`,
+  );
+  el("ps-missing-dots").innerHTML = recoveryDots(
+    excludedCount,
+    assumedRecoveries,
+    "Excluded without treatment, assumed",
+  );
+  el("ps-untreated-total").textContent = `${untreatedRecoveries} recover`;
+  el("ps-untreated-sum").textContent =
+    `${supportedRecoveries} supported + ${assumedRecoveries} assumed`;
   el("ps-result").textContent =
-    Math.abs(result.overallEffect) < 1e-10
-      ? "Overall ATT: 0 pp. Benefit and harm cancel under this assumption."
-      : `Overall ATT: ${pp(result.overallEffect)} under this assumption. The observed data have not changed.`;
-  el("ps-counterfactual").textContent =
-    `Excluded patients’ recovery without treatment: ${percent(result.excludedUntreated)} assumed. With treatment: ${percent(population.excludedTreated)} observed.`;
+    difference === 0
+      ? "Equal recovery overall: benefit and harm cancel under this assumption (ATT: 0 pp)."
+      : `${Math.abs(difference)} ${difference > 0 ? "more" : "fewer"} recoveries with treatment per 100 patients, under your assumption (ATT: ${pp(result.overallEffect)}).`;
   el("ps-arithmetic").hidden = !answered;
   el("ps-arithmetic").setAttribute(
     "aria-label",
@@ -186,10 +226,10 @@ document.querySelectorAll("[data-practice]").forEach((button) => {
       `${button.dataset.practice === "retained" ? "✓ Correct." : "! Not quite."} A more precise retained effect still leaves the excluded effect unknown.`;
   });
 });
-el("ps-effect").addEventListener("input", render);
+el("ps-recoveries").addEventListener("input", render);
 el("ps-restart").addEventListener("click", () => {
   answered = false;
-  el("ps-effect").value = 20;
+  el("ps-recoveries").value = initialAssumption;
   el("ps-prediction").hidden = false;
   el("ps-feedback").hidden = true;
   el("ps-feedback").open = true;

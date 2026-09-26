@@ -76,106 +76,134 @@
 .ps-feedback summary {
   cursor: pointer;
 }
-.ps-slider-label {
+/* Both columns show the same 100-patient target, split into groups of 60 and 40. */
+.ps-recovery {
+  margin: 24px auto 0;
+  max-width: 620px;
+}
+.ps-key {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 8px 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+.ps-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ps-key .ps-person {
+  width: 12px;
+  height: 12px;
+}
+.ps-worlds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+.ps-worlds h4 {
+  margin: 0;
+  font-size: 18px;
+  text-align: center;
+}
+.ps-worlds .ps-group {
+  grid-column: 1 / -1;
+  margin: 20px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
   font-size: 14px;
   font-weight: 600;
-  margin-top: 18px;
 }
-.ps-slider-label output {
-  font-variant-numeric: tabular-nums;
+.ps-group span {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--text-secondary);
 }
-#ps-effect {
+.ps-recovery-cell {
+  min-width: 0;
+  padding: 12px;
+  border: 2px solid transparent;
+}
+.ps-recovery-cell p,
+.ps-recovery-cell label {
+  display: block;
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.ps-recovery-cell strong,
+.ps-recovery-cell small {
+  display: block;
+}
+.ps-recovery-cell small {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ps-people {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 200px;
+}
+.ps-person {
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid var(--text-secondary);
+  border-radius: 50%;
+}
+.ps-recovered {
+  background: var(--text);
+  border-color: var(--text);
+}
+.ps-missing {
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  background: var(--accent-surface);
+}
+#ps-recoveries {
   width: 100%;
   height: 8px;
   accent-color: var(--accent);
   background: var(--border-strong);
-  margin: 20px 0 8px;
+  margin: 24px 0 8px;
 }
-#ps-effect::-webkit-slider-thumb {
+#ps-recoveries::-webkit-slider-thumb {
   width: 24px;
   height: 24px;
 }
-#ps-effect::-moz-range-thumb {
+#ps-recoveries::-moz-range-thumb {
   width: 24px;
   height: 24px;
 }
-.ps-effects {
-  margin: 24px 10px 0;
-}
-.ps-effect-row {
-  margin: 16px 0;
-}
-.ps-effect-label {
+.ps-slider-ends {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  font-size: 15px;
-}
-.ps-effect-label small {
-  color: var(--text-secondary);
-  font-size: 12px;
-  margin-left: 8px;
-}
-.ps-effect-label strong {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.ps-track {
-  height: 28px;
-  position: relative;
-}
-.ps-track::before {
-  content: "";
-  position: absolute;
-  inset: 13px 0 auto;
-  border-top: 1px solid var(--border-strong);
-}
-.ps-zero {
-  position: absolute;
-  left: 40%;
-  top: 0;
-  bottom: 0;
-  border-left: 1px dashed var(--text-secondary);
-}
-.ps-range {
-  position: absolute;
-  top: 10px;
-  height: 8px;
-  background: var(--text-secondary);
-  border-radius: 4px;
-}
-.ps-dot {
-  position: absolute;
-  top: 6px;
-  width: 16px;
-  height: 16px;
-  border: 3px solid var(--text);
-  border-radius: 50%;
-  background: var(--text);
-  transform: translateX(-50%);
-}
-.ps-assumed-dot {
-  background: var(--surface);
-}
-.ps-axis {
-  position: relative;
-  height: 20px;
-  font-size: 12px;
-}
-.ps-axis span {
-  position: absolute;
-  transform: translateX(-50%);
-}
-.ps-effects figcaption {
-  text-align: center;
   font-size: 12px;
   color: var(--text-secondary);
-  margin-top: 8px;
+}
+.ps-missing #ps-recoveries-help {
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+.ps-total {
+  margin-top: 16px;
+  padding: 12px;
+  border-top: 2px solid var(--text-secondary);
+}
+.ps-total strong,
+.ps-total span {
+  display: block;
+}
+.ps-total strong {
+  font-size: 24px;
+  margin: 4px 0;
+}
+.ps-total small,
+.ps-total span {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 .ps-result {
   border-left: 3px solid var(--accent);
@@ -237,9 +265,25 @@
     border-top: 1px solid var(--border);
     padding-top: 14px;
   }
-  .ps-effect-label small {
-    display: block;
-    margin-left: 0;
+  .ps-worlds {
+    column-gap: 8px;
+  }
+  .ps-worlds h4 {
+    font-size: 15px;
+  }
+  .ps-recovery-cell,
+  .ps-total {
+    padding: 8px 4px;
+  }
+  .ps-recovery-cell p,
+  .ps-recovery-cell label {
+    font-size: 14px;
+  }
+  .ps-people {
+    gap: 3px;
+  }
+  .ps-total strong {
+    font-size: 19px;
   }
   .ps-population > div {
     padding: 10px;

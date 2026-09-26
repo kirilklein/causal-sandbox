@@ -10,21 +10,30 @@ Misconception: a precise effect after trimming also determines the effect on all
 treated patients, especially if retained and excluded groups look similar.
 Takeaway: assumptions about the excluded effect can turn an overall benefit into
 harm without changing the observed data. The opening states this purpose and the
-slider asks learners to find where the overall effect crosses zero.
+slider asks whether more patients could recover without treatment.
 
 Flow: read one fixed recovery example, predict whether the retained effect
-generalizes, vary an excluded-group effect assumption, and explain why more data
+generalizes, vary the excluded group’s untreated recovery count, and explain why more data
 only from supported profiles cannot identify the missing effect. Sources,
 arithmetic, and calendar-time considerations are optional disclosures.
 The calculation uses native MathML for the weighted-average identity and current
 numeric example. Terms align over two lines on phones, with the numeric example
 stacked separately. The current calculation appears after the prediction.
 
-The split strip widths encode shares of treated patients. The three effect tracks
-share a fixed −40 to +60 percentage-point scale. A filled marker is the supported
-effect; open markers are the assumed and implied effects. Range bars show logical
-bounds, never uncertainty intervals. Labels preserve meaning without color.
-Changing the assumption moves two markers while the evidence and ranges stay fixed.
+Learner question: could the same observed recoveries be compatible with overall
+harm? The interaction compares recovery with and without treatment for the same
+target population, expressed as counts per 100 treated patients. Sixty are retained
+and forty excluded. Filled dots mean recovery, hollow dots mean no recovery.
+Their counts encode the group proportions, not identified individual outcomes.
+Dot positions never pair a person's potential outcomes or assert who benefits.
+
+The with-treatment column stays fixed at 36 + 24 = 60 recoveries. Without treatment,
+controls support 24 retained recoveries. A slider inside the dashed missing-data
+cell sets the assumed 0–40 excluded recoveries in steps of two. Only that cell and
+the implied total change. At 38 assumed recoveries, learners see 60 with treatment
+versus 62 without: two fewer recoveries per 100 under that assumption. The two
+columns stay side by side on phones, with direct labels for observed, supported,
+and assumed counts. Mathematical bounds remain in the optional calculation.
 
 ## Exact model
 
@@ -44,8 +53,9 @@ ATT_excluded = 0.6 − q                    in [−0.4, 0.6]
 ATT_all = 0.6 × 0.2 + 0.4 × ATT_excluded in [−0.04, 0.36]
 ```
 
-The slider starts at ATT_excluded=0.2 (equal-effects assumption, q=0.4).
-At −0.3, q=0.9 and ATT_all=0. No overall truth is selected or estimated.
+The slider starts at 16 of 40 recovering without treatment (q=0.4,
+ATT_excluded=0.2, the equal-effects assumption). At 36 of 40, q=0.9,
+ATT_excluded=−0.3 and ATT_all=0. No overall truth is selected or estimated.
 Bounds are sharp for this stipulated model. They exclude sampling uncertainty.
 There is no fitted propensity score, trimming threshold, or estimator ranking.
 OWATT is linked as further reading and is not implemented.
