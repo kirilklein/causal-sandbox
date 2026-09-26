@@ -12,13 +12,21 @@ Takeaway: assumptions about the excluded effect can turn an overall benefit into
 harm without changing the observed data. The opening states this purpose and the
 slider asks whether more patients could recover without treatment.
 
-Flow: read one fixed recovery example, predict whether the retained effect
+Flow: locate the unsupported group in a propensity-score histogram, read the
+fixed recovery example, predict whether the retained effect
 generalizes, vary the excluded group’s untreated recovery count, and explain why more data
 only from supported profiles cannot identify the missing effect. Sources,
 arithmetic, and calendar-time considerations are optional disclosures.
 The calculation uses native MathML for the weighted-average identity and current
 numeric example. Terms align over two lines on phones, with the numeric example
 stacked separately. The current calculation appears after the prediction.
+
+The opening histogram shows known propensity scores, not fitted estimates. Bar
+heights are percentages within each treatment arm on shared axes. Outlined green
+bars identify controls and filled blue bars identify treated patients. Hatching
+marks the excluded treated mass at score 1. The caption connects it to the same
+40% of treated patients in the recovery comparison. An empty region in a fitted
+score plot alone does not establish a structural violation.
 
 Learner question: could the same observed recoveries be compatible with overall
 harm? The interaction compares recovery with and without treatment for the same
@@ -43,6 +51,14 @@ potential outcomes and both treatments are possible. Recovery is 0.6 under
 treatment and 0.4 without it, so ATT_retained=0.2. In S=0, everyone is treated
 and observed recovery is 0.6. Consistency and no interference are assumed.
 
+To make support visible, S=1 has six equally common baseline profiles with
+propensity scores 0.15, 0.25, 0.35, 0.45, 0.55, and 0.65. Their population share
+is 15/19 and the always-treated S=0 profile has share 4/19. This gives P(A=1)=10/19
+and preserves P(S=1 | A=1)=0.6. Outcome probabilities remain constant across the
+retained profiles. Within-arm score masses follow Bayes' rule, not hand-drawn
+density curves. Histogram bins have width 0.1, with score 1 included in the last
+bin. Its entire mass is at 1, not spread over 0.9–1.
+
 The unobserved recovery probability q=E[Y(0) | A=1,S=0] may be any value in [0,1].
 For every q, a joint potential-outcome distribution exists, for example independent
 Bernoulli potential outcomes conditional on S. The observed distribution is
@@ -62,7 +78,8 @@ OWATT is linked as further reading and is not implemented.
 
 ## Validation
 
-`src/positivity-sensitivity.test.js` checks independently calculated effects,
+`src/positivity-sensitivity.test.js` checks propensity calibration, within-arm
+normalization, the same 60/40 treated split, independently calculated effects,
 bound endpoints, the zero-effect threshold, valid probabilities, and distinct
 complete potential-outcome worlds with identical observed data. Browser checks
 cover the trimming link, topic/search/Contents discovery, prediction and practice,

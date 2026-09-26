@@ -10,6 +10,7 @@ import {
 import {
   positivitySensitivity,
   recoveryPopulation,
+  propensityDistribution,
 } from "../src/positivity-sensitivity.js";
 
 const browser = await launchBrowser();
@@ -29,6 +30,36 @@ try {
   await expect(page.locator("h1")).toHaveText(title);
   await expect(page.locator("#ps-exploration")).toBeHidden();
   await expect(page.locator("#ps-arithmetic")).toBeHidden();
+  await expect(page.locator("#ps-propensity-chart")).toBeVisible();
+  await expect(page.locator("#ps-propensity-chart")).toHaveAttribute(
+    "aria-label",
+    /Known propensity score distributions/,
+  );
+  const distribution = propensityDistribution();
+  for (const [i, bin] of distribution.bins.entries()) {
+    for (const arm of ["control", "treated"]) {
+      const bar = page.locator(
+        `#ps-propensity-chart [data-bin="${i}"] .ps-${arm}-bar`,
+      );
+      assert.ok(
+        Math.abs(Number(await bar.getAttribute("data-share")) - bin[arm]) <
+          1e-12,
+      );
+      assert.ok(
+        Math.abs(
+          Number(await bar.getAttribute("height")) / 170 - bin[arm] / 0.4,
+        ) < 1e-12,
+      );
+    }
+  }
+  await expect(page.locator(".ps-excluded-bar")).toHaveCount(1);
+  assert.ok(
+    Math.abs(
+      Number(
+        await page.locator(".ps-excluded-bar").getAttribute("data-share"),
+      ) - 0.4,
+    ) < 1e-12,
+  );
   const observed = await page.locator("#ps-observed").innerHTML();
   await page.locator('[data-prediction="yes"]').focus();
   await page.keyboard.press("Enter");
@@ -160,6 +191,9 @@ try {
       await page.keyboard.press("End");
       await page.keyboard.press("ArrowLeft");
       await expect(page.locator("#ps-recoveries-value")).toHaveText("38");
+      await page.locator(".ps-propensity").screenshot({
+        path: `test-results/positivity-sensitivity/propensity-${width}-${theme}.png`,
+      });
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,

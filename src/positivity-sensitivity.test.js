@@ -3,10 +3,63 @@ import assert from "node:assert/strict";
 import {
   positivitySensitivity,
   recoveryPopulation,
+  propensityDistribution,
 } from "./positivity-sensitivity.js";
 
 const close = (actual, expected) =>
   assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} != ${expected}`);
+
+test("propensity distributions obey Bayes' rule and the recovery study's treated shares", () => {
+  const { profiles, treatedProbability } = propensityDistribution();
+  const sum = (key, rows = profiles) =>
+    rows.reduce((total, row) => total + row[key], 0);
+  close(sum("populationShare"), 1);
+  close(sum("treatedShare"), 1);
+  close(sum("controlShare"), 1);
+  close(treatedProbability, 10 / 19);
+  close(
+    sum(
+      "treatedShare",
+      profiles.filter((p) => p.retained),
+    ),
+    recoveryPopulation.retainedShare,
+  );
+  close(
+    sum(
+      "controlShare",
+      profiles.filter((p) => !p.retained),
+    ),
+    0,
+  );
+  for (const profile of profiles) {
+    const treatedMass = profile.treatedShare * treatedProbability;
+    const controlMass = profile.controlShare * (1 - treatedProbability);
+    close(treatedMass / (treatedMass + controlMass), profile.score);
+    assert.equal(profile.retained, profile.score < 1);
+  }
+});
+
+test("histogram bins preserve each arm's mass and isolate the always-treated group", () => {
+  const { bins } = propensityDistribution();
+  close(
+    bins.reduce((sum, bin) => sum + bin.treated, 0),
+    1,
+  );
+  close(
+    bins.reduce((sum, bin) => sum + bin.control, 0),
+    1,
+  );
+  close(bins[1].treated, 0.0375);
+  close(bins[1].control, 17 / 72);
+  close(bins[6].treated, 0.1625);
+  close(bins[9].treated, 0.4);
+  close(bins[9].excluded, 0.4);
+  close(bins[9].control, 0);
+  for (const i of [0, 7, 8]) {
+    close(bins[i].treated, 0);
+    close(bins[i].control, 0);
+  }
+});
 
 test("ATT decomposition uses treated shares and reaches the hand-calculated tipping point", () => {
   const same = positivitySensitivity(0.2);
@@ -38,7 +91,7 @@ test("binary-outcome bounds are attained and all intermediate scenarios remain f
 });
 
 test("different counterfactual worlds reproduce the same observed records but opposite overall effects", () => {
-  // 60 retained treated, 40 excluded treated, and 60 retained controls.
+  // The propensity model implies 60 retained treated, 40 excluded, and 90 controls.
   const world = (excludedRecoverWithout) => [
     ...Array.from({ length: 60 }, (_, i) => ({
       a: 1,
@@ -52,11 +105,11 @@ test("different counterfactual worlds reproduce the same observed records but op
       y1: +(i < 24),
       y0: +(i < excludedRecoverWithout),
     })),
-    ...Array.from({ length: 60 }, (_, i) => ({
+    ...Array.from({ length: 90 }, (_, i) => ({
       a: 0,
       s: 1,
-      y1: +(i < 36),
-      y0: +(i < 24),
+      y1: +(i < 54),
+      y0: +(i < 36),
     })),
   ];
   const benefit = world(0);

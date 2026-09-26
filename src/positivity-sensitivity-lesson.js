@@ -8,6 +8,7 @@ import {
 } from "./lesson-navigation.js";
 import {
   recoveryPopulation,
+  propensityDistribution,
   positivitySensitivity,
 } from "./positivity-sensitivity.js";
 
@@ -50,13 +51,10 @@ document.querySelector("#app").innerHTML = `
       <p class="eyebrow">FICTIONAL RECOVERY STUDY · EXACT POPULATION PROPORTIONS</p>
       <h2 id="ps-study-title">Some treated patients have no comparable controls</h2>
       <div id="ps-observed">
-        <div class="ps-population" role="img" aria-label="Of all treated patients, 60 percent are retained and 40 percent are excluded. Widths show their shares.">
-          <div style="width:${percent(population.retainedShare)}"><strong>${percent(population.retainedShare)}</strong><span>Retained</span></div>
-          <div class="ps-excluded" style="width:${percent(1 - population.retainedShare)}"><strong>${percent(1 - population.retainedShare)}</strong><span>Excluded</span></div>
-        </div>
+        ${propensityChart()}
         <div class="ps-evidence">
-          <p><strong>Retained patients</strong><span>${percent(population.retainedTreated)} recover with treatment, versus ${percent(population.retainedUntreated)} among comparable controls.</span><b>Supported effect: ${pp(population.retainedTreated - population.retainedUntreated)}</b></p>
-          <p><strong>Excluded patients</strong><span>${percent(population.excludedTreated)} recover with treatment. There are no controls with their baseline profile.</span><b>Without treatment: unknown</b></p>
+          <p><strong>Retained · ${percent(population.retainedShare)} of treated patients</strong><span>${percent(population.retainedTreated)} recover with treatment, versus ${percent(population.retainedUntreated)} among comparable controls.</span><b>Supported effect: ${pp(population.retainedTreated - population.retainedUntreated)}</b></p>
+          <p><strong>Excluded · ${percent(1 - population.retainedShare)} of treated patients</strong><span>${percent(population.excludedTreated)} recover with treatment. There are no controls with their baseline profile.</span><b>Without treatment: unknown</b></p>
         </div>
       </div>
       <p class="small">Assume valid adjustment for retained patients. Exact proportions remove sampling error from this example.</p>
@@ -144,6 +142,7 @@ document.querySelector("#app").innerHTML = `
     <details class="ps-detail">
       <summary>Assumptions and sources</summary>
       <p>This fictional binary outcome assumes consistency, no interference, and exchangeability with support in the retained group. Baseline groups, treated shares, and follow-up stay fixed.</p>
+      <p>The plot uses known treatment probabilities for six retained profiles (0.15–0.65) and one always-treated profile (1). Each arm is normalized separately. The final bin’s treated mass is all at score 1. In real data, an empty region of fitted scores can also reflect a small sample or model misspecification.</p>
       <p>Excluded patients always receive treatment. The slider changes only their unobserved recovery without treatment. Real studies also have uncertainty from estimating effects and group shares, omitted here.</p>
       <ul>
         <li><a href="https://academic.oup.com/biomet/article/105/2/487/4930690">Yang & Ding (2018)</a>: trimming targets and inference after estimated selection.</li>
@@ -156,6 +155,28 @@ document.querySelector("#app").innerHTML = `
   </main>
 </div>`;
 setupLessonNavigation();
+
+function propensityChart() {
+  const { bins } = propensityDistribution();
+  const describe = (bin) =>
+    `${bin.lower.toFixed(1)}–${bin.upper.toFixed(1)}: ${(bin.control * 100).toFixed(1)}% of controls, ${(bin.treated * 100).toFixed(1)}% of treated${bin.excluded ? ", excluded, all at score 1" : ""}`;
+  return `<figure class="ps-propensity" aria-labelledby="ps-propensity-title">
+    <figcaption id="ps-propensity-title">Propensity score distributions</figcaption>
+    <p class="small">Known treatment probabilities in this toy population.</p>
+    <div class="ps-histogram-key"><span><i class="ps-control-swatch"></i>Controls</span><span><i class="ps-treated-swatch"></i>Treated</span><span><i class="ps-excluded-swatch"></i>Excluded</span></div>
+    <p class="ps-axis-label">Percent of each treatment group</p>
+    <svg id="ps-propensity-chart" viewBox="0 0 420 232" role="img" aria-label="Known propensity score distributions, normalized within each treatment group. ${bins.map(describe).join(". ")}">
+      <defs><pattern id="ps-excluded-hatch" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="var(--node-Y)"/><path d="M-1 1L1 -1M0 6L6 0M5 7L7 5" stroke="var(--arm-1)" stroke-width="2"/></pattern></defs>
+      <g stroke="var(--grid)"><path d="M40 20H400M40 105H400M40 190H400"/></g>
+      <g text-anchor="end"><text x="32" y="25">40</text><text x="32" y="110">20</text><text x="32" y="195">0</text></g>
+      ${bins.map((bin, i) => `<g data-bin="${i}"><title>${describe(bin)}</title><rect class="ps-control-bar" x="${42 + i * 36}" y="${190 - bin.control * 425}" width="14" height="${bin.control * 425}" data-share="${bin.control}"/><rect class="ps-treated-bar${bin.excluded ? " ps-excluded-bar" : ""}" x="${58 + i * 36}" y="${190 - bin.treated * 425}" width="14" height="${bin.treated * 425}" data-share="${bin.treated}"/></g>`).join("")}
+      <path d="M40 190H400" stroke="var(--text-secondary)"/>
+      <text x="40" y="219" text-anchor="middle">0</text><text x="220" y="219" text-anchor="middle">0.5</text><text x="400" y="219" text-anchor="middle">1</text>
+    </svg>
+    <p class="ps-axis-label ps-x-label">Propensity score · probability of treatment</p>
+    <p class="ps-support-note"><strong>The hatched group has score 1: always treated, no controls.</strong> These are the excluded ${percent(1 - population.retainedShare)} of treated patients below.</p>
+  </figure>`;
+}
 
 function recoveryDots(total, recovered, label) {
   return `<div class="ps-people" role="img" aria-label="${label}: ${recovered} of ${total} recover">${Array.from({ length: total }, (_, i) => `<i class="ps-person${i < recovered ? " ps-recovered" : ""}" aria-hidden="true"></i>`).join("")}</div>`;
