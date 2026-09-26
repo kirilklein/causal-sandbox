@@ -240,6 +240,7 @@ document.querySelector("#app").innerHTML =
       >.
     </p>
   </details>
+<p class="note">What can we say about all treated patients when some have no controls? <a href="?lesson=positivity-sensitivity">Beyond trimming →</a></p>
 <nav class="chapter-nav" aria-label="Chapter navigation"><a href="propensity-score-clipping-trimming/">← Probability clipping</a><a href="positivity/">← Back to overlap</a><a href="?sandbox">Explore scenarios ↗</a></nav>
 </main>
 </div>`;

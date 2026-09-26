@@ -1,0 +1,237 @@
+.positivity-page a {
+  color: var(--accent);
+}
+.positivity-page [hidden] {
+  display: none !important;
+}
+.ps-population {
+  display: flex;
+  border: 1px solid var(--arm-1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+.ps-population > div {
+  padding: 14px;
+  background: var(--node-Y);
+  text-align: center;
+  min-width: 0;
+}
+.ps-population strong,
+.ps-population span {
+  display: block;
+}
+.ps-population strong {
+  font-size: 24px;
+}
+.ps-population .ps-excluded {
+  border-left: 1px solid var(--arm-1);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--surface) 0 8px,
+    var(--surface-subtle) 8px 11px
+  );
+}
+.ps-evidence {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+}
+.ps-evidence p {
+  font-size: 14px;
+}
+.ps-evidence strong,
+.ps-evidence span,
+.ps-evidence b {
+  display: block;
+}
+.ps-evidence span {
+  margin: 8px 0;
+}
+.ps-question {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 20px 0 0;
+  padding: 18px 0 0;
+}
+.ps-question legend {
+  font-weight: 600;
+  padding: 0;
+}
+.ps-question button {
+  margin: 8px 8px 0 0;
+  text-align: left;
+}
+.ps-feedback {
+  margin-top: 20px;
+  border-left: 3px solid var(--success);
+  padding-left: 14px;
+}
+.ps-feedback[data-result="review"] {
+  border-color: var(--warning);
+}
+.ps-feedback p {
+  font-size: 14px;
+}
+.ps-feedback summary {
+  cursor: pointer;
+}
+.ps-slider-label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 18px;
+}
+.ps-slider-label output {
+  font-variant-numeric: tabular-nums;
+}
+#ps-effect {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--accent);
+  background: var(--border-strong);
+  margin: 20px 0 8px;
+}
+#ps-effect::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+}
+#ps-effect::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
+.ps-effects {
+  margin: 24px 10px 0;
+}
+.ps-effect-row {
+  margin: 16px 0;
+}
+.ps-effect-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 15px;
+}
+.ps-effect-label small {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-left: 8px;
+}
+.ps-effect-label strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ps-track {
+  height: 28px;
+  position: relative;
+}
+.ps-track::before {
+  content: "";
+  position: absolute;
+  inset: 13px 0 auto;
+  border-top: 1px solid var(--border-strong);
+}
+.ps-zero {
+  position: absolute;
+  left: 40%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--text-secondary);
+}
+.ps-range {
+  position: absolute;
+  top: 10px;
+  height: 8px;
+  background: var(--text-secondary);
+  border-radius: 4px;
+}
+.ps-dot {
+  position: absolute;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--text);
+  border-radius: 50%;
+  background: var(--text);
+  transform: translateX(-50%);
+}
+.ps-assumed-dot {
+  background: var(--surface);
+}
+.ps-axis {
+  position: relative;
+  height: 20px;
+  font-size: 12px;
+}
+.ps-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.ps-effects figcaption {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+.ps-result {
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  background: var(--accent-surface);
+}
+.ps-detail {
+  margin-block: 16px;
+}
+.ps-detail p,
+.ps-detail li {
+  font-size: 14px;
+}
+.ps-detail li {
+  margin-block: 10px;
+}
+.ps-equation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  font-size: 16px;
+}
+.ps-equation span {
+  white-space: nowrap;
+}
+.ps-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-block: 28px;
+  font-size: 14px;
+}
+@media (max-width: 560px) {
+  .positivity-page main {
+    padding: 20px 16px;
+  }
+  .positivity-page .panel {
+    padding: 18px 14px;
+  }
+  .ps-evidence {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .ps-evidence p + p {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .ps-effect-label small {
+    display: block;
+    margin-left: 0;
+  }
+  .ps-population > div {
+    padding: 10px;
+  }
+}

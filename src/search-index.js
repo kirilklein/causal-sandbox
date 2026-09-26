@@ -119,6 +119,10 @@ const lessonDetails = {
     "Remove people with extreme scores and see how the target population changes.",
     "population trimming propensity score restriction estimand",
   ],
+  "positivity-sensitivity": [
+    "Explore how assumptions about excluded patients change the overall ATT while observed outcomes stay fixed.",
+    "positivity violation beyond trimming ATT treated partial identification bounds sensitivity extrapolation missing controls calendar time structural practical overlap OWATT",
+  ],
 };
 
 const guides = [

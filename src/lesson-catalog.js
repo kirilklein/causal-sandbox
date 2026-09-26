@@ -168,6 +168,14 @@ export const optionalChapters = [
     title: "Trimming and the target population",
     href: "?lesson=trimming",
   },
+  {
+    id: "positivity-sensitivity",
+    menuTitle: "Beyond trimming",
+    title: "Beyond trimming: who is still missing?",
+    href: "?lesson=positivity-sensitivity",
+    description:
+      "Keep observed outcomes fixed and explore what missing controls leave unknown about the effect on all treated patients.",
+  },
 ];
 
 export const lessonExperiments = [
