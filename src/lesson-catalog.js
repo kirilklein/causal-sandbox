@@ -174,7 +174,7 @@ export const optionalChapters = [
     title: "Beyond trimming: bounds and sensitivity",
     href: "?lesson=positivity-sensitivity",
     description:
-      "Bound the effect of a fictional medicine and test which assumptions rule out fewer recoveries with treatment.",
+      "Bound the ATT under incomplete support and test assumptions about the outcome without exposure.",
   },
 ];
 

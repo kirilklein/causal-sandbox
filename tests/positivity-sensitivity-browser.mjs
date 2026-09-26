@@ -62,12 +62,12 @@ try {
   );
   const observed = await page.locator("#ps-observed").innerHTML();
   await expect(page.locator("#ps-recoveries-value")).toHaveText("40");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64 recover");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64");
   await expect(page.locator("#ps-result")).toHaveText(
     "Overall ATT: -4 pp to +36 pp",
   );
   await expect(page.locator("#ps-interpretation")).toContainText(
-    "either fewer or more patients to recover",
+    "the ATT can be negative or positive",
   );
   await expect(page.locator("[data-prediction]")).toHaveCount(0);
   const fixedIds = [
@@ -97,16 +97,16 @@ try {
   await page.locator("#ps-recoveries").focus();
   await page.keyboard.press("End");
   await expect(page.locator("#ps-result")).toContainText("-4 pp");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64 recover");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64");
   await expect(page.locator("#ps-calculation")).toHaveAttribute("open", "");
   await page.keyboard.press("ArrowLeft");
   await expect(page.locator("#ps-result")).toHaveText(
     "Overall ATT: -2 pp to +36 pp",
   );
   await expect(page.locator("#ps-interpretation")).toContainText(
-    "still allows fewer patients to recover with treatment",
+    "still allows a negative ATT",
   );
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–62 recover");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–62");
   await page.keyboard.press("ArrowLeft");
   await expect(page.locator("#ps-result")).toHaveText(
     "Overall ATT: 0 pp to +36 pp",
@@ -121,7 +121,7 @@ try {
   );
   await page.keyboard.press("Home");
   await expect(page.locator("#ps-result")).toContainText("+36 pp");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–24 recover");
+  await expect(page.locator("#ps-untreated-total")).toHaveText("24–24");
 
   // Reconcile every possible count with the causal model and actual filled dots.
   const excludedCount = Math.round(
@@ -149,10 +149,10 @@ try {
     );
     await expect(page.locator("#ps-missing-dots .ps-people")).toHaveAttribute(
       "aria-label",
-      `Excluded without treatment at your assumed upper limit: ${count} of ${excludedCount} recover`,
+      `Excluded without exposure at your assumed upper limit: ${count} of ${excludedCount} have Y=1`,
     );
     await expect(page.locator("#ps-untreated-total")).toHaveText(
-      `${supportedRecoveries}–${supportedRecoveries + count} recover`,
+      `${supportedRecoveries}–${supportedRecoveries + count}`,
     );
     assert.ok(
       Math.abs(treatedRecoveries - supportedRecoveries - count - lower * 100) <
