@@ -17,6 +17,11 @@ between the no-contact circle and contact triangle represents uplift. Both
 markers sit on one horizontal baseline. At equal probabilities, the triangle
 fits inside the open circle at their shared position.
 
+Before the example, the track defines uplift modelling and states the campaign's
+goal: create extra purchases compared with sending no reminders. Each selected
+rule explains what it ranks, including that purchase-based targeting ignores
+whether contact helps. Answering the prediction selects that rule in the chart,
+and the result leads with incremental purchases rather than attributed purchases.
 Learners predict the better rule before changing budgets and worlds, then answer
 a transfer question about attributed purchases. The first two steps explicitly
 show simulator truth. Later steps use fitted estimates and independent evidence.

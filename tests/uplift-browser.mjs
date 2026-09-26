@@ -25,6 +25,12 @@ try {
     })
     .click();
   await expect(page.locator("h1")).toHaveText("Uplift modelling");
+  await expect(page.locator(".intro")).toContainText(
+    "how an intervention changes an outcome",
+  );
+  await expect(page.locator("#uplift-intro")).toContainText(
+    "create as many extra purchases as possible",
+  );
   await expect(page.locator("#uplift-result")).toContainText("35 → 65");
   await expect(page.locator(".uplift-group")).toHaveCount(4);
   await expect(page.locator(".uplift-details[open]")).toHaveCount(0);
@@ -33,6 +39,12 @@ try {
   await expect(page.locator("#uplift-targeting")).toBeHidden();
   await page.locator('[data-predict="conversion"]').click();
   await expect(page.locator("#uplift-feedback")).toContainText("Not quite");
+  await expect(
+    page.getByRole("radio", { name: "Highest purchase chance", exact: true }),
+  ).toBeChecked();
+  await expect(page.locator("#uplift-rule-note")).toContainText(
+    "ignores whether contact helps",
+  );
   await expect(page.locator("#uplift-result")).toContainText(
     "prevents 5 purchases",
   );
@@ -117,6 +129,18 @@ try {
   await expect(page.locator("#uplift-prediction")).toBeVisible();
   await page.locator('[data-predict="uplift"]').click();
   await expect(page.locator("#uplift-feedback")).toContainText("Correct");
+  await expect(
+    page.getByRole("radio", { name: "Highest uplift", exact: true }),
+  ).toBeChecked();
+  await expect(
+    page.locator('.uplift-group[data-contacted="true"]'),
+  ).toContainText("Browsing");
+  await expect(page.locator("#uplift-result")).toContainText(
+    "adds 30 purchases",
+  );
+  await expect(page.locator("#uplift-rule-note")).toContainText(
+    "increase in purchase chance caused by contact",
+  );
   await expect(page.locator("#uplift-budget-value")).toHaveText("100");
   await expect(page.locator("#uplift-world")).toHaveValue("different");
 

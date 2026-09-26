@@ -56,7 +56,7 @@ document.querySelector("#app").innerHTML =
   <main>${lessonNavigation({ currentOptional: "uplift" })}
     <p class="eyebrow">OPTIONAL TRACK · FROM EFFECTS TO DECISIONS</p>
     <h1>Uplift modelling</h1>
-    <p class="intro">Who will buy is a different question from whose purchase your intervention will change.</p>
+    <p class="intro">Uplift modelling estimates how an intervention changes an outcome for different groups. It helps us decide whom to treat or contact.</p>
     <nav class="uplift-steps" aria-label="Uplift track">${steps.map((title, i) => `<button data-step="${i}"><span>${i + 1}</span>${title}</button>`).join("")}</nav>
     <section class="panel uplift-experiment" aria-labelledby="uplift-title">
       <p class="eyebrow">FICTIONAL CAMPAIGN · TARGET POPULATION: 400 CUSTOMERS</p>
@@ -128,12 +128,20 @@ function renderEvidence() {
   } else if (step === 1) {
     if (prediction !== null)
       el("uplift-intro").textContent =
-        `Compare the rules with ${budget} contacts from the same 400 customers. Highlighted groups receive contact. Change the world to test whether purchase chance and uplift point to the same people.`;
+        `Our goal: use ${budget} contacts to create as many extra purchases as possible, compared with contacting nobody. Compare the three rules below. Highlighted groups receive contact.`;
+    el("uplift-rule-note").textContent = {
+      conversion:
+        "Highest purchase chance chooses people most likely to buy without contact. It ignores whether contact helps, so it can select people whose purchase chance goes down.",
+      uplift:
+        "Highest uplift chooses the largest increase in purchase chance caused by contact. It ranks groups by the difference between contact and no contact.",
+      random:
+        "Random contacts gives everyone the same chance of being contacted. Use it as a baseline to see whether targeting creates more extra purchases.",
+    }[rule];
     const result = campaignTruth(population, counts);
     el("uplift-result").innerHTML =
       prediction === null
         ? ""
-        : `<p class="uplift-takeaway"><strong>${number(result.withContact)} expected purchases among ${budget} contacts.</strong><br>${number(result.without)} would happen without contact. The campaign ${result.effect < -1e-8 ? "prevents" : "adds"} <strong>${number(Math.abs(result.effect))} purchases</strong>.</p><p class="small">${world === "different" ? "Try Highest uplift with the same budget. More purchases among contacted customers need not mean more purchases caused by contact." : world === "aligned" ? "Here, high purchase chance and high uplift point to the same groups. Their relationship depends on the world." : "Every rule has zero true uplift here. Purchase predictions can still be accurate."} Random contacts allocates the same fraction to every group, representing its expected allocation.</p>${budget > 200 && world === "different" ? '<p class="small">This comparison spends the full contact budget, even on zero or negative effects. In practice, a budget can be a ceiling: leave harmful contacts unused.</p>' : ""}`;
+        : `<p class="uplift-takeaway">The campaign ${result.effect < -1e-8 ? "prevents" : "adds"} <strong>${number(Math.abs(result.effect))} purchases</strong> compared with no contact.<br>${number(result.withContact)} expected purchases among ${budget} contacts. ${number(result.without)} would happen without contact.</p><p class="small">${world === "different" ? "Switch targeting rules while keeping the same budget. Compare the purchases each rule adds, not just the purchases among its contacts." : world === "aligned" ? "Here, high purchase chance and high uplift point to the same groups. Their relationship depends on the world." : "Every rule has zero true uplift here. Purchase predictions can still be accurate."} Random contacts allocates the same fraction to every group, representing its expected allocation.</p>${budget > 200 && world === "different" ? '<p class="small">This comparison spends the full contact budget, even on zero or negative effects. In practice, a budget can be a ceiling: leave harmful contacts unused.</p>' : ""}`;
   } else if (step === 2) {
     el("uplift-result").innerHTML = fitted
       ? `<p class="uplift-takeaway">For Browsing, the no-contact model predicts <strong>${percent(estimates[1].p0)}</strong> and the contact model predicts <strong>${percent(estimates[1].p1)}</strong>. Subtract them to estimate <strong>${signed(estimates[1].effect * 100)} pp</strong> of uplift.</p><p class="small">These are fitted group averages, not known effects for individual customers. Redraw the study to see sampling error. The underlying world stays fixed.</p>`
@@ -177,7 +185,7 @@ function renderStep(focus = false) {
   el("uplift-action").innerHTML = "";
   if (step === 0) {
     el("uplift-intro").textContent =
-      "A shop can send a reminder. Compare the same customer group with and without that reminder. The gap is the average effect of contact for that group. Here the simulator knows both chances. In real data, each person reveals only the outcome under the choice they received.";
+      "A shop has 400 customers and a budget for 100 reminders. Its goal is to create as many extra purchases as possible, compared with sending no reminders. First, look at how a reminder changes each group’s purchase chance. These are known simulator probabilities. In real data, each person reveals only the outcome under the choice they received.";
     el("uplift-details").innerHTML =
       details(
         "Why can’t we know who was persuaded?",
@@ -189,7 +197,7 @@ function renderStep(focus = false) {
       );
   } else if (step === 1) {
     el("uplift-intro").textContent =
-      "You can contact 100 of these 400 customers. Which rule will create more extra purchases: choosing the highest no-contact purchase chance, or the largest with-minus-without difference?";
+      "Our goal is to create extra purchases with 100 reminders. We will compare a rule that finds likely buyers with one that finds the greatest benefit from contact. Which rule will add more purchases compared with sending no reminders?";
     el("uplift-action").innerHTML =
       `<div id="uplift-prediction"><p><strong>Predict, then compare the rules.</strong></p><div class="uplift-actions"><button data-predict="conversion">Highest purchase chance</button><button data-predict="uplift">Highest uplift</button></div></div><p id="uplift-feedback" class="uplift-feedback" role="status"></p>`;
     el("uplift-controls").innerHTML =
@@ -209,7 +217,9 @@ function renderStep(focus = false) {
           ([id, name]) =>
             `<label><input type="radio" name="uplift-rule" value="${id}" ${rule === id ? "checked" : ""}>${name}</label>`,
         )
-        .join("")}</fieldset></div>`;
+        .join(
+          "",
+        )}</fieldset><p id="uplift-rule-note" class="small" role="status"></p></div>`;
     updatePrediction();
     el("uplift-world").addEventListener("change", (event) => {
       world = event.target.value;
@@ -231,9 +241,14 @@ function renderStep(focus = false) {
     document.querySelectorAll("[data-predict]").forEach((button) =>
       button.addEventListener("click", () => {
         prediction = button.dataset.predict;
+        rule = prediction;
+        const selectedRule = document.querySelector(
+          `[name="uplift-rule"][value="${rule}"]`,
+        );
+        selectedRule.checked = true;
         updatePrediction();
         renderEvidence();
-        el("uplift-world").focus();
+        selectedRule.focus();
       }),
     );
     el("uplift-details").innerHTML = details(
@@ -302,7 +317,7 @@ function updatePrediction() {
   el("uplift-feedback").textContent =
     prediction === null
       ? ""
-      : `${prediction === "uplift" ? "✓ Correct." : "! Not quite."} In the opening world with 100 contacts, uplift selects Browsing and adds 30 purchases. Purchase chance selects Frequent buyers and prevents 5. Now test other budgets and worlds.`;
+      : `Your opening prediction: ${prediction === "uplift" ? "✓ Correct." : "! Not quite."} In the opening world with 100 contacts, uplift selects Browsing and adds 30 purchases. Purchase chance selects Frequent buyers and prevents 5. Now compare the rules, then test other budgets and worlds.`;
   el("uplift-feedback").dataset.result =
     prediction === "uplift" ? "correct" : "review";
 }
