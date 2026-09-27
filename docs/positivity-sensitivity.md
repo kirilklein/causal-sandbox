@@ -18,18 +18,28 @@ excluded 40%. It stays fixed throughout the sensitivity analysis. An empty regio
 of fitted scores alone does not establish a structural violation.
 
 Before the control, visible evidence states the retained ATT (+20 pp), retained
-share (60%), and excluded outcome probability under exposure (60%). The lesson
+share (60%), and excluded outcome probability under exposure (60%). The retained contrast
+explicitly compares 60% under exposure with 40% without exposure for the same
+retained exposed units. The lesson
 then explains the unrestricted −4 to +36 pp interval. A probability slider sets the assumed
 upper limit on P(Y(0)=1 | A=1, excluded), from 0% to 100% in five-point steps.
 A single horizontal plot shows the ATT interval on a fixed −10 to +40 pp axis.
 The dot marks its lower bound, the right cap its upper bound, and the dashed
-reference marks zero. There is no point estimate or specified overall true effect.
+reference marks zero. There is no point estimate. An optional reveal adds a fixed simulation-truth
+marker at +4 pp.
 These are identification bounds, not confidence intervals.
 
 Starting at 100% adds no outcome restriction and yields −4 to +36 pp. At 90%, the
 lower bound reaches zero. At 80%, it reaches +4 pp. The upper bound stays +36 pp
 because zero outcome probability without exposure remains allowed. The plot keeps
 a constant 106px height across desktop and phone widths. The weighted calculation remains in the optional formula disclosure.
+
+The optional truth reveal fixes excluded P(Y(0)=1) at 80%, giving excluded ATT
+−20 pp and overall ATT +4 pp. Neither the truth nor the observed data change with
+the slider. Below an 80% assumed maximum, the restriction is false in this world
+and its bounds exclude the truth. The marker and explanation are hidden on entry
+and reset; revealing them never alters the bounds. The practice question uses only
+observed data and the restriction, even when simulator truth has been revealed.
 
 The result explicitly depends on the assumption and excludes sampling uncertainty.
 A visible transfer question follows the experiment, before optional details. It
@@ -65,8 +75,8 @@ ATT_all = 0.6 × 0.2 + 0.4 × ATT_excluded in [−0.04, 0.36]
 
 For a chosen upper limit u on excluded outcome probability without exposure, q lies in [0,u].
 The identified set becomes [0.36 − 0.4u, 0.36]. These bounds are sharp in this model.
-The slider starts at u=1, so it initially adds no outcome restriction. No overall
-point truth is selected or estimated. There is no fitted propensity score,
+The slider starts at u=1, so it initially adds no outcome restriction. One world, q=0.8, is selected for the optional truth reveal. Its overall ATT
+is +0.04; the bounds calculation never uses this hidden value. There is no fitted propensity score,
 trimming threshold, or estimator ranking. OWATT remains further reading.
 
 ## Validation

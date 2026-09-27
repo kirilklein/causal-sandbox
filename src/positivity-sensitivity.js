@@ -94,3 +94,8 @@ export function positivityBounds(maxExcludedUntreated) {
   );
   return [result.overallEffect, result.overallBounds[1]];
 }
+
+// One fixed counterfactual world for the optional reveal; never an input to bounds.
+export const simulationTruth = Object.freeze(
+  positivitySensitivity(recoveryPopulation.excludedTreated - 0.8),
+);

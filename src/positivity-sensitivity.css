@@ -136,6 +136,21 @@
   width: 24px;
   height: 24px;
 }
+.ps-truth-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.ps-effect-truth {
+  stroke: var(--truth);
+  stroke-width: 2px;
+  stroke-dasharray: 6 3;
+}
+#ps-att-chart .ps-truth-label {
+  fill: var(--truth);
+  font-weight: 600;
+}
 .ps-bound-figure {
   margin: 24px 0 16px;
 }

@@ -10,6 +10,7 @@ import {
 import {
   positivityBounds,
   propensityDistribution,
+  simulationTruth,
 } from "../src/positivity-sensitivity.js";
 
 const browser = await launchBrowser();
@@ -59,6 +60,12 @@ try {
       ) - 0.4,
     ) < 1e-12,
   );
+  await expect(page.locator(".ps-evidence")).toContainText(
+    "60% − 40% = +20 pp",
+  );
+  await expect(page.locator("#ps-show-truth")).not.toBeChecked();
+  await expect(page.locator("#ps-truth-explanation")).toBeHidden();
+  await expect(page.locator(".ps-effect-truth")).toHaveCount(0);
   const observed = await page.locator("#ps-observed").innerHTML();
   await expect(page.locator("#ps-limit-value")).toHaveText("At most 100%");
   await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
@@ -91,6 +98,15 @@ try {
   await page.keyboard.press("Home");
   await expect(page.locator("#ps-result")).toHaveText("+36 pp to +36 pp");
 
+  const boundsBeforeReveal = await page.locator("#ps-result").textContent();
+  await page.locator("#ps-show-truth").focus();
+  await page.keyboard.press("Space");
+  await expect(page.locator("#ps-truth-explanation")).toBeVisible();
+  await expect(page.locator("#ps-result")).toHaveText(boundsBeforeReveal);
+  await expect(page.locator("#ps-truth-explanation")).toContainText(
+    "60% × (+20 pp) + 40% × (-20 pp) = +4 pp",
+  );
+
   // Reconcile plot geometry with the model, including a collapsed interval.
   for (let limit = 0; limit <= 100; limit += 5) {
     await page.locator("#ps-limit").evaluate((node, value) => {
@@ -109,6 +125,7 @@ try {
         left: interval.x1.baseVal.value,
         right: interval.x2.baseVal.value,
         dot: dot.cx.baseVal.value,
+        truth: svg.querySelector(".ps-effect-truth").x1.baseVal.value,
         zero: svg.querySelector(".ps-effect-zero").x1.baseVal.value,
         axisLeft: axis.x1.baseVal.value,
         axisRight: axis.x2.baseVal.value,
@@ -120,6 +137,15 @@ try {
     assert.ok(Math.abs(toEffect(marks.right) - upper * 100) < 1e-4);
     assert.ok(Math.abs(toEffect(marks.zero)) < 1e-4);
     assert.equal(marks.dot, marks.left);
+    assert.ok(
+      Math.abs(toEffect(marks.truth) - simulationTruth.overallEffect * 100) <
+        1e-4,
+    );
+    await expect(page.locator("#ps-truth-status")).toContainText(
+      limit < 80
+        ? "bounds exclude the true ATT"
+        : "bounds include the true ATT",
+    );
     const value = Math.round(lower * 100);
     await expect(page.locator("#ps-result")).toHaveText(
       `${value > 0 ? "+" : ""}${value} pp to +36 pp`,
@@ -206,6 +232,9 @@ try {
   await page.locator("#ps-restart").click();
   await expect(page.locator("h1")).toBeFocused();
   await expect(page.locator("#ps-limit")).toHaveValue("100");
+  await expect(page.locator("#ps-show-truth")).not.toBeChecked();
+  await expect(page.locator("#ps-truth-explanation")).toBeHidden();
+  await expect(page.locator(".ps-effect-truth")).toHaveCount(0);
   await expect(page.locator("#ps-arithmetic")).toBeHidden();
   await expect(page.locator("#ps-exploration")).toBeVisible();
   await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");

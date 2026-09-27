@@ -11,6 +11,7 @@ import {
   propensityDistribution,
   positivitySensitivity,
   positivityBounds,
+  simulationTruth,
 } from "./positivity-sensitivity.js";
 
 const title = "Beyond trimming: bounds and sensitivity";
@@ -38,8 +39,8 @@ document.querySelector("#app").innerHTML = `
         ${propensityChart()}
         <p class="small">Assume valid adjustment in the retained group. These quantities stay fixed:</p>
         <ul class="ps-evidence">
-          <li><strong>Retained · ${percent(population.retainedShare)} of exposed units:</strong> ATT ${pp(population.retainedTreated - population.retainedUntreated)}.</li>
-          <li><strong>Excluded · ${percent(1 - population.retainedShare)}:</strong> ${percent(population.excludedTreated)} have Y=1 under exposure. Their outcome probability without exposure is unknown.</li>
+          <li><strong>Retained · ${percent(population.retainedShare)} of exposed units:</strong> under exposure, ${percent(population.retainedTreated)} would have Y=1; without exposure, ${percent(population.retainedUntreated)} would. For these same units, the true ATT is ${percent(population.retainedTreated)} − ${percent(population.retainedUntreated)} = <strong>${pp(simulationTruth.retainedEffect)}</strong>.</li>
+          <li><strong>Excluded · ${percent(1 - population.retainedShare)}:</strong> ${percent(population.excludedTreated)} have Y=1 under exposure. Their outcome probability without exposure is unknown from the observed data.</li>
         </ul>
       </div>
     </section>
@@ -53,11 +54,17 @@ document.querySelector("#app").innerHTML = `
         <label class="ps-limit-label" for="ps-limit"><span>Assumed maximum P(Y=1 without exposure) · excluded group</span><output id="ps-limit-value" for="ps-limit"></output></label>
         <input id="ps-limit" type="range" min="0" max="100" step="5" value="100" aria-label="Upper limit on outcome probability without exposure in the excluded group" aria-describedby="ps-limit-help">
         <p id="ps-limit-help" class="small">Zero remains allowed. Only the assumed maximum changes.</p>
+        <label class="ps-truth-toggle"><input id="ps-show-truth" type="checkbox" aria-controls="ps-truth-explanation"> Show simulation truth</label>
         <figure class="ps-bound-figure" aria-labelledby="ps-bound-title">
           <figcaption><span id="ps-bound-title">ATT bounds</span><strong id="ps-result"></strong></figcaption>
           <div id="ps-bound-plot"></div>
           <p class="ps-plot-key"><span>● Lower bound</span><span>Interval: compatible effects</span><span>Dashed line: zero</span></p>
         </figure>
+        <div id="ps-truth-explanation" hidden>
+          <p class="small">In this simulated population, ${percent(simulationTruth.excludedUntreated)} of excluded exposed units would have Y=1 without exposure, versus ${percent(population.excludedTreated)} under exposure. Their true ATT is ${pp(simulationTruth.excludedEffect)}.</p>
+          <p class="small"><strong>True overall ATT: ${percent(population.retainedShare)} × (${pp(simulationTruth.retainedEffect)}) + ${percent(1 - population.retainedShare)} × (${pp(simulationTruth.excludedEffect)}) = ${pp(simulationTruth.overallEffect)}.</strong> This is simulator knowledge, unavailable from the observed data.</p>
+          <p id="ps-truth-status" class="small" role="status"></p>
+        </div>
         <p id="ps-interpretation" class="small" role="status"></p>
         <p class="small">The threshold tells you what restriction would rule out a negative ATT. Whether that restriction is credible requires external evidence or subject knowledge.</p>
         <p class="small">These are identification bounds, not confidence intervals. Sampling uncertainty is omitted.</p>
@@ -65,7 +72,7 @@ document.querySelector("#app").innerHTML = `
     </section>
     <section class="panel" id="ps-practice" aria-labelledby="ps-practice-title">
       <h2 id="ps-practice-title">What does the restriction establish?</h2>
-      <fieldset class="ps-question"><legend>External evidence supports an 80% upper limit for the excluded group’s outcome probability without exposure. What can you conclude?</legend>
+      <fieldset class="ps-question"><legend>External evidence supports an 80% upper limit for the excluded group’s outcome probability without exposure. Using the observed data and that restriction, what can you conclude?</legend>
         <button data-practice="point">The ATT is exactly +4 pp.</button>
         <button data-practice="bounds">The ATT lies between +4 and +36 pp, conditional on the restriction.</button>
         <button data-practice="positivity">Positivity is restored, so the ATT is point identified.</button>
@@ -140,11 +147,12 @@ function propensityChart() {
   </figure>`;
 }
 
-function boundPlot(lower, upper) {
+function boundPlot(lower, upper, showTruth) {
   const position = (value) => 4 + ((value * 100 + 10) / 50) * 92;
-  return `<svg id="ps-att-chart" role="img" aria-label="ATT identification bounds ${pp(lower)} to ${pp(upper)}. Dot: lower bound. Dashed reference: zero. No point estimate or true overall effect is specified." data-domain-min="-10" data-domain-max="40">
+  return `<svg id="ps-att-chart" role="img" aria-label="ATT identification bounds ${pp(lower)} to ${pp(upper)}. Dot: lower bound. Dashed reference: zero. ${showTruth ? `Simulation truth: ${pp(simulationTruth.overallEffect)}, fixed.` : "Simulation truth hidden."}" data-domain-min="-10" data-domain-max="40">
     <line class="ps-effect-axis" x1="4%" x2="96%" y1="72" y2="72"/>
     <line class="ps-effect-zero" x1="${position(0)}%" x2="${position(0)}%" y1="12" y2="72"/>
+    ${showTruth ? `<line class="ps-effect-truth" x1="${position(simulationTruth.overallEffect)}%" x2="${position(simulationTruth.overallEffect)}%" y1="20" y2="72"/><text class="ps-truth-label" x="${position(simulationTruth.overallEffect)}%" y="12" text-anchor="middle">Truth ${pp(simulationTruth.overallEffect)}</text>` : ""}
     <line class="ps-effect-interval" x1="${position(lower)}%" x2="${position(upper)}%" y1="40" y2="40"/>
     <line class="ps-effect-cap" x1="${position(upper)}%" x2="${position(upper)}%" y1="33" y2="47"/>
     <circle class="ps-effect-bound" cx="${position(lower)}%" cy="40" r="5" data-effect="${lower}"/>
@@ -162,7 +170,13 @@ function render() {
     `At most ${percent(limit)} outcome probability without exposure, assumed upper limit`,
   );
   el("ps-result").textContent = `${pp(lower)} to ${pp(upper)}`;
-  el("ps-bound-plot").innerHTML = boundPlot(lower, upper);
+  const showTruth = el("ps-show-truth").checked;
+  el("ps-bound-plot").innerHTML = boundPlot(lower, upper, showTruth);
+  el("ps-truth-explanation").hidden = !showTruth;
+  el("ps-truth-status").textContent =
+    limit < simulationTruth.excludedUntreated
+      ? "This restriction is false in the simulated population: the narrower bounds exclude the true ATT. The truth stays fixed."
+      : "These bounds include the true ATT. Try a limit below 80%: a false restriction can exclude it.";
   el("ps-interpretation").textContent =
     limit === 1
       ? "Without an additional restriction, the ATT can be negative or positive."
@@ -197,8 +211,10 @@ document.querySelectorAll("[data-practice]").forEach((button) => {
   });
 });
 el("ps-limit").addEventListener("input", render);
+el("ps-show-truth").addEventListener("change", render);
 el("ps-restart").addEventListener("click", () => {
   el("ps-limit").value = 100;
+  el("ps-show-truth").checked = false;
   el("ps-practice-feedback").textContent = "";
   document
     .querySelectorAll("[data-practice]")

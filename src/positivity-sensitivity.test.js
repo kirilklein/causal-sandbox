@@ -5,6 +5,7 @@ import {
   recoveryPopulation,
   propensityDistribution,
   positivityBounds,
+  simulationTruth,
 } from "./positivity-sensitivity.js";
 
 const close = (actual, expected) =>
@@ -157,4 +158,21 @@ test("untreated recovery upper limits narrow the ATT set with attainable endpoin
   for (const invalid of [-0.01, 1.01, NaN, Infinity, undefined, "0.8"]) {
     assert.throws(() => positivityBounds(invalid), RangeError);
   }
+});
+
+test("fixed simulation truth reconciles outcome contrasts and is excluded only by false limits", () => {
+  close(simulationTruth.excludedUntreated, 0.8);
+  close(simulationTruth.retainedEffect, (36 - 24) / 60);
+  close(simulationTruth.excludedEffect, (24 - 32) / 40);
+  close(simulationTruth.overallEffect, (60 - 56) / 100);
+  const original = { ...simulationTruth };
+  for (let i = 0; i <= 20; i++) {
+    const limit = i / 20;
+    const [lower, upper] = positivityBounds(limit);
+    const containsTruth =
+      simulationTruth.overallEffect >= lower - 1e-12 &&
+      simulationTruth.overallEffect <= upper + 1e-12;
+    assert.equal(containsTruth, limit >= 0.8);
+  }
+  assert.deepEqual(simulationTruth, original);
 });

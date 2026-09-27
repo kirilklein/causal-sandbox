@@ -144,7 +144,8 @@ chapters.
 The advanced [Beyond trimming](positivity-sensitivity.md) chapter at
 `?lesson=positivity-sensitivity` follows trimming and explicitly targets ATT.
 A propensity histogram identifies the unsupported 40% of exposed units. Fixed
-outcome information leads into unrestricted ATT bounds. The learner then varies
+outcome contrasts lead into unrestricted ATT bounds. An optional reveal marks
+the fixed overall simulation truth and shows how a false restriction can exclude it. The learner then varies
 an assumed upper limit on the excluded group's outcome probability without
 exposure and watches a compact interval plot narrow. The zero crossing identifies
 a required restriction, whose credibility needs external justification. A visible
