@@ -168,6 +168,14 @@ export const optionalChapters = [
     title: "Trimming and the target population",
     href: "?lesson=trimming",
   },
+  {
+    id: "positivity-sensitivity",
+    menuTitle: "Beyond trimming",
+    title: "Beyond trimming: bounds and sensitivity",
+    href: "?lesson=positivity-sensitivity",
+    description:
+      "Bound the ATT under incomplete support and test assumptions about the outcome without exposure.",
+  },
 ];
 
 export const lessonExperiments = [

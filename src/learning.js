@@ -83,6 +83,7 @@ const background = {
   overlap: ["ipw", "propensity-score"],
   clipping: ["ipw", "overlap"],
   trimming: ["ipw", "overlap", "clipping"],
+  "positivity-sensitivity": ["overlap", "trimming"],
 };
 
 export function backgroundLinks(topic) {
@@ -148,7 +149,7 @@ const groups = [
     summary:
       "Sparse comparisons, extreme weights, and changing the target population.",
     refreshers: ["ipw", "overlap"],
-    advanced: ["clipping", "trimming"],
+    advanced: ["clipping", "trimming", "positivity-sensitivity"],
   },
 ];
 
