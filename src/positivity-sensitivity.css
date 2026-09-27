@@ -100,146 +100,86 @@
   border-left: 3px solid var(--accent);
   font-size: 14px;
 }
-.ps-result strong {
-  font-size: 20px;
-}
-.ps-result p {
-  margin: 6px 0 0;
-  font-size: 14px;
-}
-/* Both columns show the same 100-patient target, split into groups of 60 and 40. */
-.ps-recovery {
-  margin: 24px auto 0;
-  max-width: 620px;
-}
-.ps-key {
+.ps-limit-label {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
-}
-.ps-key span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.ps-key .ps-person {
-  width: 12px;
-  height: 12px;
-}
-.ps-worlds {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 24px;
-}
-.ps-worlds h4 {
-  margin: 0;
-  font-size: 18px;
-  text-align: center;
-}
-.ps-worlds .ps-group {
-  grid-column: 1 / -1;
-  margin: 20px 0 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
   font-size: 14px;
   font-weight: 600;
+  margin-top: 24px;
 }
-.ps-group span {
-  margin-left: 8px;
-  font-weight: 400;
-  color: var(--text-secondary);
+.ps-limit-label output {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.ps-recovery-cell {
-  min-width: 0;
-  padding: 12px;
-  border: 2px solid transparent;
-}
-.ps-recovery-cell p,
-.ps-recovery-cell label {
-  display: block;
-  margin: 0 0 12px;
-  font-size: 16px;
-}
-.ps-recovery-cell strong,
-.ps-recovery-cell small {
-  display: block;
-}
-.ps-recovery-cell small {
-  margin-top: 2px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.ps-people {
-  display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 6px;
-  max-width: 200px;
-}
-.ps-person {
-  display: block;
-  aspect-ratio: 1;
-  border: 1px solid var(--text-secondary);
-  border-radius: 50%;
-}
-.ps-recovered {
-  background: var(--text);
-  border-color: var(--text);
-}
-.ps-missing {
-  border: 2px dashed var(--accent);
-  border-radius: 8px;
-  background: var(--accent-surface);
-}
-#ps-recoveries {
+#ps-limit {
   width: 100%;
   height: 8px;
   accent-color: var(--accent);
   background: var(--border-strong);
-  margin: 24px 0 8px;
+  margin: 20px 0 8px;
 }
-#ps-recoveries::-webkit-slider-thumb {
+#ps-limit::-webkit-slider-thumb {
   width: 24px;
   height: 24px;
 }
-#ps-recoveries::-moz-range-thumb {
+#ps-limit::-moz-range-thumb {
   width: 24px;
   height: 24px;
 }
-.ps-slider-ends {
+.ps-bound-figure {
+  margin: 24px 0 16px;
+}
+.ps-bound-figure figcaption {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  font-size: 12px;
-  color: var(--text-secondary);
+  gap: 8px 16px;
+  font-size: 15px;
 }
-.ps-missing #ps-recoveries-help {
-  font-size: 12px;
-  margin: 10px 0 0;
-}
-.ps-total {
-  margin-top: 16px;
-  padding: 12px;
-  border-top: 2px solid var(--text-secondary);
-}
-.ps-total strong,
-.ps-total span {
+#ps-att-chart {
   display: block;
+  width: 100%;
+  height: 106px;
+  margin-top: 12px;
+  overflow: visible;
 }
-.ps-total strong {
-  font-size: 24px;
-  margin: 4px 0;
+#ps-att-chart text {
+  fill: var(--text-secondary);
+  font-size: 12px;
 }
-.ps-total small,
-.ps-total span {
+.ps-effect-axis {
+  stroke: var(--border-strong);
+}
+.ps-effect-zero {
+  stroke: var(--text-secondary);
+  stroke-dasharray: 4 4;
+}
+.ps-effect-interval,
+.ps-effect-cap {
+  stroke: var(--estimate);
+  stroke-width: 2.5px;
+}
+.ps-effect-bound {
+  fill: var(--estimate);
+}
+.ps-effect-axis-title,
+.ps-plot-key {
   font-size: 12px;
   color: var(--text-secondary);
+  margin: 0;
 }
-.ps-result {
-  border-left: 3px solid var(--accent);
-  padding: 10px 14px;
-  background: var(--accent-surface);
+.ps-effect-axis-title {
+  text-align: center;
+}
+.ps-plot-key {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin-top: 12px;
 }
 .ps-detail {
   margin-block: 16px;
@@ -287,26 +227,6 @@
   }
   .positivity-page .panel {
     padding: 18px 14px;
-  }
-  .ps-worlds {
-    column-gap: 8px;
-  }
-  .ps-worlds h4 {
-    font-size: 15px;
-  }
-  .ps-recovery-cell,
-  .ps-total {
-    padding: 8px 4px;
-  }
-  .ps-recovery-cell p,
-  .ps-recovery-cell label {
-    font-size: 14px;
-  }
-  .ps-people {
-    gap: 3px;
-  }
-  .ps-total strong {
-    font-size: 19px;
   }
   #ps-propensity-chart text {
     font-size: 18px;

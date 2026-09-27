@@ -9,7 +9,6 @@ import {
 } from "./browser-setup.mjs";
 import {
   positivityBounds,
-  recoveryPopulation,
   propensityDistribution,
 } from "../src/positivity-sensitivity.js";
 
@@ -61,32 +60,11 @@ try {
     ) < 1e-12,
   );
   const observed = await page.locator("#ps-observed").innerHTML();
-  await expect(page.locator("#ps-recoveries-value")).toHaveText("40");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64");
-  await expect(page.locator("#ps-result")).toHaveText(
-    "Overall ATT: -4 pp to +36 pp",
-  );
+  await expect(page.locator("#ps-limit-value")).toHaveText("At most 100%");
+  await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
+  await expect(page.locator("#ps-att-chart")).toBeVisible();
   await expect(page.locator("#ps-interpretation")).toContainText(
     "the ATT can be negative or positive",
-  );
-  await expect(page.locator("[data-prediction]")).toHaveCount(0);
-  const fixedIds = [
-    "ps-retained-treated",
-    "ps-retained-untreated",
-    "ps-excluded-treated",
-  ];
-  const fixed = await Promise.all(
-    fixedIds.map((id) => page.locator(`#${id}`).innerHTML()),
-  );
-  await expect(page.locator(".ps-people .ps-person")).toHaveCount(200);
-  await expect(page.locator("#ps-retained-treated .ps-recovered")).toHaveCount(
-    36,
-  );
-  await expect(
-    page.locator("#ps-retained-untreated .ps-recovered"),
-  ).toHaveCount(24);
-  await expect(page.locator("#ps-excluded-treated .ps-recovered")).toHaveCount(
-    24,
   );
   await page.locator("#ps-calculation > summary").click();
   await expect(page.locator("#ps-calculation math msub")).toHaveCount(3);
@@ -94,79 +72,57 @@ try {
     "aria-label",
     "Lower bound: 60 percent times +20 pp plus 40 percent times -40 pp equals -4 pp",
   );
-  await page.locator("#ps-recoveries").focus();
-  await page.keyboard.press("End");
-  await expect(page.locator("#ps-result")).toContainText("-4 pp");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–64");
-  await expect(page.locator("#ps-calculation")).toHaveAttribute("open", "");
+  await page.locator("#ps-limit").focus();
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("#ps-result")).toHaveText(
-    "Overall ATT: -2 pp to +36 pp",
-  );
+  await expect(page.locator("#ps-result")).toHaveText("-2 pp to +36 pp");
   await expect(page.locator("#ps-interpretation")).toContainText(
     "still allows a negative ATT",
   );
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–62");
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("#ps-result")).toHaveText(
-    "Overall ATT: 0 pp to +36 pp",
-  );
+  await expect(page.locator("#ps-result")).toHaveText("0 pp to +36 pp");
   await expect(page.locator("#ps-interpretation")).toContainText(
-    "90%) is the tipping point",
+    "90% is the tipping point",
   );
-  await expect(page.locator("#ps-recoveries-value")).toHaveText("36");
   await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
     "aria-label",
     "Lower bound: 60 percent times +20 pp plus 40 percent times -30 pp equals 0 pp",
   );
+  await expect(page.locator("#ps-calculation")).toHaveAttribute("open", "");
   await page.keyboard.press("Home");
-  await expect(page.locator("#ps-result")).toContainText("+36 pp");
-  await expect(page.locator("#ps-untreated-total")).toHaveText("24–24");
+  await expect(page.locator("#ps-result")).toHaveText("+36 pp to +36 pp");
 
-  // Reconcile every possible count with the causal model and actual filled dots.
-  const excludedCount = Math.round(
-    100 * (1 - recoveryPopulation.retainedShare),
-  );
-  const supportedRecoveries = Math.round(
-    100 *
-      recoveryPopulation.retainedShare *
-      recoveryPopulation.retainedUntreated,
-  );
-  const treatedRecoveries = Math.round(
-    100 *
-      (recoveryPopulation.retainedShare * recoveryPopulation.retainedTreated +
-        (1 - recoveryPopulation.retainedShare) *
-          recoveryPopulation.excludedTreated),
-  );
-  for (let count = 0; count <= excludedCount; count += 2) {
-    await page.locator("#ps-recoveries").evaluate((node, value) => {
+  // Reconcile plot geometry with the model, including a collapsed interval.
+  for (let limit = 0; limit <= 100; limit += 5) {
+    await page.locator("#ps-limit").evaluate((node, value) => {
       node.value = value;
       node.dispatchEvent(new Event("input", { bubbles: true }));
-    }, String(count));
-    const [lower, upper] = positivityBounds(count / excludedCount);
-    await expect(page.locator("#ps-missing-dots .ps-recovered")).toHaveCount(
-      count,
-    );
-    await expect(page.locator("#ps-missing-dots .ps-people")).toHaveAttribute(
-      "aria-label",
-      `Excluded without exposure at your assumed upper limit: ${count} of ${excludedCount} have Y=1`,
-    );
-    await expect(page.locator("#ps-untreated-total")).toHaveText(
-      `${supportedRecoveries}–${supportedRecoveries + count}`,
-    );
-    assert.ok(
-      Math.abs(treatedRecoveries - supportedRecoveries - count - lower * 100) <
-        1e-10,
-    );
-    const effect = Math.round(lower * 100);
+    }, String(limit));
+    const [lower, upper] = positivityBounds(limit / 100);
+    const chart = page.locator("#ps-att-chart");
+    await expect(chart).toHaveAttribute("data-domain-min", "-10");
+    await expect(chart).toHaveAttribute("data-domain-max", "40");
+    const marks = await chart.evaluate((svg) => {
+      const interval = svg.querySelector(".ps-effect-interval");
+      const dot = svg.querySelector(".ps-effect-bound");
+      const axis = svg.querySelector(".ps-effect-axis");
+      return {
+        left: interval.x1.baseVal.value,
+        right: interval.x2.baseVal.value,
+        dot: dot.cx.baseVal.value,
+        zero: svg.querySelector(".ps-effect-zero").x1.baseVal.value,
+        axisLeft: axis.x1.baseVal.value,
+        axisRight: axis.x2.baseVal.value,
+      };
+    });
+    const toEffect = (x) =>
+      -10 + ((x - marks.axisLeft) / (marks.axisRight - marks.axisLeft)) * 50;
+    assert.ok(Math.abs(toEffect(marks.left) - lower * 100) < 1e-4);
+    assert.ok(Math.abs(toEffect(marks.right) - upper * 100) < 1e-4);
+    assert.ok(Math.abs(toEffect(marks.zero)) < 1e-4);
+    assert.equal(marks.dot, marks.left);
+    const value = Math.round(lower * 100);
     await expect(page.locator("#ps-result")).toHaveText(
-      `Overall ATT: ${effect > 0 ? "+" : ""}${effect} pp to +${Math.round(upper * 100)} pp`,
-    );
-    assert.deepEqual(
-      await Promise.all(
-        fixedIds.map((id) => page.locator(`#${id}`).innerHTML()),
-      ),
-      fixed,
+      `${value > 0 ? "+" : ""}${value} pp to +36 pp`,
     );
   }
   assert.equal(await page.locator("#ps-observed").innerHTML(), observed);
@@ -177,7 +133,7 @@ try {
   );
   await page.locator('[data-practice="bounds"]').click();
   await expect(page.locator("#ps-practice-feedback")).toContainText("Correct.");
-  await expect(page.locator("#ps-recoveries")).toHaveValue("40");
+  await expect(page.locator("#ps-limit")).toHaveValue("100");
   await page.locator("#ps-calculation > summary").click();
   await page.locator("#ps-practice > summary").click();
 
@@ -189,10 +145,10 @@ try {
         .getByRole("combobox", { name: "Color theme" })
         .selectOption(theme);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-      await page.locator("#ps-recoveries").focus();
+      await page.locator("#ps-limit").focus();
       await page.keyboard.press("End");
       await page.keyboard.press("ArrowLeft");
-      await expect(page.locator("#ps-recoveries-value")).toHaveText("38");
+      await expect(page.locator("#ps-limit-value")).toHaveText("At most 95%");
       await page.locator(".ps-propensity").screenshot({
         path: `test-results/positivity-sensitivity/propensity-${width}-${theme}.png`,
       });
@@ -202,24 +158,14 @@ try {
         ),
         `${width}/${theme} page fits`,
       );
+      const plotBox = await page.locator("#ps-att-chart").boundingBox();
       assert.ok(
-        await page.locator(".ps-recovery").evaluate((node) =>
-          [...node.querySelectorAll(".ps-person, input")].every((mark) => {
-            const box = mark.getBoundingClientRect();
-            return box.left >= 0 && box.right <= innerWidth;
-          }),
-        ),
-        `${width}/${theme} marks fit`,
+        plotBox.height <= 110,
+        `${width}/${theme} effect plot stays shallow`,
       );
-      const retainedTreated = await page
-        .locator("#ps-retained-treated .ps-people")
-        .boundingBox();
-      const retainedUntreated = await page
-        .locator("#ps-retained-untreated .ps-people")
-        .boundingBox();
       assert.ok(
-        Math.abs(retainedTreated.y - retainedUntreated.y) < 1,
-        `${width}/${theme} compared counts align`,
+        plotBox.x >= 0 && plotBox.x + plotBox.width <= width,
+        `${width}/${theme} effect plot fits`,
       );
       await page.locator("#ps-exploration").screenshot({
         path: `test-results/positivity-sensitivity/${width}-${theme}.png`,
@@ -253,12 +199,10 @@ try {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.locator("#ps-restart").click();
   await expect(page.locator("h1")).toBeFocused();
-  await expect(page.locator("#ps-recoveries")).toHaveValue("40");
+  await expect(page.locator("#ps-limit")).toHaveValue("100");
   await expect(page.locator("#ps-arithmetic")).toBeHidden();
   await expect(page.locator("#ps-exploration")).toBeVisible();
-  await expect(page.locator("#ps-result")).toHaveText(
-    "Overall ATT: -4 pp to +36 pp",
-  );
+  await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
   await expect(page.locator("#ps-practice-feedback")).toBeEmpty();
   await expect(page.locator(".ps-detail[open]")).toHaveCount(0);
   await page.getByRole("button", { name: "Contents", exact: true }).click();
@@ -273,9 +217,7 @@ try {
     .click();
   await page.getByRole("link", { name: title, exact: false }).click();
   await expect(page.locator("h1")).toHaveText(title);
-  await expect(page.locator("#ps-result")).toHaveText(
-    "Overall ATT: -4 pp to +36 pp",
-  );
+  await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
   await page.goBack();
   await expect(page.locator("h1")).toHaveText("Refresh & go deeper");
   await page.goForward();
@@ -297,19 +239,17 @@ try {
   const phone = await touch.newPage();
   collectPageErrors(phone, errors);
   await phone.goto(`${url}?lesson=positivity-sensitivity`);
-  await phone.locator("#ps-recoveries").scrollIntoViewIfNeeded();
-  const box = await phone.locator("#ps-recoveries").boundingBox();
+  await phone.locator("#ps-limit").scrollIntoViewIfNeeded();
+  const box = await phone.locator("#ps-limit").boundingBox();
   await phone.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-  await expect(phone.locator("#ps-recoveries")).toHaveValue("20");
-  await expect(phone.locator("#ps-result")).toHaveText(
-    "Overall ATT: +16 pp to +36 pp",
-  );
+  await expect(phone.locator("#ps-limit")).toHaveValue("50");
+  await expect(phone.locator("#ps-result")).toHaveText("+16 pp to +36 pp");
   await phone.getByRole("link", { name: "← Trimming", exact: true }).tap();
   await expect(phone.locator("h1")).toHaveText("Who remains after trimming?");
   assert.deepEqual(errors, []);
   await touch.close();
   console.log(
-    "Advanced positivity: recovery counts, fixed observations, all upper bounds, tipping point, practice, discovery, reset, history, keyboard/touch and responsive themes passed.",
+    "Advanced positivity: compact bound plot, fixed observations, all upper bounds, tipping point, practice, discovery, reset, history, keyboard/touch and responsive themes passed.",
   );
 } finally {
   await browser.close();

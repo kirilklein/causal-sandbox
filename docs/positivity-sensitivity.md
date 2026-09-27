@@ -16,19 +16,18 @@ within-arm percentages, and a hatched exposed-only mass at score 1 identify the
 excluded 40%. It stays fixed throughout the sensitivity analysis. An empty region
 of fitted scores alone does not establish a structural violation.
 
-The outcome display opens immediately, with no preliminary yes/no gate or
-separate paragraphs repeating the same evidence. Two columns compare the same
-target population per 100 exposed units. Sixty are retained and forty excluded.
-Filled and hollow dots show aggregate outcome counts, not paired individual
-potential outcomes. The right-hand dots depict the maximum count with Y=1 without exposure
-allowed by the learner's bound, not an estimated counterfactual.
+The sensitivity display opens immediately. A probability slider sets the assumed
+upper limit on P(Y(0)=1 | A=1, excluded), from 0% to 100% in five-point steps.
+A single horizontal plot shows the ATT interval on a fixed −10 to +40 pp axis.
+The dot marks its lower bound, the right cap its upper bound, and the dashed
+reference marks zero. There is no point estimate or specified overall true effect.
+These are identification bounds, not confidence intervals.
 
-The observed count with Y=1 stays 36 + 24 = 60. Controls support 24 retained Y=1 outcomes
-without exposure. Starting at 40 permits 0–40 excluded Y=1 outcomes, so unexposed
-total count with Y=1 lies between 24 and 64 and the overall ATT between −4 and +36 pp.
-The slider sets an upper limit, leaving zero as the lower limit. At 36 (90%), the
-ATT lower bound reaches zero. At 32 (80%), it is +4 pp. The upper ATT bound stays
-+36 pp because zero excluded unexposed Y=1 outcomes remain allowed.
+Starting at 100% adds no outcome restriction and yields −4 to +36 pp. At 90%, the
+lower bound reaches zero. At 80%, it reaches +4 pp. The upper bound stays +36 pp
+because zero outcome probability without exposure remains allowed. The plot keeps
+a constant 106px height across desktop and phone widths. Model inputs and the
+weighted calculation are in the optional formula disclosure.
 
 The result explicitly depends on the assumption and excludes sampling uncertainty.
 A transfer question asks learners to distinguish an ATT interval from a point
