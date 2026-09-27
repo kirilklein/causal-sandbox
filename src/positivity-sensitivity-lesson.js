@@ -29,36 +29,51 @@ document.querySelector("#app").innerHTML = `
     ${lessonNavigation({ currentOptional: "positivity-sensitivity" })}
     <p class="eyebrow">ADVANCED · POSITIVITY</p>
     <h1 tabindex="-1">${title}</h1>
-    <p class="intro">Bound the ATT under incomplete support. Vary an assumption about the unobserved outcome without exposure.</p>
+    <p class="intro">Trimming changes the population we study. What can we still conclude about the effect in the original exposed population?</p>
     <p class="small">Binary exposure A, binary outcome Y. Target: the exposed population (ATT). Builds on <a href="?lesson=trimming">trimming</a>.</p>
     <section class="panel ps-experiment" aria-labelledby="ps-study-title">
       <p class="eyebrow">TOY POPULATION · EXACT PROPORTIONS</p>
       <h2 id="ps-study-title">Start from the missing comparison</h2>
       <div id="ps-observed">
         ${propensityChart()}
+        <p class="small">Assume valid adjustment in the retained group. These quantities stay fixed:</p>
+        <ul class="ps-evidence">
+          <li><strong>Retained · ${percent(population.retainedShare)} of exposed units:</strong> ATT ${pp(population.retainedTreated - population.retainedUntreated)}.</li>
+          <li><strong>Excluded · ${percent(1 - population.retainedShare)}:</strong> ${percent(population.excludedTreated)} have Y=1 under exposure. Their outcome probability without exposure is unknown.</li>
+        </ul>
       </div>
     </section>
     <section class="panel ps-experiment" aria-labelledby="ps-method-title">
       <p class="eyebrow">METHOD · BOUNDS AND SENSITIVITY ANALYSIS</p>
-      <h2 id="ps-method-title">When does the ATT lower bound reach zero?</h2>
-      <p class="small">Bound the outcome probability without exposure in the excluded group.</p>
+      <h2 id="ps-method-title">From missing outcomes to ATT bounds</h2>
+      <p class="small">Allow the excluded group’s outcome probability without exposure to range from 0% to 100%. Combining their possible effects with the retained effect gives ATT bounds of −4 to +36 pp.</p>
+      <p class="small">Now explore an additional assumption: an upper limit on that unknown probability. The plot shows the ATT values compatible with the data and your restriction.</p>
       <div id="ps-exploration">
-        <p class="ps-task"><strong>Try it:</strong> find the largest upper limit that keeps the ATT lower bound at or above zero.</p>
-        <label class="ps-limit-label" for="ps-limit"><span>Outcome probability without exposure · excluded group</span><output id="ps-limit-value" for="ps-limit"></output></label>
+        <p class="ps-task"><strong>Try it:</strong> lower the limit and find where the ATT lower bound reaches zero.</p>
+        <label class="ps-limit-label" for="ps-limit"><span>Assumed maximum P(Y=1 without exposure) · excluded group</span><output id="ps-limit-value" for="ps-limit"></output></label>
         <input id="ps-limit" type="range" min="0" max="100" step="5" value="100" aria-label="Upper limit on outcome probability without exposure in the excluded group" aria-describedby="ps-limit-help">
-        <p id="ps-limit-help" class="small">Allow 0% up to this limit. Moving left strengthens the assumption.</p>
+        <p id="ps-limit-help" class="small">Zero remains allowed. Only the assumed maximum changes.</p>
         <figure class="ps-bound-figure" aria-labelledby="ps-bound-title">
           <figcaption><span id="ps-bound-title">ATT bounds</span><strong id="ps-result"></strong></figcaption>
           <div id="ps-bound-plot"></div>
           <p class="ps-plot-key"><span>● Lower bound</span><span>Interval: compatible effects</span><span>Dashed line: zero</span></p>
         </figure>
         <p id="ps-interpretation" class="small" role="status"></p>
-        <p class="small">These are identification bounds, not confidence intervals. No true overall effect is specified.</p>
+        <p class="small">The threshold tells you what restriction would rule out a negative ATT. Whether that restriction is credible requires external evidence or subject knowledge.</p>
+        <p class="small">These are identification bounds, not confidence intervals. Sampling uncertainty is omitted.</p>
       </div>
+    </section>
+    <section class="panel" id="ps-practice" aria-labelledby="ps-practice-title">
+      <h2 id="ps-practice-title">What does the restriction establish?</h2>
+      <fieldset class="ps-question"><legend>External evidence supports an 80% upper limit for the excluded group’s outcome probability without exposure. What can you conclude?</legend>
+        <button data-practice="point">The ATT is exactly +4 pp.</button>
+        <button data-practice="bounds">The ATT lies between +4 and +36 pp, conditional on the restriction.</button>
+        <button data-practice="positivity">Positivity is restored, so the ATT is point identified.</button>
+      </fieldset>
+      <p id="ps-practice-feedback" role="status"></p>
     </section>
     <details class="ps-detail" id="ps-calculation">
       <summary>How the two groups combine</summary>
-      <p>Retained share: ${percent(population.retainedShare)}. Retained ATT: ${pp(population.retainedTreated - population.retainedUntreated)}. Excluded outcome probability under exposure: ${percent(population.excludedTreated)}.</p>
       <p>Weight each group’s effect by its share of exposed units.</p>
       <div class="ps-equation" role="math" aria-label="Overall ATT equals retained share times retained ATT plus excluded share times excluded ATT">
         <math aria-hidden="true"><msub><mi>τ</mi><mtext>all</mtext></msub><mo>=</mo></math>
@@ -85,14 +100,6 @@ document.querySelector("#app").innerHTML = `
       <p>Only if they represent outcomes without exposure in the target period after valid adjustment.</p>
       <p>Changes in measurement or population composition can make calendar time a confounder. Dropping it may hide bias. If time only predicts exposure and is unnecessary for adjustment, including it may worsen precision.</p>
       <p>A period with both exposure groups may support a narrower comparison. Align eligibility and follow-up across groups.</p>
-    </details>
-    <details class="ps-detail" id="ps-practice">
-      <summary>Apply the method</summary>
-      <fieldset class="ps-question"><legend>Assume the excluded group’s outcome probability without exposure is at most 80%. What are the ATT bounds?</legend>
-        <button data-practice="point">An ATT of exactly +4 pp</button>
-        <button data-practice="bounds">An ATT between +4 and +36 pp, conditional on that bound</button>
-      </fieldset>
-      <p id="ps-practice-feedback" role="status"></p>
     </details>
     <details class="ps-detail">
       <summary>Assumptions and sources</summary>
@@ -186,7 +193,7 @@ document.querySelectorAll("[data-practice]").forEach((button) => {
         choice.setAttribute("aria-pressed", String(choice === button)),
       );
     el("ps-practice-feedback").textContent =
-      `${button.dataset.practice === "bounds" ? "✓ Correct." : "! Not quite."} An 80% upper limit gives ATT bounds of +4 to +36 pp. This is an assumption-dependent interval, not a point estimate.`;
+      `${button.dataset.practice === "bounds" ? "✓ Correct." : "! Not quite."} The restriction narrows the ATT to +4 to +36 pp. It supplies no missing controls and does not identify a single effect.`;
   });
 });
 el("ps-limit").addEventListener("input", render);

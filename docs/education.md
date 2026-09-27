@@ -142,14 +142,16 @@ restores its own baseline on entry; samples and controls are not transferred bet
 chapters.
 
 The advanced [Beyond trimming](positivity-sensitivity.md) chapter at
-`?lesson=positivity-sensitivity` follows trimming. It switches explicitly to ATT:
-the learner varies an assumed effect among excluded treated patients while all
-observed recovery proportions stay fixed. A common effect scale shows the
-supported, assumed, and implied effects, with logical bounds distinguished from
-confidence intervals. Prediction precedes exploration, followed by a precision
-versus identification check. Optional detail covers calendar-time comparisons
-and responses to missing support. Trimming, Contents, topics, and search provide
-entry points; core lesson order is unchanged.
+`?lesson=positivity-sensitivity` follows trimming and explicitly targets ATT.
+A propensity histogram identifies the unsupported 40% of exposed units. Fixed
+outcome information leads into unrestricted ATT bounds. The learner then varies
+an assumed upper limit on the excluded group's outcome probability without
+exposure and watches a compact interval plot narrow. The zero crossing identifies
+a required restriction, whose credibility needs external justification. A visible
+application question distinguishes bounds from point identification and restored
+positivity. Calculations, calendar-time comparisons, other responses, and sources
+remain optional. Trimming, Contents, topics, and search provide entry points;
+core lesson order is unchanged.
 
 An optional [instruments and adjustment chapter](instruments.md) follows
 double robustness at `?lesson=instrument`. It introduces Z, its precision cost when

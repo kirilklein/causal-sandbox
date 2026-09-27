@@ -126,16 +126,18 @@ try {
     );
   }
   assert.equal(await page.locator("#ps-observed").innerHTML(), observed);
-  await page.locator("#ps-practice > summary").click();
   await page.locator('[data-practice="point"]').click();
   await expect(page.locator("#ps-practice-feedback")).toContainText(
     "Not quite.",
+  );
+  await page.locator('[data-practice="positivity"]').click();
+  await expect(page.locator("#ps-practice-feedback")).toContainText(
+    "supplies no missing controls",
   );
   await page.locator('[data-practice="bounds"]').click();
   await expect(page.locator("#ps-practice-feedback")).toContainText("Correct.");
   await expect(page.locator("#ps-limit")).toHaveValue("100");
   await page.locator("#ps-calculation > summary").click();
-  await page.locator("#ps-practice > summary").click();
 
   await mkdir("test-results/positivity-sensitivity", { recursive: true });
   for (const width of [1280, 390, 320]) {
@@ -169,6 +171,10 @@ try {
       );
       await page.locator("#ps-exploration").screenshot({
         path: `test-results/positivity-sensitivity/${width}-${theme}.png`,
+      });
+      await page.screenshot({
+        path: `test-results/positivity-sensitivity/flow-${width}-${theme}.png`,
+        fullPage: true,
       });
       await page.locator("#ps-calculation > summary").click();
       await expect(page.locator("#ps-arithmetic")).toBeVisible();

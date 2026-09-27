@@ -8,15 +8,18 @@ everyone in each retained/excluded group.
 
 Objective: keep the original ATT target when controls are absent for some
 units. Derive bounds, then explore how an externally justified upper limit on
-outcome probability without exposure narrows them. The advanced task is to find the weakest upper
-limit that gives a nonnegative ATT lower bound.
+outcome probability without exposure narrows them. The task locates the upper-limit threshold that rules out a negative ATT, then
+asks whether that restriction is externally defensible. Choosing a restriction
+to obtain a desired result is not evidence for it.
 
 The propensity histogram supplies the starting context. Known probabilities,
 within-arm percentages, and a hatched exposed-only mass at score 1 identify the
 excluded 40%. It stays fixed throughout the sensitivity analysis. An empty region
 of fitted scores alone does not establish a structural violation.
 
-The sensitivity display opens immediately. A probability slider sets the assumed
+Before the control, visible evidence states the retained ATT (+20 pp), retained
+share (60%), and excluded outcome probability under exposure (60%). The lesson
+then explains the unrestricted −4 to +36 pp interval. A probability slider sets the assumed
 upper limit on P(Y(0)=1 | A=1, excluded), from 0% to 100% in five-point steps.
 A single horizontal plot shows the ATT interval on a fixed −10 to +40 pp axis.
 The dot marks its lower bound, the right cap its upper bound, and the dashed
@@ -26,12 +29,12 @@ These are identification bounds, not confidence intervals.
 Starting at 100% adds no outcome restriction and yields −4 to +36 pp. At 90%, the
 lower bound reaches zero. At 80%, it reaches +4 pp. The upper bound stays +36 pp
 because zero outcome probability without exposure remains allowed. The plot keeps
-a constant 106px height across desktop and phone widths. Model inputs and the
-weighted calculation are in the optional formula disclosure.
+a constant 106px height across desktop and phone widths. The weighted calculation remains in the optional formula disclosure.
 
 The result explicitly depends on the assumption and excludes sampling uncertainty.
-A transfer question asks learners to distinguish an ATT interval from a point
-estimate under an 80% upper limit. Optional details give native MathML arithmetic,
+A visible transfer question follows the experiment, before optional details. It
+asks whether an externally supported 80% limit narrows the ATT interval, identifies
+a point, or restores positivity. Optional details give native MathML arithmetic,
 alternative targets and evidence, calendar-time comparisons, and sources.
 
 ## Exact model
