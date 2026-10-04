@@ -17,6 +17,9 @@ test("finds named experiments and their specific starting states", () => {
     ["uplift modelling", "?lesson=uplift"],
     ["CATE targeting", "?lesson=uplift"],
     ["Qini", "?lesson=uplift"],
+    ["DiD", "?lesson=difference-in-differences"],
+    ["difference in differences", "?lesson=difference-in-differences"],
+    ["parallel trends", "?lesson=difference-in-differences"],
     ["TMLE IPW misspecification", "docs/tmle-robustness-preview.html"],
   ])
     assert.equal(searchTopics(query)[0].href, href, query);

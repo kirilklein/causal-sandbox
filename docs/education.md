@@ -1,5 +1,15 @@
 # Progressive education delivery
 
+The optional [Difference-in-differences lesson](did.md) at
+`?lesson=difference-in-differences` follows hidden confounding. One recovery-rate
+chart moves from before–after change to a comparison group, an assumed untreated
+endpoint, and the DiD estimate. Starting gaps and common changes cancel, while
+differential untreated changes bias the estimate. Earlier histories illustrate
+why matching pre-trends cannot prove the post-treatment assumption. These are
+exact synthetic population rates with simulator truth separately revealed.
+Contents, topics, search, the concept map, and the prerequisite exploration card
+link to the lesson without changing the core sequence.
+
 The optional [Uplift modelling track](uplift.md) at `?lesson=uplift` connects
 potential outcomes to targeting decisions. One campaign runs through four steps:
 what uplift means, whom to contact at a fixed budget, fitting two outcome models,

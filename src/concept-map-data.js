@@ -114,6 +114,17 @@ export const mapRegions = [
         ],
       },
       {
+        id: "parallel-trends",
+        name: "Comparing changes over time",
+        description:
+          "Difference-in-differences compares changes across groups. It identifies an effect on the treated group if their untreated outcomes would have changed in parallel, with no anticipation or spillovers.",
+        lessons: ["difference-in-differences"],
+        connection: [
+          "question",
+          "The comparison group supplies an assumed change for the treated group’s missing future. The target remains the effect for the treated population.",
+        ],
+      },
+      {
         id: "overlap",
         name: "Comparable people",
         description:

@@ -11,6 +11,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "difference-in-differences": [
+    "Compare changes across hospitals, construct an assumed counterfactual, and explore when parallel trends fails.",
+    "DiD difference in differences difference-in-differences diff in diff parallel trends before after counterfactual trend policy hospital program ATT",
+  ],
   uplift: [
     "Learn uplift modelling, compare conversion and incremental benefit, fit a T-learner, and evaluate fixed targeting rules on a randomized holdout.",
     "uplift modeling modelling CATE heterogeneous treatment effects targeting conversion purchase probability propensity marketing persuadables T-learner Qini AUUC policy value",
