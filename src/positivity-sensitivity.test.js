@@ -5,6 +5,7 @@ import {
   recoveryPopulation,
   propensityDistribution,
   positivityBounds,
+  tippingLimit,
   simulationTruth,
 } from "./positivity-sensitivity.js";
 
@@ -64,29 +65,28 @@ test("histogram bins preserve each arm's mass and isolate the always-treated gro
 });
 
 test("ATT decomposition uses treated shares and reaches the hand-calculated tipping point", () => {
-  const same = positivitySensitivity(0.2);
+  const same = positivitySensitivity(0.35);
   close(same.retainedEffect, 0.2);
-  close(same.retainedContribution, 0.12);
-  close(same.excludedContribution, 0.08);
-  close(same.overallEffect, 0.2);
-  close(same.excludedUntreated, 0.4);
-  close(same.tippingEffect, -0.3);
-  close(positivitySensitivity(-0.3).overallEffect, 0);
+  close(same.excludedEffect, 0.2);
+  close(same.overallEffect, 0.6 * 0.2 + 0.4 * 0.2);
+  close(tippingLimit, 0.85);
+  close(positivitySensitivity(0.85).overallEffect, 0);
 });
 
 test("binary-outcome bounds are attained and all intermediate scenarios remain feasible", () => {
   const original = { ...recoveryPopulation };
-  const low = positivitySensitivity(-0.4);
-  const high = positivitySensitivity(0.6);
-  close(low.excludedUntreated, 1);
-  close(high.excludedUntreated, 0);
-  close(low.overallEffect, -0.04);
-  close(high.overallEffect, 0.36);
-  for (let points = -40; points <= 60; points += 5) {
+  const low = positivitySensitivity(1);
+  const high = positivitySensitivity(0);
+  close(low.excludedEffect, -0.45);
+  close(high.excludedEffect, 0.55);
+  close(low.overallEffect, -0.06);
+  close(high.overallEffect, 0.34);
+  for (let points = 0; points <= 100; points += 5) {
     const result = positivitySensitivity(points / 100);
-    assert.ok(result.excludedUntreated >= 0 && result.excludedUntreated <= 1);
-    close(result.overallBounds[0], low.overallEffect);
-    close(result.overallBounds[1], high.overallEffect);
+    assert.ok(
+      result.overallEffect >= low.overallEffect - 1e-12 &&
+        result.overallEffect <= high.overallEffect + 1e-12,
+    );
     close(result.retainedEffect, 0.2);
   }
   assert.deepEqual(recoveryPopulation, original);
@@ -98,20 +98,20 @@ test("different counterfactual worlds reproduce the same observed records but op
     ...Array.from({ length: 60 }, (_, i) => ({
       a: 1,
       s: 1,
-      y1: +(i < 36),
-      y0: +(i < 24),
+      y1: +(i < 42),
+      y0: +(i < 30),
     })),
     ...Array.from({ length: 40 }, (_, i) => ({
       a: 1,
       s: 0,
-      y1: +(i < 24),
+      y1: +(i < 22),
       y0: +(i < excludedRecoverWithout),
     })),
     ...Array.from({ length: 90 }, (_, i) => ({
       a: 0,
       s: 1,
-      y1: +(i < 54),
-      y0: +(i < 36),
+      y1: +(i < 63),
+      y0: +(i < 45),
     })),
   ];
   const benefit = world(0);
@@ -122,15 +122,15 @@ test("different counterfactual worlds reproduce the same observed records but op
     rows.filter(({ a }) => a).reduce((sum, row) => sum + row.y1 - row.y0, 0) /
     100;
   assert.deepEqual(observed(benefit), observed(harm));
-  close(att(benefit), positivitySensitivity(0.6).overallEffect);
-  close(att(harm), positivitySensitivity(-0.4).overallEffect);
+  close(att(benefit), positivitySensitivity(0).overallEffect);
+  close(att(harm), positivitySensitivity(1).overallEffect);
   assert.ok(att(benefit) > 0 && att(harm) < 0);
 });
 
-test("impossible or nonnumeric effects fail explicitly", () => {
+test("impossible or nonnumeric outcome probabilities fail explicitly", () => {
   for (const value of [
-    -0.41,
-    0.61,
+    -0.01,
+    1.01,
     NaN,
     Infinity,
     -Infinity,
@@ -141,30 +141,30 @@ test("impossible or nonnumeric effects fail explicitly", () => {
   }
 });
 
-test("untreated recovery upper limits narrow the ATT set with attainable endpoints", () => {
+test("untreated outcome upper limits narrow the ATT set with attainable endpoints", () => {
   for (let limit = 0; limit <= 20; limit++) {
     const u = limit / 20;
     const [lower, upper] = positivityBounds(u);
-    close(lower, (60 - (24 + 40 * u)) / 100);
-    close(upper, (60 - 24) / 100);
+    close(lower, (64 - (30 + 40 * u)) / 100);
+    close(upper, (64 - 30) / 100);
     for (let fraction = 0; fraction <= 10; fraction++) {
       const q = (u * fraction) / 10;
-      const effect = positivitySensitivity(0.6 - q).overallEffect;
+      const effect = positivitySensitivity(q).overallEffect;
       assert.ok(effect >= lower - 1e-12 && effect <= upper + 1e-12);
     }
   }
-  close(positivityBounds(0.9)[0], 0);
-  close(positivityBounds(0.8)[0], 0.04);
+  close(positivityBounds(0.85)[0], 0);
+  close(positivityBounds(0.8)[0], 0.02);
   for (const invalid of [-0.01, 1.01, NaN, Infinity, undefined, "0.8"]) {
     assert.throws(() => positivityBounds(invalid), RangeError);
   }
 });
 
 test("fixed simulation truth reconciles outcome contrasts and is excluded only by false limits", () => {
-  close(simulationTruth.excludedUntreated, 0.8);
-  close(simulationTruth.retainedEffect, (36 - 24) / 60);
-  close(simulationTruth.excludedEffect, (24 - 32) / 40);
-  close(simulationTruth.overallEffect, (60 - 56) / 100);
+  close(simulationTruth.excludedUntreated, 0.75);
+  close(simulationTruth.retainedEffect, (42 - 30) / 60);
+  close(simulationTruth.excludedEffect, (22 - 30) / 40);
+  close(simulationTruth.overallEffect, (64 - 60) / 100);
   const original = { ...simulationTruth };
   for (let i = 0; i <= 20; i++) {
     const limit = i / 20;
@@ -172,7 +172,7 @@ test("fixed simulation truth reconciles outcome contrasts and is excluded only b
     const containsTruth =
       simulationTruth.overallEffect >= lower - 1e-12 &&
       simulationTruth.overallEffect <= upper + 1e-12;
-    assert.equal(containsTruth, limit >= 0.8);
+    assert.equal(containsTruth, limit >= 0.75);
   }
   assert.deepEqual(simulationTruth, original);
 });

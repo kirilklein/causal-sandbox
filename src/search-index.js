@@ -120,7 +120,7 @@ const lessonDetails = {
     "population trimming propensity score restriction estimand",
   ],
   "positivity-sensitivity": [
-    "Explore how assumptions about excluded patients change the overall ATT while observed outcomes stay fixed.",
+    "Explore how assumptions about excluded people change the overall ATT while observed outcomes stay fixed.",
     "positivity violation beyond trimming ATT treated partial identification bounds sensitivity extrapolation missing controls calendar time structural practical overlap OWATT",
   ],
 };

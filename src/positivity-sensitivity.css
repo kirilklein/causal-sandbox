@@ -34,6 +34,7 @@
 }
 .ps-histogram-key .ps-control-swatch {
   border-color: var(--arm-0);
+  background: var(--arm-0);
 }
 .ps-treated-swatch {
   background: var(--arm-1);
@@ -56,9 +57,7 @@
   font-size: 13px;
 }
 .ps-control-bar {
-  fill: var(--surface);
-  stroke: var(--arm-0);
-  stroke-width: 1.5px;
+  fill: var(--arm-0);
 }
 .ps-treated-bar {
   fill: var(--arm-1);

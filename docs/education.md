@@ -143,11 +143,11 @@ chapters.
 
 The advanced [Beyond trimming](positivity-sensitivity.md) chapter at
 `?lesson=positivity-sensitivity` follows trimming and explicitly targets ATT.
-A propensity histogram identifies the unsupported 40% of exposed units. Fixed
+A propensity histogram identifies the unsupported 40% of treated people. Fixed
 outcome contrasts lead into unrestricted ATT bounds. An optional reveal marks
 the fixed overall simulation truth and shows how a false restriction can exclude it. The learner then varies
 an assumed upper limit on the excluded group's outcome probability without
-exposure and watches a compact interval plot narrow. The zero crossing identifies
+treatment and watches a compact interval plot narrow. The zero crossing identifies
 a required restriction, whose credibility needs external justification. A visible
 application question distinguishes bounds from point identification and restored
 positivity. Calculations, calendar-time comparisons, other responses, and sources

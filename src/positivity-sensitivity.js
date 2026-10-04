@@ -1,9 +1,9 @@
 // Exact proportions in a fictional population, not fitted sample estimates.
 export const recoveryPopulation = Object.freeze({
   retainedShare: 0.6,
-  retainedTreated: 0.6,
-  retainedUntreated: 0.4,
-  excludedTreated: 0.6,
+  retainedTreated: 0.7,
+  retainedUntreated: 0.5,
+  excludedTreated: 0.55,
 });
 
 // Six equally common retained profiles, plus a profile that is always treated.
@@ -47,55 +47,42 @@ export function propensityDistribution() {
   return { profiles, bins, treatedProbability };
 }
 
-export function positivitySensitivity(excludedEffect) {
+// ATT among all treated people, given E[Y(0) | A=1, excluded].
+export function positivitySensitivity(excludedUntreated) {
+  if (
+    !Number.isFinite(excludedUntreated) ||
+    excludedUntreated < 0 ||
+    excludedUntreated > 1
+  ) {
+    throw new RangeError(
+      "The outcome probability without treatment must be between 0 and 1.",
+    );
+  }
   const { retainedShare, retainedTreated, retainedUntreated, excludedTreated } =
     recoveryPopulation;
   const retainedEffect = retainedTreated - retainedUntreated;
-  const excludedBounds = [excludedTreated - 1, excludedTreated];
-  if (
-    !Number.isFinite(excludedEffect) ||
-    excludedEffect < excludedBounds[0] ||
-    excludedEffect > excludedBounds[1]
-  ) {
-    throw new RangeError(
-      "The assumed effect must allow a recovery probability between 0 and 1.",
-    );
-  }
-  const retainedContribution = retainedShare * retainedEffect;
-  const excludedContribution = (1 - retainedShare) * excludedEffect;
+  const excludedEffect = excludedTreated - excludedUntreated;
   return {
+    excludedUntreated,
     retainedEffect,
     excludedEffect,
-    excludedUntreated: excludedTreated - excludedEffect,
-    retainedContribution,
-    excludedContribution,
-    overallEffect: retainedContribution + excludedContribution,
-    excludedBounds,
-    overallBounds: excludedBounds.map(
-      (effect) => retainedContribution + (1 - retainedShare) * effect,
-    ),
-    tippingEffect: -retainedContribution / (1 - retainedShare),
+    overallEffect:
+      retainedShare * retainedEffect + (1 - retainedShare) * excludedEffect,
   };
 }
 
 // Bound E[Y(0) | A=1, excluded] from above, leaving its lower bound at zero.
 export function positivityBounds(maxExcludedUntreated) {
-  if (
-    !Number.isFinite(maxExcludedUntreated) ||
-    maxExcludedUntreated < 0 ||
-    maxExcludedUntreated > 1
-  ) {
-    throw new RangeError(
-      "The upper recovery limit must be a probability between 0 and 1.",
-    );
-  }
-  const result = positivitySensitivity(
-    recoveryPopulation.excludedTreated - maxExcludedUntreated,
+  return [maxExcludedUntreated, 0].map(
+    (q) => positivitySensitivity(q).overallEffect,
   );
-  return [result.overallEffect, result.overallBounds[1]];
 }
 
+// Upper limit at which the ATT lower bound reaches zero.
+export const tippingLimit =
+  recoveryPopulation.excludedTreated +
+  (recoveryPopulation.retainedShare * positivitySensitivity(0).retainedEffect) /
+    (1 - recoveryPopulation.retainedShare);
+
 // One fixed counterfactual world for the optional reveal; never an input to bounds.
-export const simulationTruth = Object.freeze(
-  positivitySensitivity(recoveryPopulation.excludedTreated - 0.8),
-);
+export const simulationTruth = Object.freeze(positivitySensitivity(0.75));

@@ -61,14 +61,14 @@ try {
     ) < 1e-12,
   );
   await expect(page.locator(".ps-evidence")).toContainText(
-    "60% − 40% = +20 pp",
+    "70% − 50% = +20 pp",
   );
   await expect(page.locator("#ps-show-truth")).not.toBeChecked();
   await expect(page.locator("#ps-truth-explanation")).toBeHidden();
   await expect(page.locator(".ps-effect-truth")).toHaveCount(0);
   const observed = await page.locator("#ps-observed").innerHTML();
   await expect(page.locator("#ps-limit-value")).toHaveText("At most 100%");
-  await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
+  await expect(page.locator("#ps-result")).toHaveText("−6 pp to +34 pp");
   await expect(page.locator("#ps-att-chart")).toBeVisible();
   await expect(page.locator("#ps-interpretation")).toContainText(
     "the ATT can be negative or positive",
@@ -77,26 +77,27 @@ try {
   await expect(page.locator("#ps-calculation math msub")).toHaveCount(3);
   await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
     "aria-label",
-    "Lower bound: 60 percent times +20 pp plus 40 percent times -40 pp equals -4 pp",
+    "Lower bound: 60 percent times +20 pp plus 40 percent times −45 pp equals −6 pp",
   );
   await page.locator("#ps-limit").focus();
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("#ps-result")).toHaveText("-2 pp to +36 pp");
+  await expect(page.locator("#ps-result")).toHaveText("−4 pp to +34 pp");
   await expect(page.locator("#ps-interpretation")).toContainText(
     "still allows a negative ATT",
   );
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("#ps-result")).toHaveText("0 pp to +36 pp");
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.locator("#ps-result")).toHaveText("0 pp to +34 pp");
   await expect(page.locator("#ps-interpretation")).toContainText(
-    "90% is the tipping point",
+    "85% is the tipping point",
   );
   await expect(page.locator("#ps-arithmetic")).toHaveAttribute(
     "aria-label",
-    "Lower bound: 60 percent times +20 pp plus 40 percent times -30 pp equals 0 pp",
+    "Lower bound: 60 percent times +20 pp plus 40 percent times −30 pp equals 0 pp",
   );
   await expect(page.locator("#ps-calculation")).toHaveAttribute("open", "");
   await page.keyboard.press("Home");
-  await expect(page.locator("#ps-result")).toHaveText("+36 pp to +36 pp");
+  await expect(page.locator("#ps-result")).toHaveText("+34 pp to +34 pp");
 
   const boundsBeforeReveal = await page.locator("#ps-result").textContent();
   await page.locator("#ps-show-truth").focus();
@@ -104,7 +105,7 @@ try {
   await expect(page.locator("#ps-truth-explanation")).toBeVisible();
   await expect(page.locator("#ps-result")).toHaveText(boundsBeforeReveal);
   await expect(page.locator("#ps-truth-explanation")).toContainText(
-    "60% × (+20 pp) + 40% × (-20 pp) = +4 pp",
+    "60% × (+20 pp) + 40% × (−20 pp) = +4 pp",
   );
 
   // Reconcile plot geometry with the model, including a collapsed interval.
@@ -142,13 +143,13 @@ try {
         1e-4,
     );
     await expect(page.locator("#ps-truth-status")).toContainText(
-      limit < 80
+      limit / 100 < simulationTruth.excludedUntreated
         ? "bounds exclude the true ATT"
         : "bounds include the true ATT",
     );
     const value = Math.round(lower * 100);
     await expect(page.locator("#ps-result")).toHaveText(
-      `${value > 0 ? "+" : ""}${value} pp to +36 pp`,
+      `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value)} pp to +34 pp`,
     );
   }
   assert.equal(await page.locator("#ps-observed").innerHTML(), observed);
@@ -237,7 +238,7 @@ try {
   await expect(page.locator(".ps-effect-truth")).toHaveCount(0);
   await expect(page.locator("#ps-arithmetic")).toBeHidden();
   await expect(page.locator("#ps-exploration")).toBeVisible();
-  await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
+  await expect(page.locator("#ps-result")).toHaveText("−6 pp to +34 pp");
   await expect(page.locator("#ps-practice-feedback")).toBeEmpty();
   await expect(page.locator(".ps-detail[open]")).toHaveCount(0);
   await page.getByRole("button", { name: "Contents", exact: true }).click();
@@ -252,7 +253,7 @@ try {
     .click();
   await page.getByRole("link", { name: title, exact: false }).click();
   await expect(page.locator("h1")).toHaveText(title);
-  await expect(page.locator("#ps-result")).toHaveText("-4 pp to +36 pp");
+  await expect(page.locator("#ps-result")).toHaveText("−6 pp to +34 pp");
   await page.goBack();
   await expect(page.locator("h1")).toHaveText("Refresh & go deeper");
   await page.goForward();
@@ -278,7 +279,7 @@ try {
   const box = await phone.locator("#ps-limit").boundingBox();
   await phone.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect(phone.locator("#ps-limit")).toHaveValue("50");
-  await expect(phone.locator("#ps-result")).toHaveText("+16 pp to +36 pp");
+  await expect(phone.locator("#ps-result")).toHaveText("+14 pp to +34 pp");
   await phone.getByRole("link", { name: "← Trimming", exact: true }).tap();
   await expect(phone.locator("h1")).toHaveText("Who remains after trimming?");
   assert.deepEqual(errors, []);
