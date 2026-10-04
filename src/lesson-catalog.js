@@ -51,6 +51,15 @@ export const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "delta-method",
+    menuTitle: "The Delta Method",
+    after: 14,
+    title: "How uncertain is revenue per order?",
+    href: "?lesson=delta-method",
+    description:
+      "Assess uncertainty in an A/B test’s revenue per order, then explore how Delta and bootstrap intervals work.",
+  },
+  {
     id: "front-door",
     menuTitle: "The front-door criterion",
     after: 9,

@@ -1,5 +1,11 @@
 # Progressive education delivery
 
+The optional [Delta Method chapter](delta-method.md) follows uncertainty at
+`?lesson=delta-method`. Predict a transformed distribution, explore its tangent
+approximation, then compare Delta and paired-user bootstrap intervals for a ratio
+metric. Repeated studies expose coverage and unavailable intervals. Anton Bugaev's
+video is credited as visual inspiration. Core lesson order is unchanged.
+
 The advanced [front-door lesson](front-door.md) at `?lesson=front-door` follows
 hidden confounding. One persistent tutoring → practice → passing graph shows
 how a mediator carries a total effect. Hidden-readiness selection changes the

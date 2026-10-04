@@ -11,6 +11,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "delta-method": [
+    "Explore nonlinear uncertainty and compare confidence interval coverage for revenue per order.",
+    "delta method tangent Taylor approximation nonlinear ratio metrics AOV CTR covariance bootstrap percentile confidence interval coverage Anton Bugaev",
+  ],
   "front-door": [
     "Recover a total causal effect through a mediator under front-door assumptions, despite hidden confounding.",
     "frontdoor front-door front door criterion identification mediator mediation hidden unmeasured confounding tutoring practice",

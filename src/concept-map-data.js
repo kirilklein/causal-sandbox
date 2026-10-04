@@ -202,7 +202,12 @@ export const mapRegions = [
         name: "Uncertainty & precision",
         description:
           "A different sample gives a different estimate. Confidence intervals describe sampling uncertainty under their assumptions; p-values compare the data with a specified null model.",
-        lessons: ["uncertainty", "p-values", "sampling-variation"],
+        lessons: [
+          "uncertainty",
+          "p-values",
+          "delta-method",
+          "sampling-variation",
+        ],
         connection: [
           "comparison",
           "Precision does not establish causal validity. A narrow interval can surround a biased estimate when the comparison is confounded.",

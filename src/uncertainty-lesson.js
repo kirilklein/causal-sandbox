@@ -137,6 +137,7 @@ document.querySelector("#app").innerHTML =
     </details>
     <nav class="actions" aria-label="Continue learning"><a id="back" href="?lesson=confounding">← Back</a><button id="restart">Restart lesson</button><a id="continue" class="primary" href="inverse-probability-weighting/">Continue: Adjustment with IPW →</a></nav>
     <aside class="panel" aria-label="Optional exploration"><p class="small">Optional exploration</p><h2><a id="p-values-link" href="?lesson=p-values">What does a p-value tell us? →</a></h2><p>Compare an observed result with a zero-effect world, then connect the tail probability to its interval.</p></aside>
+    <aside class="panel" aria-label="Optional ratio exploration"><h2><a href="?lesson=delta-method">How uncertain is revenue per order? →</a></h2><p>See why an A/B test needs uncertainty for a ratio, then compare Delta and bootstrap intervals.</p></aside>
   </main>
 </div>`;
 setupLessonNavigation();

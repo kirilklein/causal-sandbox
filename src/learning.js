@@ -49,6 +49,7 @@ const background = {
   "trajectory-landscape": ["confounding"],
   uncertainty: ["randomization", "confounding"],
   "p-values": ["uncertainty"],
+  "delta-method": ["uncertainty"],
   "propensity-score": ["confounding", "ipw"],
   "outcome-regression": ["confounding"],
   mediator: ["confounding", "outcome-regression"],
@@ -103,7 +104,7 @@ const groups = [
     summary:
       "Sampling uncertainty, confidence intervals, and interpreting p-values.",
     refreshers: ["uncertainty"],
-    advanced: ["p-values"],
+    advanced: ["p-values", "delta-method"],
   },
   {
     title: "What should I adjust for?",

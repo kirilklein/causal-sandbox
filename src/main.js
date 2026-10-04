@@ -42,6 +42,8 @@ if (page === "glossary") {
     await import("./uncertainty-lesson.js");
   } else if (lesson === "p-values") {
     await import("./p-values-lesson.js");
+  } else if (lesson === "delta-method") {
+    await import("./delta-method-lesson.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
   } else if (lesson === "what-if") {
