@@ -7,6 +7,7 @@ import {
   setupLessonNavigation,
 } from "./lesson-navigation.js";
 import { capture } from "./events.js";
+import { readProgress, recordPredictionAnswer } from "./progress.js";
 import {
   orderRatioApproximation,
   jointRatioApproximation,
@@ -307,6 +308,17 @@ function drawStudy() {
       .join(" · ") + ". Dashed vertical line: simulator truth +2.";
   renderIntervals();
 }
+const shapeQuestionId = "delta-method-ratio-shape";
+const shapeInputs = [...document.querySelectorAll('[name="shape"]')];
+const savedShapeIndex =
+  readProgress().answers[shapeQuestionId]?.lastAnswerIndex;
+const savedShape = Number.isInteger(savedShapeIndex)
+  ? shapeInputs[savedShapeIndex]
+  : null;
+if (savedShape) {
+  savedShape.checked = true;
+  el("dm-reveal").disabled = false;
+}
 el("dm-point").addEventListener("input", renderCurve);
 el("dm-distribution").addEventListener("click", () => {
   curveStage = 1;
@@ -314,10 +326,10 @@ el("dm-distribution").addEventListener("click", () => {
   el("dm-point-control").hidden = true;
   el("dm-distribution").hidden = true;
   el("dm-distribution-caption").hidden = false;
-  el("dm-prediction").hidden = false;
+  el("dm-prediction").hidden = Boolean(savedShape);
   el("dm-reveal").hidden = false;
   renderCurve();
-  document.querySelector('[name="shape"]').focus();
+  (savedShape ? el("dm-reveal") : shapeInputs[0]).focus();
 });
 el("dm-tangent").addEventListener("click", () => {
   curveStage = 3;
@@ -521,6 +533,14 @@ for (const input of document.querySelectorAll('[name="shape"]'))
   });
 el("dm-reveal").addEventListener("click", () => {
   const choice = document.querySelector('[name="shape"]:checked').value;
+  if (!el("dm-prediction").hidden) {
+    recordPredictionAnswer(
+      shapeQuestionId,
+      "delta-method",
+      shapeInputs.findIndex((input) => input.checked),
+      choice === "skewed",
+    );
+  }
   curveStage = 2;
   el("dm-feedback").textContent =
     choice === "skewed"

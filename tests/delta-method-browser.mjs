@@ -56,6 +56,26 @@ try {
   await expect(page.locator("#dm-feedback")).toContainText(
     "stretches toward larger values",
   );
+  // Reloading keeps a submitted answer, even an incorrect one, without
+  // requiring another prediction or recording another attempt.
+  await page.reload();
+  await page.locator("#dm-distribution").click();
+  await expect(page.locator("#dm-prediction")).toBeHidden();
+  await expect(page.locator("#dm-reveal")).toBeEnabled();
+  await expect(page.locator("#dm-reveal")).toBeFocused();
+  await page.locator("#dm-reveal").click();
+  await expect(page.locator("#dm-feedback")).toContainText(
+    "stretches toward larger values",
+  );
+  assert.equal(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("causal-sandbox-progress")).answers[
+          "delta-method-ratio-shape"
+        ].attempts,
+    ),
+    1,
+  );
   await expect(page.locator("#dm-sd")).toBeFocused();
   await expect(page.locator("#dm-plots svg")).toHaveCount(1);
   await expect(page.locator("#dm-plots .dm-approx")).toHaveCount(0);
@@ -436,8 +456,13 @@ try {
   await page.locator("#dm-restart").click();
   await expect(page.locator("#dm-joint")).toBeHidden();
   await expect(page.locator("#dm-ratios")).toBeHidden();
-  await expect(page.locator("#dm-reveal")).toBeDisabled();
+  await expect(page.locator("#dm-reveal")).toBeEnabled();
   await expect(page.locator("#dm-sd")).toHaveValue("0.25");
+  await page.evaluate(() => localStorage.removeItem("causal-sandbox-progress"));
+  await page.reload();
+  await page.locator("#dm-distribution").click();
+  await expect(page.locator("#dm-prediction")).toBeVisible();
+  await expect(page.locator("#dm-reveal")).toBeDisabled();
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   await expect(page.locator('#lesson-menu a[aria-current="step"]')).toHaveText(
     "The Delta Method",
