@@ -170,11 +170,11 @@ try {
   await page
     .getByRole("button", { name: "Run another 200 studies", exact: true })
     .waitFor();
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page
     .locator("#study-results")
     .screenshot({ path: "/tmp/instruments-dots-weak-dark.png" });
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await instrumentSlider.fill("1");
   assert.equal(await page.locator("#study-results").innerText(), "");
   assert.equal(
@@ -263,13 +263,13 @@ try {
   await page.keyboard.press("Enter");
   assert.equal(await page.locator(".study-method:visible").count(), 1);
   const studyResult = await page.locator("#study-results").innerText();
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await results(), initial);
   assert.equal(await page.locator("#study-results").innerText(), studyResult);
   await page
     .locator("#study-results")
     .screenshot({ path: "/tmp/instruments-sd-dark.png" });
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await page
     .getByRole("button", { name: "Run another 200 studies", exact: true })
     .click();
@@ -391,7 +391,7 @@ try {
   const sample = await page.locator("#sample").innerText();
   await page.locator("#detail-title").click();
   assert.equal(await paired(), hiddenResults);
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await paired(), hiddenResults);
   await assertColors(1);
   await page
@@ -439,7 +439,7 @@ try {
     .locator("#bias-comparison")
     .screenshot({ path: "/tmp/instrument-bias-studies-mobile.png" });
   await page.setViewportSize({ width: 1280, height: 1000 });
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await page
     .locator(".panel")
     .screenshot({ path: "/tmp/instrument-bias-desktop.png" });

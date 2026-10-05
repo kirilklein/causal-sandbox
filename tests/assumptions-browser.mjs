@@ -113,7 +113,7 @@ try {
     })
     .click();
   assert.equal(await page.locator("#distributions").innerHTML(), bars);
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await page.locator("#distributions").innerHTML(), bars);
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   assert.equal(
@@ -202,7 +202,9 @@ try {
     ]) {
       await open(topic);
       for (const theme of ["light", "dark"]) {
-        await page.getByLabel("Color theme").selectOption(theme);
+        await page
+          .getByRole("switch", { name: "Dark mode" })
+          .setChecked(theme === "dark");
         assert.ok(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,

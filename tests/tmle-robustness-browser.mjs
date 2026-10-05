@@ -73,18 +73,18 @@ try {
   await page.goto(new URL("docs/tmle-robustness-preview.html", base).href);
   await page.locator("#tmle-map .cell").first().waitFor();
   assert.equal(await page.locator(".cell").count(), 242);
-  const theme = page.getByRole("combobox", { name: "Color theme" });
+  const theme = page.getByRole("switch", { name: "Dark mode" });
   const contents = page.getByRole("button", { name: "Contents", exact: true });
   const search = page.getByRole("button", { name: "Search", exact: true });
   const comparisonUrl = page.url();
-  await theme.selectOption("dark");
+  await theme.setChecked(true);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   const darkCell = await page
     .locator("#tmle-map .cell")
     .first()
     .evaluate((cell) => getComputedStyle(cell).fill);
   const selected = await page.locator(".result-values").textContent();
-  await theme.selectOption("light");
+  await theme.setChecked(false);
   assert.notEqual(
     await page
       .locator("#tmle-map .cell")
@@ -93,9 +93,9 @@ try {
     darkCell,
   );
   assert.equal(await page.locator(".result-values").textContent(), selected);
-  await theme.selectOption("dark");
+  await theme.setChecked(true);
   await page.reload();
-  await expect(theme).toHaveValue("dark");
+  await expect(theme).toBeChecked();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await contents.focus();
   await page.keyboard.press("Enter");
@@ -126,7 +126,8 @@ try {
   await expect(page.locator("h1")).toBeVisible();
   assert.equal(page.url(), new URL("?lesson=introduction", base).href);
   await page.goto(comparisonUrl);
-  await theme.selectOption("system");
+  await page.evaluate(() => localStorage.removeItem("causal-sandbox-theme"));
+  await page.reload();
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.emulateMedia({ colorScheme: "light" });
@@ -171,7 +172,7 @@ try {
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
     await page.reload();
-    await theme.selectOption("dark");
+    await theme.setChecked(true);
     await contents.click();
     await expect(page.locator("#lesson-menu")).toBeVisible();
     await page.keyboard.press("Escape");
