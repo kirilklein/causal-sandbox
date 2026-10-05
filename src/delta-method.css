@@ -7,9 +7,19 @@
   gap: 24px;
   margin: 20px 0;
 }
-.dm-page .dm-unrevealed {
-  grid-template-columns: minmax(0, 480px);
-  justify-content: center;
+.dm-page .dm-transformation-wrap {
+  margin: 20px 0;
+}
+.dm-page .dm-coordinate-axis {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+.dm-page .dm-chart .dm-output {
+  fill: var(--node-A);
+  fill-opacity: 0.45;
+}
+.dm-page .dm-chart .dm-input-bell {
+  stroke: var(--arm-1);
 }
 .dm-page .dm-chart {
   width: 100%;

@@ -57,7 +57,7 @@ document.querySelector("#app").innerHTML =
       <p><strong>Horizontal axis:</strong> estimated average orders per visitor. <strong>Vertical axis:</strong> revenue per order in euros. At 2 orders per visitor, the ratio is €10 per order.</p>
       <p id="dm-distribution-caption" class="small" hidden>The bell below the curve illustrates how the estimated average order count varies across repeated studies. Each study supplies one estimate; this is not the distribution of individual visitors’ orders.</p>
       <div id="dm-point-control"><label for="dm-point">Move one estimate: <output id="dm-point-value"></output></label><input id="dm-point" type="range" min="1.25" max="2.75" step="0.05" value="2"></div>
-      <div id="dm-preview" class="dm-plots dm-unrevealed"></div>
+      <div id="dm-preview" class="dm-transformation-wrap"></div>
       <button id="dm-distribution" class="primary">What if the estimate varies? →</button>
       <fieldset id="dm-prediction" hidden><legend>Across studies, what shape will revenue per order have?</legend>
         <label><input type="radio" name="shape" value="symmetric"> Still symmetric</label>
@@ -68,13 +68,13 @@ document.querySelector("#app").innerHTML =
       <p id="dm-feedback" role="status"></p>
       <div id="dm-explore" hidden>
         <h3 id="dm-explore-title" tabindex="-1">3. A curve changes the shape</h3>
-        <p id="dm-explore-copy">Equal changes in order estimates produce unequal changes in revenue per order. Follow the dotted guides: the smaller denominator has the larger effect.</p>
+        <p id="dm-explore-copy">Equal changes in order estimates produce unequal changes in revenue per order. Follow the dotted guides up from the input bell to the curve, then left to the output bell. The smaller denominator has the larger effect.</p>
         <div id="dm-curve-controls" class="dm-controls">
           <div><label for="dm-mean">Average orders / visitor <output id="dm-mean-value"></output></label><input id="dm-mean" type="range" min="1.5" max="3" step="0.1" value="2"></div>
           <div><label for="dm-sd">Uncertainty in orders (SE) <output id="dm-sd-value"></output></label><input id="dm-sd" type="range" min="0.1" max="0.45" step="0.05" value="0.25"></div>
         </div>
         <div class="dm-legend"><span>━ Ratio curve / actual distribution</span><span id="dm-tangent-legend" hidden>┄ Tangent / linear approximation</span></div>
-        <div id="dm-plots" class="dm-plots"></div>
+        <div id="dm-plots" class="dm-transformation-wrap"></div>
         <button id="dm-tangent" class="primary">Approximate with a tangent →</button>
         <div id="dm-tangent-details" hidden>
         <p>The tangent matches the curve’s value and slope at the center. It preserves the input’s symmetric shape. With an approximately normal input, this gives an approximately normal output.</p>
@@ -220,7 +220,13 @@ function renderCurve() {
   el("dm-mean-value").textContent = `${number(mean)} orders / visitor`;
   el("dm-sd-value").textContent = `${number(sd)} orders / visitor`;
   el(curveStage >= 2 ? "dm-plots" : "dm-preview").innerHTML =
-    transformationPlots(mean, sd, curveStage, +el("dm-point").value);
+    transformationPlots(
+      mean,
+      sd,
+      curveStage,
+      +el("dm-point").value,
+      width(curveStage >= 2 ? "dm-plots" : "dm-preview"),
+    );
   el("dm-point-value").textContent =
     `${number(+el("dm-point").value)} orders / visitor → €${number(20 / +el("dm-point").value)} / order`;
   const model = orderRatioApproximation(mean, sd);
@@ -392,6 +398,7 @@ for (const button of document.querySelectorAll("[data-dm-answer]"))
   });
 el("dm-restart").addEventListener("click", () => location.reload());
 window.addEventListener("resize", () => {
+  renderCurve();
   renderIntervals();
   renderCoverage();
 });

@@ -23,7 +23,12 @@ uncertainty and finally the B−A difference.
 
 The input is an illustrative symmetric Beta(4,4) bell scaled to the chosen mean
 and SE, with support mean ± 3 SE. The controls keep its entire support positive.
-Both curves transform this same input; the tangent distribution preserves its
+The input bell sits below the horizontal axis and the output bell to the left
+of the vertical axis in a single diagram. The output density and ratio curve use
+the exact same vertical scale; guides map the input values onto the curve and
+across to that shared output axis. Densities have open strokes, avoiding a
+colored closing baseline. The viewBox follows the available width to keep labels
+legible on phones. Both curves transform this same input; the tangent distribution preserves its
 symmetric shape, while the actual ratio distribution is right-skewed. Densities
 use change of variables, and actual moments use 2048 midpoint integration steps.
 The tangent SE is absolute slope × input SE. This first illustration does not

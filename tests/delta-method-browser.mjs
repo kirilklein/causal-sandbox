@@ -57,7 +57,7 @@ try {
     "stretches toward larger values",
   );
   await expect(page.locator("#dm-sd")).toBeFocused();
-  await expect(page.locator("#dm-plots svg")).toHaveCount(2);
+  await expect(page.locator("#dm-plots svg")).toHaveCount(1);
   await expect(page.locator("#dm-plots .dm-approx")).toHaveCount(0);
   await expect(page.locator("#dm-to-ratios")).toBeHidden();
   await page.locator("#dm-tangent").click();
@@ -211,6 +211,19 @@ try {
         ),
         `${width}/${theme}: no horizontal overflow`,
       );
+      await expect
+        .poll(
+          () =>
+            page
+              .locator("#dm-plots svg")
+              .evaluate((svg) =>
+                Math.abs(
+                  svg.viewBox.baseVal.width - svg.getBoundingClientRect().width,
+                ),
+              ),
+          { message: `${width}/${theme}: diagram keeps text at readable size` },
+        )
+        .toBeLessThan(2);
       for (const svg of await page
         .locator("#dm-plots svg, #dm-intervals svg, #dm-joint-plot svg")
         .all()) {
