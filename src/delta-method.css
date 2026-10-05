@@ -296,6 +296,10 @@
   border-radius: 6px;
 }
 
+.dm-page #dm-variance-formula {
+  align-items: baseline;
+}
+
 .dm-page .dm-variance-term {
   display: grid;
   gap: 10px;
