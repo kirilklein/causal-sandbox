@@ -51,6 +51,15 @@ export const coreGroups = [
 
 export const optionalChapters = [
   {
+    id: "difference-in-differences",
+    menuTitle: "Difference-in-differences",
+    after: 9,
+    title: "Difference-in-differences",
+    href: "?lesson=difference-in-differences",
+    description:
+      "Build a missing counterfactual from a comparison group’s change, then test the parallel-trends assumption.",
+  },
+  {
     id: "uplift",
     menuTitle: "Uplift modelling",
     track: true,

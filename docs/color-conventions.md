@@ -112,6 +112,10 @@ presentation changes.
   directly or in a legend; use circles for untreated and triangles for treated
   where points share a plot. These colors identify arm membership, not graph
   variables. Do not recolor a Y-axis label blue to imply it belongs to A=1.
+- In the DiD chart, simulator-known untreated recovery uses purple
+  (`--counterfactual-truth`), a dotted line, and a square marker. This local legend
+  distinguishes the missing outcome from both hospital groups. The DiD effect
+  bracket retains the neutral text color and an explicit DiD label.
 - Show bias through distance from the labeled truth reference and numeric values.
   The sandbox no longer uses its `abs(estimate - truth) < 0.15` green/orange classification; it is not a validity threshold. Keep actual warnings
   explicit in text, separate from variable identity. Do not add uncertainty
