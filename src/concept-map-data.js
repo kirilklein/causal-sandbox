@@ -235,7 +235,7 @@ export const mapRegions = [
         name: "Trimming the population",
         description:
           "Trimming excludes people with extreme treatment probabilities. The remaining population may support a better comparison, but it is a different target.",
-        lessons: ["trimming"],
+        lessons: ["trimming", "positivity-sensitivity"],
         connection: [
           "question",
           "Removing people changes whose effect we estimate. If effects vary, the retained population’s average effect can differ from the original population’s effect.",
