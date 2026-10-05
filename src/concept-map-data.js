@@ -44,7 +44,7 @@ export const mapRegions = [
         name: "An effect for whom?",
         description:
           "An average effect belongs to a particular population. If treatment effects differ across people, changing that population can change the answer.",
-        lessons: ["trimming", "what-if"],
+        lessons: ["trimming", "what-if", "uplift"],
         connection: [
           "evidence",
           "Trimming removes people with extreme treatment probabilities. It can improve the available comparison, but the effect now concerns the retained population.",
@@ -235,7 +235,7 @@ export const mapRegions = [
         name: "Trimming the population",
         description:
           "Trimming excludes people with extreme treatment probabilities. The remaining population may support a better comparison, but it is a different target.",
-        lessons: ["trimming"],
+        lessons: ["trimming", "positivity-sensitivity"],
         connection: [
           "question",
           "Removing people changes whose effect we estimate. If effects vary, the retained population’s average effect can differ from the original population’s effect.",

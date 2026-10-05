@@ -1,5 +1,13 @@
 # Progressive education delivery
 
+The optional [Uplift modelling track](uplift.md) at `?lesson=uplift` connects
+potential outcomes to targeting decisions. One campaign runs through four steps:
+what uplift means, whom to contact at a fixed budget, fitting two outcome models,
+and evaluating fixed policies on an independent randomized holdout. The track
+starts after randomization without changing core order. It has its own Contents
+section and is linked from topics, search, and the concept map. Simulator truth,
+training estimates, and evaluation evidence are explicitly separated.
+
 The advanced [front-door lesson](front-door.md) at `?lesson=front-door` follows
 hidden confounding. One persistent tutoring → practice → passing graph shows
 how a mediator carries a total effect. Hidden-readiness selection changes the
@@ -132,6 +140,19 @@ compares each IPW estimate with its own group’s truth. A visible second compar
 uses varying effects to show how trimming can change that truth. Each chapter
 restores its own baseline on entry; samples and controls are not transferred between
 chapters.
+
+The advanced [Beyond trimming](positivity-sensitivity.md) chapter at
+`?lesson=positivity-sensitivity` follows trimming and explicitly targets ATT.
+A propensity histogram identifies the unsupported 40% of treated people. Fixed
+outcome contrasts lead into unrestricted ATT bounds. An optional reveal marks
+the fixed overall simulation truth and shows how a false restriction can exclude it. The learner then varies
+an assumed upper limit on the excluded group's outcome probability without
+treatment and watches a compact interval plot narrow. The zero crossing identifies
+a required restriction, whose credibility needs external justification. A visible
+application question distinguishes bounds from point identification and restored
+positivity. Calculations, calendar-time comparisons, other responses, and sources
+remain optional. Trimming, Contents, topics, and search provide entry points;
+core lesson order is unchanged.
 
 An optional [instruments and adjustment chapter](instruments.md) follows
 double robustness at `?lesson=instrument`. It introduces Z, its precision cost when

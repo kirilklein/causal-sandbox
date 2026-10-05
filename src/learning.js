@@ -45,6 +45,13 @@ export function learningFrame(title, current, body) {
 }
 
 const background = {
+  uplift: [
+    "what-if",
+    "randomization",
+    "uncertainty",
+    "outcome-regression",
+    "overlap",
+  ],
   "front-door": ["mediator", "hidden-confounding"],
   "trajectory-landscape": ["confounding"],
   uncertainty: ["randomization", "confounding"],
@@ -76,6 +83,7 @@ const background = {
   overlap: ["ipw", "propensity-score"],
   clipping: ["ipw", "overlap"],
   trimming: ["ipw", "overlap", "clipping"],
+  "positivity-sensitivity": ["overlap", "trimming"],
 };
 
 export function backgroundLinks(topic) {
@@ -141,7 +149,7 @@ const groups = [
     summary:
       "Sparse comparisons, extreme weights, and changing the target population.",
     refreshers: ["ipw", "overlap"],
-    advanced: ["clipping", "trimming"],
+    advanced: ["clipping", "trimming", "positivity-sensitivity"],
   },
 ];
 
@@ -161,6 +169,7 @@ export function renderLearning(mode) {
       "topics",
       `<p class="learning-lead">Choose the question you want to explore. Open a topic to find refreshers and advanced lessons.</p>
       ${conceptMapCard()}
+      <section class="panel learning-experiments" aria-label="Optional tracks"><h2>Optional tracks</h2><p>Uplift modelling: learn what an intervention changes, choose whom to contact, and test the targeting rule.</p>${topicList(["uplift"])}</section>
       <section class="panel learning-experiments" aria-label="Experiments to try"><h2>Experiments to try</h2>${topicList(["tmle-robustness", ...lessonExperiments.map(({ id }) => id)])}</section>
       <div class="learning-topics">${groups
         .map(
