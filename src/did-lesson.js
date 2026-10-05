@@ -53,6 +53,7 @@ document.querySelector("#app").innerHTML =
     <p class="eyebrow">A COMPARISON ACROSS GROUPS AND TIME</p>
     <h1>Difference-in-differences</h1>
     <p class="intro">How much would the treated group have improved without treatment?</p>
+    <p class="small">As in the earlier lessons, we need the treated group’s missing outcome without treatment. DiD uses a comparison group’s change over time to construct it.</p>
     <nav class="did-steps" aria-label="DiD lesson stages">${steps.map((title, i) => `<button data-did-step="${i}"><span>${i + 1}</span>${title}</button>`).join("")}</nav>
     <section class="panel did-experiment" aria-labelledby="did-title">
       <div class="did-stage-meta"><span id="did-stage"></span><span>Synthetic hospital recovery rates</span></div>
@@ -63,6 +64,12 @@ document.querySelector("#app").innerHTML =
       <div id="did-question"></div>
     </section>
     <nav class="did-actions" aria-label="Continue DiD lesson"><button id="did-back">← Back</button><button id="did-reset">Restart lesson</button><button id="did-next" class="primary"></button></nav>
+    <section class="did-details" aria-labelledby="did-connection-title">
+      <h2 id="did-connection-title">How does DiD fit with adjustment?</h2>
+      <p><strong>The target:</strong> ATE asks about the average effect for everyone; ATT asks about those treated. Here we target the ATT for Hospital A’s post-program patients. DiD is a way to estimate an effect, not a different target population.</p>
+      <p><strong>The assumption:</strong> earlier adjustment lessons compare outcome levels among people with similar measured confounders. DiD instead assumes comparable <em>untreated changes</em> over time. A stable starting gap can cancel; a hospital-specific improvement need not.</p>
+      <p><strong>The connection:</strong> with multiple hospitals, baseline characteristics may help make untreated changes comparable. <a href="?lesson=ipw">Weighting</a> and <a href="?lesson=outcome-regression">outcome regression</a> can then be used within DiD, under parallel trends conditional on those characteristics. More hospitals alone do not make that assumption true.</p>
+    </section>
     <details class="did-details"><summary>What makes this a causal comparison?</summary>
       <p><strong>Parallel trends:</strong> without the program, the average recovery rate in A would change by the same number of percentage points as in B. Their starting levels can differ. This assumption concerns untreated outcomes, not the two observed lines after treatment.</p>
       <p>We also assume no effects before the program starts, no spillovers to Hospital B, a consistently defined program and outcome, and stable patient composition. A changing patient mix or another change affecting only A can undermine the comparison.</p>
@@ -75,6 +82,7 @@ document.querySelector("#app").innerHTML =
     </details>
     <details class="did-details"><summary>References and next steps</summary>
       <p><a href="https://pedrohcgs.github.io/files/RSBP_DiD_Review.pdf">Roth, Sant’Anna, Bilinski & Poe (2023)</a> explain identification, parallel trends, and inference in DiD. <a href="https://doi.org/10.1257/aeri.20210236">Roth (2022)</a> explains why passing a pre-trend test does not establish parallel trends.</p>
+      <p><a href="https://psantanna.com/DRDID/">Sant’Anna & Zhao (2020)</a> connect covariate-adjusted DiD with outcome regression, weighting, and doubly robust estimation of the ATT.</p>
       <p>This lesson covers one treated group and one untreated comparison group. Staggered adoption and two-way fixed-effects comparisons require a separate extension.</p>
     </details>
     <p class="small">Helpful background: <a href="?lesson=what-if">Potential outcomes</a> · <a href="?lesson=confounding">Confounding</a></p>

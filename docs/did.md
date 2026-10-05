@@ -3,6 +3,13 @@
 Optional lesson: `?lesson=difference-in-differences`, after hidden confounding.
 Learner question: how much would the treated group have improved without treatment?
 
+A short opening connects DiD to the same missing-counterfactual question as the
+core lessons. The visible comparison below the experiment separates the target
+(ATE versus ATT), the assumption (comparable untreated changes versus adjusted
+outcome levels), and the estimator. Links return to IPW and outcome regression;
+conditional parallel trends introduces their use within DiD without implementing
+multi-hospital adjustment in this lesson.
+
 ## Storyboard
 
 1. Hospital A's recovery rises from 40% to 65%. Predict whether all 25 percentage
@@ -91,4 +98,6 @@ A newcomer comprehension check remains separate from automated correctness.
 
 - [Roth, Sant’Anna, Bilinski & Poe (2023)](https://pedrohcgs.github.io/files/RSBP_DiD_Review.pdf): canonical DiD, identification, pre-trends, and inference.
 - [Roth (2022)](https://doi.org/10.1257/aeri.20210236): limits of pre-trend testing.
+- [Sant’Anna & Zhao (2020)](https://psantanna.com/DRDID/): covariate-adjusted and doubly robust DiD for the ATT.
 - [Issue #186](https://github.com/kirilklein/causal-sandbox/issues/186): deferred staggered-adoption/TWFE extension.
+- [Issue #309](https://github.com/kirilklein/causal-sandbox/issues/309): planned multi-hospital comparisons, covariate-adjusted DiD, and hospital-cluster uncertainty lessons.
