@@ -106,7 +106,7 @@ document.querySelector("#app").innerHTML =
       <p id="dm-rotate-hint" class="small">Drag to rotate · Arrow keys to turn and tilt · Home to reset</p>
       <button id="dm-reset-view">Reset view</button>
       <div id="dm-joint-plot" tabindex="0" role="group" aria-label="Rotatable 3D ratio scene" aria-describedby="dm-rotate-hint"></div>
-      <p class="small dm-joint-key"><span class="dm-center-key">● Population center</span> · <span class="dm-example-key">● Illustrative pair</span><span id="dm-revenue-key" hidden> · Blue: revenue tangent</span><span id="dm-orders-key" hidden> · Orange: orders tangent</span></p>
+      <p class="small dm-joint-key"><span class="dm-center-key">● Population center</span><span id="dm-revenue-key" hidden> · Blue: revenue tangent</span><span id="dm-orders-key" hidden> · Orange: orders tangent</span></p>
       <div id="dm-joint-formula" hidden>
         <p class="small">R and O are average revenue and orders per visitor; g(R,O) = R/O. σR and σO are their standard errors. Arrows show one input SE along each tangent.</p>
         <div class="dm-formula" role="math" id="dm-variance-formula">
@@ -118,13 +118,8 @@ document.querySelector("#app").innerHTML =
         </div>
         <p class="small">Each squared contribution is in (€/order)². The square root of the combined variance gives the ratio’s SE.</p>
       </div>
-      <p id="dm-joint-values" class="small" hidden></p>
-      <div id="dm-joint-covariance" hidden>
-        <label for="dm-correlation">How strongly do the estimates move together? <output id="dm-correlation-value"></output></label>
-        <input id="dm-correlation" type="range" min="-0.9" max="0.9" step="0.1" value="0">
-      </div>
       <p id="dm-joint-readout" class="dm-readout" hidden aria-live="polite"></p>
-      <details><summary>What does the ellipse represent?</summary><p>An illustrative uncertainty contour for study-level averages, not observed data or a confidence region. The population center is €20 revenue and 2 orders per visitor. The input SEs are €2 and 0.2 orders. The highlighted pair is a point on the contour, not a random sample.</p></details>
+      <details><summary>What does the ellipse represent?</summary><p>An illustrative uncertainty contour for study-level averages, not observed data or a confidence region. The population center is €20 revenue and 2 orders per visitor. The input SEs are €2 and 0.2 orders. This example assumes zero covariance between the estimates.</p></details>
       <button id="dm-to-experiment" class="primary" hidden>Compare two checkout versions →</button>
     </section>
     <section id="dm-ratios" class="panel" aria-labelledby="dm-ratio-title" hidden>
@@ -339,7 +334,7 @@ el("dm-tangent").addEventListener("click", () => {
 const jointSteps = [
   {
     title: "Two uncertain inputs on the floor",
-    copy: "The floor pairs average revenue with average orders per visitor. The ellipse shows uncertainty in those study-level estimates. The dots mark the population center and one illustrative pair.",
+    copy: "The floor pairs average revenue with average orders per visitor. The ellipse shows uncertainty in those study-level estimates. The dot marks the population center.",
     next: "Raise the ratio surface →",
   },
   {
@@ -348,8 +343,8 @@ const jointSteps = [
     next: "Connect inputs to outputs →",
   },
   {
-    title: "Follow each pair up to its ratio",
-    copy: "Vertical guides take each pair to its ratio while holding both inputs fixed. At the center, €20 ÷ 2 = €10 per order.",
+    title: "Follow the center up to its ratio",
+    copy: "The vertical guide connects the population center to the surface: €20 ÷ 2 = €10 per order. Both tangents will meet here.",
     next: "Vary revenue first →",
   },
   {
@@ -364,7 +359,7 @@ const jointSteps = [
   },
   {
     title: "Combine both slopes and their covariance",
-    copy: "Each input alone contributes €1 of ratio SE. When revenue and orders rise together, their effects partly cancel. Change their correlation: the ellipse and combined SE change; the surface stays fixed.",
+    copy: "Add the two variance contributions. Here we assume zero covariance, so the extra covariance term is zero: 1 + 1 = 2. The ratio’s SE is √2 ≈ €1.41 per order.",
     next: "",
   },
 ];
@@ -375,7 +370,7 @@ let jointDrag = null;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 function renderJointPlot(progress = 1) {
   el("dm-joint-plot").innerHTML = jointSurfacePlot(
-    +el("dm-correlation").value,
+    0,
     jointStep,
     width("dm-joint-plot"),
     progress,
@@ -458,8 +453,7 @@ function animateJoint() {
   jointFrame = requestAnimationFrame(tick);
 }
 function renderJoint() {
-  const rho = +el("dm-correlation").value;
-  const model = jointRatioApproximation(rho);
+  const model = jointRatioApproximation(0);
   const step = jointSteps[jointStep];
   el("dm-joint-step").textContent =
     `Step ${jointStep + 1} of ${jointSteps.length}`;
@@ -477,22 +471,17 @@ function renderJoint() {
   el("dm-formula-next").textContent =
     jointStep === 3 ? "orders and covariance follow" : "covariance follows";
   el("dm-covariance-value").textContent =
-    `Covariance contribution · −2ρ = ${number(-2 * rho)}`;
+    "Covariance contribution · 0 (assumed here)";
   el("dm-variance-formula").setAttribute(
     "aria-label",
-    `Approximate variance of revenue divided by orders: revenue slope squared times revenue SE squared, equal to 1${jointStep >= 4 ? ", plus orders slope squared times orders SE squared, equal to 1" : ""}${jointStep >= 5 ? `, plus twice the product of the slopes and input covariance, equal to ${number(-2 * rho)}` : "; more terms follow"}.`,
+    `Approximate variance of revenue divided by orders: revenue slope squared times revenue SE squared, equal to 1${jointStep >= 4 ? ", plus orders slope squared times orders SE squared, equal to 1" : ""}${jointStep >= 5 ? `, plus twice the product of the slopes and input covariance, equal to 0` : "; more terms follow"}.`,
   );
   el("dm-revenue-key").hidden = jointStep < 3;
   el("dm-orders-key").hidden = jointStep < 4;
-  el("dm-joint-covariance").hidden = jointStep < 5;
   el("dm-to-experiment").hidden = jointStep < 5;
-  el("dm-joint-values").hidden = jointStep < 2;
-  el("dm-joint-values").textContent =
-    `Highlighted pair: €${number(model.example.revenue)} ÷ ${number(model.example.orders)} = €${number(model.transform(model.example.revenue, model.example.orders))} / order (calculated before rounding).`;
   el("dm-joint-readout").hidden = jointStep < 5;
   el("dm-joint-readout").textContent =
-    `Combined ratio SE: €${number(model.se)} / order. At zero correlation: €${number(Math.sqrt(2))} / order.`;
-  el("dm-correlation-value").textContent = rho.toFixed(1);
+    `Combined ratio SE: √(1 + 1) ≈ €${number(model.se)} / order, assuming zero covariance.`;
   finishJointMotion();
 }
 el("dm-joint-next").addEventListener("click", () => {
@@ -509,7 +498,6 @@ el("dm-joint-prev").addEventListener("click", () => {
 el("dm-joint-replay").addEventListener("click", () =>
   jointFrame ? finishJointMotion() : animateJoint(),
 );
-el("dm-correlation").addEventListener("input", renderJoint);
 reducedMotion.addEventListener("change", () => {
   if (!el("dm-joint").hidden) renderJoint();
 });

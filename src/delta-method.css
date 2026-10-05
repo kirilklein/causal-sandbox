@@ -242,10 +242,6 @@
   fill: var(--truth);
   stroke: var(--truth);
 }
-.dm-page .dm-example-point {
-  fill: var(--fitted);
-  stroke: var(--fitted);
-}
 .dm-page .dm-projection {
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
@@ -260,9 +256,6 @@
 }
 .dm-page .dm-center-key {
   color: var(--truth);
-}
-.dm-page .dm-example-key {
-  color: var(--fitted);
 }
 .dm-page .dm-step-controls {
   margin-block: 16px;

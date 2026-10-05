@@ -43,11 +43,11 @@ the first output reveal. Native buttons and sliders support keyboard interaction
 
 The two-input explanation opens as a separate card, replacing the one-input card.
 Six reader-controlled steps reveal the 3D input frame and ellipse, the ratio
-surface, vertical mappings, the revenue tangent, the orders tangent, and finally
+surface, the center’s vertical mapping, the revenue tangent, the orders tangent, and finally
 covariance. The input ellipse is centered at (20 euros, 2 orders) per visitor,
 with marginal SEs (2, 0.2). It is an illustrative radius-two covariance contour,
-not a calibrated confidence region. The highlighted pair lies on that contour;
-it is not a random sample.
+not a calibrated confidence region. Only the population center is marked; there
+is no illustrative sample point or correlation slider in this sequence.
 
 Each surface vertex rises from height zero to revenue/orders over 1.1 seconds.
 This movement constructs the mapping; it does not represent changes over time or
@@ -63,11 +63,12 @@ Each tangent reveals a matching colored variance term. Blue is revenue and
 orange is orders, in the geometry, sigma labels, and MathML formula. Arrows run
 from the center to one input SE along the corresponding tangent; they are not
 variance vectors. Pending terms are explicitly marked until the covariance term
-appears in the final step. Numeric terms are 1 + 1 - 2 rho in (euros/order)^2.
+appears in the final step. Zero covariance is an explicit assumption of this
+example, giving numeric terms 1 + 1 + 0 in (euros/order)^2.
 
 Both tangents meet at (20, 2, 10). Their slopes are 0.5 with respect to revenue
-and -5 with respect to orders. Changing correlation in the final step changes the
-ellipse and Delta SE, sqrt(2 - 2 rho), while the surface and slopes remain fixed.
+and -5 with respect to orders. The final step combines the variance contributions
+and takes their square root, giving a ratio SE of approximately 1.41 euros/order.
 The A/B comparison opens as another separate card, with a return path.
 
 Ratio study and bootstrap actions precede their results; the coverage

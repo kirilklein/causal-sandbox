@@ -121,7 +121,8 @@ try {
   await expect(page.locator("#dm-ratios")).toBeHidden();
   await expect(page.locator("#dm-single")).toBeHidden();
   await expect(page.locator("#dm-joint .dm-ratio-surface")).toHaveCount(0);
-  await expect(page.locator("#dm-correlation")).toBeHidden();
+  await expect(page.locator("#dm-correlation")).toHaveCount(0);
+  await expect(page.locator(".dm-example-point")).toHaveCount(0);
   await mkdir("test-results/delta-method", { recursive: true });
   for (let step = 1; step <= 5; step++) {
     await page.locator("#dm-joint-next").focus();
@@ -136,7 +137,7 @@ try {
     );
     await expect(page.locator("#dm-joint .dm-ratio-surface")).toHaveCount(144);
     await expect(page.locator("#dm-joint .dm-projection")).toHaveCount(
-      step >= 2 ? 2 : 0,
+      step >= 2 ? 1 : 0,
     );
     await expect(page.locator("#dm-joint .dm-revenue-tangent")).toHaveCount(
       step >= 3 ? 1 : 0,
@@ -204,7 +205,8 @@ try {
   await page.locator("#dm-reset-view").click();
   // Going back removes later explanations and marks; replay can finish early.
   await page.locator("#dm-joint-prev").click();
-  await expect(page.locator("#dm-correlation")).toBeHidden();
+  await expect(page.locator("#dm-correlation")).toHaveCount(0);
+  await expect(page.locator(".dm-example-point")).toHaveCount(0);
   await page.locator("#dm-joint-replay").click();
   await expect(page.locator("#dm-joint-replay")).toHaveText("Finish motion");
   await page.locator("#dm-joint-replay").click();
@@ -213,10 +215,8 @@ try {
     "1.000",
   );
   await page.locator("#dm-joint-next").click();
-  await page.locator("#dm-correlation").focus();
-  await page.keyboard.press("End");
   await expect(page.locator("#dm-joint-readout")).toContainText(
-    number(jointRatioApproximation(0.9).se),
+    number(jointRatioApproximation(0).se),
   );
   await page.locator("#dm-to-experiment").click();
   await expect(page.locator("#dm-ratio-title")).toBeFocused();

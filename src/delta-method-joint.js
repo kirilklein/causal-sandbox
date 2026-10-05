@@ -107,7 +107,6 @@ export function jointSurfacePlot(rho, stage, width, progress = 1, view = {}) {
       name: "Population center",
       cls: "dm-center-point",
     },
-    { ...model.example, name: "Illustrative pair", cls: "dm-example-point" },
   ];
   const dots = pairs
     .map(({ revenue, orders, name, cls }) => {
@@ -163,7 +162,7 @@ export function jointSurfacePlot(rho, stage, width, progress = 1, view = {}) {
       `<g class="dm-${key}-spread"><path d="${path([center, tip])}" marker-end="url(#dm-${key}-arrow)"/>${extent === 1 ? annotation : ""}<title>One input standard error along the ${key} tangent; the output changes by ${key === "revenue" ? "+" : "−"}€1 per order.</title></g>`,
     );
   }
-  return `<svg class="dm-chart dm-joint-chart" viewBox="0 0 ${width} ${height}" role="img" data-yaw="${view.yaw || 0}" data-pitch="${view.pitch || 0}" data-stage="${stage}" data-progress="${progress.toFixed(3)}" aria-label="Three dimensional ratio diagram. Floor axes: average revenue and orders per visitor. Height: euros per order. ${stage >= 1 ? "Curved surface: revenue divided by orders." : "Input uncertainty ellipse and two marked pairs; no surface yet."} ${stage >= 2 ? "Vertical guides map the input pairs to their ratios." : ""} ${stage >= 3 ? "Blue tangent varies revenue." : ""} ${stage >= 4 ? "Orange tangent varies orders; both meet at the population center." : ""}">
+  return `<svg class="dm-chart dm-joint-chart" viewBox="0 0 ${width} ${height}" role="img" data-yaw="${view.yaw || 0}" data-pitch="${view.pitch || 0}" data-stage="${stage}" data-progress="${progress.toFixed(3)}" aria-label="Three dimensional ratio diagram. Floor axes: average revenue and orders per visitor. Height: euros per order. ${stage >= 1 ? "Curved surface: revenue divided by orders." : "Input uncertainty ellipse and population center; no surface yet."} ${stage >= 2 ? "A vertical guide maps the population center to its ratio." : ""} ${stage >= 3 ? "Blue tangent varies revenue." : ""} ${stage >= 4 ? "Orange tangent varies orders; both meet at the population center." : ""}">
     <defs>${["revenue", "orders"].map((key) => `<marker id="dm-${key}-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path class="dm-${key}-arrowhead" d="M0 0L8 4L0 8Z"/></marker>`).join("")}</defs>
     <text x="12" y="22">Height: € / order</text>
     ${grid.join("")}
