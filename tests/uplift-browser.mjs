@@ -99,9 +99,7 @@ try {
     firstFit,
   );
   const frozenFit = await page.locator("#uplift-evidence").textContent();
-  await page
-    .getByRole("combobox", { name: "Color theme" })
-    .selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await page.locator("#uplift-evidence").textContent(), frozenFit);
   await page.locator("#uplift-next").click();
   await expect(page.locator("#uplift-evidence")).toBeHidden();
@@ -147,8 +145,8 @@ try {
   await mkdir("test-results", { recursive: true });
   for (const theme of ["light", "dark"]) {
     await page
-      .getByRole("combobox", { name: "Color theme" })
-      .selectOption(theme);
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(theme === "dark");
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 1100 });
       for (let step = 0; step < 4; step++) {
