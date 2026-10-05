@@ -151,6 +151,19 @@ uses varying effects to show how trimming can change that truth. Each chapter
 restores its own baseline on entry; samples and controls are not transferred between
 chapters.
 
+The advanced [Beyond trimming](positivity-sensitivity.md) chapter at
+`?lesson=positivity-sensitivity` follows trimming and explicitly targets ATT.
+A propensity histogram identifies the unsupported 40% of treated people. Fixed
+outcome contrasts lead into unrestricted ATT bounds. An optional reveal marks
+the fixed overall simulation truth and shows how a false restriction can exclude it. The learner then varies
+an assumed upper limit on the excluded group's outcome probability without
+treatment and watches a compact interval plot narrow. The zero crossing identifies
+a required restriction, whose credibility needs external justification. A visible
+application question distinguishes bounds from point identification and restored
+positivity. Calculations, calendar-time comparisons, other responses, and sources
+remain optional. Trimming, Contents, topics, and search provide entry points;
+core lesson order is unchanged.
+
 An optional [instruments and adjustment chapter](instruments.md) follows
 double robustness at `?lesson=instrument`. It introduces Z, its precision cost when
 included in adjustment, and a follow-on hidden-confounding strength experiment. The
