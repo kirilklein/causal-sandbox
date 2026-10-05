@@ -60,12 +60,18 @@ if (page === "glossary") {
     await import("./clipping-lesson.js");
   } else if (lesson === "trimming") {
     await import("./trimming-lesson.js");
+  } else if (lesson === "positivity-sensitivity") {
+    await import("./positivity-sensitivity-lesson.js");
   } else if (lesson === "timing") {
     await import("./timing-lesson.js");
   } else if (lesson === "causal-relevance") {
     await import("./relevance-lesson.js");
   } else if (lesson === "front-door") {
     await import("./front-door-lesson.js");
+  } else if (lesson === "difference-in-differences") {
+    await import("./did-lesson.js");
+  } else if (lesson === "uplift") {
+    await import("./uplift-lesson.js");
   } else if (lesson === "time-varying-confounding") {
     await import("./longitudinal-lesson.js");
   } else {

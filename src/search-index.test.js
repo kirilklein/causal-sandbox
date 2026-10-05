@@ -14,7 +14,16 @@ test("finds named experiments and their specific starting states", () => {
     ["paths cancel", "?lesson=arrow-strength&example=paths-cancel"],
     ["causal relevance", "?lesson=causal-relevance"],
     ["proxy predictor", "?lesson=causal-relevance"],
+    ["uplift modelling", "?lesson=uplift"],
+    ["CATE targeting", "?lesson=uplift"],
+    ["Qini", "?lesson=uplift"],
+    ["DiD", "?lesson=difference-in-differences"],
+    ["difference in differences", "?lesson=difference-in-differences"],
+    ["parallel trends", "?lesson=difference-in-differences"],
     ["TMLE IPW misspecification", "docs/tmle-robustness-preview.html"],
+    ["beyond trimming", "?lesson=positivity-sensitivity"],
+    ["calendar time", "?lesson=positivity-sensitivity"],
+    ["partial identification", "?lesson=positivity-sensitivity"],
   ])
     assert.equal(searchTopics(query)[0].href, href, query);
   assert.ok(

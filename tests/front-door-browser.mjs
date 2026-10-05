@@ -121,8 +121,8 @@ try {
     await page.setViewportSize({ width, height: 1100 });
     for (const theme of ["light", "dark"]) {
       await page
-        .getByRole("combobox", { name: "Color theme" })
-        .selectOption(theme);
+        .getByRole("switch", { name: "Dark mode" })
+        .setChecked(theme === "dark");
       for (const world of ["valid", "direct", "mediator", "support"]) {
         await page.locator("#fd-world").selectOption(world);
         const currentSelection = Number(

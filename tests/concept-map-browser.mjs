@@ -88,7 +88,9 @@ try {
   await page.keyboard.press("Escape");
 
   for (const theme of ["light", "dark"]) {
-    await page.getByLabel("Color theme").selectOption(theme);
+    await page
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(theme === "dark");
     await page.screenshot({
       path: `/tmp/concept-map-${theme}.png`,
       fullPage: true,

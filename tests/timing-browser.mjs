@@ -232,7 +232,9 @@ try {
 
   await page.setViewportSize({ width: 320, height: 900 });
   for (const theme of ["light", "dark"]) {
-    await page.getByLabel("Color theme").selectOption(theme);
+    await page
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(theme === "dark");
     for (const time of Object.keys(cases)) {
       await page.locator(`[name="time-window"][value="${time}"]`).tap();
       assert.equal(await selectedWindow(), time);

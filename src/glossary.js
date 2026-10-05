@@ -67,6 +67,18 @@ export const glossary = {
     ],
     related: { label: "Read about the target", href: "methodology/#target" },
   },
+  att: {
+    title: "Average treatment effect in the treated (ATT)",
+    summary:
+      "The ATT is the average, among people who received treatment, of each person’s outcome under treatment minus their outcome under no treatment.",
+    detail: [
+      "The ATT differs from the ATE when treated people respond differently from the whole population. Their outcomes under treatment are observed, so identification concerns only their outcomes without treatment: each treated profile needs comparable untreated people, but untreated profiles need no treated counterparts.",
+    ],
+    related: {
+      label: "Bound the ATT when comparisons are missing",
+      href: "?lesson=positivity-sensitivity",
+    },
+  },
   "total-effect": {
     title: "Total and direct effects",
     summary:

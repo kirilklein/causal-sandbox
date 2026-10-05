@@ -44,7 +44,7 @@ export const mapRegions = [
         name: "An effect for whom?",
         description:
           "An average effect belongs to a particular population. If treatment effects differ across people, changing that population can change the answer.",
-        lessons: ["trimming", "what-if"],
+        lessons: ["trimming", "what-if", "uplift"],
         connection: [
           "evidence",
           "Trimming removes people with extreme treatment probabilities. It can improve the available comparison, but the effect now concerns the retained population.",
@@ -111,6 +111,17 @@ export const mapRegions = [
         connection: [
           "methods",
           "Double robustness concerns errors in fitted models. It does not remove the need for sufficient information to control confounding.",
+        ],
+      },
+      {
+        id: "parallel-trends",
+        name: "Comparing changes over time",
+        description:
+          "Difference-in-differences compares changes across groups. It identifies an effect on the treated group if their untreated outcomes would have changed in parallel, with no anticipation or spillovers.",
+        lessons: ["difference-in-differences"],
+        connection: [
+          "question",
+          "The comparison group supplies an assumed change for the treated group’s missing future. The target remains the effect for the treated population.",
         ],
       },
       {
@@ -240,7 +251,7 @@ export const mapRegions = [
         name: "Trimming the population",
         description:
           "Trimming excludes people with extreme treatment probabilities. The remaining population may support a better comparison, but it is a different target.",
-        lessons: ["trimming"],
+        lessons: ["trimming", "positivity-sensitivity"],
         connection: [
           "question",
           "Removing people changes whose effect we estimate. If effects vary, the retained population’s average effect can differ from the original population’s effect.",
