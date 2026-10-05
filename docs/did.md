@@ -56,10 +56,15 @@ assumption. Staggered adoption, TWFE, and inference are separate future lessons.
 
 One SVG uses a fixed 0–100% scale, shared arm colors, triangle/circle group marks,
 direct labels, and explicit legends. The final stage expands the pre-treatment
-time window. Lines connect period averages, not individual patient trajectories.
+time window. Baseline and Follow-up label the measurement points, with Program
+starts marking the event between them. Lines connect period averages, not individual patient trajectories.
 The translated comparison segment represents the same numerical change. Reduced
 motion shows the finished counterfactual immediately. Simulator truth uses a
-separate dotted line, square marker, and labelled result, revealed on request.
+purple dotted line, square marker, and labelled result, revealed on request.
+Its endpoint is A's untreated recovery rate, not a treatment effect. The effect
+bracket is explicitly labelled DiD and compares observed recovery with the
+assumed untreated rate. Purple (`--counterfactual-truth`) distinguishes truth
+from both hospital groups in light and dark themes.
 
 Steps preserve answers and experiments when revisited. Restart resets everything.
 Controls remain keyboard usable through updates. Theme changes do not reset data.

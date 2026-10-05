@@ -104,6 +104,48 @@ try {
         await stage(i);
         await expect(page.locator("#did-title")).toBeVisible();
         await expect(page.locator(".did-chart")).toBeVisible();
+        await expect(
+          page.locator(".did-axis").filter({ hasText: /^Baseline$/ }),
+        ).toBeVisible();
+        await expect(
+          page.locator(".did-axis").filter({ hasText: /^Follow-up$/ }),
+        ).toBeVisible();
+        if (i >= 4) {
+          const colors = await page
+            .locator(".did-chart")
+            .evaluate((svg) =>
+              [".did-truth-line", ".did-line.did-a", ".did-line.did-b"].map(
+                (selector) =>
+                  getComputedStyle(svg.querySelector(selector)).stroke,
+              ),
+            );
+          assert.equal(
+            new Set(colors).size,
+            3,
+            `${theme}: truth must differ from both hospital colors`,
+          );
+          await expect(
+            page.locator(".did-truth-label").filter({ hasText: /^A without$/ }),
+          ).toBeVisible();
+        }
+        for (const slider of await page.locator(".did-slider input").all()) {
+          const style = await slider.evaluate((input) => {
+            const css = getComputedStyle(input);
+            return {
+              track: css.backgroundImage,
+              height: input.getBoundingClientRect().height,
+            };
+          });
+          assert.notEqual(
+            style.track,
+            "none",
+            `${theme}/${width}/${i}: missing slider track`,
+          );
+          assert.ok(
+            style.height >= 24,
+            `${theme}/${width}/${i}: slider hit area`,
+          );
+        }
         assert.ok(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,

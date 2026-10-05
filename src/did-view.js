@@ -38,19 +38,20 @@ export function didChart({ world, estimate, step, showTruth, width }) {
   if (step >= 4 && showTruth)
     endpoints.push({
       value: world.truth.untreatedAfter,
-      title: `Truth ${world.truth.untreatedAfter}%`,
+      title: "A without",
+      subtitle: `program: ${world.truth.untreatedAfter}%`,
       cls: "did-truth-label",
     });
   endpoints.sort((a, b) => b.value - a.value);
   let previous = top - 24;
   const labels = endpoints
-    .map(({ value, title, cls }) => {
+    .map(({ value, title, subtitle, cls }) => {
       const position = Math.max(y(value) + 4, previous + 23);
-      previous = position;
-      return `<path class="did-label-leader ${cls}" d="M${after + 7} ${y(value)}L${after + 14} ${position - 4}"/>${text(after + 18, position, title, `class="${cls}"`)}`;
+      previous = position + (subtitle ? 15 : 0);
+      return `<path class="did-label-leader ${cls}" d="M${after + 7} ${y(value)}L${after + 14} ${position - 4}"/>${text(after + 18, position, title, `class="${cls}"`)}${subtitle ? text(after + 18, position + 15, subtitle, `class="${cls}"`) : ""}`;
     })
     .join("");
-  const description = `Hospital A: ${a0}% before, ${a1}% after.${step > 0 ? ` Hospital B: ${b0}% before, ${b1}% after.` : ""}${step >= 2 ? ` Assumed Hospital A without program: ${estimate.counterfactual}%.` : ""}${step >= 3 ? ` DiD estimate: ${signed(estimate.effect)} percentage points.` : ""}${step >= 4 && showTruth ? ` Simulator-known Hospital A without program: ${world.truth.untreatedAfter}%. True program effect: +15 percentage points.` : ""}${step === 5 ? ` Earlier rates for A: ${world.treated.join(", ")}%. For B: ${world.comparison.join(", ")}%.` : ""}`;
+  const description = `Hospital A: ${a0}% at baseline, ${a1}% at follow-up.${step > 0 ? ` Hospital B: ${b0}% at baseline, ${b1}% at follow-up.` : ""}${step >= 2 ? ` Assumed Hospital A without program: ${estimate.counterfactual}%.` : ""}${step >= 3 ? ` DiD estimate: ${signed(estimate.effect)} percentage points.` : ""}${step >= 4 && showTruth ? ` Simulator-known Hospital A without program: ${world.truth.untreatedAfter}%. True program effect: +15 percentage points.` : ""}${step === 5 ? ` Earlier rates for A: ${world.treated.join(", ")}%. For B: ${world.comparison.join(", ")}%.` : ""}`;
   return `<svg class="did-chart" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="did-chart-title did-chart-description">
     <title id="did-chart-title">Recovery before and after the care program</title><desc id="did-chart-description">${description}</desc>
     <rect class="did-post-area" x="${start}" y="${top}" width="${after - start}" height="${bottom - top}"/>
@@ -59,7 +60,7 @@ export function didChart({ world, estimate, step, showTruth, width }) {
     <path class="did-program-line" d="M${start} ${top}V${bottom}"/>
     ${text(start, 35, "Program starts", 'class="did-axis" text-anchor="middle"')}
     ${step === 5 ? `${text(left, bottom + 26, "−2", 'class="did-axis" text-anchor="middle"')}${text(xs[1], bottom + 26, "−1", 'class="did-axis" text-anchor="middle"')}` : ""}
-    ${text(before, bottom + 26, "Before", 'class="did-axis" text-anchor="middle"')}${text(after, bottom + 26, "After", 'class="did-axis" text-anchor="middle"')}
+    ${text(before, bottom + 26, "Baseline", 'class="did-axis" text-anchor="middle"')}${text(after + 3, bottom + 26, "Follow-up", 'class="did-axis" text-anchor="start"')}
     ${step >= 2 ? `<g class="did-counterfactual">${path([a0, estimate.counterfactual], [before, after], "did-assumed")}${triangle(after, estimate.counterfactual, "did-hollow")}</g>` : ""}
     ${step >= 4 && showTruth ? `${path([a0, world.truth.untreatedAfter], [before, after], "did-truth-line")}<rect class="did-truth-point" x="${after - 8}" y="${y(world.truth.untreatedAfter) - 8}" width="16" height="16"/>` : ""}
     ${step > 0 ? `${path(b, xs, "did-b")}${b.map((value, i) => circle(xs[i], value)).join("")}` : ""}
@@ -67,7 +68,7 @@ export function didChart({ world, estimate, step, showTruth, width }) {
     ${step < 5 ? text(before, y(a0) + 25, `${a0}%`, 'class="did-a" text-anchor="middle"') : ""}
     ${step > 0 && step < 5 ? text(before, y(b0) - 13, `${b0}%`, 'class="did-b" text-anchor="middle"') : ""}
     ${step === 2 ? `<g class="did-transfer">${path([b0, b1], [before, after], "did-copy-change")}</g>` : ""}
-    ${step >= 3 ? `<path class="did-effect-bracket" d="M${after - 17} ${y(a1)}h-8V${y(estimate.counterfactual)}h8"/>${text(after - 33, (y(a1) + y(estimate.counterfactual)) / 2 + 5, `${signed(estimate.effect)} pp`, 'class="did-effect-label" text-anchor="end"')}` : ""}
+    ${step >= 3 ? `<path class="did-effect-bracket" d="M${after - 17} ${y(a1)}h-8V${y(estimate.counterfactual)}h8"/>${text(after - 33, (y(a1) + y(estimate.counterfactual)) / 2 + 5, `DiD ${signed(estimate.effect)} pp`, 'class="did-effect-label" text-anchor="end"')}` : ""}
     ${labels}
     <style>.did-transfer { --did-shift: ${y(a0) - y(b0)}px; }</style>
   </svg>`;

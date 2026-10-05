@@ -101,7 +101,7 @@ function renderEvidence() {
   } = world.observed;
   el("chart").innerHTML = didChart({ world, estimate, step, showTruth, width });
   el("caption").innerHTML =
-    `<span class="did-key did-treated">▲ Hospital A · program starts after “Before”</span>${step > 0 ? '<span class="did-key did-comparison">● Hospital B · no program</span>' : ""}${step >= 2 ? '<span class="did-key"><i class="did-dashed"></i>Assumed A without program</span>' : ""}${step >= 4 && showTruth ? '<span class="did-key"><i class="did-truth-key"></i>Simulator-known A without program</span>' : ""}<span class="did-chart-note">Solid lines connect observed period averages, not individual patient journeys.</span>`;
+    `<span class="did-key did-treated">▲ Hospital A · receives the program</span>${step > 0 ? '<span class="did-key did-comparison">● Hospital B · no program</span>' : ""}${step >= 2 ? '<span class="did-key"><i class="did-dashed"></i>Assumed A without program</span>' : ""}${step >= 4 && showTruth ? '<span class="did-key"><i class="did-truth-key"></i>Simulator-known A without program</span>' : ""}<span class="did-chart-note">Baseline is measured before the program. Follow-up is measured after it. Solid lines connect observed period averages.</span>`;
   if (step === 0) {
     el("result").innerHTML =
       `<div class="did-takeaway"><span>Observed improvement in A</span><strong>65% − 40% = +25 percentage points</strong><p>A before–after difference. We have not isolated the program’s effect.</p></div>`;
