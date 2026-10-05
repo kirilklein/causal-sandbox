@@ -66,6 +66,14 @@ bracket is explicitly labelled DiD and compares observed recovery with the
 assumed untreated rate. Purple (`--counterfactual-truth`) distinguishes truth
 from both hospital groups in light and dark themes.
 
+When simulator truth is revealed, the estimated and true effects sit side by
+side immediately below the chart, including on phones. Both cards show the
+follow-up contrast for A. The difference-of-changes arithmetic sits beneath
+them. The estimate uses the shared `effectComparison` red tint after converting
+percentage points to risk units, and reports signed error in pp. Truth retains
+its fixed purple styling. Hiding truth removes both the error text and tint so
+the missing outcome cannot be inferred from color.
+
 Steps preserve answers and experiments when revisited. Restart resets everything.
 Controls remain keyboard usable through updates. Theme changes do not reset data.
 No progress or state is persisted across visits.

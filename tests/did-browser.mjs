@@ -19,6 +19,11 @@ try {
   const url = getAppUrl();
   const stage = async (i) => page.locator(`[data-did-step="${i}"]`).click();
   const result = page.locator("#did-result");
+  const estimateCard = page.locator(".did-estimate");
+  const tint = () =>
+    estimateCard.evaluate((card) =>
+      parseFloat(card.style.getPropertyValue("--error-tint")),
+    );
   await page.goto(`${url}?lesson=hidden-confounding`);
   await page
     .getByRole("link", { name: "Difference-in-differences →", exact: true })
@@ -61,25 +66,41 @@ try {
   await expect(page.locator("#did-extra")).toBeFocused();
   await expect(page.locator(".did-estimate strong")).toHaveText("+25 pp");
   await expect(result).toContainText("+10-point unrelated change");
+  assert.equal(await tint(), 0, "Unrevealed truth must not leak through tint");
   await page
     .getByRole("checkbox", { name: "Reveal simulator’s untreated outcome" })
     .check();
-  await expect(page.locator(".did-truth-result")).toContainText(
-    "85% − 70% = +15 pp",
+  await expect(page.locator(".did-truth-result strong")).toHaveText("+15 pp");
+  await expect(page.locator(".did-truth-result small")).toHaveText("85% − 70%");
+  await expect(page.locator(".did-effect-error")).toHaveText(
+    "+10 pp from truth",
+  );
+  const positiveTint = await tint();
+  assert.ok(
+    positiveTint > 0 && positiveTint < 20,
+    "Tint uses risk units, not percentage points",
   );
   await expect(page.locator(".did-truth-line")).toHaveCount(1);
   await page.locator("#did-extra").focus();
   await page.keyboard.press("Home");
   await expect(page.locator(".did-estimate strong")).toHaveText("+5 pp");
-  await expect(page.locator(".did-truth-result")).toContainText(
-    "DiD error: −10 pp",
+  await expect(page.locator(".did-effect-error")).toHaveText(
+    "−10 pp from truth",
   );
+  assert.ok(
+    Math.abs((await tint()) - positiveTint) < 1e-10,
+    "Equal absolute errors have equal tints",
+  );
+  await page.keyboard.press("ArrowRight");
+  assert.ok((await tint()) < positiveTint, "Tint decreases toward truth");
+  await page.keyboard.press("Home");
   await page.locator("#did-back").click();
   await expect(page.locator("#did-common")).toHaveValue("20");
   await expect(page.locator(".did-estimate strong")).toHaveText("+15 pp");
   await stage(5);
   await expect(page.locator(".did-estimate strong")).toHaveText("+15 pp");
   const parallelLine = await page.locator(".did-line.did-a").getAttribute("d");
+  assert.equal(await tint(), 0, "A correct estimate has no error tint");
   await page.getByRole("radio", { name: "New shock after treatment" }).check();
   await expect(page.locator(".did-estimate strong")).toHaveText("+25 pp");
   const shockLine = await page.locator(".did-line.did-a").getAttribute("d");
@@ -111,6 +132,27 @@ try {
           page.locator(".did-axis").filter({ hasText: /^Follow-up$/ }),
         ).toBeVisible();
         if (i >= 4) {
+          const [estimateBounds, truthBounds] = await Promise.all([
+            estimateCard.boundingBox(),
+            page.locator(".did-truth-result").boundingBox(),
+          ]);
+          assert.ok(
+            Math.abs(estimateBounds.y - truthBounds.y) < 1,
+            "Estimate and truth share a row",
+          );
+          assert.ok(
+            truthBounds.x > estimateBounds.x,
+            "Truth stays beside the estimate on phones",
+          );
+          const values = await page
+            .locator(".did-effect-card > strong")
+            .evaluateAll((nodes) =>
+              nodes.map((node) => node.getBoundingClientRect().y),
+            );
+          assert.ok(
+            Math.abs(values[0] - values[1]) < 1,
+            "Effect values align for direct comparison",
+          );
           const colors = await page
             .locator(".did-chart")
             .evaluate((svg) =>

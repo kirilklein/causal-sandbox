@@ -7,6 +7,7 @@ import {
 } from "./lesson-navigation.js";
 import { didDefaults, didWorld, estimateDid, didHistory } from "./did.js";
 import { didChart } from "./did-view.js";
+import { effectComparison } from "./effect-comparison.js";
 import icon from "./brand.svg?raw";
 
 const steps = [
@@ -113,10 +114,24 @@ function renderEvidence() {
       `<div class="did-takeaway"><span>A without the program · assumed, not observed</span><strong>40% + 10 pp = 50%</strong><p>Parallel trends means the same <em>change</em> without treatment. It does not mean the same recovery rate.</p></div>`;
   } else {
     const bias = estimate.effect - world.truth.effect;
+    const revealed = step >= 4 && showTruth;
+    // Match other recovery-rate lessons: the shared tint uses risk, not pp.
+    const { tint } = effectComparison(
+      estimate.effect / 100,
+      world.truth.effect / 100,
+    );
     el("result").innerHTML =
-      `<div class="did-calculation"><div><span>A’s change</span><strong>${signed(estimate.treatedChange)} pp</strong><small>${a1}% − ${a0}%</small></div><b aria-hidden="true">−</b><div><span>B’s change</span><strong>${signed(estimate.comparisonChange)} pp</strong><small>${b1}% − ${b0}%</small></div><b aria-hidden="true">=</b><div class="did-estimate"><span>DiD estimate</span><strong>${signed(estimate.effect)} pp</strong><small>${a1}% − ${estimate.counterfactual}%</small></div></div>
+      `<div class="did-effect-summary" aria-label="Effects for Hospital A at follow-up">
+        <div class="did-effect-card did-estimate" style="--error-tint:${revealed ? tint : 0}%">
+          <span>DiD estimate</span><strong>${signed(estimate.effect)} pp</strong>
+          <small>${a1}% − ${estimate.counterfactual}%</small>
+          ${revealed ? `<span class="did-effect-error">${signed(bias)} pp from truth</span>` : ""}
+        </div>
+        ${revealed ? `<div class="did-effect-card did-truth-result"><span>Simulated true effect</span><strong>${signed(world.truth.effect)} pp</strong><small>${a1}% − ${world.truth.untreatedAfter}%</small><span class="did-effect-source">Known only in the simulator</span></div>` : ""}
+      </div>
+      <p class="did-calculation">DiD = (${signed(estimate.treatedChange)} pp in A) − (${signed(estimate.comparisonChange)} pp in B)</p>
       <p class="did-interpretation">${step === 3 ? `Under parallel trends: ${signed(estimate.effect)} percentage points for A, compared with A without the program. ${experiment === "gap" ? "Changing the starting gap leaves this estimate unchanged." : "A shared improvement cancels when we subtract the changes."}` : step === 4 ? `The program still adds 15 points. ${bias === 0 ? "With no extra change in A, DiD recovers that effect." : `DiD also counts A’s ${signed(bias)}-point unrelated change as a program effect.`}` : history === "parallel" ? "In this simulated world, the untreated changes remain parallel after the program starts. The observed history alone cannot tell us that." : history === "drift" ? "A was already improving faster. Its earlier trend challenges the equal-change assumption." : "The pre-treatment histories are unchanged, but a new staffing improvement affects only A. Parallel pre-trends do not rule out this post-treatment shock."}</p>
-      ${step >= 4 && showTruth ? `<div class="did-truth-result"><span>Simulator truth · unavailable in real data</span><strong>${a1}% − ${world.truth.untreatedAfter}% = +15 pp</strong><p>Actual recovery in A minus its known recovery without the program. DiD error: ${signed(bias)} pp.</p></div>` : ""}`;
+      ${revealed ? '<p class="did-color-note">Red tint shows distance from simulator truth.</p>' : ""}`;
   }
 }
 

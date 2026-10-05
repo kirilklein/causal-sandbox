@@ -219,59 +219,82 @@
   flex-basis: 100%;
   margin-top: 5px;
 }
-.did-takeaway,
-.did-truth-result {
+.did-takeaway {
   padding: 18px 20px;
   background: var(--accent-surface);
   border-radius: 10px;
 }
-.did-takeaway > span,
-.did-truth-result > span {
+.did-takeaway > span {
   display: block;
   font-size: 12px;
   margin-bottom: 6px;
 }
-.did-takeaway > strong,
-.did-truth-result > strong {
+.did-takeaway > strong {
   font-size: clamp(19px, 3vw, 25px);
   font-variant-numeric: tabular-nums;
 }
-.did-page .did-takeaway p,
-.did-page .did-truth-result p {
+.did-page .did-takeaway p {
   font-size: 14px;
   margin: 8px 0 0;
 }
-.did-calculation {
+.did-effect-summary {
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1.2fr;
-  align-items: center;
-  gap: 14px;
-  padding-top: 15px;
-  border-top: 1px solid var(--border);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-.did-calculation > div {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.did-effect-summary:has(> :only-child) {
+  grid-template-columns: 1fr;
 }
-.did-calculation span,
+.did-effect-card {
+  display: grid;
+  grid-template-rows: 42px auto auto 1fr;
+  align-content: start;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 10px;
+}
+.did-effect-card > span {
+  font-size: 13px;
+}
+.did-effect-card > strong {
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.did-effect-card > small,
+.did-effect-card .did-effect-source {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.did-effect-error {
+  font-weight: 600;
+}
+.did-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--page)
+  );
+}
+:root[data-theme="dark"] .did-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+.did-page .did-calculation,
+.did-page .did-color-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
 .did-changes span {
   font-size: 12px;
   color: var(--text-secondary);
 }
-.did-calculation strong,
 .did-changes strong {
   font-size: clamp(21px, 3vw, 30px);
   font-variant-numeric: tabular-nums;
-}
-.did-calculation small {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.did-estimate {
-  padding: 12px;
-  background: var(--accent-surface);
-  border-radius: 8px;
 }
 .did-changes {
   display: grid;
@@ -296,7 +319,6 @@
     var(--surface)
   );
   border-left: 3px solid var(--counterfactual-truth);
-  margin-top: 14px;
 }
 .did-actions {
   display: flex;
@@ -418,14 +440,11 @@
     flex-direction: column;
     gap: 4px;
   }
-  .did-calculation {
-    gap: 7px;
+  .did-effect-summary {
+    gap: 8px;
   }
-  .did-calculation strong {
-    font-size: 21px;
-  }
-  .did-estimate {
-    padding: 9px 6px;
+  .did-effect-card {
+    padding: 12px;
   }
   .did-actions .primary {
     width: 100%;
