@@ -7,23 +7,64 @@ const path = (points) =>
 const line = (fn, count = 32) =>
   Array.from({ length: count + 1 }, (_, i) => fn(i / count));
 
-// Fixed oblique projection keeps the same frame throughout the teaching sequence.
-// Every surface vertex is lifted from (revenue, orders, 0) to its computed ratio.
-export function jointSurfacePlot(rho, stage, width, progress = 1) {
-  const model = jointRatioApproximation(rho);
-  const height = width < 500 ? 390 : 480;
-  const project = (revenue, orders, ratio = 0) => {
-    const x = (revenue - 14) / 12;
-    const y = (orders - 1.4) / 1.2;
+// Rotate normalized data coordinates, then fit the entire frame without changing
+// its aspect ratio. The third coordinate orders translucent surface cells by depth.
+export function createJointProjection(
+  width,
+  height,
+  { yaw = 0, pitch = 0 } = {},
+) {
+  const rotate = (x, y, z) => {
+    const rx = Math.cos(yaw) * x - Math.sin(yaw) * y;
+    const ry = Math.sin(yaw) * x + Math.cos(yaw) * y;
     return [
-      width * (0.09 + 0.56 * x + 0.22 * y),
-      height * (0.8 + 0.1 * x - 0.1 * y - (0.62 * ratio) / 20),
+      rx,
+      Math.cos(pitch) * ry - Math.sin(pitch) * z,
+      Math.sin(pitch) * ry + Math.cos(pitch) * z,
     ];
   };
+  const raw = (x, y, z) => {
+    const [rx, ry, rz] = rotate(x, y, z);
+    return [
+      width * (0.56 * rx + 0.22 * ry),
+      height * (0.1 * rx - 0.1 * ry - 0.62 * rz),
+      -0.1364 * rx + 0.3472 * ry - 0.078 * rz,
+    ];
+  };
+  const corners = [-0.5, 0.5].flatMap((x) =>
+    [-0.5, 0.5].flatMap((y) => [-0.5, 0.5].map((z) => raw(x, y, z))),
+  );
+  const scale = Math.min(
+    (width * 0.39) / Math.max(...corners.map(([x]) => Math.abs(x))),
+    (height * 0.41) / Math.max(...corners.map(([, y]) => Math.abs(y))),
+  );
+  return (revenue, orders, ratio = 0) => {
+    const [x, y, depth] = raw(
+      (revenue - 14) / 12 - 0.5,
+      (orders - 1.4) / 1.2 - 0.5,
+      ratio / 20 - 0.5,
+    );
+    return [width * 0.48 + x * scale, height * 0.49 + y * scale, depth];
+  };
+}
+
+// Every surface vertex is lifted from the floor to its computed ratio.
+export function jointSurfacePlot(rho, stage, width, progress = 1, view = {}) {
+  const model = jointRatioApproximation(rho);
+  const height = width < 500 ? 390 : 480;
+  const project = createJointProjection(width, height, view);
   const segment = (a, b, cls = "dm-axis") =>
     `<path class="${cls}" d="${path([a, b])}"/>`;
-  const label = (point, text, dx = 0, dy = 0, anchor = "middle") =>
-    `<text x="${point[0] + dx}" y="${point[1] + dy}" text-anchor="${anchor}">${text}</text>`;
+  const label = (point, text, dx = 0, dy = 0, anchor = "middle") => {
+    const textWidth = String(text).length * 8;
+    const before =
+      anchor === "end" ? textWidth : anchor === "middle" ? textWidth / 2 : 0;
+    const after =
+      anchor === "start" ? textWidth : anchor === "middle" ? textWidth / 2 : 0;
+    const x = Math.max(4 + before, Math.min(width - 4 - after, point[0] + dx));
+    const y = Math.max(16, Math.min(height - 5, point[1] + dy));
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}">${text}</text>`;
+  };
   const grid = [];
   for (const revenue of [14, 18, 22, 26]) {
     grid.push(segment(project(revenue, 1.4), project(revenue, 2.6)));
@@ -41,14 +82,15 @@ export function jointSurfacePlot(rho, stage, width, progress = 1) {
   if (stage >= 1) {
     const lift = stage === 1 ? progress : 1;
     const vertex = (r, o) => project(r, o, model.transform(r, o) * lift);
-    // Back rows first; translucent cells retain the input plane underneath.
+    // Sort translucent cells by camera depth after building the mesh.
     for (let j = 11; j >= 0; j--) {
       for (let i = 0; i < 12; i++) {
         const r = 14 + i,
           o = 1.4 + j * 0.1;
-        surface.push(
-          `<path class="dm-ratio-surface" d="${path([vertex(r, o), vertex(r + 1, o), vertex(r + 1, o + 0.1), vertex(r, o + 0.1)])}Z"/>`,
-        );
+        surface.push({
+          depth: vertex(r + 0.5, o + 0.05)[2],
+          markup: `<path class="dm-ratio-surface" d="${path([vertex(r, o), vertex(r + 1, o), vertex(r + 1, o + 0.1), vertex(r, o + 0.1)])}Z"/>`,
+        });
       }
     }
   }
@@ -102,11 +144,14 @@ export function jointSurfacePlot(rho, stage, width, progress = 1) {
       )}"/>`,
     );
   }
-  return `<svg class="dm-chart dm-joint-chart" viewBox="0 0 ${width} ${height}" role="img" data-stage="${stage}" data-progress="${progress.toFixed(3)}" aria-label="Three dimensional ratio diagram. Floor axes: average revenue and orders per visitor. Height: euros per order. ${stage >= 1 ? "Curved surface: revenue divided by orders." : "Input uncertainty ellipse and two marked pairs; no surface yet."} ${stage >= 2 ? "Vertical guides map the input pairs to their ratios." : ""} ${stage >= 3 ? "Blue tangent varies revenue." : ""} ${stage >= 4 ? "Orange tangent varies orders; both meet at the population center." : ""}">
+  return `<svg class="dm-chart dm-joint-chart" viewBox="0 0 ${width} ${height}" role="img" data-yaw="${view.yaw || 0}" data-pitch="${view.pitch || 0}" data-stage="${stage}" data-progress="${progress.toFixed(3)}" aria-label="Three dimensional ratio diagram. Floor axes: average revenue and orders per visitor. Height: euros per order. ${stage >= 1 ? "Curved surface: revenue divided by orders." : "Input uncertainty ellipse and two marked pairs; no surface yet."} ${stage >= 2 ? "Vertical guides map the input pairs to their ratios." : ""} ${stage >= 3 ? "Blue tangent varies revenue." : ""} ${stage >= 4 ? "Orange tangent varies orders; both meet at the population center." : ""}">
     <text x="12" y="22">Height: € / order</text>
     ${grid.join("")}
     ${segment(project(26, 2.6), project(26, 2.6, 20), "dm-coordinate-axis")}
-    ${surface.join("")}
+    ${surface
+      .sort((a, b) => b.depth - a.depth)
+      .map((cell) => cell.markup)
+      .join("")}
     <path class="dm-floor-ellipse" d="${ellipse}Z"/>
     ${tangents.join("")}
     ${dots}

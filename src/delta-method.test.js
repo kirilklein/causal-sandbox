@@ -1,3 +1,4 @@
+import { createJointProjection } from "./delta-method-joint.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -245,4 +246,22 @@ test("ratio surface and tangent agree in value and both slopes at the population
   const error = (d) =>
     Math.abs(m.transform(20 + d, 2 - d / 10) - m.tangent(20 + d, 2 - d / 10));
   assert.ok(error(0.1) < error(1) / 50);
+});
+
+test("rotating the joint scene keeps the data frame within the viewport", () => {
+  for (const width of [258, 720]) {
+    const height = width < 500 ? 390 : 480;
+    for (const yaw of [0, 0.6, Math.PI / 2, Math.PI, 4.7]) {
+      for (const pitch of [-0.75, 0, 0.75]) {
+        const project = createJointProjection(width, height, { yaw, pitch });
+        for (const r of [14, 26])
+          for (const o of [1.4, 2.6])
+            for (const z of [0, 20]) {
+              const [x, y] = project(r, o, z);
+              assert.ok(x >= width * 0.09 - 1e-8 && x <= width * 0.87 + 1e-8);
+              assert.ok(y >= height * 0.08 - 1e-8 && y <= height * 0.9 + 1e-8);
+            }
+      }
+    }
+  }
 });

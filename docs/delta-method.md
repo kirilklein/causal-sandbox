@@ -54,7 +54,10 @@ This movement constructs the mapping; it does not represent changes over time or
 new data. Projection lines and tangents reveal over 0.7 seconds. Previous removes
 later elements; replay can be finished early. Reduced motion shows the completed
 step immediately. Navigation, resize and preference changes finish/cancel motion.
-A fixed oblique SVG projection preserves all coordinates across the sequence.
+The SVG scene supports pointer/touch dragging and arrow-key rotation, with Home
+and a Reset view button restoring the initial angle. Camera orientation persists
+across steps and changes no data. Rotation finishes any active reveal. Frame
+corners determine a uniform fit, and surface cells are sorted by camera depth.
 
 Both tangents meet at (20, 2, 10). Their slopes are 0.5 with respect to revenue
 and -5 with respect to orders. Changing correlation in the final step changes the

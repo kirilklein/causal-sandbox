@@ -148,6 +148,52 @@ try {
       path: `test-results/delta-method/surface-step-${step}.png`,
     });
   }
+  const initialScene = await page.locator("#dm-joint-plot svg").innerHTML();
+  const scene = page.locator("#dm-joint-plot");
+  await scene.focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowUp");
+  await expect(scene.locator("svg")).toHaveAttribute("data-yaw", "0.12");
+  await page.locator("#dm-joint-prev").click();
+  await expect(scene.locator("svg")).toHaveAttribute("data-yaw", "0.12");
+  await page.locator("#dm-joint-next").click();
+  await scene.focus();
+  await page.keyboard.press("Home");
+  assert.equal(await scene.locator("svg").innerHTML(), initialScene);
+  const box = await scene.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    box.x + box.width / 2 + 80,
+    box.y + box.height / 2 + 30,
+    { steps: 5 },
+  );
+  await page.mouse.up();
+  await expect(scene.locator("svg")).not.toHaveAttribute("data-yaw", "0");
+  await scene.screenshot({
+    path: "test-results/delta-method/rotated-scene.png",
+  });
+  await page.locator("#dm-reset-view").click();
+  assert.equal(await scene.locator("svg").innerHTML(), initialScene);
+  const touch = await page.context().newCDPSession(page);
+  await touch.send("Emulation.setTouchEmulationEnabled", { enabled: true });
+  const origin = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await touch.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [origin],
+  });
+  await touch.send("Input.dispatchTouchEvent", {
+    type: "touchMove",
+    touchPoints: [{ x: origin.x + 45, y: origin.y - 20 }],
+  });
+  await touch.send("Input.dispatchTouchEvent", {
+    type: "touchEnd",
+    touchPoints: [],
+  });
+  await expect(scene.locator("svg")).not.toHaveAttribute("data-yaw", "0");
+  await touch.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+  await touch.detach();
+  await page.locator("#dm-reset-view").click();
   // Going back removes later explanations and marks; replay can finish early.
   await page.locator("#dm-joint-prev").click();
   await expect(page.locator("#dm-correlation")).toBeHidden();

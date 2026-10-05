@@ -288,3 +288,17 @@
     grid-row: 2;
   }
 }
+
+.dm-page #dm-joint-plot {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.dm-page #dm-joint-plot[data-dragging] {
+  cursor: grabbing;
+}
+.dm-page #dm-joint-plot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}

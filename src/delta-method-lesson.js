@@ -103,7 +103,9 @@ document.querySelector("#app").innerHTML =
         <button id="dm-joint-next" class="primary"></button>
         <button id="dm-joint-replay">Replay motion</button>
       </div>
-      <div id="dm-joint-plot"></div>
+      <p id="dm-rotate-hint" class="small">Drag to rotate · Arrow keys to turn and tilt · Home to reset</p>
+      <button id="dm-reset-view">Reset view</button>
+      <div id="dm-joint-plot" tabindex="0" role="group" aria-label="Rotatable 3D ratio scene" aria-describedby="dm-rotate-hint"></div>
       <p class="small dm-joint-key"><span class="dm-center-key">● Population center</span> · <span class="dm-example-key">● Illustrative pair</span><span id="dm-revenue-key" hidden> · Blue: revenue tangent</span><span id="dm-orders-key" hidden> · Orange: orders tangent</span></p>
       <p id="dm-joint-values" class="small" hidden></p>
       <div id="dm-joint-covariance" hidden>
@@ -357,6 +359,8 @@ const jointSteps = [
 ];
 let jointStep = 0;
 let jointFrame = 0;
+const jointView = { yaw: 0, pitch: 0 };
+let jointDrag = null;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 function renderJointPlot(progress = 1) {
   el("dm-joint-plot").innerHTML = jointSurfacePlot(
@@ -364,6 +368,7 @@ function renderJointPlot(progress = 1) {
     jointStep,
     width("dm-joint-plot"),
     progress,
+    jointView,
   );
 }
 function finishJointMotion() {
@@ -372,6 +377,57 @@ function finishJointMotion() {
   renderJointPlot();
   el("dm-joint-replay").textContent = "Replay motion";
 }
+function rotateJoint(dx, dy) {
+  jointView.yaw = (jointView.yaw + dx) % (2 * Math.PI);
+  jointView.pitch = Math.max(-0.75, Math.min(0.75, jointView.pitch + dy));
+  finishJointMotion();
+}
+function resetJointView() {
+  jointView.yaw = 0;
+  jointView.pitch = 0;
+  finishJointMotion();
+}
+el("dm-reset-view").addEventListener("click", resetJointView);
+const jointPlot = el("dm-joint-plot");
+jointPlot.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 || !event.isPrimary) return;
+  finishJointMotion();
+  jointDrag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  jointPlot.setPointerCapture(event.pointerId);
+  jointPlot.dataset.dragging = "true";
+  jointPlot.focus({ preventScroll: true });
+});
+jointPlot.addEventListener("pointermove", (event) => {
+  if (!jointDrag || jointDrag.id !== event.pointerId) return;
+  rotateJoint(
+    (event.clientX - jointDrag.x) * 0.008,
+    (event.clientY - jointDrag.y) * 0.005,
+  );
+  jointDrag.x = event.clientX;
+  jointDrag.y = event.clientY;
+});
+const releaseJoint = () => {
+  jointDrag = null;
+  delete jointPlot.dataset.dragging;
+};
+jointPlot.addEventListener("pointerup", releaseJoint);
+jointPlot.addEventListener("pointercancel", releaseJoint);
+jointPlot.addEventListener("lostpointercapture", releaseJoint);
+jointPlot.addEventListener("keydown", (event) => {
+  const turns = {
+    ArrowLeft: [-0.12, 0],
+    ArrowRight: [0.12, 0],
+    ArrowUp: [0, -0.08],
+    ArrowDown: [0, 0.08],
+  };
+  if (event.key === "Home") {
+    event.preventDefault();
+    resetJointView();
+  } else if (turns[event.key]) {
+    event.preventDefault();
+    rotateJoint(...turns[event.key]);
+  }
+});
 function animateJoint() {
   finishJointMotion();
   if (reducedMotion.matches || jointStep === 0 || jointStep === 5) return;
