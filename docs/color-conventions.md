@@ -25,8 +25,9 @@ color literals in component styles or JavaScript. The standalone favicon keeps
 light fallback colors; when embedded in the app, it inherits the shared palette.
 The offline visual examples below illustrate the light palette.
 
-The header offers System, Light, and Dark. System follows the device preference;
-an explicit choice persists across lessons, the sandbox, and reloads. The initial
+The header offers a sun/moon switch for Light and Dark. Until the first explicit
+choice, the theme follows the device preference; switching persists the choice
+across lessons, the sandbox, and reloads. There is no System option. The initial
 HTML resolves the preference before the app paints. Theme changes update SVG and
 CSS directly and redraw the sandbox canvas without resimulating the population.
 If browser storage is unavailable, the choice still works for the current page.

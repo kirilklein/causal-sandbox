@@ -1230,7 +1230,9 @@ try {
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const theme of ["light", "dark"]) {
-      await page.getByLabel("Color theme").selectOption(theme);
+      await page
+        .getByRole("switch", { name: "Dark mode" })
+        .setChecked(theme === "dark");
       assert.equal(await result(), complete);
       assert.ok(
         await page.evaluate(
@@ -1248,7 +1250,7 @@ try {
       });
     }
   }
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await progress.tap();
   assert.ok(Number(await progress.inputValue()) < 100);
   await page.locator("#redraw").click();
@@ -1755,7 +1757,7 @@ try {
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const theme of ["light", "dark"]) {
-      await page.locator("#theme").selectOption(theme);
+      await page.locator("#theme").setChecked(theme === "dark");
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,

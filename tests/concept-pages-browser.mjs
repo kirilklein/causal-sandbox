@@ -203,7 +203,7 @@ try {
     await page.locator(".glossary-back").first().getAttribute("href"),
     "glossary/#glossary-title",
   );
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     assert.ok(
@@ -250,7 +250,7 @@ try {
   await modelDetails.locator("summary").focus();
   await page.keyboard.press("Enter");
   assert.equal(await modelDetails.getAttribute("open"), "");
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   assert.equal(await page.locator("html").getAttribute("data-theme"), "light");
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -267,14 +267,14 @@ try {
       });
     }
   }
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
   await page.setViewportSize({ width: 390, height: 900 });
   await page.screenshot({
     path: "/tmp/causal-methodology-dark-390.png",
     fullPage: true,
   });
-  await page.getByLabel("Color theme").selectOption("system");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
 
   for (const concept of pages) {
     const response = await page.goto(new URL(concept.path, root).href);

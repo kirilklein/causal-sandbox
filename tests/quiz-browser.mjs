@@ -296,7 +296,7 @@ try {
   // Touch, reduced motion, dark mode, long question and result text at 320px.
   await page.setViewportSize({ width: 320, height: 800 });
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.screenshot({
     path: "/tmp/adaptive-results-mobile.png",
     fullPage: true,

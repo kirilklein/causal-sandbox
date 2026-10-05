@@ -114,7 +114,9 @@ try {
   ).toBeVisible();
   await page.keyboard.press("Escape");
   for (const theme of ["light", "dark"]) {
-    await page.getByLabel("Color theme").selectOption(theme);
+    await page
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(theme === "dark");
     await page.setViewportSize({ width: 375, height: 812 });
     for (const chapter of [0, 1, 2, 3]) {
       await page.locator(`[data-chapter="${chapter}"]`).click();

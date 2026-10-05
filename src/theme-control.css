@@ -1,21 +1,70 @@
 .theme-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 68px;
+  height: 44px;
+  cursor: pointer;
+}
+.theme-control input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.theme-track {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  white-space: nowrap;
-}
-.theme-control select {
-  font: inherit;
-  color: var(--text);
-  background: var(--surface);
+  justify-content: space-around;
+  width: 100%;
+  height: 36px;
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  padding: 6px;
-  min-height: 36px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  pointer-events: none;
 }
-.theme-control select:focus-visible {
+.theme-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: transform 180ms ease;
+}
+.theme-track svg {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+}
+.theme-track .theme-sun {
+  color: var(--on-accent);
+}
+.theme-control input:checked + .theme-track .theme-thumb {
+  transform: translateX(32px);
+}
+.theme-control input:checked + .theme-track .theme-sun {
+  color: var(--text-secondary);
+}
+.theme-control input:checked + .theme-track .theme-moon {
+  color: var(--on-accent);
+}
+.theme-control:hover .theme-track {
+  border-color: var(--accent);
+}
+.theme-control input:focus-visible + .theme-track {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-thumb {
+    transition: none;
+  }
 }
