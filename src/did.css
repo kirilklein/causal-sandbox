@@ -17,7 +17,7 @@
   gap: 7px;
   margin-top: 26px;
 }
-.did-steps button {
+.did-page .did-steps button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -428,7 +428,7 @@
   .did-steps {
     grid-template-columns: repeat(3, 1fr);
   }
-  .did-steps button {
+  .did-page .did-steps button {
     flex-direction: row;
     align-items: center;
     padding: 9px;
