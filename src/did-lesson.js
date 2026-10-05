@@ -5,7 +5,13 @@ import {
   lessonNavigation,
   setupLessonNavigation,
 } from "./lesson-navigation.js";
-import { didDefaults, didWorld, estimateDid, didHistory } from "./did.js";
+import {
+  didDefaults,
+  didWorld,
+  estimateDid,
+  didHistory,
+  didRegression,
+} from "./did.js";
 import { didChart } from "./did-view.js";
 import { effectComparison } from "./effect-comparison.js";
 import icon from "./brand.svg?raw";
@@ -44,6 +50,8 @@ let experiment = "gap";
 let history = "parallel";
 let showTruth = false;
 let width = 760;
+let regressionAnswer = null;
+let communicationAnswer = null;
 
 document.title = "Difference-in-differences · Causal Sandbox";
 document.querySelector("#app").innerHTML =
@@ -69,6 +77,7 @@ document.querySelector("#app").innerHTML =
       <p><strong>The target:</strong> ATE asks about the average effect for everyone; ATT asks about those treated. Here we target the ATT for Hospital A’s post-program patients. DiD is a way to estimate an effect, not a different target population.</p>
       <p><strong>The assumption:</strong> earlier adjustment lessons compare outcome levels among people with similar measured confounders. DiD instead assumes comparable <em>untreated changes</em> over time. A stable starting gap can cancel; a hospital-specific improvement need not.</p>
       <p><strong>The connection:</strong> with multiple hospitals, baseline characteristics may help make untreated changes comparable. <a href="?lesson=ipw">Weighting</a> and <a href="?lesson=outcome-regression">outcome regression</a> can then be used within DiD, under parallel trends conditional on those characteristics. More hospitals alone do not make that assumption true.</p>
+      <p><a href="?lesson=did-adjustment">Next: which hospitals make a credible comparison? →</a></p>
     </section>
     <details class="did-details"><summary>What makes this a causal comparison?</summary>
       <p><strong>Parallel trends:</strong> without the program, the average recovery rate in A would change by the same number of percentage points as in B. Their starting levels can differ. This assumption concerns untreated outcomes, not the two observed lines after treatment.</p>
@@ -80,6 +89,13 @@ document.querySelector("#app").innerHTML =
       <p class="did-equation">DiD = (A after − A before) − (B after − B before)</p>
       <p>Equivalently: A after − [A before + B’s change]. The bracketed term is A’s inferred recovery without the program. The estimate uses only observed group averages. Simulator truth is used only to check it.</p>
     </details>
+    <details class="did-details"><summary>The same comparison as a regression</summary>
+      <div id="did-regression"></div>
+      <p>In OLS with an intercept, binary group, binary period, their interaction, all four cells present, and no extra covariates, the interaction equals the four-cell DiD with the same observations and averaging weights. This algebra still holds when the causal assumptions fail.</p>
+      <p>This group-by-period regression is distinct from modelling untreated change using baseline covariates. Adding arbitrary covariates need not preserve the raw four-mean formula; this example does not validate staggered-adoption comparisons.</p>
+      <p>Teaching inspiration: Scott Cunningham’s <a href="https://mixtape.scunning.com/08a-difference_in_differences#four-averages-and-three-subtractions">“four averages and three subtractions”</a> in <em>Causal Inference: The Remix</em>, section 9.2.</p>
+    </details>
+    <details class="did-details"><summary>Explain the result to a hospital director</summary><div id="did-communication"></div></details>
     <details class="did-details"><summary>References and next steps</summary>
       <p><a href="https://pedrohcgs.github.io/files/RSBP_DiD_Review.pdf">Roth, Sant’Anna, Bilinski & Poe (2023)</a> explain identification, parallel trends, and inference in DiD. <a href="https://doi.org/10.1257/aeri.20210236">Roth (2022)</a> explains why passing a pre-trend test does not establish parallel trends.</p>
       <p><a href="https://psantanna.com/DRDID/">Sant’Anna & Zhao (2020)</a> connect covariate-adjusted DiD with outcome regression, weighting, and doubly robust estimation of the ATT.</p>
@@ -108,6 +124,7 @@ function renderEvidence() {
     comparisonBefore: b0,
     comparisonAfter: b1,
   } = world.observed;
+  renderBridge(world.observed);
   el("chart").innerHTML = didChart({ world, estimate, step, showTruth, width });
   el("caption").innerHTML =
     `<span class="did-key did-treated">▲ Hospital A · receives the program</span>${step > 0 ? '<span class="did-key did-comparison">● Hospital B · no program</span>' : ""}${step >= 2 ? '<span class="did-key"><i class="did-dashed"></i>Assumed A without program</span>' : ""}${step >= 4 && showTruth ? '<span class="did-key"><i class="did-truth-key"></i>Simulator-known A without program</span>' : ""}<span class="did-chart-note">Baseline is measured before the program. Follow-up is measured after it. Solid lines connect observed period averages.</span>`;
@@ -278,7 +295,7 @@ el("back").addEventListener("click", () => {
 el("reset").addEventListener("click", () => {
   step = 0;
   parameters = { ...didDefaults };
-  prediction = practice = null;
+  prediction = practice = regressionAnswer = communicationAnswer = null;
   experiment = "gap";
   history = "parallel";
   showTruth = false;
@@ -292,3 +309,47 @@ new ResizeObserver(([entry]) => {
   }
 }).observe(el("chart"));
 renderStep();
+
+function renderBridge(observed) {
+  const r = didRegression(observed);
+  const estimate = estimateDid(observed);
+  el("regression").innerHTML =
+    `<p>Current four-cell contrast: (${observed.treatedAfter} − ${observed.treatedBefore}) − (${observed.comparisonAfter} − ${observed.comparisonBefore}) = ${signed(r.delta)} pp.</p>
+    <fieldset class="did-choices"><legend>Predict: does writing this comparison as a regression change the estimate?</legend><button data-regression-answer="yes" aria-pressed="${regressionAnswer === "yes"}">Yes</button><button data-regression-answer="no" aria-pressed="${regressionAnswer === "no"}">No</button></fieldset><p id="did-regression-feedback" role="status"></p>
+    <p>Y = α + β × TreatedGroup + γ × Post + δ × (TreatedGroup × Post) + error</p>
+    <p>TreatedGroup marks A at both baseline and follow-up. Post marks follow-up for both groups. Y is recovery in percent; differences are percentage points.</p>
+    <p>α = ${r.alpha}: B at baseline. β = ${signed(r.beta)}: A minus B at baseline. γ = ${signed(r.gamma)}: B’s change. δ = ${signed(r.delta)}: the difference in changes.</p>
+    <p>Fitted B: ${r.alpha}% before, ${r.cells.comparisonAfter}% after. Fitted A: ${r.cells.treatedBefore}% before; ${r.alpha} ${signed(r.beta)} ${signed(r.gamma)} ${signed(r.delta)} = ${r.cells.treatedAfter}% after. Removing the interaction gives ${r.alpha} ${signed(r.beta)} ${signed(r.gamma)} = ${r.counterfactual}%: A’s untreated follow-up <strong>assumed, not observed</strong>.</p>`;
+  el("communication").innerHTML =
+    `<fieldset class="did-choices"><legend>Which explanation preserves the comparison and its assumption?</legend><button data-communication-answer="improvement" aria-pressed="${communicationAnswer === "improvement"}">A improved ${signed(estimate.treatedChange)} points, so that is the program effect.</button><button data-communication-answer="proven" aria-pressed="${communicationAnswer === "proven"}">The comparison proves an effect of ${signed(estimate.effect)} points.</button><button data-communication-answer="qualified" aria-pressed="${communicationAnswer === "qualified"}">Subtract B’s improvement, if it represents A’s improvement without the program.</button></fieldset><p id="did-communication-feedback" role="status"></p>`;
+  updateBridgeFeedback();
+}
+function updateBridgeFeedback() {
+  const estimate = estimateDid(currentWorld().observed);
+  el("regression-feedback").textContent =
+    regressionAnswer === null
+      ? ""
+      : `${regressionAnswer === "no" ? "✓ Correct." : "! Reconsider."} The representation changes; the estimate stays ${signed(estimate.effect)} pp. Causal interpretation still requires the design assumptions.`;
+  el("communication-feedback").textContent =
+    communicationAnswer === null
+      ? ""
+      : `${communicationAnswer === "qualified" ? "✓ Correct." : "! Reconsider."} Recovery changed by ${signed(estimate.treatedChange)} percentage points in A and ${signed(estimate.comparisonChange)} in B. If A would have changed by the same ${signed(estimate.comparisonChange)} points without the program, the estimated program effect for A is ${signed(estimate.effect)} points.`;
+}
+el("regression").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-regression-answer]");
+  if (!button) return;
+  regressionAnswer = button.dataset.regressionAnswer;
+  el("regression")
+    .querySelectorAll("button")
+    .forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+  updateBridgeFeedback();
+});
+el("communication").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-communication-answer]");
+  if (!button) return;
+  communicationAnswer = button.dataset.communicationAnswer;
+  el("communication")
+    .querySelectorAll("button")
+    .forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+  updateBridgeFeedback();
+});

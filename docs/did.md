@@ -7,8 +7,10 @@ A short opening connects DiD to the same missing-counterfactual question as the
 core lessons. The visible comparison below the experiment separates the target
 (ATE versus ATT), the assumption (comparable untreated changes versus adjusted
 outcome levels), and the estimator. Links return to IPW and outcome regression;
-conditional parallel trends introduces their use within DiD without implementing
-multi-hospital adjustment in this lesson.
+conditional parallel trends introduces their use within DiD with a link to the
+separate [Comparable hospitals chapter](did-adjustment.md).
+Optional regression and director-facing exercises connect the four observed
+means to the group-by-period interaction without changing the six stages.
 
 ## Storyboard
 

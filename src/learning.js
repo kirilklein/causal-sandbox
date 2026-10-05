@@ -45,6 +45,7 @@ export function learningFrame(title, current, body) {
 }
 
 const background = {
+  "did-adjustment": ["difference-in-differences", "confounding", "what-if"],
   "difference-in-differences": ["what-if", "confounding", "hidden-confounding"],
   uplift: [
     "what-if",
@@ -140,6 +141,7 @@ const groups = [
       "misspecification",
       "front-door",
       "difference-in-differences",
+      "did-adjustment",
       "double-robustness",
       "tmle",
       "tmle-robustness",

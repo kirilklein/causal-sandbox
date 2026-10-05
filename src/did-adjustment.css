@@ -1,0 +1,40 @@
+.da-page .did-steps {
+  grid-template-columns: repeat(4, 1fr);
+}
+.da-target {
+  font-size: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.da-contributions,
+.da-panels.da-panels-wide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.da-panels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+.da-contributions {
+  margin-top: 20px;
+}
+.da-contributions p {
+  font-size: 13px;
+  margin: 6px 0;
+}
+.da-share {
+  height: 8px;
+  background: var(--surface-subtle);
+}
+.da-share span {
+  display: block;
+  height: 100%;
+  background: var(--arm-1);
+}
+@media (max-width: 700px) {
+  .da-page .did-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

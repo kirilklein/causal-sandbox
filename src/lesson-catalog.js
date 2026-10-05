@@ -60,6 +60,15 @@ export const optionalChapters = [
       "Build a missing counterfactual from a comparison group’s change, then test the parallel-trends assumption.",
   },
   {
+    id: "did-adjustment",
+    menuTitle: "Comparable hospitals",
+    after: 9,
+    title: "Which hospitals make a credible comparison?",
+    href: "?lesson=did-adjustment",
+    description:
+      "Distinguish starting gaps from different untreated changes, then compare hospitals within baseline capacity groups.",
+  },
+  {
     id: "uplift",
     menuTitle: "Uplift modelling",
     track: true,
