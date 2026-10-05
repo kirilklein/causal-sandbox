@@ -53,7 +53,7 @@ export function transformationPlots(mean, sd, stage, point = mean) {
     }
     ${stage === 0 || stage >= 2 ? guides : ""}
     ${[-1, 0, 1].map((z) => `<text x="${x(mean + z * sd)}" y="240" text-anchor="middle">${number(mean + z * sd)}</text>`).join("")}
-    ${stage >= 1 ? `<path class="dm-input" d="${inputDensity}L372 294H48Z"/>` : ""}
+    ${stage >= 1 ? `<path class="dm-input" d="${inputDensity}"/>` : ""}
     <text x="210" y="319" text-anchor="middle">x · Estimated orders per visitor</text>
   </svg>`;
   if (stage < 2) return curveSvg;
