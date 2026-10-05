@@ -68,16 +68,20 @@ export function jointRatioApproximation(rho) {
   const revenueContribution = 1;
   const ordersContribution = 1;
   const covarianceContribution = -2 * rho;
+  const contour = (angle) => ({
+    orders: 2 + 0.4 * Math.cos(angle),
+    revenue:
+      20 +
+      4 * (rho * Math.cos(angle) + Math.sqrt(1 - rho ** 2) * Math.sin(angle)),
+  });
   return {
     se: Math.sqrt(
       revenueContribution + ordersContribution + covarianceContribution,
     ),
-    contour: (angle) => ({
-      orders: 2 + 0.4 * Math.cos(angle),
-      revenue:
-        20 +
-        4 * (rho * Math.cos(angle) + Math.sqrt(1 - rho ** 2) * Math.sin(angle)),
-    }),
+    transform: (revenue, orders) => revenue / orders,
+    tangent: (revenue, orders) => 10 + 0.5 * (revenue - 20) - 5 * (orders - 2),
+    contour,
+    example: contour(0.7 * Math.PI),
   };
 }
 

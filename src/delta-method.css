@@ -219,3 +219,72 @@
   fill: var(--node-Y);
   fill-opacity: 0.45;
 }
+
+.dm-page #dm-joint-plot {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.dm-page .dm-chart.dm-joint-chart {
+  max-width: none;
+}
+.dm-page .dm-chart .dm-ratio-surface {
+  fill: var(--truth);
+  fill-opacity: 0.16;
+  stroke: var(--truth);
+  stroke-opacity: 0.16;
+  stroke-width: 0.5;
+}
+.dm-page .dm-floor-ellipse {
+  stroke: var(--arm-1);
+  stroke-width: 2;
+}
+.dm-page .dm-center-point {
+  fill: var(--truth);
+  stroke: var(--truth);
+}
+.dm-page .dm-example-point {
+  fill: var(--fitted);
+  stroke: var(--fitted);
+}
+.dm-page .dm-projection {
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.dm-page .dm-revenue-tangent {
+  stroke: var(--arm-1);
+  stroke-width: 3;
+}
+.dm-page .dm-order-tangent {
+  stroke: var(--fitted);
+  stroke-width: 3;
+}
+.dm-page .dm-center-key {
+  color: var(--truth);
+}
+.dm-page .dm-example-key {
+  color: var(--fitted);
+}
+.dm-page .dm-step-controls {
+  margin-block: 16px;
+}
+
+.dm-page #dm-joint-copy {
+  min-height: 4.5em;
+}
+@media (max-width: 650px) {
+  .dm-page #dm-joint-copy {
+    min-height: 10.5em;
+  }
+  .dm-page .dm-step-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .dm-page #dm-joint-next {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .dm-page #dm-joint-prev,
+  .dm-page #dm-joint-replay {
+    grid-row: 2;
+  }
+}

@@ -119,6 +119,46 @@ try {
   await page.locator("#dm-to-ratios").click();
   await expect(page.locator("#dm-joint-title")).toBeFocused();
   await expect(page.locator("#dm-ratios")).toBeHidden();
+  await expect(page.locator("#dm-single")).toBeHidden();
+  await expect(page.locator("#dm-joint .dm-ratio-surface")).toHaveCount(0);
+  await expect(page.locator("#dm-correlation")).toBeHidden();
+  await mkdir("test-results/delta-method", { recursive: true });
+  for (let step = 1; step <= 5; step++) {
+    await page.locator("#dm-joint-next").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#dm-joint-plot svg")).toHaveAttribute(
+      "data-stage",
+      String(step),
+    );
+    await expect(page.locator("#dm-joint-plot svg")).toHaveAttribute(
+      "data-progress",
+      "1.000",
+    );
+    await expect(page.locator("#dm-joint .dm-ratio-surface")).toHaveCount(144);
+    await expect(page.locator("#dm-joint .dm-projection")).toHaveCount(
+      step >= 2 ? 2 : 0,
+    );
+    await expect(page.locator("#dm-joint .dm-revenue-tangent")).toHaveCount(
+      step >= 3 ? 1 : 0,
+    );
+    await expect(page.locator("#dm-joint .dm-order-tangent")).toHaveCount(
+      step >= 4 ? 1 : 0,
+    );
+    await page.locator("#dm-joint").screenshot({
+      path: `test-results/delta-method/surface-step-${step}.png`,
+    });
+  }
+  // Going back removes later explanations and marks; replay can finish early.
+  await page.locator("#dm-joint-prev").click();
+  await expect(page.locator("#dm-correlation")).toBeHidden();
+  await page.locator("#dm-joint-replay").click();
+  await expect(page.locator("#dm-joint-replay")).toHaveText("Finish motion");
+  await page.locator("#dm-joint-replay").click();
+  await expect(page.locator("#dm-joint-plot svg")).toHaveAttribute(
+    "data-progress",
+    "1.000",
+  );
+  await page.locator("#dm-joint-next").click();
   await page.locator("#dm-correlation").focus();
   await page.keyboard.press("End");
   await expect(page.locator("#dm-joint-readout")).toContainText(
@@ -197,6 +237,8 @@ try {
     .click();
   await expect(page.locator("#dm-check-feedback")).toContainText("Right.");
   await page.getByText("Check your interpretation", { exact: true }).click();
+  await page.locator("#dm-back-to-joint").click();
+  await page.locator("#dm-back-to-curve").click();
   await page.locator("#dm-sd").focus();
   await page.keyboard.press("End");
   for (const width of [1440, 390, 320]) {
@@ -224,40 +266,63 @@ try {
           { message: `${width}/${theme}: diagram keeps text at readable size` },
         )
         .toBeLessThan(2);
-      for (const svg of await page
-        .locator("#dm-plots svg, #dm-intervals svg, #dm-joint-plot svg")
-        .all()) {
-        assert.ok(
-          await svg.evaluate((node) => {
-            const bounds = node.getBoundingClientRect();
-            return [...node.querySelectorAll("text")].every((text) => {
-              const box = text.getBoundingClientRect();
-              return (
-                box.left >= bounds.left - 1 &&
-                box.right <= bounds.right + 1 &&
-                box.top >= bounds.top - 1 &&
-                box.bottom <= bounds.bottom + 1
+      for (const card of ["single", "joint", "ratios"]) {
+        if (card === "joint") await page.locator("#dm-to-ratios").click();
+        if (card === "ratios") await page.locator("#dm-to-experiment").click();
+        for (const svg of await page.locator(`#dm-${card} svg:visible`).all()) {
+          assert.ok(
+            await svg.evaluate((node) => {
+              const bounds = node.getBoundingClientRect();
+              return [...node.querySelectorAll("text")].every((text) => {
+                const box = text.getBoundingClientRect();
+                return (
+                  box.left >= bounds.left - 1 &&
+                  box.right <= bounds.right + 1 &&
+                  box.top >= bounds.top - 1 &&
+                  box.bottom <= bounds.bottom + 1
+                );
+              });
+            }),
+            `${width}/${theme}/${card}: chart labels fit`,
+          );
+        }
+        if (card === "joint") {
+          assert.ok(
+            await page.locator("#dm-joint-plot svg").evaluate((node) => {
+              const boxes = [...node.querySelectorAll("text")].map((t) =>
+                t.getBoundingClientRect(),
               );
-            });
-          }),
-          `${width}/${theme}: chart labels fit`,
-        );
-      }
-      for (const id of ["dm-plots", "dm-joint"]) {
-        await page.locator(`#${id}`).screenshot({
-          path: `test-results/delta-method/${id}-${width}-${theme}.png`,
+              return boxes.every((a, i) =>
+                boxes
+                  .slice(i + 1)
+                  .every(
+                    (b) =>
+                      a.right <= b.left ||
+                      b.right <= a.left ||
+                      a.bottom <= b.top ||
+                      b.bottom <= a.top,
+                  ),
+              );
+            }),
+            `${width}/${theme}: 3D axis labels do not overlap`,
+          );
+        }
+        await page.locator(`#dm-${card}`).screenshot({
+          path: `test-results/delta-method/${card}-${width}-${theme}.png`,
         });
       }
-      await page.screenshot({
-        path: `test-results/delta-method/lesson-${width}-${theme}.png`,
-        fullPage: true,
-      });
+      await page.locator("#dm-back-to-joint").click();
+      await page.locator("#dm-back-to-curve").click();
       for (const id of [
         "dm-slope",
         "dm-covariance",
         "dm-bootstrap-details",
         "dm-model",
       ]) {
+        if (id === "dm-covariance") {
+          await page.locator("#dm-to-ratios").click();
+          await page.locator("#dm-to-experiment").click();
+        }
         await page.locator(`#${id} > summary`).click();
         for (const formula of await page
           .locator(`#${id} [role="math"]`)
@@ -285,6 +350,8 @@ try {
           });
         await page.locator(`#${id} > summary`).click();
       }
+      await page.locator("#dm-back-to-joint").click();
+      await page.locator("#dm-back-to-curve").click();
     }
   }
   await expect(page.locator(".dm-credit").first()).toBeVisible();
@@ -292,7 +359,16 @@ try {
     "Anton Bugaev",
   );
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.locator("#dm-to-ratios").click();
+  for (let i = 0; i < 5; i++) await page.locator("#dm-joint-prev").click();
+  await page.locator("#dm-joint-next").click();
+  await expect(page.locator("#dm-joint-plot svg")).toHaveAttribute(
+    "data-progress",
+    "1.000",
+  );
+  await expect(page.locator("#dm-joint-replay")).toBeHidden();
   await page.locator("#dm-restart").click();
+  await expect(page.locator("#dm-joint")).toBeHidden();
   await expect(page.locator("#dm-ratios")).toBeHidden();
   await expect(page.locator("#dm-reveal")).toBeDisabled();
   await expect(page.locator("#dm-sd")).toHaveValue("0.25");

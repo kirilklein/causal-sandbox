@@ -41,14 +41,27 @@ introduce the sampling bell and predict its transformed shape; reveal the actual
 output; then reveal the tangent and SE comparison. The tangent never appears with
 the first output reveal. Native buttons and sliders support keyboard interaction.
 
-Before the A/B experiment, a joint uncertainty contour introduces two varying
-inputs. Its center is (2 orders, 20 euros) per visitor with marginal SEs (0.2, 2).
-Changing correlation rotates/deforms the radius-two covariance contour while
-holding marginal uncertainty fixed. Constant-ratio lines show cancellation;
-the Delta SE is sqrt(2 - 2 rho) euros per order. This is an illustrative covariance
-contour, not sampled data or a calibrated confidence region. This 2D view replaces
-the reference video's 3D surface for small-screen readability; the text connects
-the two slopes to a tangent plane. Ratio study and bootstrap actions precede their results; the coverage
+The two-input explanation opens as a separate card, replacing the one-input card.
+Six reader-controlled steps reveal the 3D input frame and ellipse, the ratio
+surface, vertical mappings, the revenue tangent, the orders tangent, and finally
+covariance. The input ellipse is centered at (20 euros, 2 orders) per visitor,
+with marginal SEs (2, 0.2). It is an illustrative radius-two covariance contour,
+not a calibrated confidence region. The highlighted pair lies on that contour;
+it is not a random sample.
+
+Each surface vertex rises from height zero to revenue/orders over 1.1 seconds.
+This movement constructs the mapping; it does not represent changes over time or
+new data. Projection lines and tangents reveal over 0.7 seconds. Previous removes
+later elements; replay can be finished early. Reduced motion shows the completed
+step immediately. Navigation, resize and preference changes finish/cancel motion.
+A fixed oblique SVG projection preserves all coordinates across the sequence.
+
+Both tangents meet at (20, 2, 10). Their slopes are 0.5 with respect to revenue
+and -5 with respect to orders. Changing correlation in the final step changes the
+ellipse and Delta SE, sqrt(2 - 2 rho), while the surface and slopes remain fixed.
+The A/B comparison opens as another separate card, with a return path.
+
+Ratio study and bootstrap actions precede their results; the coverage
 question precedes its run button and graphs. Equations use native MathML with
 spoken labels and wrapping at mathematical terms on narrow screens. The longer
 Taylor approximation and model assumptions remain in the final reference disclosure.

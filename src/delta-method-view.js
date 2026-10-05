@@ -1,8 +1,4 @@
-import {
-  orderRatioApproximation,
-  jointRatioApproximation,
-  ratioTruth,
-} from "./delta-method.js";
+import { orderRatioApproximation, ratioTruth } from "./delta-method.js";
 
 export const number = (value) => value.toFixed(2).replace(/^-0\.00$/, "0.00");
 const path = (points) =>
@@ -96,35 +92,6 @@ export function transformationPlots(
     }
     ${[-1, 0, 1].map((z) => `<text x="${x(mean + z * sd)}" y="${axisY + (width < 500 && z === 0 ? 34 : 20)}" text-anchor="middle">${number(mean + z * sd)}</text>`).join("")}
     <text x="${(left + right) / 2}" y="${height - 22}" text-anchor="middle">${stage >= 1 ? "Input · orders / visitor" : "Orders / visitor"}</text>
-  </svg>`;
-}
-
-export function jointUncertaintyPlot(rho) {
-  const model = jointRatioApproximation(rho);
-  const x = (orders) => 55 + ((orders - 1.4) / 1.2) * 310;
-  const y = (revenue) => 260 - ((revenue - 14) / 12) * 220;
-  const contour = grid(
-    (angle) => {
-      const pair = model.contour(angle);
-      return [x(pair.orders), y(pair.revenue)];
-    },
-    0,
-    2 * Math.PI,
-  );
-  return `<svg class="dm-chart dm-joint-chart" viewBox="0 0 400 330" role="img" aria-label="Joint uncertainty in orders and revenue estimates, correlation ${rho.toFixed(1)}. Approximate ratio standard error ${number(model.se)} euros per order. Moving along a constant-ratio line leaves revenue per order unchanged.">
-    <text x="55" y="20">Average revenue (€ / visitor)</text>
-    ${[16, 20, 24].map((v) => `<path class="dm-axis" d="M55 ${y(v)}H365"/><text x="45" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
-    ${[8, 10, 12]
-      .map((ratio) => {
-        const lo = Math.max(1.4, 14 / ratio);
-        const hi = Math.min(2.6, 26 / ratio);
-        return `<path class="${ratio === 10 ? "dm-exact" : "dm-guide"}" d="M${x(lo)} ${y(lo * ratio)}L${x(hi)} ${y(hi * ratio)}"/><text x="${x(hi) - 4}" y="${y(hi * ratio) - 7}" text-anchor="end">€${ratio} / order</text>`;
-      })
-      .join("")}
-    <path class="dm-input" d="${path(contour)}Z"/>
-    <circle class="dm-point" cx="${x(2)}" cy="${y(20)}" r="4"><title>Center: 2 orders and €20 revenue per visitor; €10 per order</title></circle>
-    ${[1.6, 2, 2.4].map((v) => `<text x="${x(v)}" y="283" text-anchor="middle">${v}</text>`).join("")}
-    <text x="210" y="319" text-anchor="middle">Average orders / visitor</text>
   </svg>`;
 }
 

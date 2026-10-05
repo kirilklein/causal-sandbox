@@ -18,11 +18,12 @@ import {
 } from "./delta-method.js";
 import {
   transformationPlots,
-  jointUncertaintyPlot,
   intervalComparison,
   coveragePlot,
   number,
 } from "./delta-method-view.js";
+
+import { jointSurfacePlot } from "./delta-method-joint.js";
 
 document.title = "How uncertain is revenue per order? — Causal Sandbox";
 document.querySelector("#app").innerHTML =
@@ -48,7 +49,7 @@ document.querySelector("#app").innerHTML =
       <p><strong>The Delta Method gives a fast approximate standard error for a ratio or another smooth transformation.</strong> We can use it to build a confidence interval without repeatedly resampling the data.</p>
       <p class="small">First, see how a curve changes uncertainty. Then simulate this checkout comparison and check Delta intervals against a bootstrap.</p>
     </details>
-    <section class="panel" aria-labelledby="dm-curve-title">
+    <section id="dm-single" class="panel" aria-labelledby="dm-curve-title">
       <h2 id="dm-curve-title">1. Start with one estimate</h2>
       <p>To isolate the uncertainty from orders, hold average revenue at <strong>€20 per visitor</strong>. Revenue per order is the ratio of these two averages, just as it is the ratio of the totals.</p>
       <div class="dm-formula" role="math" aria-label="Revenue per order equals 20 euros per visitor divided by average orders per visitor, so y equals 20 divided by x">
@@ -92,18 +93,29 @@ document.querySelector("#app").innerHTML =
       </div>
     </section>
     <section id="dm-joint" class="panel" hidden aria-labelledby="dm-joint-title">
-      <h2 id="dm-joint-title" tabindex="-1">5. Two inputs can move together</h2>
-      <p>Now let revenue vary too. Each point is a pair of estimates from one possible study: average orders and average revenue per visitor.</p>
-      <p>More revenue raises revenue per order; more orders lowers it. If they rise together in the same proportion, the ratio barely changes.</p>
-      <label for="dm-correlation">How strongly do the estimates move together? <output id="dm-correlation-value"></output></label>
-      <input id="dm-correlation" type="range" min="-0.9" max="0.9" step="0.1" value="0">
+      <button id="dm-back-to-curve">← Back to one input</button>
+      <h2 id="dm-joint-title" tabindex="-1">5. From one curve to a surface</h2>
+      <p id="dm-joint-step" class="eyebrow"></p>
+      <h3 id="dm-joint-heading" tabindex="-1"></h3>
+      <p id="dm-joint-copy"></p>
+      <div class="actions dm-step-controls" aria-label="Surface explanation steps">
+        <button id="dm-joint-prev">← Previous</button>
+        <button id="dm-joint-next" class="primary"></button>
+        <button id="dm-joint-replay">Replay motion</button>
+      </div>
       <div id="dm-joint-plot"></div>
-      <p id="dm-joint-readout" class="dm-readout" aria-live="polite"></p>
-      <p class="small">Illustrative uncertainty contour, not observed data or a confidence region. The center stays at 2 orders and €20 per visitor; input SEs stay at 0.2 orders and €2. Only correlation changes. Lines connect pairs with the same revenue per order.</p>
-      <p>The multivariable Delta Method uses a tangent plane: one slope for revenue, one for orders, and their covariance to combine the uncertainty.</p>
-      <button id="dm-to-experiment" class="primary">Compare two checkout versions →</button>
+      <p class="small dm-joint-key"><span class="dm-center-key">● Population center</span> · <span class="dm-example-key">● Illustrative pair</span><span id="dm-revenue-key" hidden> · Blue: revenue tangent</span><span id="dm-orders-key" hidden> · Orange: orders tangent</span></p>
+      <p id="dm-joint-values" class="small" hidden></p>
+      <div id="dm-joint-covariance" hidden>
+        <label for="dm-correlation">How strongly do the estimates move together? <output id="dm-correlation-value"></output></label>
+        <input id="dm-correlation" type="range" min="-0.9" max="0.9" step="0.1" value="0">
+      </div>
+      <p id="dm-joint-readout" class="dm-readout" hidden aria-live="polite"></p>
+      <details><summary>What does the ellipse represent?</summary><p>An illustrative uncertainty contour for study-level averages, not observed data or a confidence region. The population center is €20 revenue and 2 orders per visitor. The input SEs are €2 and 0.2 orders. The highlighted pair is a point on the contour, not a random sample.</p></details>
+      <button id="dm-to-experiment" class="primary" hidden>Compare two checkout versions →</button>
     </section>
     <section id="dm-ratios" class="panel" aria-labelledby="dm-ratio-title" hidden>
+      <button id="dm-back-to-joint">← Back to the surface</button>
       <h2 id="dm-ratio-title" tabindex="-1">6. Put an interval around the checkout difference</h2>
       <p>We held revenue fixed to see what orders alone do. In a real checkout experiment, both vary together. Now simulate both inputs in each arm, then compare B’s revenue per order with A’s.</p>
       <p>Revenue per order has two uncertain inputs. In each arm of an A/B test, estimate it using:</p>
@@ -311,14 +323,135 @@ el("dm-tangent").addEventListener("click", () => {
   renderCurve();
   el("dm-sd").focus();
 });
+const jointSteps = [
+  {
+    title: "Two uncertain inputs on the floor",
+    copy: "The floor pairs average revenue with average orders per visitor. The ellipse shows uncertainty in those study-level estimates. The dots mark the population center and one illustrative pair.",
+    next: "Raise the ratio surface →",
+  },
+  {
+    title: "Give each pair a height",
+    copy: "Each pair has a height: revenue ÷ orders, in euros per order. Watch a flat sheet rise to those values. Division by orders makes the surface curved.",
+    next: "Connect inputs to outputs →",
+  },
+  {
+    title: "Follow each pair up to its ratio",
+    copy: "Vertical guides take each pair to its ratio while holding both inputs fixed. At the center, €20 ÷ 2 = €10 per order.",
+    next: "Vary revenue first →",
+  },
+  {
+    title: "One slope for revenue",
+    copy: "Hold orders at 2 per visitor. Along the blue tangent, each extra euro of revenue per visitor adds €0.50 per order. This slice is already straight.",
+    next: "Add the orders tangent →",
+  },
+  {
+    title: "A second slope for orders",
+    copy: "Hold revenue at €20 per visitor. The orange tangent approximates the curved orders slice: 0.1 extra orders per visitor lowers the ratio by about €0.50 per order. Together, the tangents define a local plane.",
+    next: "Combine the uncertainty →",
+  },
+  {
+    title: "Combine both slopes and their covariance",
+    copy: "Each input alone contributes €1 of ratio SE. When revenue and orders rise together, their effects partly cancel. Change their correlation: the ellipse and combined SE change; the surface stays fixed.",
+    next: "",
+  },
+];
+let jointStep = 0;
+let jointFrame = 0;
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+function renderJointPlot(progress = 1) {
+  el("dm-joint-plot").innerHTML = jointSurfacePlot(
+    +el("dm-correlation").value,
+    jointStep,
+    width("dm-joint-plot"),
+    progress,
+  );
+}
+function finishJointMotion() {
+  cancelAnimationFrame(jointFrame);
+  jointFrame = 0;
+  renderJointPlot();
+  el("dm-joint-replay").textContent = "Replay motion";
+}
+function animateJoint() {
+  finishJointMotion();
+  if (reducedMotion.matches || jointStep === 0 || jointStep === 5) return;
+  const start = performance.now();
+  const duration = jointStep === 1 ? 1100 : 700;
+  el("dm-joint-replay").textContent = "Finish motion";
+  const tick = (now) => {
+    const t = Math.min(1, (now - start) / duration);
+    renderJointPlot(t * t * (3 - 2 * t));
+    if (t < 1) jointFrame = requestAnimationFrame(tick);
+    else {
+      jointFrame = 0;
+      el("dm-joint-replay").textContent = "Replay motion";
+    }
+  };
+  renderJointPlot(0);
+  jointFrame = requestAnimationFrame(tick);
+}
 function renderJoint() {
   const rho = +el("dm-correlation").value;
-  el("dm-correlation-value").textContent = rho.toFixed(1);
-  el("dm-joint-plot").innerHTML = jointUncertaintyPlot(rho);
+  const model = jointRatioApproximation(rho);
+  const step = jointSteps[jointStep];
+  el("dm-joint-step").textContent =
+    `Step ${jointStep + 1} of ${jointSteps.length}`;
+  el("dm-joint-heading").textContent = step.title;
+  el("dm-joint-copy").textContent = step.copy;
+  el("dm-joint-prev").disabled = jointStep === 0;
+  el("dm-joint-next").hidden = jointStep === 5;
+  el("dm-joint-next").textContent = step.next;
+  el("dm-joint-replay").hidden =
+    jointStep === 0 || jointStep === 5 || reducedMotion.matches;
+  el("dm-revenue-key").hidden = jointStep < 3;
+  el("dm-orders-key").hidden = jointStep < 4;
+  el("dm-joint-covariance").hidden = jointStep < 5;
+  el("dm-to-experiment").hidden = jointStep < 5;
+  el("dm-joint-values").hidden = jointStep < 2;
+  el("dm-joint-values").textContent =
+    `Highlighted pair: €${number(model.example.revenue)} ÷ ${number(model.example.orders)} = €${number(model.transform(model.example.revenue, model.example.orders))} / order (calculated before rounding).`;
+  el("dm-joint-readout").hidden = jointStep < 3;
   el("dm-joint-readout").textContent =
-    `Approximate ratio SE: €${number(jointRatioApproximation(rho).se)} / order. Without covariance: €${number(Math.sqrt(2))} / order.`;
+    jointStep === 3
+      ? "Revenue contribution: slope 0.50 × SE €2 = €1 / order."
+      : jointStep === 4
+        ? "Orders contribution: |−5| × SE 0.2 = €1 / order. Combine variances, including covariance, in the next step."
+        : `Combined ratio SE: €${number(model.se)} / order. At zero correlation: €${number(Math.sqrt(2))} / order.`;
+  el("dm-correlation-value").textContent = rho.toFixed(1);
+  finishJointMotion();
 }
+el("dm-joint-next").addEventListener("click", () => {
+  jointStep = Math.min(5, jointStep + 1);
+  renderJoint();
+  animateJoint();
+  el("dm-joint-heading").focus();
+});
+el("dm-joint-prev").addEventListener("click", () => {
+  jointStep = Math.max(0, jointStep - 1);
+  renderJoint();
+  el("dm-joint-heading").focus();
+});
+el("dm-joint-replay").addEventListener("click", () =>
+  jointFrame ? finishJointMotion() : animateJoint(),
+);
 el("dm-correlation").addEventListener("input", renderJoint);
+reducedMotion.addEventListener("change", () => {
+  if (!el("dm-joint").hidden) renderJoint();
+});
+el("dm-back-to-curve").addEventListener("click", () => {
+  finishJointMotion();
+  el("dm-joint").hidden = true;
+  el("dm-single").hidden = false;
+  el("dm-setting").hidden = false;
+  renderCurve();
+  el("dm-to-ratios").focus();
+});
+el("dm-back-to-joint").addEventListener("click", () => {
+  el("dm-ratios").hidden = true;
+  el("dm-joint").hidden = false;
+  renderJoint();
+  el("dm-joint-title").focus();
+});
 for (const input of document.querySelectorAll('[name="shape"]'))
   input.addEventListener("change", () => {
     el("dm-reveal").disabled = false;
@@ -340,11 +473,15 @@ el("dm-reveal").addEventListener("click", () => {
 for (const id of ["dm-mean", "dm-sd"])
   el(id).addEventListener("input", renderCurve);
 el("dm-to-ratios").addEventListener("click", () => {
+  el("dm-single").hidden = true;
+  el("dm-setting").hidden = true;
   el("dm-joint").hidden = false;
   renderJoint();
   el("dm-joint-title").focus();
 });
 el("dm-to-experiment").addEventListener("click", () => {
+  finishJointMotion();
+  el("dm-joint").hidden = true;
   el("dm-ratios").hidden = false;
   renderIntervals();
   el("dm-ratio-title").focus();
@@ -398,7 +535,8 @@ for (const button of document.querySelectorAll("[data-dm-answer]"))
   });
 el("dm-restart").addEventListener("click", () => location.reload());
 window.addEventListener("resize", () => {
-  renderCurve();
+  if (!el("dm-single").hidden) renderCurve();
+  if (!el("dm-joint").hidden) finishJointMotion();
   renderIntervals();
   renderCoverage();
 });

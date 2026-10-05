@@ -232,3 +232,17 @@ test("joint ratio uncertainty cancels for proportional inputs and grows for oppo
   assert.ok(jointRatioApproximation(0.9).se < jointRatioApproximation(0).se);
   assert.throws(() => jointRatioApproximation(1.1), RangeError);
 });
+
+test("ratio surface and tangent agree in value and both slopes at the population center", () => {
+  const m = jointRatioApproximation(0);
+  close(m.transform(20, 2), 10);
+  close(m.tangent(20, 2), 10);
+  const h = 1e-5;
+  close((m.transform(20 + h, 2) - m.transform(20 - h, 2)) / (2 * h), 0.5, 1e-8);
+  close((m.transform(20, 2 + h) - m.transform(20, 2 - h)) / (2 * h), -5, 1e-8);
+  close(m.transform(24, 2), m.tangent(24, 2));
+  assert.ok(m.transform(20, 1.6) > m.tangent(20, 1.6));
+  const error = (d) =>
+    Math.abs(m.transform(20 + d, 2 - d / 10) - m.tangent(20 + d, 2 - d / 10));
+  assert.ok(error(0.1) < error(1) / 50);
+});
