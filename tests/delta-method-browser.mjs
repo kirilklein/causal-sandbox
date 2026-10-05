@@ -144,6 +144,14 @@ try {
     await expect(page.locator("#dm-joint .dm-order-tangent")).toHaveCount(
       step >= 4 ? 1 : 0,
     );
+    for (const [selector, reveal] of [
+      ["#dm-joint-formula", 3],
+      ["#dm-orders-term", 4],
+      ["#dm-covariance-term", 5],
+    ]) {
+      if (step >= reveal) await expect(page.locator(selector)).toBeVisible();
+      else await expect(page.locator(selector)).toBeHidden();
+    }
     await page.locator("#dm-joint").screenshot({
       path: `test-results/delta-method/surface-step-${step}.png`,
     });
@@ -333,6 +341,18 @@ try {
           );
         }
         if (card === "joint") {
+          assert.ok(
+            await page.locator("#dm-joint-formula").evaluate((node) => {
+              const bounds = node.getBoundingClientRect();
+              return [...node.querySelectorAll("math")].every((math) => {
+                const box = math.getBoundingClientRect();
+                return (
+                  box.left >= bounds.left - 1 && box.right <= bounds.right + 1
+                );
+              });
+            }),
+            `${width}/${theme}: colored formula fits`,
+          );
           assert.ok(
             await page.locator("#dm-joint-plot svg").evaluate((node) => {
               const boxes = [...node.querySelectorAll("text")].map((t) =>

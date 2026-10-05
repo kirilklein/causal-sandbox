@@ -59,6 +59,12 @@ and a Reset view button restoring the initial angle. Camera orientation persists
 across steps and changes no data. Rotation finishes any active reveal. Frame
 corners determine a uniform fit, and surface cells are sorted by camera depth.
 
+Each tangent reveals a matching colored variance term. Blue is revenue and
+orange is orders, in the geometry, sigma labels, and MathML formula. Arrows run
+from the center to one input SE along the corresponding tangent; they are not
+variance vectors. Pending terms are explicitly marked until the covariance term
+appears in the final step. Numeric terms are 1 + 1 - 2 rho in (euros/order)^2.
+
 Both tangents meet at (20, 2, 10). Their slopes are 0.5 with respect to revenue
 and -5 with respect to orders. Changing correlation in the final step changes the
 ellipse and Delta SE, sqrt(2 - 2 rho), while the surface and slopes remain fixed.

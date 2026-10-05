@@ -302,3 +302,46 @@
   outline-offset: 4px;
   border-radius: 6px;
 }
+
+.dm-page .dm-variance-term {
+  display: grid;
+  gap: 10px;
+}
+.dm-page .dm-variance-term small {
+  font-size: 13px;
+}
+.dm-page .dm-revenue-term,
+.dm-page .dm-revenue-term math {
+  color: var(--arm-1);
+}
+.dm-page .dm-orders-term,
+.dm-page .dm-orders-term math {
+  color: var(--fitted);
+}
+.dm-page .dm-revenue-spread path {
+  stroke: var(--arm-1);
+  stroke-width: 4;
+}
+.dm-page .dm-orders-spread path {
+  stroke: var(--fitted);
+  stroke-width: 4;
+}
+.dm-page .dm-chart .dm-revenue-arrowhead {
+  fill: var(--arm-1);
+}
+.dm-page .dm-chart .dm-orders-arrowhead {
+  fill: var(--fitted);
+}
+.dm-page .dm-revenue-spread text {
+  fill: var(--arm-1);
+}
+.dm-page .dm-orders-spread text {
+  fill: var(--fitted);
+}
+.dm-page .dm-revenue-spread text,
+.dm-page .dm-orders-spread text {
+  paint-order: stroke;
+  stroke: var(--page);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}

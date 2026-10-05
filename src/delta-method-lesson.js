@@ -107,6 +107,17 @@ document.querySelector("#app").innerHTML =
       <button id="dm-reset-view">Reset view</button>
       <div id="dm-joint-plot" tabindex="0" role="group" aria-label="Rotatable 3D ratio scene" aria-describedby="dm-rotate-hint"></div>
       <p class="small dm-joint-key"><span class="dm-center-key">● Population center</span> · <span class="dm-example-key">● Illustrative pair</span><span id="dm-revenue-key" hidden> · Blue: revenue tangent</span><span id="dm-orders-key" hidden> · Orange: orders tangent</span></p>
+      <div id="dm-joint-formula" hidden>
+        <p class="small">R and O are average revenue and orders per visitor; g(R,O) = R/O. σR and σO are their standard errors. Arrows show one input SE along each tangent.</p>
+        <div class="dm-formula" role="math" id="dm-variance-formula">
+          <math aria-hidden="true"><mi mathvariant="normal">Var</mi><mo>(</mo><mfrac><mi>R</mi><mi>O</mi></mfrac><mo>)</mo><mo>≈</mo></math>
+          <div class="dm-variance-term dm-revenue-term"><math aria-hidden="true"><msup><mrow><mo>(</mo><mfrac><mrow><mo>∂</mo><mi>g</mi></mrow><mrow><mo>∂</mo><mi>R</mi></mrow></mfrac><mo>)</mo></mrow><mn>2</mn></msup><msubsup><mi>σ</mi><mi>R</mi><mn>2</mn></msubsup></math><small>Revenue · 0.5² × 2² = 1</small></div>
+          <div id="dm-orders-term" class="dm-variance-term dm-orders-term" hidden><math aria-hidden="true"><mo>+</mo><msup><mrow><mo>(</mo><mfrac><mrow><mo>∂</mo><mi>g</mi></mrow><mrow><mo>∂</mo><mi>O</mi></mrow></mfrac><mo>)</mo></mrow><mn>2</mn></msup><msubsup><mi>σ</mi><mi>O</mi><mn>2</mn></msubsup></math><small>Orders · (−5)² × 0.2² = 1</small></div>
+          <div id="dm-covariance-term" class="dm-variance-term" hidden><math aria-hidden="true"><mo>+</mo><mn>2</mn><mfrac><mrow><mo>∂</mo><mi>g</mi></mrow><mrow><mo>∂</mo><mi>R</mi></mrow></mfrac><mfrac><mrow><mo>∂</mo><mi>g</mi></mrow><mrow><mo>∂</mo><mi>O</mi></mrow></mfrac><mi mathvariant="normal">Cov</mi><mo>(</mo><mi>R</mi><mo>,</mo><mi>O</mi><mo>)</mo></math><small id="dm-covariance-value"></small></div>
+          <span id="dm-formula-pending" class="small">+ … <span id="dm-formula-next"></span></span>
+        </div>
+        <p class="small">Each squared contribution is in (€/order)². The square root of the combined variance gives the ratio’s SE.</p>
+      </div>
       <p id="dm-joint-values" class="small" hidden></p>
       <div id="dm-joint-covariance" hidden>
         <label for="dm-correlation">How strongly do the estimates move together? <output id="dm-correlation-value"></output></label>
@@ -459,6 +470,18 @@ function renderJoint() {
   el("dm-joint-next").textContent = step.next;
   el("dm-joint-replay").hidden =
     jointStep === 0 || jointStep === 5 || reducedMotion.matches;
+  el("dm-joint-formula").hidden = jointStep < 3;
+  el("dm-orders-term").hidden = jointStep < 4;
+  el("dm-covariance-term").hidden = jointStep < 5;
+  el("dm-formula-pending").hidden = jointStep >= 5;
+  el("dm-formula-next").textContent =
+    jointStep === 3 ? "orders and covariance follow" : "covariance follows";
+  el("dm-covariance-value").textContent =
+    `Covariance contribution · −2ρ = ${number(-2 * rho)}`;
+  el("dm-variance-formula").setAttribute(
+    "aria-label",
+    `Approximate variance of revenue divided by orders: revenue slope squared times revenue SE squared, equal to 1${jointStep >= 4 ? ", plus orders slope squared times orders SE squared, equal to 1" : ""}${jointStep >= 5 ? `, plus twice the product of the slopes and input covariance, equal to ${number(-2 * rho)}` : "; more terms follow"}.`,
+  );
   el("dm-revenue-key").hidden = jointStep < 3;
   el("dm-orders-key").hidden = jointStep < 4;
   el("dm-joint-covariance").hidden = jointStep < 5;
@@ -466,13 +489,9 @@ function renderJoint() {
   el("dm-joint-values").hidden = jointStep < 2;
   el("dm-joint-values").textContent =
     `Highlighted pair: €${number(model.example.revenue)} ÷ ${number(model.example.orders)} = €${number(model.transform(model.example.revenue, model.example.orders))} / order (calculated before rounding).`;
-  el("dm-joint-readout").hidden = jointStep < 3;
+  el("dm-joint-readout").hidden = jointStep < 5;
   el("dm-joint-readout").textContent =
-    jointStep === 3
-      ? "Revenue contribution: slope 0.50 × SE €2 = €1 / order."
-      : jointStep === 4
-        ? "Orders contribution: |−5| × SE 0.2 = €1 / order. Combine variances, including covariance, in the next step."
-        : `Combined ratio SE: €${number(model.se)} / order. At zero correlation: €${number(Math.sqrt(2))} / order.`;
+    `Combined ratio SE: €${number(model.se)} / order. At zero correlation: €${number(Math.sqrt(2))} / order.`;
   el("dm-correlation-value").textContent = rho.toFixed(1);
   finishJointMotion();
 }

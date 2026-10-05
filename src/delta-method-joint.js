@@ -144,7 +144,27 @@ export function jointSurfacePlot(rho, stage, width, progress = 1, view = {}) {
       )}"/>`,
     );
   }
+  const spreads = [];
+  const center = project(20, 2, 10);
+  for (const [reveal, revenue, orders, key, text, dy] of [
+    [3, 22, 2, "revenue", "σR = €2", -20],
+    [4, 20, 2.2, "orders", "σO = 0.2", 28],
+  ]) {
+    if (stage < reveal) continue;
+    const extent = stage === reveal ? progress : 1;
+    const r = 20 + (revenue - 20) * extent;
+    const o = 2 + (orders - 2) * extent;
+    const tip = project(r, o, model.tangent(r, o));
+    const annotation = label(tip, text, 0, dy).replace(
+      /σ([RO])/,
+      'σ<tspan baseline-shift="sub" font-size="10">$1</tspan>',
+    );
+    spreads.push(
+      `<g class="dm-${key}-spread"><path d="${path([center, tip])}" marker-end="url(#dm-${key}-arrow)"/>${extent === 1 ? annotation : ""}<title>One input standard error along the ${key} tangent; the output changes by ${key === "revenue" ? "+" : "−"}€1 per order.</title></g>`,
+    );
+  }
   return `<svg class="dm-chart dm-joint-chart" viewBox="0 0 ${width} ${height}" role="img" data-yaw="${view.yaw || 0}" data-pitch="${view.pitch || 0}" data-stage="${stage}" data-progress="${progress.toFixed(3)}" aria-label="Three dimensional ratio diagram. Floor axes: average revenue and orders per visitor. Height: euros per order. ${stage >= 1 ? "Curved surface: revenue divided by orders." : "Input uncertainty ellipse and two marked pairs; no surface yet."} ${stage >= 2 ? "Vertical guides map the input pairs to their ratios." : ""} ${stage >= 3 ? "Blue tangent varies revenue." : ""} ${stage >= 4 ? "Orange tangent varies orders; both meet at the population center." : ""}">
+    <defs>${["revenue", "orders"].map((key) => `<marker id="dm-${key}-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path class="dm-${key}-arrowhead" d="M0 0L8 4L0 8Z"/></marker>`).join("")}</defs>
     <text x="12" y="22">Height: € / order</text>
     ${grid.join("")}
     ${segment(project(26, 2.6), project(26, 2.6, 20), "dm-coordinate-axis")}
@@ -155,6 +175,7 @@ export function jointSurfacePlot(rho, stage, width, progress = 1, view = {}) {
     <path class="dm-floor-ellipse" d="${ellipse}Z"/>
     ${tangents.join("")}
     ${dots}
+    ${spreads.join("")}
     ${[14, 20, 26].map((r) => label(project(r, 1.4), r, 0, 19)).join("")}
     ${(width < 500 ? [1.4, 2.6] : [1.4, 2, 2.6]).map((o) => (o === 2.6 ? label(project(26, o), o, 0, 20, "end") : label(project(26, o), o, 9, 3, "start"))).join("")}
     ${[0, 10, 20].map((z) => label(project(26, 2.6, z), z, 9, 3, "start")).join("")}
