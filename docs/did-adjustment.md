@@ -21,9 +21,8 @@ regression and communication exercises and a link to this chapter.
    to treated outcomes: adjusted DiD becomes +25 pp, truth remains +15 pp.
 
 Review criteria: identical observed trajectories share one line with an explicit
-hospital count. Individual hospital symbols above each plot preserve the cohort
-size without shifting any measurement times or outcomes. Group means appear in
-the panel headers. Capacity bars encode target shares, not outcomes or certainty. Estimate and
+hospital count. Panel headers show the group size and mean recovery, without
+shifting any measurement times or outcomes. Capacity bars encode target shares, not outcomes or certainty. Estimate and
 optional purple truth cards remain adjacent. No animated movement is necessary;
 the static transformation is also the reduced-motion presentation.
 

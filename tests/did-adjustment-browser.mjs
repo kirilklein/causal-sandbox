@@ -75,10 +75,13 @@ try {
       .evaluate((e) =>
         Number.parseFloat(e.style.getPropertyValue("--error-tint")),
       );
-  const data = () => page.locator(".hospital-mark title").allTextContents();
+  const data = () => page.locator(".hospital-profile title").allTextContents();
   await expect(value).toHaveText("+15 pp");
   await expect(page.locator("#da-result")).toContainText("−5 pp");
-  await expect(page.locator(".hospital-mark")).toHaveCount(12);
+  await expect(page.locator(".da-arm-heading > span")).toHaveText([
+    "6 hospitals",
+    "6 hospitals",
+  ]);
   await expect(page.locator(".hospital-profile")).toHaveCount(2);
   await page.locator('[data-da-answer="0"]').click();
   await expect(page.locator("#da-feedback")).toContainText("Reconsider");
@@ -104,7 +107,7 @@ try {
   assert.deepEqual(
     (await data()).sort(),
     observed,
-    "Adjustment preserves all hospital outcomes",
+    "Adjustment preserves observed trajectories and their hospital counts",
   );
   await expect(value).toHaveText("+15 pp");
   await expect(page.locator(".da-contributions")).toContainText(
