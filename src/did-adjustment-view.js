@@ -1,39 +1,66 @@
 const percent = (risk) => `${Math.round(risk * 100)}%`;
+const points = (risk) =>
+  `${risk >= 0 ? "+" : "−"}${Math.abs(risk * 100)
+    .toFixed(1)
+    .replace(/\.0$/, "")} pp`;
+const mean = (rows, key) =>
+  rows.reduce((sum, h) => sum + h[key], 0) / rows.length;
+const mark = (D, x, y, radius = 4) =>
+  D
+    ? `<path d="M${x},${y - radius}l${radius},${radius * 2}h${-radius * 2}Z"/>`
+    : `<circle cx="${x}" cy="${y}" r="${radius}"/>`;
+
+function armPanel(rows, D, width) {
+  const name = D ? "Treated" : "Comparison";
+  const before = mean(rows, "before");
+  const after = mean(rows, "after");
+  const x0 = 38;
+  const x1 = width - 82;
+  const y = (risk) => 200 - risk * 148;
+  // Identical observed trajectories share one line, with their exact multiplicity.
+  const trajectories = [];
+  for (const hospital of rows) {
+    let trajectory = trajectories.find(
+      (group) =>
+        group.before === hospital.before && group.after === hospital.after,
+    );
+    if (!trajectory) {
+      trajectory = { before: hospital.before, after: hospital.after, count: 0 };
+      trajectories.push(trajectory);
+    }
+    trajectory.count++;
+  }
+  const baselineRates = [...new Set(rows.map((h) => h.before))];
+  return `<section class="da-arm" style="--hospital-arm:var(--arm-${D})" aria-label="${name} hospitals">
+    <div class="da-arm-heading"><h4>${D ? "▲" : "●"} ${name}</h4><span>${rows.length} hospitals</span></div>
+    <div class="da-arm-summary"><div><span>Group mean recovery</span><strong aria-label="${percent(before)} at baseline, ${percent(after)} at follow-up">${percent(before)} <span aria-hidden="true">→</span> ${percent(after)}</strong></div><div><span>Mean change</span><strong>${points(after - before)}</strong></div></div>
+    <svg class="did-chart da-hospital-chart" viewBox="0 0 ${width} 238" role="img" aria-label="${name}: mean recovery ${percent(before)} to ${percent(after)}. ${trajectories.map((group) => `${group.count} hospitals: ${percent(group.before)} to ${percent(group.after)}`).join("; ")}.">
+      ${rows.map((h, i) => `<g class="hospital-mark" fill="var(--hospital-arm)"><title>${h.id}: ${percent(h.before)} to ${percent(h.after)}</title>${mark(D, x0 + i * 15, 16, 3)}</g>`).join("")}
+      ${[0, 0.5, 1].map((risk) => `<line class="did-grid" x1="${x0}" x2="${x1}" y1="${y(risk)}" y2="${y(risk)}"/><text class="did-axis" x="0" y="${y(risk) + 4}">${percent(risk)}</text>`).join("")}
+      ${trajectories.map((group) => `<g class="hospital-profile" fill="var(--hospital-arm)"><path d="M${x0},${y(group.before)}L${x1},${y(group.after)}" fill="none" stroke="var(--hospital-arm)" stroke-width="2.5"/>${mark(D, x1, y(group.after))}<text class="da-endpoint" x="${x1 + 10}" y="${y(group.after) + 4}">${percent(group.after)} ×${group.count}</text></g>`).join("")}
+      ${baselineRates.map((risk) => `<g fill="var(--hospital-arm)">${mark(D, x0, y(risk))}</g>`).join("")}
+      <text class="did-axis" x="${x0}" y="227" text-anchor="middle">Baseline</text><text class="did-axis" x="${x1}" y="227" text-anchor="middle">Follow-up</text>
+    </svg>
+  </section>`;
+}
 
 export function hospitalChart(
   hospitals,
   { width = 600, title = "All 12 hospitals" } = {},
 ) {
-  const height = 280;
-  const x0 = 54;
-  const x1 = width - 35;
-  const y = (risk) => 230 - risk * 180;
-  const mean = (rows, key) =>
-    rows.reduce((sum, h) => sum + h[key], 0) / rows.length;
-  const mark = (D, x, cy, radius) =>
-    D
-      ? `<path d="M${x},${cy - radius}l${radius},${radius * 2}h${-radius * 2}Z" fill="var(--arm-1)"/>`
-      : `<circle cx="${x}" cy="${cy}" r="${radius}" fill="var(--arm-0)"/>`;
-  const paths = [0, 1]
-    .map((D) => {
-      const rows = hospitals.filter((h) => h.D === D);
-      const color = `var(--arm-${D})`;
-      const individuals = rows
-        .map((h, i) => {
-          // Horizontal separation reveals coincident hospitals; vertical values stay exact.
-          const shift = (i - (rows.length - 1) / 2) * 4;
-          return `<g class="hospital-trajectory"><title>${h.id}: ${percent(h.before)} to ${percent(h.after)}</title><path d="M${x0 + shift},${y(h.before)}L${x1 + shift},${y(h.after)}" stroke="${color}" stroke-width="1" opacity="0.45"/>${mark(D, x0 + shift, y(h.before), 2)}${mark(D, x1 + shift, y(h.after), 2)}</g>`;
-        })
-        .join("");
-      if (!rows.length) return "";
-      return `${individuals}<path class="hospital-mean" d="M${x0},${y(mean(rows, "before"))}L${x1},${y(mean(rows, "after"))}" stroke="${color}" stroke-width="3"/>${mark(D, x0, y(mean(rows, "before")), 5)}${mark(D, x1, y(mean(rows, "after")), 5)}`;
-    })
-    .join("");
-  return `<svg class="did-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}: observed hospital recovery trajectories. Thick lines show group means.">
-    <text x="0" y="17" class="did-axis-title">${title}</text>
-    ${[0, 0.5, 1].map((risk) => `<line class="did-grid" x1="${x0 - 15}" x2="${width - 15}" y1="${y(risk)}" y2="${y(risk)}"/><text class="did-axis" x="0" y="${y(risk) + 4}">${percent(risk)}</text>`).join("")}
-    <line class="did-program-line" x1="${(x0 + x1) / 2}" x2="${(x0 + x1) / 2}" y1="40" y2="232"/>
-    ${paths}
-    <text class="did-axis" x="${x0}" y="256" text-anchor="middle">Baseline</text><text class="did-axis" x="${x1}" y="256" text-anchor="middle">Follow-up</text>
-  </svg>`;
+  const sideBySide = width >= 620;
+  const panelWidth = sideBySide ? (width - 16) / 2 : width;
+  // Match the panel's 14 px padding and 1 px border on each side.
+  const chartWidth = Math.max(220, panelWidth - 30);
+  return `<section class="da-hospital-group"><h3>${title}</h3><div class="da-arm-panels ${sideBySide ? "da-arm-panels-wide" : ""}">${[
+    1, 0,
+  ]
+    .map((D) =>
+      armPanel(
+        hospitals.filter((h) => h.D === D),
+        D,
+        chartWidth,
+      ),
+    )
+    .join("")}</div></section>`;
 }

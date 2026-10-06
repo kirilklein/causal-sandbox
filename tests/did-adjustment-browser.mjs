@@ -75,11 +75,11 @@ try {
       .evaluate((e) =>
         Number.parseFloat(e.style.getPropertyValue("--error-tint")),
       );
-  const data = () =>
-    page.locator(".hospital-trajectory title").allTextContents();
+  const data = () => page.locator(".hospital-mark title").allTextContents();
   await expect(value).toHaveText("+15 pp");
   await expect(page.locator("#da-result")).toContainText("−5 pp");
-  await expect(page.locator(".hospital-trajectory")).toHaveCount(12);
+  await expect(page.locator(".hospital-mark")).toHaveCount(12);
+  await expect(page.locator(".hospital-profile")).toHaveCount(2);
   await page.locator('[data-da-answer="0"]').click();
   await expect(page.locator("#da-feedback")).toContainText("Reconsider");
   await page.locator("#da-gap").focus();
@@ -92,6 +92,7 @@ try {
   await page.keyboard.press("Space");
   await expect(page.locator("#da-manipulate")).toBeFocused();
   await expect(value).toHaveText("+20 pp");
+  await expect(page.locator(".hospital-profile")).toHaveCount(4);
   assert.equal(await tint(), 0);
   await expect(page.locator(".did-effect-error")).toHaveCount(0);
   await page.locator("#da-truth").check();
@@ -112,7 +113,7 @@ try {
   await expect(page.locator(".da-contributions")).toContainText(
     "2/6 of the target",
   );
-  await expect(page.locator("#da-chart svg")).toHaveCount(2);
+  await expect(page.locator("#da-chart svg")).toHaveCount(4);
   await page.locator("#da-back").click();
   await expect(page.locator("#da-manipulate")).toBeChecked();
   await stage(2);
@@ -156,7 +157,7 @@ try {
         );
         if (i === 2 || i === 3) {
           const boxes = await page
-            .locator("#da-chart svg")
+            .locator("#da-chart > .da-hospital-group")
             .evaluateAll((nodes) =>
               nodes.map((node) => {
                 const r = node.getBoundingClientRect();
@@ -186,6 +187,10 @@ try {
             ),
           );
         assert.deepEqual(overflow, [], "Chart labels stay in bounds");
+        if (i === 1 || i === 2)
+          await page.locator("#da-chart").screenshot({
+            path: `test-results/did-chart-${theme}-${width}-${i}.png`,
+          });
         if (i === 2 || i === 3)
           await page.screenshot({
             path: `test-results/did-adjustment-${theme}-${width}-${i}.png`,

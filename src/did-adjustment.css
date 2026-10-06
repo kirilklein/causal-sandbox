@@ -38,3 +38,67 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.da-hospital-group h3 {
+  margin: 0 0 14px;
+  font-size: 15px;
+}
+.da-arm-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.da-arm-panels-wide {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.da-arm {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.da-arm-heading,
+.da-arm-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.da-arm-heading {
+  align-items: center;
+  margin-bottom: 18px;
+}
+.da-arm-heading h4 {
+  color: var(--hospital-arm);
+  font-size: 14px;
+  margin: 0;
+}
+.da-arm-heading > span,
+.da-arm-summary > div > span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.da-arm-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.da-arm-summary > div:last-child {
+  text-align: right;
+}
+.da-arm-summary strong {
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.da-arm-summary strong > span[aria-hidden] {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.da-hospital-chart {
+  margin-top: 8px;
+}
+.da-hospital-chart .da-endpoint {
+  font-size: 12px;
+  font-weight: 600;
+}

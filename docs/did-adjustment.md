@@ -8,7 +8,8 @@ regression and communication exercises and a link to this chapter.
 ## Storyboard and teaching review
 
 1. Predict whether different starting rates invalidate DiD. Twelve hospital
-   trajectories and thick arm means share a fixed 0–100% axis. Vary only the
+   trajectories share fixed 0–100% axes in separate treatment-arm panels.
+   Each panel emphasizes its mean recovery and mean change. Vary only the
    starting gap: follow-up association changes while DiD remains +15 pp.
 2. Predict whether subtracting baseline removes unrelated improvement. Link
    adoption and untreated improvement through baseline capacity: crude DiD
@@ -19,9 +20,10 @@ regression and communication exercises and a link to this chapter.
 4. Predict whether adjustment survives a treated-only new shock. Add +10 pp
    to treated outcomes: adjusted DiD becomes +25 pp, truth remains +15 pp.
 
-Review criteria: horizontal separation only reveals coincident hospitals, never
-changes outcome values; line thickness distinguishes means from hospitals;
-capacity bars encode target shares, not outcomes or certainty. Estimate and
+Review criteria: identical observed trajectories share one line with an explicit
+hospital count. Individual hospital symbols above each plot preserve the cohort
+size without shifting any measurement times or outcomes. Group means appear in
+the panel headers. Capacity bars encode target shares, not outcomes or certainty. Estimate and
 optional purple truth cards remain adjacent. No animated movement is necessary;
 the static transformation is also the reduced-motion presentation.
 

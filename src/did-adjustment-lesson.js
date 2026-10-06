@@ -104,7 +104,7 @@ document.querySelector("#app").innerHTML =
       <p class="da-target"><strong>Target:</strong> average program effect across the six treated hospitals at follow-up (ATT). Each hospital counts equally.</p>
       <h2 id="da-title" tabindex="-1"></h2><p id="da-intro"></p>
       <div id="da-question"></div><div id="da-controls"></div>
-      <figure class="did-figure"><div id="da-chart"></div><figcaption><span class="did-key did-treated">▲ Treated hospitals</span><span class="did-key did-comparison">● Comparison hospitals</span><span class="did-chart-note">Observed recovery rates. Thick lines show group means; thin lines show hospitals. Identical hospitals are separated horizontally only. The vertical dotted line marks the shared adoption date.</span></figcaption></figure>
+      <figure class="did-figure"><div id="da-chart"></div><figcaption><span class="did-key did-treated">▲ Treated hospitals</span><span class="did-key did-comparison">● Comparison hospitals</span><span class="did-chart-note">Each symbol is one hospital. Identical observed trajectories share a line; × gives their count. All treated hospitals adopt between baseline and follow-up.</span></figcaption></figure>
       <div id="da-result" role="status"></div>
       <label class="did-reveal"><input id="da-truth" type="checkbox">Show simulation truth</label>
       <div id="da-interpretation"></div>
