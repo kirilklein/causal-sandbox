@@ -1,5 +1,12 @@
 # Progressive education delivery
 
+The optional [Comparable hospitals chapter](did-adjustment.md) at
+`?lesson=did-adjustment` follows basic DiD. Exact hospital rates distinguish
+stable baseline gaps from different untreated changes, then introduce
+within-capacity comparisons for the hospital ATT. An unrelated shock illustrates
+the remaining conditional parallel-trends assumption. Estimator-model comparisons
+and cluster uncertainty remain separate planned deliveries in #309.
+
 The optional [Difference-in-differences lesson](did.md) at
 `?lesson=difference-in-differences` follows hidden confounding. One recovery-rate
 chart moves from before–after change to a comparison group, an assumed untreated

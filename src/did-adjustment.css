@@ -1,0 +1,116 @@
+.da-page .did-steps {
+  grid-template-columns: repeat(3, 1fr);
+}
+.da-target {
+  font-size: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.da-panels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.da-contributions,
+.da-panels.da-panels-wide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.da-contributions {
+  margin-top: 20px;
+}
+.da-contributions p {
+  font-size: 13px;
+  margin: 6px 0;
+}
+.da-share {
+  height: 8px;
+  background: var(--surface-subtle);
+}
+.da-share span {
+  display: block;
+  height: 100%;
+  background: var(--arm-1);
+}
+.da-hospital-group h3 {
+  margin: 0 0 14px;
+  font-size: 15px;
+}
+.da-trajectory-arm h4 {
+  color: var(--hospital-arm);
+  font-size: 14px;
+  margin: 18px 0 10px;
+}
+.da-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+.da-mini {
+  min-width: 0;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.da-mini figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hospital-arm);
+}
+.da-mini figcaption span {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 400;
+}
+.da-mini .da-mini-axis {
+  font-size: 10px;
+  fill: var(--text-secondary);
+}
+.da-mean-line {
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.da-contrast {
+  stroke: var(--text);
+  stroke-width: 1.5;
+  fill: none;
+}
+.da-change-chart .da-arm-label,
+.da-change-chart .da-contrast-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+.da-view {
+  margin-top: 20px;
+}
+.da-shock {
+  margin-top: 20px;
+}
+@media (max-width: 850px) {
+  .da-mini-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .da-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.da-panels .da-mini-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 480px) {
+  .da-panels .da-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.da-hospital-group.da-compact .da-mini-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

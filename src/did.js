@@ -45,3 +45,24 @@ export function didHistory(scenario = "parallel") {
     comparison: [50, 55, 60],
   };
 }
+
+// Algebraic reconstruction of a saturated two-group, two-period OLS model.
+export function didRegression(observed) {
+  const alpha = observed.comparisonBefore;
+  const beta = observed.treatedBefore - alpha;
+  const gamma = observed.comparisonAfter - alpha;
+  const delta = estimateDid(observed).effect;
+  return {
+    alpha,
+    beta,
+    gamma,
+    delta,
+    cells: {
+      comparisonBefore: alpha,
+      comparisonAfter: alpha + gamma,
+      treatedBefore: alpha + beta,
+      treatedAfter: alpha + beta + gamma + delta,
+    },
+    counterfactual: alpha + beta + gamma,
+  };
+}

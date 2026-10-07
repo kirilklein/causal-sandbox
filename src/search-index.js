@@ -11,6 +11,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "did-adjustment": [
+    "Compare hospitals within baseline capacity groups and learn the conditional parallel-trends assumption.",
+    "comparable hospitals capacity conditional parallel trends covariate adjustment DiD ATT stratification hospital panel baseline shock",
+  ],
   "difference-in-differences": [
     "Compare changes across hospitals, construct an assumed counterfactual, and explore when parallel trends fails.",
     "DiD difference in differences difference-in-differences diff in diff parallel trends before after counterfactual trend policy hospital program ATT",
