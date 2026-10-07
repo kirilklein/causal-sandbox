@@ -20,7 +20,7 @@ const stages = [
     name: "Starting gaps",
     title: "Different starting points can still give a credible comparison.",
     intro:
-      "Six hospitals adopt the program at the same date; six never adopt. All would improve by 10 points without it. Change only the treated hospitals’ starting rate.",
+      "Six hospitals adopt the program at the same date; six never adopt. They start at different recovery rates. All would improve by 10 points without the program. Switch from recovery rates to changes to see what cancels.",
     question: "Does a stable starting gap alone invalidate DiD?",
     choices: [
       "Yes, their levels must match",
@@ -34,7 +34,7 @@ const stages = [
     name: "Different changes",
     title: "What if adoption is linked to underlying improvement?",
     intro:
-      "Return to the 40% treated and 60% comparison starting rates. Keep the same hospitals and program effect; now link adoption to underlying improvement through a baseline characteristic.",
+      "Keep all 12 hospitals, their starting rates, and the +15-point program effect fixed. Now let a baseline characteristic predict both adoption and untreated improvement.",
     question:
       "Will crude DiD still isolate the program if adopters would improve more anyway?",
     choices: [
@@ -60,21 +60,6 @@ const stages = [
     feedback:
       "Our target is the treated hospitals. Average the within-capacity contrasts using their baseline profile shares; do not change anyone’s recovery rate.",
   },
-  {
-    name: "The assumption",
-    title: "Adjustment cannot remove an unmeasured new shock.",
-    intro:
-      "Keep the capacity adjustment. Add an unrelated 10-point improvement to treated hospitals at follow-up. The program’s own effect stays fixed.",
-    question:
-      "With a treated-only shock, what can we tell the hospital director?",
-    choices: [
-      "The adjusted difference proves the program’s effect",
-      "It estimates the effect only if comparable hospitals would have improved equally without the program",
-    ],
-    correct: 1,
-    feedback:
-      "Even within capacity groups, the shock breaks the equal-untreated-change assumption. Measured balance and matching earlier trends cannot prove that assumption.",
-  },
 ];
 const el = (id) => document.getElementById(`da-${id}`);
 const pp = (risk) =>
@@ -82,7 +67,7 @@ const pp = (risk) =>
     .toFixed(1)
     .replace(/\.0$/, "")} pp`;
 let step = 0;
-let gap = 0.2;
+const views = ["trajectories", "changes", "changes"];
 let trends = false;
 let adjusted = false;
 let shock = false;
@@ -103,11 +88,12 @@ document.querySelector("#app").innerHTML =
     <section class="panel did-experiment" aria-labelledby="da-title">
       <p class="da-target"><strong>Target:</strong> average program effect across the six treated hospitals at follow-up (ATT). Each hospital counts equally.</p>
       <h2 id="da-title" tabindex="-1"></h2><p id="da-intro"></p>
-      <div id="da-question"></div><div id="da-controls"></div>
-      <figure class="did-figure"><div id="da-chart"></div><figcaption><span class="did-key did-treated">▲ Treated hospitals</span><span class="did-key did-comparison">● Comparison hospitals</span><span class="did-chart-note">Identical observed trajectories share a line; × gives their count. All treated hospitals adopt between baseline and follow-up.</span></figcaption></figure>
+      <div id="da-question"></div><div id="da-controls"></div><div id="da-view" class="da-view"></div>
+      <figure class="did-figure"><div id="da-chart"></div><figcaption><span class="did-key did-treated">▲ Treated hospitals</span><span class="did-key did-comparison">● Comparison hospitals</span><span id="da-caption" class="did-chart-note"></span></figcaption></figure>
       <div id="da-result" role="status"></div>
       <label class="did-reveal"><input id="da-truth" type="checkbox">Show simulation truth</label>
       <div id="da-interpretation"></div>
+      <details id="da-shock-details" class="da-shock" hidden><summary>Stress-test the remaining assumption</summary><p>Would capacity adjustment remove an unrelated improvement affecting only treated hospitals?</p><label class="did-reveal"><input id="da-shock" type="checkbox">Add a treated-only +10 pp follow-up shock</label><p id="da-shock-feedback" role="status"></p></details>
     </section>
     <nav class="did-actions" aria-label="Continue comparable hospitals"><button id="da-back">← Back</button><button id="da-reset">Restart lesson</button><button id="da-next" class="primary">Continue →</button></nav>
     <details class="did-details"><summary>Target, assumption, and estimator are different decisions</summary>
@@ -130,16 +116,17 @@ setupLessonNavigation();
 
 function renderEvidence() {
   const world = hospitalWorld({
-    gap: step === 0 ? gap : 0.2,
+    variedBaselines: true,
     capacityTrends: step >= 2 || (step === 1 && trends),
-    shock: step === 3 && shock ? 0.1 : 0,
+    shock: step === 2 && shock ? 0.1 : 0,
   });
   const crude = estimateHospitalDid(world.observed);
   const stratified = stratifiedHospitalDid(world.observed);
-  const useAdjustment = step === 3 || (step === 2 && adjusted);
+  const useAdjustment = step === 2 && adjusted;
   const estimate = useAdjustment ? stratified.effect : crude.effect;
   const { tint } = effectComparison(estimate, world.truth.effect);
   const split = useAdjustment;
+  const view = views[step];
   el("chart").classList.toggle("da-panels", split);
   el("chart").classList.toggle("da-panels-wide", split && width >= 620);
   el("chart").innerHTML = split
@@ -149,12 +136,21 @@ function renderEvidence() {
             world.observed.filter((h) => h.capacity === capacity),
             {
               width: width >= 620 ? (width - 18) / 2 : width,
+              view,
               title: `${capacity === "high" ? "High" : "Low"} baseline capacity`,
             },
           ),
         )
         .join("")
-    : hospitalChart(world.observed, { width });
+    : hospitalChart(world.observed, { width, view });
+  el("caption").textContent =
+    view === "trajectories"
+      ? "One chart per hospital, all on the same 0–100% scale. IDs stay fixed across views. Treatment starts between baseline and follow-up."
+      : "One dot per hospital; horizontal position is its observed change. Rows identify hospitals, not outcome levels. Dashed lines show group means; the bracket subtracts them. Every panel uses the same 0–50 pp scale.";
+  el("shock-details").hidden = step !== 2;
+  el("shock-feedback").textContent = shock
+    ? "The adjusted estimate is +25 pp, but the program still adds 15. The unrelated shock breaks equal untreated changes even within capacity groups."
+    : "Capacity adjustment still requires equal average untreated changes within each profile. Balance and earlier trends cannot prove that assumption.";
   el("result").innerHTML = `<div class="did-effect-summary">
     <div class="did-effect-card did-estimate" style="--error-tint:${showTruth ? tint : 0}%"><span>${useAdjustment ? "Capacity-adjusted DiD" : "Crude DiD"}</span><strong>${pp(estimate)}</strong><small>For treated hospitals at follow-up</small>${showTruth ? `<span class="did-effect-error">${pp(estimate - world.truth.effect)} from truth</span>` : ""}</div>
     ${showTruth ? `<div class="did-effect-card did-truth-result"><span>Simulator ATT</span><strong>${pp(world.truth.effect)}</strong><small>Known only in the simulator</small></div>` : ""}
@@ -167,11 +163,11 @@ function renderEvidence() {
     .join("");
   el("interpretation").innerHTML =
     step === 0
-      ? `<p>A lower starting rate can make the follow-up association look harmful. The stable gap cancels in changes: crude DiD stays at ${pp(crude.effect)}.</p>`
+      ? `<p>The treated hospitals start at 30–50% recovery; comparison hospitals at 50–70%. Yet all treated changes are +25 pp and all comparison changes are +10 pp. Subtracting changes cancels the starting differences: ${pp(crude.effect)}.</p>`
       : step === 1
         ? `<p>${trends ? "Crude DiD rises to +20 pp. Adopting hospitals now have greater untreated improvement, so subtracting the overall comparison change leaves an extra +5 pp." : "Untreated improvement is still +10 pp in both groups. Turn on capacity-related improvement to test the comparison."}</p>`
         : useAdjustment
-          ? `<div class="da-contributions">${contribution}</div><p>Weight the contrasts by the treated mix: (4/6 × ${pp(stratified.strata[0].effect)}) + (2/6 × ${pp(stratified.strata[1].effect)}) = <strong>${pp(stratified.effect)}</strong>.</p><p>${step === 3 && shock ? "The adjusted estimate includes the unrelated +10-point shock. Observed capacity adjustment cannot restore equal untreated changes within profiles." : "Assumption: without the program, average recovery would improve equally within each capacity group. This assumption makes the adjusted comparison causal; balance alone cannot verify it."}</p><details><summary>Which hospitals contribute?</summary><p>Every treated hospital retains weight 1/6. Each of the two high-capacity comparison hospitals contributes 1/3 of the borrowed change; each of the four low-capacity comparison hospitals contributes 1/12. These contributions sum to one in each arm. Recovery endpoints never move when the comparison changes.</p></details>`
+          ? `<div class="da-contributions">${contribution}</div><p>Weight the contrasts by the treated mix: (4/6 × ${pp(stratified.strata[0].effect)}) + (2/6 × ${pp(stratified.strata[1].effect)}) = <strong>${pp(stratified.effect)}</strong>.</p><p>${shock ? "The adjusted estimate includes the unrelated +10-point shock. Observed capacity adjustment cannot restore equal untreated changes within profiles." : "Assumption: without the program, average recovery would improve equally within each capacity group. This assumption makes the adjusted comparison causal; balance alone cannot verify it."}</p><details><summary>Which hospitals contribute?</summary><p>Every treated hospital retains weight 1/6. Each of the two high-capacity comparison hospitals contributes 1/3 of the borrowed change; each of the four low-capacity comparison hospitals contributes 1/12. These contributions sum to one in each arm. Recovery endpoints never move when the comparison changes.</p></details>`
           : `<p>The raw comparison group has too few high-capacity hospitals for our target. Reveal within-capacity comparisons, then average with the treated mix.</p>`;
 }
 
@@ -212,17 +208,21 @@ function renderStep(focus = false) {
   el("next").hidden = step === stages.length - 1;
   el("controls").innerHTML =
     step === 0
-      ? `<label class="did-slider" for="da-gap"><span>Comparison minus treated starting rate<output id="da-gap-value">${pp(gap)}</output></span><input id="da-gap" type="range" min="10" max="30" step="1" value="${Math.round(gap * 100)}"></label>`
-      : `<label class="did-reveal"><input id="da-manipulate" type="checkbox" ${[false, trends, adjusted, shock][step] ? "checked" : ""}>${["", "Link untreated improvement to baseline capacity", "Compare within capacity groups", "Add a treated-only follow-up shock"][step]}</label><p class="small">${step === 2 ? "Analysis control: observed data, target, and truth stay fixed." : "World control: outcomes change; hospital identities, baseline rates, and the +15-point program effect stay fixed."}</p>`;
-  el("gap")?.addEventListener("input", (event) => {
-    gap = Number(event.target.value) / 100;
-    el("gap-value").textContent = pp(gap);
-    renderEvidence();
-  });
+      ? ""
+      : `<label class="did-reveal"><input id="da-manipulate" type="checkbox" ${(step === 1 ? trends : adjusted) ? "checked" : ""}>${step === 1 ? "Link untreated improvement to baseline capacity" : "Reveal capacity and compare within groups"}</label><p class="small">${step === 1 ? "World control: high-capacity hospitals improve 20 pp without the program; low-capacity hospitals improve 5 pp. Starting rates and the program effect stay fixed." : "Analysis control: regroup the same hospitals. Their outcomes, target, and program effect stay fixed."}</p>`;
+  el("view").innerHTML =
+    `<fieldset class="did-choices"><legend>View the same hospitals</legend><label><input type="radio" name="da-view" value="trajectories" ${views[step] === "trajectories" ? "checked" : ""}>Recovery over time</label><label><input type="radio" name="da-view" value="changes" ${views[step] === "changes" ? "checked" : ""}>Change in recovery</label></fieldset>`;
+  el("view")
+    .querySelectorAll("input")
+    .forEach((input) =>
+      input.addEventListener("change", () => {
+        views[step] = input.value;
+        renderEvidence();
+      }),
+    );
   el("manipulate")?.addEventListener("change", (event) => {
     if (step === 1) trends = event.target.checked;
-    if (step === 2) adjusted = event.target.checked;
-    if (step === 3) shock = event.target.checked;
+    else adjusted = event.target.checked;
     renderEvidence();
   });
   renderQuestion();
@@ -249,11 +249,17 @@ el("truth").addEventListener("change", (event) => {
 });
 el("reset").addEventListener("click", () => {
   step = 0;
-  gap = 0.2;
+  views.splice(0, 3, "trajectories", "changes", "changes");
+  el("shock").checked = false;
+  el("shock-details").open = false;
   trends = adjusted = shock = showTruth = false;
   answers = stages.map(() => null);
   el("truth").checked = false;
   renderStep(true);
+});
+el("shock").addEventListener("change", (event) => {
+  shock = event.target.checked;
+  renderEvidence();
 });
 new ResizeObserver(([entry]) => {
   const nextWidth = Math.max(250, Math.round(entry.contentRect.width));

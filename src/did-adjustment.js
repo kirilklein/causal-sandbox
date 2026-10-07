@@ -8,6 +8,7 @@ export function hospitalWorld({
   shock = 0,
   gap = 0.2,
   common = 0.1,
+  variedBaselines = false,
 } = {}) {
   if (![shock, gap, common].every(Number.isFinite))
     throw new Error("World parameters must be finite.");
@@ -16,7 +17,10 @@ export function hospitalWorld({
   for (const D of [1, 0]) {
     for (let i = 0; i < 6; i++) {
       const capacity = i < (D ? 4 : 2) ? "high" : "low";
-      const before = 0.6 - D * gap;
+      const offset = variedBaselines
+        ? [-0.1, -0.06, -0.02, 0.02, 0.06, 0.1][i]
+        : 0;
+      const before = 0.6 - D * gap + offset;
       const improvement = capacityTrends
         ? capacity === "high"
           ? 0.2

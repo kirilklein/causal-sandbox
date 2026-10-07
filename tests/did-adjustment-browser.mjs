@@ -75,39 +75,67 @@ try {
       .evaluate((e) =>
         Number.parseFloat(e.style.getPropertyValue("--error-tint")),
       );
-  const data = () => page.locator(".hospital-profile title").allTextContents();
+  const data = async () =>
+    (await page.locator(".hospital-record").allTextContents()).sort();
+  const changeView = () =>
+    page
+      .getByRole("radio", { name: "Change in recovery", exact: true })
+      .check();
+  const recoveryView = () =>
+    page
+      .getByRole("radio", { name: "Recovery over time", exact: true })
+      .check();
   await expect(value).toHaveText("+15 pp");
   await expect(page.locator("#da-result")).toContainText("−5 pp");
-  await expect(page.locator(".da-arm-heading > span")).toHaveText([
-    "6 hospitals",
-    "6 hospitals",
-  ]);
-  await expect(page.locator(".hospital-profile")).toHaveCount(2);
+  await expect(page.locator(".da-mini")).toHaveCount(12);
+  const initial = await data();
+  assert.equal(new Set(initial.map((text) => text.split(":")[0])).size, 12);
   await page.locator('[data-da-answer="0"]').click();
   await expect(page.locator("#da-feedback")).toContainText("Reconsider");
-  await page.locator("#da-gap").focus();
-  await page.keyboard.press("End");
-  await expect(page.locator("#da-gap")).toBeFocused();
-  await expect(value).toHaveText("+15 pp");
-  await expect(page.locator("#da-result")).toContainText("−15 pp");
+  await page
+    .getByRole("radio", { name: "Change in recovery", exact: true })
+    .focus();
+  await page.keyboard.press("Space");
+  await expect(
+    page.getByRole("radio", { name: "Change in recovery", exact: true }),
+  ).toBeFocused();
+  assert.deepEqual(
+    await data(),
+    initial,
+    "Changing views preserves all observed outcomes",
+  );
+  await expect(page.locator(".hospital-dot")).toHaveCount(12);
+  await expect(page.locator(".da-contrast-label")).toHaveText(
+    "Difference in changes: +15 pp",
+  );
   await stage(1);
+  assert.deepEqual(
+    await data(),
+    initial,
+    "Advancing keeps the same initial world",
+  );
   await page.locator("#da-manipulate").focus();
   await page.keyboard.press("Space");
   await expect(page.locator("#da-manipulate")).toBeFocused();
   await expect(value).toHaveText("+20 pp");
-  await expect(page.locator(".hospital-profile")).toHaveCount(4);
+  const capacity = await data();
+  assert.deepEqual(
+    capacity.map((text) => text.split(" to ")[0]),
+    initial.map((text) => text.split(" to ")[0]),
+    "Scenario changes preserve IDs and baselines",
+  );
   assert.equal(await tint(), 0);
   await expect(page.locator(".did-effect-error")).toHaveCount(0);
   await page.locator("#da-truth").check();
   await expect(page.locator(".did-truth-result strong")).toHaveText("+15 pp");
   assert.ok((await tint()) > 0 && (await tint()) < 20);
   await stage(2);
-  const observed = (await data()).sort();
+  assert.deepEqual(await data(), capacity);
   await page.locator("#da-manipulate").check();
   assert.deepEqual(
-    (await data()).sort(),
-    observed,
-    "Adjustment preserves observed trajectories and their hospital counts",
+    await data(),
+    capacity,
+    "Regrouping changes neither hospital identities nor outcomes",
   );
   await expect(value).toHaveText("+15 pp");
   await expect(page.locator(".da-contributions")).toContainText(
@@ -116,89 +144,83 @@ try {
   await expect(page.locator(".da-contributions")).toContainText(
     "2/6 of the target",
   );
-  await expect(page.locator("#da-chart svg")).toHaveCount(4);
-  await page.locator("#da-back").click();
-  await expect(page.locator("#da-manipulate")).toBeChecked();
-  await stage(2);
-  await expect(page.locator("#da-manipulate")).toBeChecked();
-  await stage(3);
-  await page.locator("#da-manipulate").check();
+  await expect(page.locator(".da-contrast-label")).toHaveText([
+    "Difference in changes: +15 pp",
+    "Difference in changes: +15 pp",
+  ]);
+  await recoveryView();
+  await expect(page.locator(".da-mini")).toHaveCount(12);
+  assert.deepEqual(await data(), capacity);
+  await changeView();
+  await page.locator("#da-shock-details summary").click();
+  await page.locator("#da-shock").check();
   await expect(value).toHaveText("+25 pp");
   await expect(page.locator(".did-effect-error")).toHaveText(
     "+10 pp from truth",
   );
-  await page.locator('[data-da-answer="1"]').click();
-  await expect(page.locator("#da-feedback")).toContainText("Correct");
+  const shocked = await data();
+  await page.locator("#da-manipulate").uncheck();
+  assert.deepEqual(
+    await data(),
+    shocked,
+    "Turning adjustment off preserves the shock and observed data",
+  );
+  await expect(value).toHaveText("+30 pp");
+  await page.locator("#da-manipulate").check();
+  assert.deepEqual(await data(), shocked);
+  await expect(value).toHaveText("+25 pp");
   await page.locator("#da-truth").uncheck();
   assert.equal(await tint(), 0);
   await expect(page.locator(".did-effect-error")).toHaveCount(0);
   await page.locator("#da-truth").check();
-  await mkdir("test-results", { recursive: true });
+  await page.locator("#da-shock").uncheck();
+  await page.locator("#da-shock-details summary").click();
   for (const theme of ["light", "dark"]) {
     await page
       .getByRole("switch", { name: "Dark mode" })
       .setChecked(theme === "dark");
-    for (const width of [1280, 390, 360]) {
+    for (const width of [1280, 760, 390, 360]) {
       await page.setViewportSize({ width, height: 1000 });
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         await stage(i);
         await expect(page.locator("#da-title")).toBeFocused();
-        await expect(page.locator("#da-chart")).toBeVisible();
-        assert.ok(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-          `${theme}/${width}/${i}: overflow`,
-        );
-        const [a, b] = await Promise.all([
-          page.locator(".did-estimate").boundingBox(),
-          page.locator(".did-truth-result").boundingBox(),
-        ]);
-        assert.ok(
-          Math.abs(a.y - b.y) < 1 && b.x > a.x,
-          "Truth remains beside estimate",
-        );
-        if (i === 2 || i === 3) {
-          const boxes = await page
-            .locator("#da-chart > .da-hospital-group")
-            .evaluateAll((nodes) =>
-              nodes.map((node) => {
-                const r = node.getBoundingClientRect();
-                return { x: r.x, y: r.y };
-              }),
-            );
-          if (width < 700)
-            assert.ok(boxes[1].y > boxes[0].y, "Phone charts stack");
-          else
-            assert.ok(
-              boxes[1].x > boxes[0].x,
-              "Desktop charts sit side by side",
-            );
-        }
-        const overflow = await page
-          .locator("#da-chart svg")
-          .evaluateAll((svgs) =>
-            svgs.flatMap((svg) =>
-              [...svg.querySelectorAll("text")]
-                .filter((text) => {
-                  const r = text.getBBox();
-                  return (
-                    r.x < -1 || r.x + r.width > svg.viewBox.baseVal.width + 1
-                  );
-                })
-                .map((text) => text.textContent),
+        for (const view of ["trajectories", "changes"]) {
+          await (view === "changes" ? changeView() : recoveryView());
+          await expect(page.locator(".hospital-record")).toHaveCount(12);
+          assert.ok(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth <= innerWidth,
             ),
+            `${theme}/${width}/${i}/${view}: overflow`,
           );
-        assert.deepEqual(overflow, [], "Chart labels stay in bounds");
-        if (i === 1 || i === 2)
-          await page.locator("#da-chart").screenshot({
-            path: `test-results/did-chart-${theme}-${width}-${i}.png`,
-          });
-        if (i === 2 || i === 3)
-          await page.screenshot({
-            path: `test-results/did-adjustment-${theme}-${width}-${i}.png`,
-            fullPage: true,
-          });
+          const [a, b] = await Promise.all([
+            page.locator(".did-estimate").boundingBox(),
+            page.locator(".did-truth-result").boundingBox(),
+          ]);
+          assert.ok(
+            Math.abs(a.y - b.y) < 1 && b.x > a.x,
+            "Truth remains beside estimate",
+          );
+          const overflow = await page
+            .locator("#da-chart svg")
+            .evaluateAll((svgs) =>
+              svgs.flatMap((svg) =>
+                [...svg.querySelectorAll("text")]
+                  .filter((text) => {
+                    const r = text.getBBox();
+                    return (
+                      r.x < -1 || r.x + r.width > svg.viewBox.baseVal.width + 1
+                    );
+                  })
+                  .map((text) => text.textContent),
+              ),
+            );
+          assert.deepEqual(overflow, [], "Chart labels stay in bounds");
+          if (width !== 360)
+            await page.locator("#da-chart").screenshot({
+              path: `test-results/did-panel-${theme}-${width}-${i}-${view}.png`,
+            });
+        }
       }
     }
   }
@@ -206,13 +228,19 @@ try {
   await stage(2);
   await expect(value).toHaveText("+15 pp");
   await page.locator("#da-reset").click();
-  await expect(page.locator("#da-gap")).toHaveValue("20");
+  await expect(
+    page.getByRole("radio", { name: "Recovery over time", exact: true }),
+  ).toBeChecked();
   await expect(page.locator("#da-truth")).not.toBeChecked();
   await expect(page.locator("#da-feedback")).toBeEmpty();
-  for (const i of [1, 2, 3]) {
+  for (const i of [1, 2]) {
     await stage(i);
     await expect(page.locator("#da-manipulate")).not.toBeChecked();
+    await expect(
+      page.getByRole("radio", { name: "Change in recovery", exact: true }),
+    ).toBeChecked();
   }
+  await expect(page.locator("#da-shock")).not.toBeChecked();
   await page.getByRole("button", { name: "Contents", exact: true }).click();
   await expect(
     page

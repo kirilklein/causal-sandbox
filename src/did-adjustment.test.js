@@ -140,3 +140,44 @@ test("regression reconstructs all four cells and DiD, even when parallel trends 
     [60, -20, 10, 15],
   );
 });
+
+test("distinct hospital baselines preserve the fixture contrasts and stay fixed across worlds", () => {
+  const equal = hospitalWorld({ variedBaselines: true });
+  const capacity = hospitalWorld({
+    variedBaselines: true,
+    capacityTrends: true,
+  });
+  const shocked = hospitalWorld({
+    variedBaselines: true,
+    capacityTrends: true,
+    shock: 0.1,
+  });
+  for (const D of [0, 1]) {
+    const arm = equal.observed.filter((h) => h.D === D);
+    assert.equal(new Set(arm.map((h) => h.before)).size, 6);
+    close(arm.reduce((sum, h) => sum + h.before, 0) / 6, D ? 0.4 : 0.6);
+  }
+  for (const world of [capacity, shocked]) {
+    assert.deepEqual(
+      world.observed.map(({ id, D, capacity, before }) => ({
+        id,
+        D,
+        capacity,
+        before,
+      })),
+      equal.observed.map(({ id, D, capacity, before }) => ({
+        id,
+        D,
+        capacity,
+        before,
+      })),
+    );
+    close(world.truth.effect, equal.truth.effect);
+    for (const h of world.observed) assert.ok(h.before >= 0 && h.after <= 1);
+  }
+  close(estimateHospitalDid(equal.observed).effect, 0.15);
+  close(estimateHospitalDid(equal.observed).association, -0.05);
+  close(estimateHospitalDid(capacity.observed).effect, 0.2);
+  close(stratifiedHospitalDid(capacity.observed).effect, 0.15);
+  close(stratifiedHospitalDid(shocked.observed).effect, 0.25);
+});

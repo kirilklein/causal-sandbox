@@ -7,24 +7,29 @@ regression and communication exercises and a link to this chapter.
 
 ## Storyboard and teaching review
 
-1. Predict whether different starting rates invalidate DiD. Twelve hospital
-   trajectories share fixed 0–100% axes in separate treatment-arm panels.
-   Each panel emphasizes its mean recovery and mean change. Vary only the
-   starting gap: follow-up association changes while DiD remains +15 pp.
-2. Predict whether subtracting baseline removes unrelated improvement. Link
-   adoption and untreated improvement through baseline capacity: crude DiD
-   moves to +20 pp while the program effect stays +15 pp.
-3. Predict which capacity distribution defines the target. Hold observations
-   fixed and reveal two capacity panels. Show each within-profile difference
-   and its share of the six treated hospitals. The weighted result is +15 pp.
-4. Predict whether adjustment survives a treated-only new shock. Add +10 pp
-   to treated outcomes: adjusted DiD becomes +25 pp, truth remains +15 pp.
+1. Twelve stable hospital IDs have distinct starting rates: treated hospitals
+   start at 30, 34, 38, 42, 46, and 50%; comparison hospitals at 50, 54, 58, 62,
+   66, and 70%. Predict whether these differences invalidate DiD. Each hospital
+   has its own small trajectory chart on a shared 0–100% scale.
+2. Switch to changes: each hospital becomes one mark on a shared 0–50 pp axis.
+   Rows identify hospitals; dashed lines show group means, and the bracket
+   subtracts them. Change only the relationship between baseline capacity and
+   untreated improvement: crude DiD moves from +15 to +20 pp.
+3. Reveal capacity and regroup the same hospital marks. Each within-capacity
+   contrast is +15 pp. Combine using treated shares 4/6 and 2/6. Switching views
+   or regrouping never changes hospital identities or outcomes.
 
-Review criteria: identical observed trajectories share one line with an explicit
-hospital count. Panel headers show the group size and mean recovery, without
-shifting any measurement times or outcomes. Capacity bars encode target shares, not outcomes or certainty. Estimate and
-optional purple truth cards remain adjacent. No animated movement is necessary;
-the static transformation is also the reduced-motion presentation.
+An optional stress test after adjustment adds a treated-only +10 pp shock,
+raising adjusted DiD to +25 pp while truth remains +15 pp. This remains outside
+the three-step main flow.
+
+Visual review criteria: all mini charts share one recovery scale, all dot plots
+share one change scale, and stable IDs connect both views. A dot represents a
+measured change, never an assumed counterfactual. Vertical dot positions identify
+hospitals and prevent overplotting; they do not encode outcome values. Group
+means and within-profile contrasts use observed data only. Capacity bars encode
+treated target shares. Truth remains separately gated. Static redraws also serve
+reduced-motion users; no cosmetic motion implies that weighting changes outcomes.
 
 This storyboard follows the issue's proposed order. Implementation review checked
 that every encoding has a stated meaning and inspected desktop and phone
@@ -45,12 +50,18 @@ separate inputs. All calculations use risks. Records contain only ID, D, baselin
 capacity, baseline/follow-up recovery, and size. Potential untreated follow-up
 rates and the effect live in a separate truth object. Estimators never receive it.
 
-The fixture has four high/two low capacity treated hospitals and two high/four
+The original hand-checkable fixture (with `variedBaselines: false`) has four
+high/two low capacity treated hospitals and two high/four
 low capacity comparison hospitals. Baseline is 40% versus 60%; the program adds
 15 pp. Equal untreated improvement of 10 pp gives −5 pp follow-up association
 and +15 pp crude DiD. Capacity-specific improvements of 20/5 pp give treated
 change +30 pp, comparison change +10 pp, and crude DiD +20 pp. Both stratum
 contrasts are +15 pp. Their treated shares 4/6 and 2/6 yield +15 pp.
+
+The lesson uses `variedBaselines: true`: fixed offsets −10, −6, −2, +2, +6,
+and +10 pp distinguish hospitals while preserving the original arm mean baselines
+and every change contrast above. Offsets, identities, and adoption stay fixed
+across scenarios. The unit tests retain both the original and varied fixtures.
 
 Every treated hospital has weight 1/6. Each high-capacity comparison hospital
 contributes 1/3 of the borrowed change; each low-capacity comparison hospital
