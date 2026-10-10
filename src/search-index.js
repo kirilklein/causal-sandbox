@@ -11,6 +11,10 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "delta-method": [
+    "Explore nonlinear uncertainty and compare confidence interval coverage for revenue per order.",
+    "delta method tangent Taylor approximation nonlinear ratio metrics AOV CTR covariance bootstrap percentile confidence interval coverage Anton Bugaev",
+  ],
   "difference-in-differences": [
     "Compare changes across hospitals, construct an assumed counterfactual, and explore when parallel trends fails.",
     "DiD difference in differences difference-in-differences diff in diff parallel trends before after counterfactual trend policy hospital program ATT",

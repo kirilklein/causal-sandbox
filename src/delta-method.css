@@ -1,0 +1,344 @@
+.dm-page .dm-credit {
+  max-width: 760px;
+}
+.dm-page .dm-plots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 20px 0;
+}
+.dm-page .dm-transformation-wrap {
+  margin: 20px 0;
+}
+.dm-page .dm-coordinate-axis {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+.dm-page .dm-chart .dm-output {
+  fill: var(--node-A);
+  fill-opacity: 0.45;
+}
+.dm-page .dm-chart .dm-input-bell {
+  stroke: var(--arm-1);
+}
+.dm-page .dm-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.dm-page .brand svg {
+  width: 32px;
+}
+.dm-page .dm-chart text {
+  fill: var(--text);
+  font:
+    13px system-ui,
+    sans-serif;
+}
+.dm-page .dm-chart path {
+  fill: none;
+}
+.dm-page .dm-axis {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+.dm-page .dm-exact {
+  stroke: var(--truth);
+  stroke-width: 2.5;
+}
+.dm-page .dm-approx {
+  stroke: var(--fitted);
+  stroke-width: 2.5;
+  stroke-dasharray: 7 4;
+}
+.dm-page .dm-guide {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+.dm-page .dm-input {
+  fill: var(--node-Y);
+  stroke: var(--truth);
+  stroke-width: 1.5;
+}
+.dm-page .dm-point {
+  fill: var(--text);
+}
+.dm-page .dm-ci {
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+.dm-page .dm-miss {
+  stroke: var(--error-mark);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+.dm-page .dm-missing {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+.dm-page .dm-truth {
+  stroke: var(--truth);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.dm-page .dm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 14px;
+}
+.dm-page .dm-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
+  margin: 24px 0;
+}
+.dm-page .dm-controls label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.dm-page input[type="range"] {
+  width: 100%;
+  height: 6px;
+  margin-block: 18px;
+  background: var(--border-strong);
+  accent-color: var(--accent);
+}
+.dm-page select {
+  width: 100%;
+  min-width: 0;
+  margin-top: 6px;
+  padding: 10px 4px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+.dm-page select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.dm-page fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+}
+.dm-page legend {
+  font-weight: 600;
+}
+.dm-page fieldset label {
+  display: block;
+  padding: 8px 0;
+}
+.dm-page input[type="radio"] {
+  accent-color: var(--accent);
+}
+.dm-page button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dm-page .dm-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 18px 36px;
+  background: var(--surface-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.dm-page .dm-readout > div {
+  display: grid;
+  gap: 6px;
+}
+.dm-page .dm-readout span,
+.dm-page .dm-readout small {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.dm-page .dm-readout math,
+.dm-page .dm-readout strong {
+  font-size: 20px;
+  font-weight: 500;
+}
+.dm-page .dm-formula {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 8px;
+  margin-block: 18px;
+  font-size: 19px;
+}
+.dm-page math {
+  color: var(--text);
+}
+.dm-page .dm-formula math {
+  flex-shrink: 0;
+  math-style: normal;
+}
+.dm-page .dm-interval-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  font-size: 14px;
+}
+.dm-page h3 {
+  font-size: 16px;
+}
+@media (max-width: 650px) {
+  .dm-page .dm-plots,
+  .dm-page .dm-controls,
+  .dm-page .dm-interval-values {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dm-page .panel {
+    padding: 14px;
+  }
+}
+
+.dm-page input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+}
+.dm-page input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+}
+
+.dm-page .dm-joint-chart {
+  max-width: 560px;
+  margin: 20px auto;
+}
+.dm-page .dm-chart .dm-input {
+  fill: var(--node-Y);
+  fill-opacity: 0.45;
+}
+
+.dm-page #dm-joint-plot {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.dm-page .dm-chart.dm-joint-chart {
+  max-width: none;
+}
+.dm-page .dm-chart .dm-ratio-surface {
+  fill: var(--truth);
+  fill-opacity: 0.16;
+  stroke: var(--truth);
+  stroke-opacity: 0.16;
+  stroke-width: 0.5;
+}
+.dm-page .dm-floor-ellipse {
+  stroke: var(--arm-1);
+  stroke-width: 2;
+}
+.dm-page .dm-center-point {
+  fill: var(--truth);
+  stroke: var(--truth);
+}
+.dm-page .dm-projection {
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.dm-page .dm-revenue-tangent {
+  stroke: var(--arm-1);
+  stroke-width: 3;
+}
+.dm-page .dm-order-tangent {
+  stroke: var(--fitted);
+  stroke-width: 3;
+}
+.dm-page .dm-center-key {
+  color: var(--truth);
+}
+.dm-page .dm-step-controls {
+  margin-block: 16px;
+}
+
+.dm-page #dm-joint-copy {
+  min-height: 4.5em;
+}
+@media (max-width: 650px) {
+  .dm-page #dm-joint-copy {
+    min-height: 10.5em;
+  }
+  .dm-page .dm-step-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .dm-page #dm-joint-next {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .dm-page #dm-joint-prev,
+  .dm-page #dm-joint-replay {
+    grid-row: 2;
+  }
+}
+
+.dm-page #dm-joint-plot {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.dm-page #dm-joint-plot[data-dragging] {
+  cursor: grabbing;
+}
+.dm-page #dm-joint-plot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.dm-page #dm-variance-formula {
+  align-items: baseline;
+}
+
+.dm-page .dm-variance-term {
+  display: grid;
+  gap: 10px;
+}
+.dm-page .dm-variance-term small {
+  font-size: 13px;
+}
+.dm-page .dm-revenue-term,
+.dm-page .dm-revenue-term math {
+  color: var(--arm-1);
+}
+.dm-page .dm-orders-term,
+.dm-page .dm-orders-term math {
+  color: var(--fitted);
+}
+.dm-page .dm-revenue-spread path {
+  stroke: var(--arm-1);
+  stroke-width: 4;
+}
+.dm-page .dm-orders-spread path {
+  stroke: var(--fitted);
+  stroke-width: 4;
+}
+.dm-page .dm-chart .dm-revenue-arrowhead {
+  fill: var(--arm-1);
+}
+.dm-page .dm-chart .dm-orders-arrowhead {
+  fill: var(--fitted);
+}
+.dm-page .dm-revenue-spread text {
+  fill: var(--arm-1);
+}
+.dm-page .dm-orders-spread text {
+  fill: var(--fitted);
+}
+.dm-page .dm-revenue-spread text,
+.dm-page .dm-orders-spread text {
+  paint-order: stroke;
+  stroke: var(--page);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}

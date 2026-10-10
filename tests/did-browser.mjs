@@ -56,9 +56,7 @@ try {
   await expect(page.locator("#did-common-value")).toHaveText("+20 pp");
   await expect(page.locator(".did-estimate strong")).toHaveText("+15 pp");
   const priorResult = await result.textContent();
-  await page
-    .getByRole("combobox", { name: "Color theme" })
-    .selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await result.textContent(), priorResult);
   await page.locator("#did-next").click();
   await page.locator("#did-extra").focus();
@@ -117,8 +115,8 @@ try {
   await mkdir("test-results", { recursive: true });
   for (const theme of ["light", "dark"]) {
     await page
-      .getByRole("combobox", { name: "Color theme" })
-      .selectOption(theme);
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(theme === "dark");
     for (const width of [1280, 390, 360]) {
       await page.setViewportSize({ width, height: 1000 });
       for (let i = 0; i < 6; i++) {

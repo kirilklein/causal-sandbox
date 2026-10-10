@@ -1,5 +1,11 @@
 # Progressive education delivery
 
+The optional [Delta Method chapter](delta-method.md) follows uncertainty at
+`?lesson=delta-method`. Predict a transformed distribution, explore its tangent
+approximation, then compare Delta and paired-user bootstrap intervals for a ratio
+metric. Repeated studies expose coverage and unavailable intervals. Anton Bugaev's
+video is credited as visual inspiration. Core lesson order is unchanged.
+
 The optional [Difference-in-differences lesson](did.md) at
 `?lesson=difference-in-differences` follows hidden confounding. One recovery-rate
 chart moves from before–after change to a comparison group, an assumed untreated
