@@ -7,29 +7,29 @@ regression and communication exercises and a link to this chapter.
 
 ## Storyboard and teaching review
 
-1. Twelve stable hospital IDs have distinct starting rates: treated hospitals
-   start at 30, 34, 38, 42, 46, and 50%; comparison hospitals at 50, 54, 58, 62,
-   66, and 70%. Predict whether these differences invalidate DiD. Each hospital
-   has its own small trajectory chart on a shared 0–100% scale.
-2. Switch to changes: each hospital becomes one mark on a shared 0–50 pp axis.
-   Rows identify hospitals; dashed lines show group means, and the bracket
-   subtracts them. Change only the relationship between baseline capacity and
-   untreated improvement: crude DiD moves from +15 to +20 pp.
-3. Reveal capacity and regroup the same hospital marks. Each within-capacity
-   contrast is +15 pp. Combine using treated shares 4/6 and 2/6. Switching views
-   or regrouping never changes hospital identities or outcomes.
+1. Six treated-hospital rows share a 0–100% recovery axis. A hollow circle marks
+   baseline, a triangle observed follow-up, and a dashed diamond the assumed
+   follow-up without the program. Borrow the comparison hospitals' mean +10 pp
+   change: each observed-minus-assumed gap is +15 pp.
+2. Change the relationship between baseline capacity and untreated improvement.
+   Borrowing the overall +10 pp now gives four gaps of +25 pp and two of +10 pp;
+   their average is +20 pp. Comparison-hospital change plots show the source
+   of the borrowed mean.
+3. Reveal capacity and borrow within capacity groups: +20 pp for high capacity,
+   +5 pp for low. Only the assumed endpoints move; observed hospital outcomes
+   stay fixed. All six gaps become +15 pp. The treated shares are 4/6 and 2/6.
 
+The twelve observed trajectories remain available in an optional disclosure.
 An optional stress test after adjustment adds a treated-only +10 pp shock,
-raising adjusted DiD to +25 pp while truth remains +15 pp. This remains outside
-the three-step main flow.
+raising adjusted DiD to +25 pp while truth remains +15 pp.
 
-Visual review criteria: all mini charts share one recovery scale, all dot plots
-share one change scale, and stable IDs connect both views. A dot represents a
-measured change, never an assumed counterfactual. Vertical dot positions identify
-hospitals and prevent overplotting; they do not encode outcome values. Group
-means and within-profile contrasts use observed data only. Capacity bars encode
-treated target shares. Truth remains separately gated. Static redraws also serve
-reduced-motion users; no cosmetic motion implies that weighting changes outcomes.
+Visual review criteria: treated rows share one recovery scale; comparison plots
+share one change scale. Stable IDs connect each borrowed change to its sources.
+Assumed endpoints use observed comparison changes, never simulator truth. A row
+is an estimator contribution, not an identified hospital-specific causal effect;
+parallel trends supports interpretation of the treated-population average.
+Capacity bars encode treated target shares. Truth remains separately gated.
+Static redraws also serve reduced-motion users.
 
 This storyboard follows the issue's proposed order. Implementation review checked
 that every encoding has a stated meaning and inspected desktop and phone

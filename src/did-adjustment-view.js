@@ -1,3 +1,5 @@
+import { hospitalCounterfactuals } from "./did-adjustment.js";
+
 const percent = (risk) => `${Math.round(risk * 100)}%`;
 const points = (risk) =>
   `${risk > 1e-10 ? "+" : risk < -1e-10 ? "−" : ""}${Math.abs(risk * 100)
@@ -23,38 +25,69 @@ function trajectories(hospitals) {
     .join("");
 }
 
-function changes(hospitals, width) {
-  // Identical scales in the overall and capacity-specific views: 0 to 50 pp.
-  const x = (risk) => 42 + (risk / 0.5) * (width - 68);
-  let top = 40;
-  const arms = [1, 0]
-    .map((D) => {
-      const rows = hospitals.filter((h) => h.D === D);
-      const mean = meanChange(rows);
-      const start = top;
-      const dots = rows
-        .map((h, i) => {
-          const cy = start + 25 + i * 23;
-          return `<g class="hospital-dot" fill="var(--arm-${D})"><title class="hospital-record">${description(h)}</title><text class="did-axis" x="2" y="${cy + 4}">${h.id}</text>${mark(D, x(change(h)), cy, 4.5)}</g>`;
-        })
-        .join("");
-      top += 38 + rows.length * 23;
-      return `<text class="da-arm-label" x="2" y="${start}">${D ? "▲ Treated" : "● Comparison"}</text><text class="did-axis" x="${width - 4}" y="${start}" text-anchor="end">Mean ${points(mean)}</text><line class="da-mean-line" x1="${x(mean)}" x2="${x(mean)}" y1="${start + 13}" y2="${top - 29}" stroke="var(--arm-${D})"/>${dots}`;
-    })
-    .join("");
-  const t = meanChange(hospitals.filter((h) => h.D));
-  const c = meanChange(hospitals.filter((h) => !h.D));
-  const axis = top + 18;
-  return `<svg class="did-chart da-change-chart" viewBox="0 0 ${width} ${axis + 70}" role="img" aria-label="Observed hospital changes; treated mean ${points(t)}, comparison mean ${points(c)}, difference ${points(t - c)}.">
-    ${[0, 0.1, 0.2, 0.3, 0.4, 0.5].map((risk) => `<line class="did-grid" x1="${x(risk)}" x2="${x(risk)}" y1="50" y2="${axis}"/><text class="did-axis" x="${x(risk)}" y="${axis + 18}" text-anchor="middle">${Math.round(risk * 100)}</text>`).join("")}
-    ${arms}<path class="da-contrast" d="M${x(c)},${axis - 10}v-7H${x(t)}v7"/>
-    <text class="da-contrast-label" x="${width / 2}" y="${axis + 43}" text-anchor="middle">Difference in changes: ${points(t - c)}</text><text class="did-axis" x="${width / 2}" y="${axis + 63}" text-anchor="middle">Observed change (percentage points)</text>
-  </svg>`;
+function comparisonStrip(rows, width, title, recipients) {
+  const x = (risk) => 32 + (risk / 0.25) * (width - 48);
+  const height = 32 + rows.length * 23;
+  const borrowed = meanChange(rows);
+  return `<section class="da-source"><h4>${title}</h4><p class="da-borrow-amount">Borrow <strong>${points(borrowed)}</strong></p><p class="small">${recipients}</p><svg class="did-chart da-source-chart" viewBox="0 0 ${width} ${height + 52}" role="img" aria-label="${title}: comparison mean change ${points(borrowed)}. Each point is an observed hospital change.">
+    ${[0, 0.1, 0.2].map((risk) => `<line class="did-grid" x1="${x(risk)}" x2="${x(risk)}" y1="10" y2="${height}"/><text class="did-axis" x="${x(risk)}" y="${height + 18}" text-anchor="middle">${Math.round(risk * 100)}</text>`).join("")}
+    <line class="da-mean-line" x1="${x(borrowed)}" x2="${x(borrowed)}" y1="10" y2="${height}"/>
+    ${rows.map((h, i) => `<g class="da-source-hospital" fill="var(--arm-0)"><title class="hospital-record">${description(h)}</title><text class="did-axis" x="0" y="${24 + i * 23}">${h.id}</text>${mark(0, x(change(h)), 20 + i * 23)}</g>`).join("")}
+    <text class="did-axis" x="${width / 2}" y="${height + 42}" text-anchor="middle">Observed change (pp)</text></svg></section>`;
 }
 
-export function hospitalChart(
+export function borrowingChart(
   hospitals,
-  { width = 600, title = "All 12 hospitals", view = "trajectories" } = {},
+  { width = 600, adjusted = false } = {},
 ) {
-  return `<section class="da-hospital-group ${width < 380 ? "da-compact" : ""}"><h3>${title}</h3>${view === "changes" ? changes(hospitals, width) : trajectories(hospitals)}</section>`;
+  const rows = hospitalCounterfactuals(hospitals, { adjusted });
+  const wide = width >= 740;
+  const rowWidth = wide ? width - 280 : width;
+  const sourceWidth = wide ? 236 : width - 24;
+  const x = (risk) => 42 + risk * (rowWidth - 108);
+  const axisY = 46 + rows.length * 65;
+  const sourceGroups = adjusted ? ["high", "low"] : [null];
+  const sources = sourceGroups
+    .map((capacity) => {
+      const comparison = hospitals.filter(
+        (h) => !h.D && (!capacity || h.capacity === capacity),
+      );
+      const target = rows.filter((h) => !capacity || h.capacity === capacity);
+      const title = capacity
+        ? `${capacity === "high" ? "High" : "Low"} capacity`
+        : "All comparison hospitals";
+      return comparisonStrip(
+        comparison,
+        sourceWidth,
+        title,
+        `For ${target.map((h) => h.id).join(", ")}`,
+      );
+    })
+    .join("");
+  return `<div class="da-borrow-layout ${wide ? "da-borrow-wide" : ""}"><section class="da-treated-panel"><h3>Build the missing follow-up for each treated hospital</h3><p class="small">○ Baseline · ◇ Assumed without program · ▲ Observed follow-up</p>
+    <svg class="did-chart da-borrow-chart" viewBox="0 0 ${rowWidth} ${axisY + 50}" role="img" aria-label="Treated hospital recovery, assumed untreated follow-up, and observed follow-up. Assumed endpoints borrow comparison-hospital mean changes, not simulator truth.">
+      <text class="did-axis" x="${rowWidth - 2}" y="20" text-anchor="end">Gap</text>
+      ${[0, 0.25, 0.5, 0.75, 1].map((risk) => `<line class="did-grid" x1="${x(risk)}" x2="${x(risk)}" y1="26" y2="${axisY}"/><text class="did-axis" x="${x(risk)}" y="${axisY + 18}" text-anchor="middle">${Math.round(risk * 100)}%</text>`).join("")}
+      ${rows
+        .map((h, i) => {
+          const cy = 44 + i * 65;
+          return `<g class="da-treated-row" data-hospital="${h.id}"><title class="hospital-record">${description(h)}</title><desc>${h.id} borrows ${points(h.borrowedChange)} from ${h.sourceIds.join(", ")}. Assumed untreated recovery ${percent(h.counterfactual)}; observed-minus-assumed gap ${points(h.gap)}.</desc>
+          <text class="da-row-id" x="0" y="${cy + 4}">${h.id}</text>${adjusted ? `<text class="da-capacity-label" x="0" y="${cy + 22}">${h.capacity === "high" ? "High" : "Low"}</text>` : ""}
+          <line class="da-borrowed-segment" x1="${x(h.before)}" x2="${x(h.counterfactual)}" y1="${cy}" y2="${cy}"/>
+          <line class="da-gap-segment" x1="${x(h.counterfactual)}" x2="${x(h.after)}" y1="${cy}" y2="${cy}"/>
+          <circle class="da-baseline" cx="${x(h.before)}" cy="${cy}" r="4"/>
+          <path class="da-assumed" d="M${x(h.counterfactual)},${cy - 5}l5,5l-5,5l-5,-5Z"/>
+          <g class="da-observed">${mark(1, x(h.after), cy, 5)}</g>
+          <text class="da-row-gap" x="${rowWidth - 2}" y="${cy + 4}" text-anchor="end">${points(h.gap)}</text>
+          <text class="da-row-values" x="42" y="${cy + 23}">${percent(h.before)} → ${percent(h.counterfactual)} assumed → ${percent(h.after)}</text>
+        </g>`;
+        })
+        .join("")}
+      <text class="did-axis" x="${rowWidth / 2}" y="${axisY + 42}" text-anchor="middle">Recovery rate</text>
+    </svg><p class="small">The effect estimate averages these six gaps, with each treated hospital counting equally.</p></section>
+    <aside class="da-sources" aria-label="Where the borrowed changes come from"><h3>Borrow from comparison hospitals</h3>${sources}</aside></div>`;
+}
+
+export function hospitalChart(hospitals) {
+  return `<section class="da-hospital-group"><h3>Observed hospital trajectories</h3>${trajectories(hospitals)}</section>`;
 }

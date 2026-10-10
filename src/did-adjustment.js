@@ -118,3 +118,28 @@ export function stratifiedHospitalDid(hospitals) {
     })),
   };
 }
+
+// Construct missing untreated endpoints from observed comparison changes only.
+export function hospitalCounterfactuals(hospitals, { adjusted = false } = {}) {
+  const crude = estimateHospitalDid(hospitals);
+  const stratified = adjusted ? stratifiedHospitalDid(hospitals) : null;
+  return hospitals
+    .filter((h) => h.D === 1)
+    .map((h) => {
+      const sources = hospitals.filter(
+        (c) => c.D === 0 && (!adjusted || c.capacity === h.capacity),
+      );
+      const borrowedChange = adjusted
+        ? stratified.strata.find((s) => s.capacity === h.capacity)
+            .comparisonChange
+        : crude.comparisonChange;
+      const counterfactual = h.before + borrowedChange;
+      return {
+        ...h,
+        sourceIds: sources.map((c) => c.id),
+        borrowedChange,
+        counterfactual,
+        gap: h.after - counterfactual,
+      };
+    });
+}

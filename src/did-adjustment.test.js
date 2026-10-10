@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   hospitalWorld,
+  hospitalCounterfactuals,
   estimateHospitalDid,
   stratifiedHospitalDid,
 } from "./did-adjustment.js";
@@ -180,4 +181,62 @@ test("distinct hospital baselines preserve the fixture contrasts and stay fixed 
   close(estimateHospitalDid(capacity.observed).effect, 0.2);
   close(stratifiedHospitalDid(capacity.observed).effect, 0.15);
   close(stratifiedHospitalDid(shocked.observed).effect, 0.25);
+});
+
+test("borrowed endpoints reconcile individual gaps with the ATT estimators", () => {
+  for (const capacityTrends of [false, true])
+    for (const shock of [0, 0.1]) {
+      const { observed } = hospitalWorld({
+        capacityTrends,
+        shock,
+        variedBaselines: true,
+      });
+      const original = structuredClone(observed);
+      for (const adjusted of [false, true]) {
+        const rows = hospitalCounterfactuals(observed, { adjusted });
+        assert.equal(rows.length, 6);
+        close(
+          rows.reduce((sum, row) => sum + row.gap, 0) / 6,
+          adjusted
+            ? stratifiedHospitalDid(observed).effect
+            : estimateHospitalDid(observed).effect,
+        );
+        for (const row of rows) {
+          const sources = observed.filter((h) => row.sourceIds.includes(h.id));
+          assert.ok(
+            sources.every(
+              (h) => !h.D && (!adjusted || h.capacity === row.capacity),
+            ),
+          );
+          close(
+            row.borrowedChange,
+            sources.reduce((sum, h) => sum + h.after - h.before, 0) /
+              sources.length,
+          );
+          close(row.counterfactual, row.before + row.borrowedChange);
+          close(row.gap, row.after - row.counterfactual);
+        }
+      }
+      assert.deepEqual(observed, original);
+    }
+  const { observed } = hospitalWorld({
+    capacityTrends: true,
+    variedBaselines: true,
+  });
+  const crude = hospitalCounterfactuals(observed);
+  const adjusted = hospitalCounterfactuals(observed, { adjusted: true });
+  close(crude[0].counterfactual, 0.4);
+  close(crude[0].gap, 0.25);
+  close(adjusted[0].counterfactual, 0.5);
+  close(adjusted[0].gap, 0.15);
+  assert.deepEqual(adjusted[0].sourceIds, ["C1", "C2"]);
+  assert.deepEqual(adjusted[5].sourceIds, ["C3", "C4", "C5", "C6"]);
+  assert.throws(
+    () =>
+      hospitalCounterfactuals(
+        observed.filter((h) => h.D || h.capacity === "low"),
+        { adjusted: true },
+      ),
+    /No comparison/,
+  );
 });

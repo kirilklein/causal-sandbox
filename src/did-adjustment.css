@@ -6,13 +6,7 @@
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
 }
-.da-panels {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-.da-contributions,
-.da-panels.da-panels-wide {
+.da-contributions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
@@ -76,19 +70,6 @@
   stroke-width: 1.5;
   stroke-dasharray: 4 4;
 }
-.da-contrast {
-  stroke: var(--text);
-  stroke-width: 1.5;
-  fill: none;
-}
-.da-change-chart .da-arm-label,
-.da-change-chart .da-contrast-label {
-  font-size: 13px;
-  font-weight: 600;
-}
-.da-view {
-  margin-top: 20px;
-}
 .da-shock {
   margin-top: 20px;
 }
@@ -102,15 +83,70 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-.da-panels .da-mini-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.da-borrow-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
 }
-@media (max-width: 480px) {
-  .da-panels .da-mini-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.da-borrow-wide {
+  grid-template-columns: minmax(0, 1fr) 260px;
 }
-
-.da-hospital-group.da-compact .da-mini-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.da-treated-panel h3,
+.da-sources h3 {
+  font-size: 15px;
+  margin: 0 0 10px;
+}
+.da-source {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 12px 0;
+}
+.da-source h4 {
+  font-size: 14px;
+  margin: 0;
+  color: var(--arm-0);
+}
+.da-source p {
+  margin: 8px 0;
+}
+.da-borrow-amount {
+  font-size: 14px;
+}
+.da-mean-line {
+  stroke: var(--arm-0);
+}
+.da-borrowed-segment {
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+.da-gap-segment {
+  stroke: var(--arm-1);
+  stroke-width: 4;
+}
+.da-baseline,
+.da-assumed {
+  fill: var(--surface);
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+.da-assumed {
+  stroke-dasharray: 2 1;
+}
+.da-observed {
+  fill: var(--arm-1);
+}
+.da-borrow-chart .da-row-id,
+.da-borrow-chart .da-row-gap {
+  font-size: 12px;
+  font-weight: 600;
+}
+.da-borrow-chart .da-row-values,
+.da-borrow-chart .da-capacity-label {
+  font-size: 10px;
+  fill: var(--text-secondary);
+}
+.da-trajectories {
+  margin-top: 18px;
 }
