@@ -114,18 +114,17 @@ export function createTrajectoryRenderer(canvas) {
     ctx.restore();
   };
 
-  function draw(view) {
+  function draw(view = {}) {
     refreshColors();
     const {
-      unfold,
-      pool,
-      twins,
-      frequency,
-      severity,
-      selection,
-      prognosis,
-      day,
-      step,
+      unfold = 0,
+      pool = 0,
+      twins = 0,
+      frequency = 0,
+      severity = 7,
+      selection = 1,
+      prognosis = 1,
+      day = FINAL_DAY,
       orbitYaw = 0,
       orbitPitch = 0,
     } = view;
@@ -533,7 +532,6 @@ export function createTrajectoryRenderer(canvas) {
         "center",
       );
     }
-    canvas.setAttribute("data-scene", String(step));
     return { endpoints: [0, 1].map((a) => point(focal, FINAL_DAY, a)) };
   }
   return { draw, resize };

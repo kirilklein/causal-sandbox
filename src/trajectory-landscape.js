@@ -1,3 +1,4 @@
+import { bindTrajectoryOrbit } from "./trajectory-orbit.js";
 import { themeControl } from "./theme.js";
 import {
   lessonNavigation,
@@ -149,6 +150,7 @@ function target() {
 }
 function draw() {
   renderer.draw(view);
+  $("trajectory-canvas").dataset.scene = String(state.step);
   $("trajectory-frame-label").textContent =
     view.pool > 0.5
       ? "DAY 12 · GROUP COMPARISON"
@@ -304,7 +306,7 @@ function updateCopy() {
 }
 function enter(step, focus = true) {
   const previous = state.step;
-  endDrag();
+  orbit.endDrag();
   state.step = step;
   state.orbitYaw = 0;
   state.orbitPitch = 0;
@@ -319,7 +321,11 @@ function enter(step, focus = true) {
   }
   updateCopy();
   animate(scenes[step].time, step === 1 && previous <= 1 ? 1 : null);
-  if (focus) $("trajectory-heading").focus({ preventScroll: true });
+  if (focus) {
+    const hash = step === 4 ? "#unfold" : step === 6 ? "#compare" : "";
+    history.replaceState(null, "", location.pathname + location.search + hash);
+    $("trajectory-heading").focus({ preventScroll: true });
+  }
 }
 $("trajectory-next").addEventListener("click", () =>
   enter((state.step + 1) % scenes.length),
@@ -370,55 +376,16 @@ for (const key of ["severity", "selection", "prognosis"])
     view[key] = state[key];
     animate(0);
   });
-let drag = null;
 const canvas = $("trajectory-canvas");
-function endDrag() {
-  if (!drag) return;
-  const id = drag.id;
-  drag = null;
-  if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
-  canvas.classList.remove("is-dragging");
-}
-function rotate(dx, dy) {
-  state.orbitYaw = clamp(state.orbitYaw + dx, -1.2, 1.2);
-  state.orbitPitch = clamp(state.orbitPitch + dy, -0.22, 0.55);
-  animate(0);
-}
-canvas.addEventListener("pointerdown", (event) => {
-  if (!canRotate() || event.button !== 0 || drag) return;
-  event.preventDefault();
-  canvas.focus({ preventScroll: true });
-  animate(0);
-  drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
-  canvas.setPointerCapture(event.pointerId);
-  canvas.classList.add("is-dragging");
-});
-canvas.addEventListener("pointermove", (event) => {
-  if (!drag || drag.id !== event.pointerId) return;
-  rotate((event.clientX - drag.x) * 0.004, (event.clientY - drag.y) * 0.002);
-  drag.x = event.clientX;
-  drag.y = event.clientY;
-});
-for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
-  canvas.addEventListener(type, (event) => {
-    if (drag?.id === event.pointerId) endDrag();
-  });
-canvas.addEventListener("keydown", (event) => {
-  if (!canRotate()) return;
-  const keys = {
-    ArrowLeft: [-0.06, 0],
-    ArrowRight: [0.06, 0],
-    ArrowUp: [0, -0.03],
-    ArrowDown: [0, 0.03],
-  };
-  if (keys[event.key]) {
-    event.preventDefault();
-    rotate(...keys[event.key]);
-  }
-  if (event.key === "Home") {
-    event.preventDefault();
-    resetView();
-  }
+const orbit = bindTrajectoryOrbit(canvas, {
+  enabled: canRotate,
+  onStart: () => animate(0),
+  onRotate(dx, dy) {
+    state.orbitYaw = clamp(state.orbitYaw + dx, -1.2, 1.2);
+    state.orbitPitch = clamp(state.orbitPitch + dy, -0.22, 0.55);
+    animate(0);
+  },
+  onReset: resetView,
 });
 function resetView() {
   state.orbitYaw = 0;
@@ -441,7 +408,7 @@ motion.addEventListener("change", () => {
 });
 window.addEventListener("themechange", draw);
 window.addEventListener("pagehide", () => {
-  endDrag();
+  orbit.endDrag();
   cancelAnimationFrame(frame);
   resize.disconnect();
 });
@@ -452,4 +419,10 @@ window.addEventListener("pageshow", (event) => {
     animate(0);
   }
 });
-enter(0, false);
+function enterLinkedScene() {
+  const step = { "#unfold": 4, "#compare": 6 }[location.hash] ?? 0;
+  enter(step, false);
+  if (step !== 0) animate(0);
+}
+window.addEventListener("hashchange", enterLinkedScene);
+enterLinkedScene();
