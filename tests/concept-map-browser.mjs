@@ -78,7 +78,9 @@ try {
     .click();
   await expect(page.locator("h1")).toHaveText("Adjustment with IPW");
   await page.getByRole("button", { name: "Contents", exact: true }).click();
-  await page.getByRole("link", { name: "Concept map", exact: true }).click();
+  await page
+    .getByRole("link", { name: "How the pieces fit together ↗", exact: true })
+    .click();
   await expect(page.locator("#map-detail")).toBeHidden();
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByRole("searchbox").fill("concept map");
