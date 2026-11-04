@@ -344,9 +344,10 @@ function enterIntroduction(focus = true, animate = false) {
       ${lessonNavigation({ introduction: true })}
       <section class="intro-hero" aria-labelledby="intro-title">
         <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
-          <h1 tabindex="-1" id="intro-title">See what<br>causes what.</h1>
-          <p class="intro-context">Learn through experiments, explore simulated worlds, or build your own causal graphs.</p>
-          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start here: one patient, two possible futures →</a>
+          <h1 tabindex="-1" id="intro-title">When does a difference tell you what caused it?</h1>
+          <p class="intro-context">Learn causal inference by changing who gets treated, what you measure, and how you analyze the data. In each simulation, you can compare your estimate with the known effect.</p>
+          <p class="intro-audience">For data scientists and applied researchers getting started with causal inference. The examples draw on questions from my PhD research using health records.</p>
+          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start with one patient and two possible futures →</a>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
@@ -357,6 +358,7 @@ function enterIntroduction(focus = true, animate = false) {
           <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text></g>
         </svg>
       </section>
+      <p class="intro-thread"><strong>Why patients?</strong> Sicker patients are treated more often and also do worse, so a helpful treatment can look harmful. The same trap appears whenever treatment is targeted, from retention offers to marketing campaigns.</p>
       <nav class="intro-paths" aria-label="Choose your way in">
         <a class="intro-path" href="${hasProgress ? lessonHref(resumeLesson) : campaignHref(`${import.meta.env.BASE_URL}?lesson=learn`)}" ${hasProgress ? `data-level="${resumeLesson[0]}"` : ""} aria-label="Learn">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M8 30h16V20h16V10h16"/><circle cx="8" cy="30" r="3"/><circle cx="56" cy="10" r="3"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>

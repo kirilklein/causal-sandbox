@@ -55,16 +55,31 @@
   margin: 0 0 22px;
 }
 .learning.introduction h1 {
-  font-size: clamp(48px, 6.6vw, 78px);
-  letter-spacing: -3px;
-  line-height: 1.04;
+  font-size: clamp(36px, 4.8vw, 56px);
+  letter-spacing: -1.5px;
+  line-height: 1.08;
   margin: 0 0 24px;
 }
 .intro-context {
-  max-width: 410px;
+  max-width: 460px;
   margin: 0;
   color: var(--text-secondary);
   font-size: 17px;
+}
+.intro-audience {
+  max-width: 460px;
+  margin: 14px 0 22px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.intro-thread {
+  max-width: 680px;
+  margin: 0 0 28px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+.intro-thread strong {
+  color: var(--text);
 }
 .intro-graph {
   width: 100%;

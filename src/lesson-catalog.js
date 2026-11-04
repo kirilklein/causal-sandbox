@@ -21,6 +21,7 @@ export const openingLesson = {
 export const coreGroups = [
   {
     title: "Foundations",
+    question: "What makes a comparison fair?",
     lessons: [
       [1, "randomization", "A randomized experiment"],
       [2, "confounding", "A common cause"],
@@ -31,6 +32,7 @@ export const coreGroups = [
   },
   {
     title: "Causal roles",
+    question: "Which variables should I adjust for?",
     lessons: [
       [7, "mediator", "A mediator", "mediator-adjustment/"],
       [8, "collider", "A collider"],
@@ -39,6 +41,7 @@ export const coreGroups = [
   },
   {
     title: "Models and limitations",
+    question: "When should I trust the estimate?",
     lessons: [
       [5, "misspecification", "When a model is too simple"],
       [6, "double-robustness", "Double robustness", "aipw-double-robustness/"],
