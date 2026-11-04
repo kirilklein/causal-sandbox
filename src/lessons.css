@@ -78,9 +78,6 @@
   color: var(--text-secondary);
   font-size: 15px;
 }
-.intro-thread strong {
-  color: var(--text);
-}
 .intro-graph {
   width: 100%;
   overflow: visible;
