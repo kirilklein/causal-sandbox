@@ -71,9 +71,9 @@ const lessons = [
     transition:
       "We return to the same confounded world with treatment selection on and a true effect of 2. First, look at the unadjusted difference.",
     instruction:
-      "Try IPW, then compare the estimate and balance in C before and after weighting.",
+      "Try inverse probability weighting (IPW), then compare the estimate and balance in C before and after weighting.",
     explanation: [
-      "A propensity score is a person's probability of treatment given their risk score. IPW gives more weight to people who received the less likely option, then compares weighted outcome averages.",
+      "IPW gives more weight to people who received the less likely option, then compares weighted outcome averages.",
       "Here the treatment model is correct, and C is the only common cause. Across samples, weighting tends to reduce imbalance and bias, though one estimate can still move farther from truth.",
     ],
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
@@ -274,7 +274,7 @@ function controls(level) {
   if (level === 2)
     return '<label for="selection">Risk score’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Its influence on the outcome stays fixed.</p>';
   if (level === 3)
-    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score.</p><button id="reveal-ipw">Try IPW</button>';
+    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score. This fitted probability is their <a href="glossary/#propensity">propensity score</a>. <a href="glossary/#ipw">Inverse probability weighting</a> weights each person by one over the probability of the treatment they received.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
     return '<p id="regression-explanation">Fit outcomes using treatment and risk score. Predict each person’s outcome with and without treatment, then average the differences.</p>';
   if (level === 5)
