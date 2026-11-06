@@ -16,7 +16,7 @@ and cross-fitting. Code: `src/double-ml.js` (estimation), `src/double-ml-view.js
   C uniform on ±√3. True ATE = 2. There is no hidden confounding, and every C has
   both arms.
 - **Learners.** `m̂a`: mean outcome of the k nearest same-arm people on C
-  (k = 1–40; the lesson's slider). `p̂`: share treated among the 60 nearest people,
+  (k = 1–40). `p̂`: share treated among the 60 nearest people,
   clipped to `[0.02, 0.98]`. Ties keep the earlier row.
 - **Estimators.**
   1. Plug-in: `mean(m̂1 − m̂0)`, with nuisances fitted on all rows. It gets no
@@ -81,9 +81,9 @@ tolerances.
   cross-fitting toggle: a five-block fold schematic (train vs predict, or one model
   that trains on and predicts everyone); a zoomed outcome-vs-C plot of one fixed,
   typical person's 1-neighbour fit and residual (30 nearest untreated people, 15
-  on phones). The toggle is the only control: every person shows the same
-  pattern, so a person selector would add movement without teaching anything; and
-  everyone's residuals (spread 0.00 without cross-fitting). Then repeated intervals,
+  on phones); and everyone's residuals (spread 0.00 without cross-fitting). The
+  toggle is the only control: every person shows the same pattern, so a person
+  selector would add movement without teaching anything. Then repeated intervals,
   and one static chart of coverage against k: without cross-fitting coverage
   falls as the learner gets more flexible; cross-fitted stays near 95%. A card separates double robustness, orthogonality and
   cross-fitting, and a limits paragraph covers hidden confounding and overlap.
