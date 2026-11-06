@@ -182,7 +182,7 @@ export const mapRegions = [
         name: "Combine both · AIPW & TMLE",
         description:
           "AIPW corrects an outcome-model estimate using treatment probabilities. TMLE updates outcome predictions first. Under the causal and regularity assumptions, either model being correct can suffice for consistent estimation.",
-        lessons: ["double-robustness", "tmle", "tmle-robustness"],
+        lessons: ["double-robustness", "tmle", "tmle-robustness", "double-ml"],
         connection: [
           "evidence",
           "Double robustness is not a promise of accuracy in every sample. Both models can be wrong, and hidden confounding or poor overlap can still undermine the analysis.",

@@ -383,6 +383,26 @@ export const glossary = {
     ],
     related: { label: "Explore TMLE", href: "tmle/" },
   },
+  "orthogonal-score": {
+    title: "Orthogonal score",
+    aliases: ["Neyman orthogonality", "Double machine learning", "DML"],
+    summary:
+      "An orthogonal score is an estimating equation whose average is insensitive, to first order, to small errors in its nuisance models.",
+    detail: [
+      "For the AIPW score, leftover bias behaves like a product of the outcome-model error and the treatment-model error, so two moderately accurate flexible learners leave little bias. Orthogonality differs from double robustness, which concerns whether either model is correctly specified. It does not repair hidden confounding or poor overlap.",
+    ],
+    related: { label: "Compare scores", href: "?lesson=double-ml" },
+  },
+  "cross-fitting": {
+    title: "Cross-fitting",
+    aliases: ["Sample splitting"],
+    summary:
+      "Cross-fitting splits the sample into folds and predicts each person's nuisance values from models trained on the other folds.",
+    detail: [
+      "A flexible model evaluated on its own training data can reproduce each person's outcome, shrinking residuals and making standard errors too small. Cross-fitting keeps each person's outcome out of their own predictions while still using every person in the final estimate.",
+    ],
+    related: { label: "See which folds train whom", href: "?lesson=double-ml" },
+  },
   balance: {
     title: "Covariate balance",
     aliases: ["Baseline balance"],

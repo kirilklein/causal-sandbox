@@ -1,5 +1,11 @@
 # Progressive education delivery
 
+The optional [Double ML chapter](double-ml.md) follows TMLE at
+`?lesson=double-ml`. With a k-nearest-neighbour learner in the curved AIPW world,
+it compares a plug-in, an AIPW score without cross-fitting, and a cross-fitted
+score across repeated studies. A fold diagram shows which people train each
+prediction. Core lesson order is unchanged.
+
 The optional [Delta Method chapter](delta-method.md) follows uncertainty at
 `?lesson=delta-method`. Predict a transformed distribution, explore its tangent
 approximation, then compare Delta and paired-user bootstrap intervals for a ratio

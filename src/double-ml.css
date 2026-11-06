@@ -1,0 +1,215 @@
+/* Double ML chapter: semantic theme variables only (docs/color-conventions.md). */
+.dml-page .dml-chart .dml-dot {
+  fill: var(--estimate);
+  fill-opacity: 0.3;
+}
+.dml-page .dml-chart .dml-dot.off {
+  fill: var(--error-mark);
+  fill-opacity: 0.8;
+}
+.dml-page .dml-chart .dml-mean {
+  stroke: var(--estimate);
+  stroke-width: 3;
+}
+.dml-page .dml-chart .dml-strip-label {
+  fill: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.dml-page .dml-chart .dml-bias {
+  fill: var(--text-secondary);
+  font-weight: 400;
+}
+.dml-page .dml-chart .dml-bias.large {
+  fill: var(--error-mark);
+  font-weight: 700;
+}
+.dml-page .dml-chart .dml-gap {
+  stroke: var(--error-mark);
+  stroke-width: 4;
+  stroke-opacity: 0.8;
+}
+.dml-page .dml-chart .dml-mean.large {
+  stroke: var(--error-mark);
+}
+.dml-page .dml-arm-0 {
+  fill: var(--arm-0);
+  fill-opacity: 0.55;
+}
+.dml-page .dml-arm-1 {
+  fill: var(--arm-1);
+  fill-opacity: 0.55;
+}
+.dml-page .dml-blocks {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+.dml-page .dml-block {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 10px 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  color: var(--text);
+}
+.dml-page .dml-block span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.dml-page .dml-block em {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.dml-page .dml-block.predict {
+  background: var(--accent-surface);
+  border: 2px dashed var(--accent);
+}
+.dml-page .dml-block.predict em {
+  color: var(--accent);
+}
+.dml-page .dml-block.both {
+  border-color: var(--error-mark);
+}
+.dml-page .dml-block.both em {
+  color: var(--error-mark);
+}
+.dml-page .dml-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  font-weight: 600;
+  cursor: pointer;
+}
+.dml-page .dml-switch input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+.dml-page .dml-switch .small {
+  flex-basis: 100%;
+  margin: 0;
+  font-weight: 400;
+}
+.dml-page .dml-chart .dml-fit {
+  fill: none;
+  stroke: var(--fitted);
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+}
+.dml-page .dml-chart .dml-person {
+  fill: var(--text-secondary);
+  fill-opacity: 0.75;
+}
+.dml-page .dml-chart .dml-person.held {
+  fill: var(--surface);
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+.dml-page .dml-chart .dml-person.neighbor {
+  fill: var(--fitted);
+  fill-opacity: 1;
+}
+.dml-page .dml-chart .dml-person.selected {
+  fill: var(--text);
+  fill-opacity: 1;
+}
+.dml-page .dml-chart .dml-person.selected.held {
+  fill: var(--surface);
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.dml-page .dml-chart .dml-residual {
+  stroke: var(--error-mark);
+  stroke-width: 3;
+}
+.dml-page .dml-chart .dml-residual-label {
+  fill: var(--text);
+  font-weight: 600;
+}
+.dml-page h3.plot-heading {
+  margin: 22px 0 4px;
+  font-size: 15px;
+}
+.dml-page .dml-chart .dml-selected {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.dml-page .dml-chart .dml-selected.self {
+  stroke: var(--error-mark);
+  stroke-dasharray: 3 2;
+}
+.dml-page .dml-chart .dml-line path {
+  fill: none;
+  stroke-width: 2.5;
+}
+.dml-page .dml-chart .dml-line.inSample path {
+  stroke: var(--error-mark);
+}
+.dml-page .dml-chart .dml-line.crossFit path {
+  stroke: var(--estimate);
+}
+.dml-page .dml-chart .dml-line.inSample circle {
+  fill: var(--error-mark);
+}
+.dml-page .dml-chart .dml-line.crossFit circle {
+  fill: var(--estimate);
+}
+.dml-page .dml-chart .dml-line-label {
+  fill: var(--text);
+  font-weight: 600;
+}
+.dml-page .dml-chart .dml-target {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.dml-page .coverage-readout.low strong {
+  color: var(--error-mark);
+}
+.dml-page .dml-ideas {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px 18px;
+  margin: 12px 0 18px;
+}
+.dml-page .dml-ideas dt {
+  font-weight: 600;
+}
+.dml-page .dml-ideas dd {
+  margin: 0;
+}
+@media (max-width: 560px) {
+  .dml-page .dml-blocks {
+    gap: 4px;
+  }
+  .dml-page .dml-block span {
+    display: none;
+  }
+  .dml-page .dml-block strong {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .dml-page .dml-block em {
+    font-size: 11px;
+  }
+  .dml-page .dml-ideas {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .dml-page .dml-ideas dd {
+    margin-bottom: 10px;
+  }
+}
