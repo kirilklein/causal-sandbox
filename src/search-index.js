@@ -79,6 +79,10 @@ const lessonDetails = {
     "Update outcome predictions using treatment probabilities.",
     "targeted maximum likelihood estimation targeted learning",
   ],
+  "double-ml": [
+    "Compare plug-in, orthogonal, and cross-fitted estimates of an average effect with a flexible learner.",
+    "double ML DML double machine learning debiased orthogonal score Neyman orthogonality cross-fitting sample splitting folds nuisance regularization bias overfitting k-nearest neighbours coverage",
+  ],
   "tmle-robustness": [
     "Compare TMLE and IPW across treatment- and outcome-model errors in two interactive heatmaps.",
     "TMLE vs IPW model misspecification misspecifications double robustness heatmap visual comparison both models wrong imperfect models shift scale",

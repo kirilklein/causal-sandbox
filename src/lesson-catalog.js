@@ -172,6 +172,15 @@ export const optionalChapters = [
       "Explore two heatmaps to see how treatment- and outcome-model errors affect TMLE and IPW.",
   },
   {
+    id: "double-ml",
+    menuTitle: "Double ML and cross-fitting",
+    after: 11,
+    title: "Why does causal ML need cross-fitting?",
+    href: "?lesson=double-ml",
+    description:
+      "Compare a plug-in, an orthogonal score, and a cross-fitted score across repeated studies with a flexible learner.",
+  },
+  {
     id: "clipping",
     menuTitle: "Weight clipping",
     after: 10,
