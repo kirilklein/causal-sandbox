@@ -21,7 +21,9 @@ try {
     if (request.resourceType() === "media") requests.push(request.url());
   });
   await page.goto(url);
-  await page.getByRole("heading", { name: /See what.*causes what/ }).waitFor();
+  await page
+    .getByRole("heading", { name: /When does a difference tell you/ })
+    .waitFor();
   assert.equal(await page.locator(".experiment, .lesson-results").count(), 0);
   assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
   assert.equal(

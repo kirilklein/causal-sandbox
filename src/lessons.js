@@ -71,9 +71,9 @@ const lessons = [
     transition:
       "We return to the same confounded world with treatment selection on and a true effect of 2. First, look at the unadjusted difference.",
     instruction:
-      "Try IPW, then compare the estimate and balance in C before and after weighting.",
+      "Try inverse probability weighting (IPW), then compare the estimate and balance in C before and after weighting.",
     explanation: [
-      "A propensity score is a person's probability of treatment given their risk score. IPW gives more weight to people who received the less likely option, then compares weighted outcome averages.",
+      "IPW gives more weight to people who received the less likely option, then compares weighted outcome averages.",
       "Here the treatment model is correct, and C is the only common cause. Across samples, weighting tends to reduce imbalance and bias, though one estimate can still move farther from truth.",
     ],
     next: "Weighting models who receives treatment. Could we instead predict the outcomes under each treatment?",
@@ -274,7 +274,7 @@ function controls(level) {
   if (level === 2)
     return '<label for="selection">Risk score’s influence on treatment <output id="selection-output">0.0</output></label><input id="selection" type="range" min="0" max="1.2" step="0.1" value="0" aria-describedby="selection-help"><p id="selection-help" class="sample-note">0: random assignment · 1.2: selection used in the next lesson. Its influence on the outcome stays fixed.</p>';
   if (level === 3)
-    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score.</p><button id="reveal-ipw">Try IPW</button>';
+    return '<p>Imagine people at greater risk receive treatment more often. To balance risk scores across groups, give more weight to lower-risk people who received treatment and higher-risk people who did not.</p><p>We fit a model to the observed treatment choices to estimate each person’s treatment probability from their risk score. This fitted probability is their <a href="glossary/#propensity">propensity score</a>. <a href="glossary/#ipw">Inverse probability weighting</a> weights each person by one over the probability of the treatment they received.</p><button id="reveal-ipw">Try IPW</button>';
   if (level === 4)
     return '<p id="regression-explanation">Fit outcomes using treatment and risk score. Predict each person’s outcome with and without treatment, then average the differences.</p>';
   if (level === 5)
@@ -344,9 +344,10 @@ function enterIntroduction(focus = true, animate = false) {
       ${lessonNavigation({ introduction: true })}
       <section class="intro-hero" aria-labelledby="intro-title">
         <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
-          <h1 tabindex="-1" id="intro-title">See what<br>causes what.</h1>
-          <p class="intro-context">Learn through experiments, explore simulated worlds, or build your own causal graphs.</p>
-          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start here: one patient, two possible futures →</a>
+          <h1 tabindex="-1" id="intro-title">When does a difference tell you what caused it?</h1>
+          <p class="intro-context">Learn causal inference by changing who gets treated, what you measure, and how you analyze the data. In each simulation, you can compare your estimate with the known effect.</p>
+          <p class="intro-audience">For data scientists and applied researchers getting started with causal inference.</p>
+          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start with one patient and two possible futures →</a>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
@@ -357,6 +358,7 @@ function enterIntroduction(focus = true, animate = false) {
           <g class="intro-node intro-node-y"><circle cx="366" cy="240" r="34"/><text x="366" y="241">Y</text></g>
         </svg>
       </section>
+      <p class="intro-thread">To keep the intuition simple, the examples come from healthcare, the data I worked with during my PhD. The same ideas apply wherever we ask what an action caused, from marketing to economics.</p>
       <nav class="intro-paths" aria-label="Choose your way in">
         <a class="intro-path" href="${hasProgress ? lessonHref(resumeLesson) : campaignHref(`${import.meta.env.BASE_URL}?lesson=learn`)}" ${hasProgress ? `data-level="${resumeLesson[0]}"` : ""} aria-label="Learn">
           <span class="intro-path-top"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M8 30h16V20h16V10h16"/><circle cx="8" cy="30" r="3"/><circle cx="56" cy="10" r="3"/></svg><span class="intro-path-arrow" aria-hidden="true">↗</span></span>

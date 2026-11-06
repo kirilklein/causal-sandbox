@@ -22,7 +22,7 @@ try {
   await page.goto(`${url}?lesson=introduction`);
   await page
     .getByRole("link", {
-      name: "Start here: one patient, two possible futures",
+      name: "Start with one patient and two possible futures",
     })
     .click();
   await expect(page.locator("h1")).toHaveText(
