@@ -470,6 +470,28 @@ try {
       .getAttribute("data-chapter"),
     "0",
   );
+  // Bookmarks open the preserved rotatable scenes without replaying the story.
+  for (const [hash, scene] of [
+    ["unfold", "4"],
+    ["compare", "6"],
+  ]) {
+    await page.goto(`${url}?lesson=trajectory-landscape#${hash}`);
+    await page.locator("#trajectory-heading").waitFor();
+    assert.equal(await canvas.getAttribute("data-scene"), scene);
+    assert.equal(
+      await page.locator("#trajectory-orbit-controls").isVisible(),
+      true,
+    );
+    assert.equal(await page.locator("#trajectory-pause").isVisible(), false);
+    const before = await canvas.screenshot();
+    await canvas.focus();
+    await page.keyboard.press("ArrowRight");
+    assert.notDeepEqual(await canvas.screenshot(), before);
+  }
+  await page.locator('[data-chapter="4"]').click();
+  assert.equal(new URL(page.url()).hash, "#unfold");
+  await page.locator('[data-chapter="0"]').click();
+  assert.equal(new URL(page.url()).hash, "");
   assert.deepEqual(errors, []);
   console.log(
     "Trajectory story: frequency before collapse/unfold, ten retained profiles, mouse/touch/keyboard rotation, label bounds, counterfactual toggle, view reset, pause/resume and mobile checks passed.",
