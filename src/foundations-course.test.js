@@ -8,6 +8,9 @@ import {
   curvedStudy,
   trainingResult,
   predictedMeans,
+  applicants,
+  trainingGroups,
+  trueTrainingEffect,
 } from "./foundations-analysis.js";
 import { activities } from "./foundations-activities.js";
 import { gradeAdjustment } from "./adjustment-model.js";
@@ -61,6 +64,30 @@ test("graph decisions and the job training estimate grade the intended contrasts
     240,
   );
   assert.equal(moduleForTopic("ipw").id, "estimation");
+});
+test("job training applicants reproduce the counts and the simulator truth", () => {
+  assert.equal(applicants.length, 200);
+  assert.deepEqual(trainingGroups, [
+    { name: "Less work experience", offer: [20, 40], usual: [24, 80] },
+    { name: "More work experience", offer: [48, 60], usual: [14, 20] },
+  ]);
+  for (const [experience, rates] of [
+    [0, [0.3, 0.5]],
+    [1, [0.7, 0.8]],
+  ])
+    for (const offer of [0, 1]) {
+      const rows = applicants.filter(
+        (a) => a.experience === experience && a.offer === offer,
+      );
+      [0, 1].forEach((choice) =>
+        close(
+          rows.reduce((n, a) => n + a.employed[choice], 0) / rows.length,
+          rates[choice],
+        ),
+      );
+    }
+  assert.equal(trueTrainingEffect, 16);
+  close(trainingResult().points, trueTrainingEffect);
 });
 test("home resumes a completed opening at module 2 even before its onward link is used", () => {
   const saved = { current: "opening", openingStep: 3, trialNumber: 1 };

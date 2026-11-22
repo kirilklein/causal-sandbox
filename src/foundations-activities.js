@@ -1,4 +1,4 @@
-import { trainingResult } from "./foundations-analysis.js";
+import { trainingResult, trueTrainingEffect } from "./foundations-analysis.js";
 
 function graph(id, nodes, edges, unmeasured = []) {
   return {
@@ -272,6 +272,7 @@ export const activities = {
       title: "Defend your adjustment set",
       text: "Use the proposed study graph. Select variables for the total effect of offering training.",
       graph: employment,
+      answerSet: "set:C",
       prompt: "Why is your set sufficient under the proposed graph?",
       choices: [
         "It balances the two groups on how much training they actually took.",
@@ -283,6 +284,21 @@ export const activities = {
         "Prior experience affects both selection and employment. Attendance lies on a pathway from offer to employment.",
     },
     {
+      id: "support",
+      title: "Check who received each choice",
+      text: "Before calculating, look at how many applicants in each experience group did and did not receive an offer.",
+      experiment: "employment",
+      prompt: "What do these counts permit?",
+      choices: [
+        "Both offer choices occur in each experience group, so the comparison for all eligible applicants needs no extrapolation.",
+        "Only 20 experienced applicants had no offer, so the target must narrow to less experienced applicants.",
+        "Each offer group needs at least 100 applicants before any comparison is valid.",
+      ],
+      correct: 0,
+      feedback:
+        "Every group mean in the comparison is observed. Had one group lacked an option, the all-applicant effect would need extrapolation or a narrower target. Small cells widen uncertainty but leave no gap.",
+    },
+    {
       id: "estimate",
       title: "Calculate a population effect",
       text: "These are original synthetic records summarized by prior work experience. Use all 200 eligible applicants as the target. Calculate each group’s employment-rate difference, then average the differences with the population shares.",
@@ -291,6 +307,9 @@ export const activities = {
         "By how many percentage points does an offer change estimated six-month employment?",
       number: trainingResult().points,
       unit: "percentage points",
+      truth: trueTrainingEffect,
+      truthNote:
+        "Known only because this is a simulation: every applicant has an outcome under both choices. They agree because prior experience is the only common cause of offer and employment here. A real study cannot check this.",
       feedback:
         "Within-group differences are 20 and 10 percentage points. The eligible mix is 60% and 40%, giving 16 percentage points.",
     },

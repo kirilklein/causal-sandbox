@@ -190,6 +190,7 @@ try {
         [
           { choice: 1 },
           { graph: "C", choice: 2 },
+          { choice: 1 },
           { number: 16 },
           { choice: 0 },
         ],
@@ -218,12 +219,29 @@ try {
           await panel.locator("input[name=reason]").nth(task.choice).check();
         else await panel.getByRole("spinbutton").fill(String(task.number));
         await expect(panel.locator("textarea")).toHaveCount(0);
-        if (module === "capstone" && index === 3) {
+        if (module === "capstone" && index === 4) {
           await page.goto(home);
           await page.locator(".intro-opening").click();
           await expect(
             panel.locator("input[name=reason]").nth(task.choice),
           ).toBeChecked();
+          await expect(panel.locator(".sample-note").first()).toContainText(
+            "Activity 5 of 5",
+          );
+        }
+        if (module === "capstone") {
+          await expect(panel.locator("#course-feedback")).toBeEmpty();
+          await panel.getByRole("button", { name: "Save decision" }).click();
+          if (index === steps.length - 1)
+            await expect(panel.locator("h2")).toHaveText("Commit your study");
+          else {
+            await expect(panel.locator(".sample-note").first()).toContainText(
+              `Activity ${index + 2} of 5`,
+            );
+            await expect(panel.locator("#course-feedback")).toBeEmpty();
+          }
+          expect(await overflows()).toBe(false);
+          continue;
         }
         await panel.getByRole("button", { name: "Check my decision" }).click();
         await expect(panel.locator("#course-feedback")).not.toBeEmpty();
@@ -238,12 +256,63 @@ try {
       if (module !== "capstone")
         await page.locator("#course-activity a.primary").click();
     }
-    await expect(page.locator("#course-activity")).toContainText(
-      "6 of 6 modules completed",
-    );
-    await expect(page.locator("#course-activity")).toContainText(
-      "4 of 4 decisions correct on first submission",
-    );
+    const review = page.locator("#course-activity");
+    await expect(review).not.toContainText("modules completed");
+    await review.getByRole("button", { name: "Commit my study" }).click();
+    const checkReview = async () => {
+      await expect(
+        page.getByRole("heading", { name: "Your final study" }),
+      ).toBeVisible();
+      await expect(review).toContainText("6 of 6 modules completed");
+      await expect(review).toContainText(
+        "4 of 5 decisions correct on first submission",
+      );
+      await expect(review).toContainText(
+        "Incorrect. Your answer: Only 20 experienced applicants",
+      );
+      await expect(review).toContainText(
+        "Correct answer: Both offer choices occur in each experience group",
+      );
+      await expect(review).toContainText(
+        "Correct. Your answer: Adjust for prior work experience.",
+      );
+      await expect(review).toContainText(
+        "Correct. Your answer: 16 percentage points",
+      );
+      await expect(review).toContainText(
+        "Standardized estimate: 16 percentage points",
+      );
+      await expect(review).toContainText(
+        "Simulator truth: 16 percentage points",
+      );
+      await expect(review).not.toContainText(/undefined|null|NaN/);
+      expect(await overflows()).toBe(false);
+    };
+    await checkReview();
+    await page.reload();
+    await checkReview();
+    await review.getByRole("button", { name: "Review last activity" }).click();
+    await expect(review.locator("#course-feedback")).not.toBeEmpty();
+    await review.getByRole("button", { name: "Finish module" }).click();
+    await checkReview();
+    if (width === 1280) {
+      await page.evaluate(() => {
+        const key = "causal-sandbox-foundations-v1";
+        const saved = JSON.parse(localStorage.getItem(key));
+        const capstone = saved.activities.capstone;
+        delete capstone.records.support;
+        delete capstone.committed;
+        localStorage.setItem(key, JSON.stringify(saved));
+      });
+      await page.reload();
+      await expect(review).toContainText(
+        "Check who received each choiceNot attempted.",
+      );
+      await expect(review).toContainText(
+        "4 of 5 decisions correct on first submission",
+      );
+      await expect(review).not.toContainText(/undefined|null|NaN/);
+    }
     await page.goto(home);
     await page.locator(".intro-opening").click();
     await expect(

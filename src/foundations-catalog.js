@@ -52,6 +52,7 @@ export const modules = [
     href: "?lesson=foundations-capstone",
     minutes: 40,
     topics: ["leaving-the-sandbox", "final-quiz"],
+    independent: true,
   },
 ];
 export function moduleForTopic(topic) {

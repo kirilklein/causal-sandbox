@@ -13,7 +13,12 @@ import {
   explored,
 } from "./foundations-experiments.js";
 import { adjustmentMarkup, bindAdjustment } from "./adjustment-input.js";
-import { gradeAdjustment, validAdjustmentChoice } from "./adjustment-model.js";
+import {
+  gradeAdjustment,
+  validAdjustmentChoice,
+  selectedNodes,
+  adjustmentLabel,
+} from "./adjustment-model.js";
 import "./foundations.css";
 
 const route = new URLSearchParams(location.search).get("lesson");
@@ -23,6 +28,9 @@ const saved = readPilot().activities?.[module.id] || {};
 const records = saved.records || {};
 let position = steps.findIndex((s) => s.id === saved.step);
 if (position < 0) position = saved.step === "summary" ? steps.length : 0;
+let committed = saved.committed ?? saved.step === "summary";
+if (module.independent && committed) position = steps.length;
+const deferred = () => module.independent && !committed;
 const escapeText = (text) =>
   String(text ?? "")
     .replaceAll("&", "&amp;")
@@ -87,18 +95,45 @@ function save() {
     !saveActivity(module.id, {
       step: steps[position]?.id || "summary",
       records,
+      ...(module.independent && { committed }),
     })
   )
     document.querySelector("#course-storage").textContent =
       "Progress is available for this visit. Browser storage is unavailable.";
 }
+function answerText(step, { answer, graph }) {
+  if (step.number !== undefined) return `${escapeText(answer)} ${step.unit}`;
+  const names = selectedNodes(graph).map((id) =>
+    step.graph.facts.find(([node]) => node === id)[1].toLowerCase(),
+  );
+  const adjustment = !step.graph
+    ? ""
+    : names.length
+      ? `Adjust for ${names.join(" and ")}. `
+      : graph === "none"
+        ? "No adjustment. "
+        : `${adjustmentLabel(graph)}. `;
+  return adjustment + step.choices[answer];
+}
+function reviewItem(step) {
+  const first = records[step.id]?.first;
+  const correct = {
+    answer: step.number !== undefined ? +step.number.toFixed(2) : step.correct,
+    graph: step.answerSet,
+  };
+  return `<dt>${step.title}</dt><dd>${first ? `${first.correct ? "Correct" : "Incorrect"}. Your answer: ${answerText(step, first)}` : "Not attempted."}</dd>${first?.correct ? "" : `<dd>Correct answer: ${answerText(step, correct)}</dd>`}<dd>${step.feedback}</dd>`;
+}
 function summary() {
+  if (deferred())
+    return `<h2 tabindex="-1">Commit your study</h2><p>Committing grades the decisions you saved and shows feedback. Before that, you can go back and change any of them.</p>
+ <button class="primary" type="button" data-commit>Commit my study</button>
+ <button type="button" data-back class="pilot-back text-button">← Previous activity</button>`;
   const next = modules[modules.indexOf(module) + 1];
   const scores = steps.filter((s) => records[s.id]?.first?.correct).length;
   const finished = completedModules().length;
   const estimate = steps.find((s) => s.number !== undefined);
   return `<h2 tabindex="-1">${next ? "Module complete" : "Your final study"}</h2>
- ${next ? `<p>${module.goal}</p>` : `<dl class="study-summary"><dt>${estimate.title}</dt><dd>${+estimate.number.toFixed(2)} ${estimate.unit}</dd><dt>Conclusion</dt><dd>${steps.at(-1).feedback}</dd></dl><ul>${steps.map((s) => `<li>${s.title}: ${records[s.id]?.first?.correct ? "correct on first submission" : "revised after feedback"}</li>`).join("")}</ul><p>${scores} of ${steps.length} decisions correct on first submission.</p>`}
+ ${next ? `<p>${module.goal}</p>` : `<dl class="study-summary">${steps.map(reviewItem).join("")}</dl><div class="course-readout"><p>Standardized estimate: ${+estimate.number.toFixed(2)} ${estimate.unit}</p><p>Simulator truth: ${+estimate.truth.toFixed(2)} ${estimate.unit}</p><p>${estimate.truthNote}</p></div><p>${scores} of ${steps.length} decisions correct on first submission.</p>`}
  <p>${finished} of 6 modules completed in this browser.</p>
  <a class="primary" href="${next?.href || learningUrl("learn")}">${next ? "Continue: " + next.title : "View course modules"} →</a>
  <button type="button" data-back>Review last activity</button>`;
@@ -125,10 +160,18 @@ function render(focus = true) {
         `<label><input type="radio" name="reason" value="${i}" ${r.answer === i ? "checked" : ""} required>${label}</label>`,
     )
     .join("");
-  panel.innerHTML = `<p class="sample-note">Activity ${position + 1} of ${steps.length}</p><h2 tabindex="-1">${step.title}</h2><p>${step.text}</p>
+  const label = () =>
+    deferred()
+      ? "Save decision"
+      : r.passed
+        ? position === steps.length - 1
+          ? "Finish module"
+          : "Next activity"
+        : "Check my decision";
+  panel.innerHTML = `<p class="sample-note">Activity ${position + 1} of ${steps.length}${deferred() ? " · Feedback appears after you commit your study." : ""}</p><h2 tabindex="-1">${step.title}</h2><p>${step.text}</p>
  ${control}<div id="course-result" aria-live="polite">${experimentResult(step.experiment, r.setting || 0, r.severity)}</div>
  <form>${step.graph ? adjustmentMarkup(step.graph) : ""} <fieldset><legend>${step.prompt}</legend>${options ?? `<label><input type="number" name="number" step="any" required value="${escapeText(r.answer)}"> ${step.unit}</label>`}</fieldset>
- <p id="course-feedback" role="status"></p><button class="primary" type="submit">${r.passed ? (position === steps.length - 1 ? "Finish module" : "Next activity") : "Check my decision"}</button></form>
+ <p id="course-feedback" role="status"></p><button class="primary" type="submit">${label()}</button></form>
  ${position ? '<button data-back class="pilot-back text-button">← Previous activity</button>' : ""}`;
   const form = panel.querySelector("form"),
     feedback = panel.querySelector("#course-feedback");
@@ -136,7 +179,7 @@ function render(focus = true) {
     r.passed = false;
     delete r.lastFeedback;
     feedback.textContent = "";
-    form.querySelector("button[type=submit]").textContent = "Check my decision";
+    form.querySelector("button[type=submit]").textContent = label();
     save();
   };
   const graph = step.graph
@@ -145,7 +188,11 @@ function render(focus = true) {
         clearCheck();
       })
     : null;
-  feedback.textContent = r.passed ? step.feedback : r.lastFeedback || "";
+  feedback.textContent = deferred()
+    ? ""
+    : r.passed
+      ? step.feedback
+      : r.lastFeedback || "";
   form.addEventListener("input", (event) => {
     if (event.target.name === "reason") r.answer = Number(event.target.value);
     else if (event.target.name === "number") r.answer = event.target.value;
@@ -175,7 +222,7 @@ function render(focus = true) {
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (r.passed) {
+    if (r.passed && !deferred()) {
       position++;
       if (position === steps.length) completeModule(module.id);
       save();
@@ -200,14 +247,7 @@ function render(focus = true) {
         ? Math.abs(Number(r.answer) - step.number) < 0.01
         : r.answer === step.correct;
     r.passed = answerCorrect && (!judgment || judgment.correct);
-    r.first ??= {
-      answer: r.answer,
-      graph: r.graph,
-      correct: r.passed,
-    };
-    r.attempts = (r.attempts || 0) + 1;
-    if (judgment) graph.highlight(judgment.path);
-    feedback.textContent = r.passed
+    r.lastFeedback = r.passed
       ? step.feedback
       : judgment && !judgment.correct
         ? judgment.message
@@ -215,15 +255,33 @@ function render(focus = true) {
           (step.number !== undefined
             ? "Check the denominator and units, then calculate again."
             : "Trace the comparison in the study and reconsider your reason.");
-    r.lastFeedback = feedback.textContent;
-    if (r.passed)
-      form.querySelector("button[type=submit]").textContent =
-        position === steps.length - 1 ? "Finish module" : "Next activity";
+    if (deferred()) {
+      r.first = { answer: r.answer, graph: r.graph, correct: r.passed };
+      position++;
+      save();
+      render();
+      return;
+    }
+    r.first ??= {
+      answer: r.answer,
+      graph: r.graph,
+      correct: r.passed,
+    };
+    r.attempts = (r.attempts || 0) + 1;
+    if (judgment) graph.highlight(judgment.path);
+    feedback.textContent = r.lastFeedback;
+    form.querySelector("button[type=submit]").textContent = label();
     save();
   });
   if (focus) panel.querySelector("h2").focus();
 }
 panel.addEventListener("click", (event) => {
+  if (event.target.closest("[data-commit]")) {
+    committed = true;
+    completeModule(module.id);
+    save();
+    render();
+  }
   if (event.target.closest("[data-back]")) {
     position--;
     save();

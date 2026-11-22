@@ -76,10 +76,31 @@ export function curvedStudy(flexible) {
   };
 }
 
-export const trainingGroups = [
-  { name: "Less work experience", offer: [20, 40], usual: [24, 80] },
-  { name: "More work experience", offer: [48, 60], usual: [14, 20] },
+// Employment in tenths without and with an offer; the same for both offer groups.
+const experienceGroups = [
+  { name: "Less work experience", counts: [80, 40], tenths: [3, 5] },
+  { name: "More work experience", counts: [20, 60], tenths: [7, 8] },
 ];
+export const applicants = experienceGroups.flatMap((group, experience) =>
+  group.counts.flatMap((n, offer) =>
+    Array.from({ length: n }, (_, i) => ({
+      experience,
+      offer,
+      employed: group.tenths.map((t) => Number(10 * i < t * n)),
+    })),
+  ),
+);
+const observed = (rows, offer) => {
+  const arm = rows.filter((a) => a.offer === offer);
+  return [arm.reduce((n, a) => n + a.employed[offer], 0), arm.length];
+};
+export const trainingGroups = experienceGroups.map(({ name }, experience) => {
+  const rows = applicants.filter((a) => a.experience === experience);
+  return { name, offer: observed(rows, 1), usual: observed(rows, 0) };
+});
+export const trueTrainingEffect =
+  (100 * applicants.reduce((n, a) => n + a.employed[1] - a.employed[0], 0)) /
+  applicants.length;
 export function trainingResult() {
   const total = trainingGroups.reduce((n, g) => n + g.offer[1] + g.usual[1], 0);
   const means = ["offer", "usual"].map((arm) =>
