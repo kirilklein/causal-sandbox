@@ -1,0 +1,1 @@
+import{o as e}from"./lesson-simulation-DgNFmLuF.js";function t(i,o){const p=e(i,o.propensities,o.weights);for(const s of p)s.clipped=0;return i.forEach((s,n)=>{const r=o.propensities[n];(r<.02||r>.98)&&p[s.A].clipped++}),p}export{t as s};

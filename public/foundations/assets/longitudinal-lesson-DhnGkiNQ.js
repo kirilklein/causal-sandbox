@@ -1,0 +1,124 @@
+/* empty css                          */import{t as $}from"./theme-Vjupx5_i.js";import{l as N,s as W}from"./lesson-navigation-D3qgvbW9.js";import{e as j}from"./effect-comparison-D_sRXFX7.js";import{s as E}from"./instrument-simulation-FFlhfKBs.js";import{m as I}from"./simulation-BOxkiD6q.js";import{i as H}from"./brand--vQh_tom.js";import"./glossary-Cn9xhfdQ.js";import"./foundations-progress-CLDiwUAt.js";function k({seed:e=4217,n:i=2400,confounded:a=!1}={}){const o=I(i,e).map(({a:d,C1:m,jitter:h,eY:g})=>{const v=+(d<.5),p=+((m/Math.sqrt(3)+1)/2<.7-.4*v),y=a?.2+.6*p:.5,f=+(h<y);return{A1:v,L:p,A2:f,Y:6-v-f+2*p+g}});return{data:o,truth:-2.8,...P(o,a)}}function P(e,i=!1){const a=Array.from({length:8},()=>({n:0,sum:0})),o=(s,r,l)=>4*s+2*r+l;for(const s of e){const r=a[o(s.A1,s.L,s.A2)];r.n++,r.sum+=s.Y}const d=(s,r,l)=>{const u=a[o(s,r,l)];return u.n?u.sum/u.n:NaN},m=e.length?e.reduce((s,r)=>s+r.L,0)/e.length:NaN,h=[0,1].map(s=>{const r=a[o(s,0,s)],l=a[o(s,1,s)];return(r.sum+l.sum)/(r.n+l.n)}),g=h[1]-h[0],v=[0,1].reduce((s,r)=>s+(r?m:1-m)*(d(1,r,1)-d(0,r,0)),0),p=a.every(s=>s.n>0),y=[0,0],f=[0,0],S=e.map(s=>{const r=a[o(s.A1,s.L,0)].n,l=a[o(s.A1,s.L,1)].n,u=i?l/(r+l):.5,L=s.A2?u:1-u,A=1/(.5*L);return s.A1===s.A2&&(y[s.A1]+=A*s.Y,f[s.A1]+=A),{p1:.5,p2:u,observedP2:L,weight:A}});return{unadjusted:g,adjusted:v,ipw:p?y[1]/f[1]-y[0]/f[0]:NaN,weights:S,supported:p}}document.querySelector("#app").innerHTML=`
+  <div class="instrument-page longitudinal-page">
+    <header><a class="brand" href="./">${H}<span>Causal Sandbox</span></a><a href="?sandbox">Explore scenarios ↗</a>${$()}</header>
+    <main>
+      ${N({currentOptional:"time-varying-confounding"})}
+      <p class="eyebrow">OPTIONAL · TIME-VARYING CONFOUNDING</p>
+      <h1 tabindex="-1">When treatment changes the next treatment decision</h1>
+      <p class="longitudinal-intro">Treatment can change a patient's health, which then guides their next treatment. Explore two visits in a fictional study. Start here after <a href="?lesson=ipw">IPW</a>, <a href="?lesson=outcome-regression">outcome regression</a>, and <a href="?lesson=mediator">mediators</a>.</p>
+      <section class="panel" aria-labelledby="target">
+        <h2 id="target">Treat at both visits, or at neither?</h2>
+        <p>Compare the average final symptom score if everyone were treated at both visits with the average if no one were treated at either visit. Lower scores are better.</p>
+        <div class="longitudinal-steps" role="group" aria-label="Lesson stages">
+          <button data-stage="0" aria-pressed="true">1. Two randomized decisions</button>
+          <button data-stage="1" aria-pressed="false">2. Treatment responds to health</button>
+          <button data-stage="2" aria-pressed="false">3. Weight each decision</button>
+        </div>
+        <svg class="graph" viewBox="0 0 580 210" role="img" id="history-graph">
+          <defs><marker id="history-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="var(--causal-path)"/></marker></defs>
+          <path d="M81 95H188" marker-end="url(#history-arrow)"/>
+          <path id="severity-treatment-path" d="M248 95H355" marker-end="url(#history-arrow)"/>
+          <path d="M415 95H516" marker-end="url(#history-arrow)"/>
+          <path d="M218 118C218 170 545 170 545 120" marker-end="url(#history-arrow)"/>
+          <path d="M51 72C51 8 545 8 545 70" marker-end="url(#history-arrow)"/>
+          <rect x="21" y="73" width="60" height="44" rx="10" fill="var(--node-A)"/><text x="51" y="101" text-anchor="middle">A₁</text>
+          <rect x="188" y="73" width="60" height="44" rx="10" fill="var(--node-C)"/><text x="218" y="101" text-anchor="middle">L</text>
+          <rect x="355" y="73" width="60" height="44" rx="10" fill="var(--node-A)"/><text x="385" y="101" text-anchor="middle">A₂</text>
+          <rect x="518" y="73" width="54" height="44" rx="10" fill="var(--node-Y)"/><text x="545" y="101" text-anchor="middle">Y</text>
+          <g class="graph-time"><text x="51" y="193" text-anchor="middle">Visit 1</text><text x="218" y="193" text-anchor="middle">Between visits</text><text x="385" y="193" text-anchor="middle">Visit 2</text><text x="545" y="193" text-anchor="middle">Outcome</text></g>
+        </svg>
+        <p class="small">A₁ and A₂: treatment at each visit · L: updated severity (low or high) · Y: final symptom score. Arrows are assumptions of this simulation.</p>
+        <p id="stage-explanation" class="note" aria-live="polite"></p>
+        <div class="longitudinal-workspace">
+          <div>
+            <label class="adjust"><input id="adjust-severity" type="checkbox"/> Adjust outcome regression for updated severity L</label>
+            <p id="model-caption" class="small"></p>
+            <p id="interpretation" aria-live="polite"></p>
+          </div>
+          <div>
+            <div class="results" aria-live="polite" aria-atomic="true">
+              <div class="result truth"><span>True total effect</span><strong>−2.80</strong><small>Both visits − neither visit</small></div>
+              <div class="result estimate" id="regression-card"><span>Outcome regression</span><strong id="regression-value"></strong><small id="regression-error"></small></div>
+              <div class="result estimate" id="ipw-card" hidden><span>Sequential IPW</span><strong id="ipw-value"></strong><small id="ipw-error"></small></div>
+            </div>
+            <p class="small">Stronger red means farther from truth in this sample. One sample can be close by chance.</p>
+          </div>
+        </div>
+        <div id="weight-section" hidden>
+          <p>Use severity to model the second treatment decision. Weight each observed treatment history, then compare the weighted outcomes for both visits versus neither. This lets severity retain its role in the first treatment's effect.</p>
+          <details id="weight-detail"><summary>Follow one person's weight</summary>
+            <p>Weight both decisions together: multiply their inverse probabilities, using the history available at each visit.</p>
+            <div class="sequential-weight-formula">
+              <math display="block" aria-label="Weight equals one over q 1 times q 2, the probabilities of the decisions actually observed at visits one and two">
+                <mtext>Weight</mtext><mo>=</mo><mfrac><mn>1</mn><mrow><msub><mi>q</mi><mn>1</mn></msub><mo>×</mo><msub><mi>q</mi><mn>2</mn></msub></mrow></mfrac>
+              </math>
+              <div class="sequential-weight-factors">
+                <p><strong>q₁ · Visit 1</strong>Chance of the observed first decision.</p>
+                <p><strong>q₂ · Visit 2</strong>Chance of the observed second decision, given first treatment and updated severity.</p>
+              </div>
+            </div>
+            <label class="person-label" for="person"><span>Person <output id="person-number" for="person"></output></span><span class="small">of 2,400</span></label>
+            <input id="person" type="range" min="1" max="2400" step="1" value="1"/>
+            <p id="person-history"></p><p id="person-weight" class="weight-equation"></p><p id="person-role" class="small"></p>
+            <p class="small">The first probability is known from randomization. The second is fitted from people with the same first treatment and severity. Use the probability of the treatment actually received, including no treatment. No weights are clipped.</p>
+          </details>
+        </div>
+        <div class="actions"><button id="redraw">Redraw sample</button><button id="restart">Restart lesson</button><span class="small" id="sample"></span></div>
+        <details id="studies"><summary>Compare repeated studies</summary>
+          <p>Repeat this world 60 times. Compare the average estimate and its spread with truth. These are not confidence intervals.</p>
+          <button id="repeat">Run 60 studies</button><p id="study-status" role="status" class="small"></p><div id="study-results"></div>
+        </details>
+      </section>
+      <details><summary>Why does ordinary adjustment fail here?</summary>
+        <p>Updated severity L has two roles when it guides the second treatment:</p>
+        <dl class="longitudinal-facts">
+          <div><dt>A₁ → L → Y</dt><dd>L carries part of the first treatment's benefit. Holding its distribution fixed removes that benefit from our comparison.</dd></div>
+          <div><dt>A₂ ← L → Y</dt><dd>L affects the second treatment and the outcome. Ignoring it leaves the second decision confounded.</dd></div>
+        </dl>
+        <p>Sequential IPW accounts for L in the second treatment model while preserving the first treatment's effect through L. This dual role is called treatment–confounder feedback.</p>
+      </details>
+      <details id="simulation-detail"><summary>Simulation and true effect</summary>
+        <table><caption>How the fictional study is generated</caption><thead><tr><th scope="col">Step</th><th scope="col">Probability</th></tr></thead><tbody>
+          <tr><th scope="row">Visit 1: treatment</th><td>50% for everyone</td></tr>
+          <tr><th scope="row">Between visits: high severity</th><td>30% after treatment<br>70% without treatment</td></tr>
+          <tr><th scope="row">Visit 2: treatment</th><td>Stage 1: 50% for everyone<br>Stages 2–3: 80% with high severity, 20% with low severity</td></tr>
+        </tbody></table>
+        <h3>Final symptom score</h3>
+        <math class="longitudinal-equation" display="block" aria-label="Y equals 6 minus A 1 minus A 2 plus 2 L plus noise"><mi>Y</mi><mo>=</mo><mn>6</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>+</mo><mn>2</mn><mi>L</mi><mo>+</mo><mi>ε</mi></math>
+        <p class="small">A₁ and A₂ are 1 for treatment, 0 otherwise. L is 1 for high severity, 0 for low. ε is independent noise with mean 0.</p>
+        <h3>Both visits − neither visit</h3>
+        <dl class="longitudinal-facts effect-breakdown">
+          <div><dt>−2.0 directly</dt><dd>Each treatment lowers the score by 1.</dd></div>
+          <div><dt>−0.8 through severity</dt><dd>High severity falls from 70% to 30%. Its contribution changes by 2 × (0.3 − 0.7).</dd></div>
+        </dl>
+        <math class="longitudinal-equation" display="block" aria-label="Total effect equals minus 2 minus 0.8 equals minus 2.8"><mtext>Total effect</mtext><mo>=</mo><mo>−</mo><mn>2</mn><mo>−</mo><mn>0.8</mn><mo>=</mo><mo>−</mo><mn>2.8</mn></math>
+      </details>
+      <details id="models-detail"><summary>How the estimates are calculated</summary>
+        <dl class="longitudinal-facts">
+          <div><dt>Outcome regression</dt><dd>Fit a mean outcome for each combination of included predictors. With L included, average both strategies' predictions over the same severity distribution. Even a flexible model then removes the benefit through L.</dd></div>
+          <div><dt>Sequential IPW</dt><dd>Compare weighted outcome means for the both-visit and neither-visit groups. Divide each group's weighted outcome sum by its own weight sum. Mixed treatment histories help fit the treatment model.</dd></div>
+        </dl>
+        <p class="small">Another approach, the longitudinal g-formula, models severity under each strategy before averaging outcome predictions. It allows severity to change with first treatment.</p>
+      </details>
+      <details id="assumptions-detail"><summary>What assumptions are needed?</summary>
+        <ul>
+          <li>No unmeasured confounding at either decision, given the available history.</li>
+          <li>Both treatment options remain possible within relevant histories.</li>
+          <li>Well-defined treatments, with observed outcomes matching the treatment history received.</li>
+          <li>No effects of one person's treatment on another person's outcome.</li>
+        </ul>
+        <p>Sequential IPW also needs adequate treatment probability models. This simulation supplies these conditions. Balance alone cannot establish them in real data.</p>
+      </details>
+      <details><summary>Check your understanding</summary>
+        <p>Severity was measured before the second treatment. Why might adjusting for it remove part of the effect we want?</p>
+        <details><summary>Reveal the explanation</summary><p>Because the first treatment already changed severity. Holding severity fixed removes that route from the first treatment to the outcome. We need to account for severity when comparing second decisions while preserving its response to the first decision.</p></details>
+      </details>
+      <details><summary>Sources and next steps</summary>
+        <p><a href="https://miguelhernan.org/whatifbook">Hernán & Robins, Causal Inference: What If</a>, chapters 19–21: repeated treatments, treatment–confounder feedback, and g-methods.</p>
+        <p><a href="https://hsph.harvard.edu/wp-content/uploads/2012/10/hernan_epid00.pdf">Hernán, Brumback & Robins (2000)</a> apply marginal structural models to treatment decisions influenced by changing CD4 counts.</p>
+        <p>Further topics: the longitudinal g-formula, strategies that adapt to a patient's history, and loss to follow-up. This lesson uses two fixed strategies and a final continuous outcome.</p>
+      </details>
+      <nav class="actions" aria-label="Chapter navigation"><a href="?lesson=timing">← What timing tells us</a><a href="?lesson=assumptions">Explore causal assumptions →</a></nav>
+      <footer>Fictional patients and effects. Point estimates only.</footer>
+    </main>
+  </div>`;W();const t=e=>document.getElementById(e),n={seed:4217,stage:0};let c,b=0;const w=e=>Number.isFinite(e)?e.toFixed(3):"Unavailable";function C(){const e=Number(t("person").value)-1,i=c.data[e],a=c.weights[e];t("person-number").textContent=e+1,t("person").style.setProperty("--fill",`${100*e/(c.data.length-1)}%`),t("person-history").textContent=`Visit 1: ${i.A1?"treated":"untreated"} → severity: ${i.L?"high":"low"} → visit 2: ${i.A2?"treated":"untreated"}.`,t("person-weight").textContent=`Weight = 1 ÷ (0.500 × ${w(a.observedP2)}) = ${w(a.weight)}`,t("person-role").textContent=i.A1===i.A2?`This person contributes to the weighted mean for ${i.A1?"both visits":"neither visit"}. The displayed calculation is rounded. Estimates use full precision.`:"This person informs the fitted treatment probabilities, but contributes to neither strategy's outcome mean because their treatment history matches neither."}function q(){const e=t("adjust-severity").checked;for(const[i,a]of[["regression",e?c.adjusted:c.unadjusted],["ipw",c.ipw]]){const o=j(a,c.truth);t(`${i}-value`).textContent=o.value,t(`${i}-error`).textContent=o.difference,t(`${i}-card`).style.setProperty("--error-tint",`${o.tint}%`)}t("model-caption").textContent=`Outcome model: ${e?"adjusting for updated severity L":"no severity adjustment"}. Both treatment decisions are predictors.`,t("interpretation").textContent=e?"Holding severity's distribution fixed removes the first treatment's benefit through severity. The regression comparison approaches −2.00, while our total-effect target remains −2.80.":n.stage===0?"Both decisions are randomized. Across repeated studies, this comparison recovers the total effect, including the first treatment's benefit through severity.":"High severity now makes the second treatment more likely and raises the final symptom score. Omitting severity leaves the second decision confounded."}function T(){b++,t("repeat").disabled=!1,t("study-status").textContent="",t("study-results").innerHTML=""}function x(){c=k({seed:n.seed,confounded:n.stage>0}),document.querySelectorAll("[data-stage]").forEach(e=>e.setAttribute("aria-pressed",Number(e.dataset.stage)===n.stage)),t("severity-treatment-path").style.visibility=n.stage?"visible":"hidden",t("history-graph").setAttribute("aria-label",`First treatment A1 affects updated severity L and outcome Y. L affects Y${n.stage?" and second treatment A2":""}. A2 affects Y. Both treatments precede the outcome.`),t("stage-explanation").textContent=["Both visits use a coin flip to assign treatment. The first treatment still reduces severity between visits. Try adjusting for severity: is it needed for this total effect?","The first decision stays randomized. At the second visit, high severity now makes treatment more likely. L is a mediator for the first decision and a confounder for the second. Compare regression with and without L.","Keep the same patients and treatment decisions. Sequential weighting accounts for severity when modeling the second decision, without holding severity fixed in the outcome comparison."][n.stage],t("ipw-card").hidden=n.stage!==2,t("weight-section").hidden=n.stage!==2,t("sample").textContent=`2,400 people · sample ${n.seed}`,q(),C()}document.querySelectorAll("[data-stage]").forEach(e=>e.addEventListener("click",()=>{n.stage!==Number(e.dataset.stage)&&(n.stage=Number(e.dataset.stage),T(),x())}));t("adjust-severity").addEventListener("change",q);t("person").addEventListener("input",C);t("redraw").addEventListener("click",()=>{n.seed++,x()});t("restart").addEventListener("click",()=>{n.seed=4217,n.stage=0,t("adjust-severity").checked=!1,t("person").value=1,document.querySelectorAll("main details").forEach(e=>{e.open=!1}),T(),x()});t("repeat").addEventListener("click",async()=>{const e=++b,i=n.stage,a=[["unadjusted","Regression without L"],["adjusted","Regression with L"],...i===2?[["ipw","Sequential IPW"]]:[]],o=[];t("repeat").disabled=!0;try{for(let d=0;d<60;d++){if(e!==b)return;o.push(k({seed:100+d,confounded:i>0})),t("study-status").textContent=`${d+1} / 60 studies`,await new Promise(m=>setTimeout(m,0))}if(e!==b)return;t("study-results").innerHTML=`<div class="table-wrap"><table><caption>60 studies × 2,400 people · truth −2.800 · seeds 100–159</caption><thead><tr><th scope="col">Method</th><th scope="col">Mean</th><th scope="col">SD</th><th scope="col">Unavailable</th></tr></thead><tbody>${a.map(([d,m])=>{const h=E(o.map(g=>g[d]),-2.8);return`<tr><th scope="row">${m}</th><td>${w(h.mean)}</td><td>${w(h.sd)}</td><td>${h.unavailable}</td></tr>`}).join("")}</tbody></table></div><p class="small">SD is the spread of estimates across studies. Unavailable fits, if any, are excluded and counted separately.</p>`,t("study-status").textContent="60 studies complete."}finally{e===b&&(t("repeat").disabled=!1)}});x();

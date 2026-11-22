@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="/causal-sandbox/dev/foundations/" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Learn targeted minimum loss-based estimation interactively. Apply TMLE targeting, watch outcome predictions change, and inspect the weighted correction."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/tmle/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/tmle/"
+    />
+    <meta
+      property="og:title"
+      content="TMLE Explained: Interactive Targeting Example"
+    />
+    <meta
+      property="og:description"
+      content="Move from initial outcome predictions to targeted predictions and see which empirical correction TMLE solves."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="TMLE Explained: Interactive Targeting Example"
+    />
+    <meta
+      name="twitter:description"
+      content="Move from initial outcome predictions to targeted predictions and see which empirical correction TMLE solves."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/causal-sandbox/dev/foundations/assets/brand-BR7AOR4r.svg" />
+    <title>TMLE Explained: Interactive Targeting Example</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/events-B779v5TJ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/glossary-Cn9xhfdQ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/simulation-BOxkiD6q.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/theme-Vjupx5_i.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/foundations-progress-CLDiwUAt.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/brand--vQh_tom.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/main-hzDGxJqj.js"></script>
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/theme-UUf_kNuS.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/main-DCVcMBu0.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/style-Cs9p3pzY.css">
+  </head>
+  <body data-lesson="tmle">
+    <div id="app">
+      <main>
+        <h1>Targeted minimum loss-based estimation</h1>
+        <p>
+          Update initial outcome predictions in a direction determined by
+          treatment probabilities, then average the targeted contrasts.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="tmle-heading">
+      <h2 id="tmle-heading">What does the TMLE targeting step do?</h2>
+      <p class="concept-answer">
+        TMLE starts with outcome predictions and fits a targeted update using
+        observed outcomes and propensity scores. For the average treatment
+        effect here, the update removes the sample’s average signed,
+        propensity-weighted prediction error.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Inspect the initial predictions and correction left to make.</li>
+        <li>
+          Move the targeting slider and watch both prediction curves change.
+        </li>
+        <li>Apply the full update and inspect the remaining correction.</li>
+      </ol>
+      <p class="concept-note">
+        A solved targeting equation is an estimation property, not proof of a
+        valid causal estimate. TMLE still needs confounding control,
+        consistency, overlap, and adequate nuisance estimation under the
+        required regularity conditions.
+      </p>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li>
+            <a href="aipw-double-robustness/">Compare targeting with AIPW</a>
+          </li>
+          <li>
+            <a href="inverse-probability-weighting/"
+              >Review the propensity component</a
+            >
+          </li>
+          <li>
+            <a href="positivity/">See why targeting still needs overlap</a>
+          </li>
+        </ul>
+      </nav>
+    </article>
+  </body>
+</html>

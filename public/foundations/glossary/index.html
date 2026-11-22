@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="/causal-sandbox/dev/foundations/" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Detailed definitions of causal inference terms used in Causal Sandbox, including exchangeability, positivity, consistency, confounding, adjustment, and causal estimators."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/glossary/"
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/glossary/"
+    />
+    <meta
+      property="og:title"
+      content="Causal Inference Glossary | Causal Sandbox"
+    />
+    <meta
+      property="og:description"
+      content="Definitions and references for causal assumptions, structures, estimators, and diagnostics used throughout Causal Sandbox."
+    />
+    <link rel="icon" type="image/svg+xml" href="/causal-sandbox/dev/foundations/assets/brand-BR7AOR4r.svg" />
+    <title>Causal Inference Glossary | Causal Sandbox</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/events-B779v5TJ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/glossary-Cn9xhfdQ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/simulation-BOxkiD6q.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/theme-Vjupx5_i.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/foundations-progress-CLDiwUAt.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/brand--vQh_tom.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/main-hzDGxJqj.js"></script>
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/theme-UUf_kNuS.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/main-DCVcMBu0.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/style-Cs9p3pzY.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/glossary-HHu2lhfG.css">
+  </head>
+  <body data-page="glossary">
+    <header class="methodology-header">
+      <a class="brand" href="./">
+        <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%20fill='none'%20aria-hidden='true'%3e%3crect%20width='32'%20height='32'%20rx='7'%20fill='var(--page,%20%23f5f4ef)'/%3e%3cg%20stroke='var(--text,%20%23273d33)'%20stroke-width='1.7'%20stroke-linecap='round'%20stroke-linejoin='round'%3e%3cpath%20d='M14%2010%208%2020m.2-4.5L8%2020l4-2M18%2010l6%2010m-4-2%204%202-.2-4.5M11%2025h10m-3-3%203%203-3%203'/%3e%3c/g%3e%3cg%20fill='var(--text,%20%23273d33)'%3e%3ccircle%20cx='16'%20cy='6'%20r='3'/%3e%3ccircle%20cx='6'%20cy='25'%20r='3'/%3e%3ccircle%20cx='26'%20cy='25'%20r='3'/%3e%3c/g%3e%3c/svg%3e" width="29" height="29" alt="" />
+        <span>Causal Sandbox</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="./">Guided lessons</a>
+        <a href="./?sandbox">Explore scenarios</a>
+      </nav>
+      <span id="glossary-theme"></span>
+    </header>
+
+    <main class="methodology-page glossary-page">
+      <section
+        class="methodology-hero glossary-hero"
+        aria-labelledby="glossary-title"
+      >
+        <p class="eyebrow">REFERENCE</p>
+        <h1 id="glossary-title">Causal inference glossary</h1>
+        <p>
+          Detailed definitions for the terms used in the lessons and scenario
+          sandbox. Each definition describes how the concept works here. The
+          <a href="methodology/">methodology notes</a> give the equations and
+          assumptions behind the simulations.
+        </p>
+      </section>
+
+      <section
+        class="glossary-assumptions"
+        aria-labelledby="glossary-assumptions-title"
+      >
+        <p class="eyebrow">CORE ASSUMPTIONS</p>
+        <h2 id="glossary-assumptions-title">
+          What connects observed data to a causal effect?
+        </h2>
+        <p>
+          These assumptions connect the observed treatment comparison to the
+          potential-outcome contrast used in this app. They are claims about the
+          study and causal question; a fitted model cannot prove them.
+        </p>
+        <div id="glossary-assumptions-list"></div>
+      </section>
+
+      <div class="methodology-layout glossary-layout">
+        <nav
+          class="methodology-contents glossary-contents"
+          aria-label="Glossary terms"
+        >
+          <strong>Terms A–Z</strong>
+          <div id="glossary-contents-list"></div>
+        </nav>
+
+        <article id="glossary-entries" class="methodology-article"></article>
+      </div>
+    </main>
+
+  </body>
+</html>

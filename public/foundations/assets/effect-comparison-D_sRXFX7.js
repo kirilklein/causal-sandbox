@@ -1,0 +1,1 @@
+function i(e,n){if(!Number.isFinite(e)||!Number.isFinite(n))return{value:"Unavailable",difference:"Cannot compare with truth",tint:0};const r=e-n,t=Number(r.toFixed(2));return{value:e.toFixed(2),difference:`${t>0?"+":""}${t.toFixed(2)} from truth`,tint:Math.min(Math.abs(r)/2,1)**.75*100}}export{i as e};

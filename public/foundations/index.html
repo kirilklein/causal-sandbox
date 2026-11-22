@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <script>
+      // Resolve the saved theme before the app paints.
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Learn causal inference in six free interactive modules. Follow a patient study from question to conclusion, then analyze a new study of job training."
+    />
+    <link rel="canonical" href="https://kirilklein.github.io/causal-sandbox/" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/"
+    />
+    <meta
+      property="og:title"
+      content="Causal Inference Foundations — Causal Sandbox"
+    />
+    <meta
+      property="og:description"
+      content="Learn causal inference in six free interactive modules. Follow a patient study from question to conclusion, then analyze a new study of job training."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta
+      property="og:image:alt"
+      content="Causal Sandbox showing model controls and estimates compared with the known causal effect"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Causal Inference Foundations — Causal Sandbox"
+    />
+    <meta
+      name="twitter:description"
+      content="Learn causal inference in six free interactive modules. Follow a patient study from question to conclusion, then analyze a new study of job training."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Causal Sandbox showing model controls and estimates compared with the known causal effect"
+    />
+    <link rel="icon" type="image/svg+xml" href="/causal-sandbox/dev/foundations/assets/brand-BR7AOR4r.svg" />
+    <title>Causal Inference Foundations — Causal Sandbox</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["WebApplication", "LearningResource"],
+        "name": "Causal Sandbox",
+        "url": "https://kirilklein.github.io/causal-sandbox/",
+        "description": "Causal Inference Foundations is a free interactive course in six modules with a scenario sandbox and graph builder.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "isAccessibleForFree": true,
+        "inLanguage": "en",
+        "author": {
+          "@type": "Person",
+          "name": "Kiril Klein",
+          "url": "https://kirilklein.github.io/",
+          "sameAs": "https://github.com/kirilklein"
+        }
+      }
+    </script>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/events-B779v5TJ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/glossary-Cn9xhfdQ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/simulation-BOxkiD6q.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/theme-Vjupx5_i.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/foundations-progress-CLDiwUAt.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/brand--vQh_tom.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/main-hzDGxJqj.js"></script>
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/theme-UUf_kNuS.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/main-DCVcMBu0.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/style-Cs9p3pzY.css">
+  </head>
+  <body>
+    <div id="app">
+      <main>
+        <h1>Causal Inference Foundations</h1>
+        <p>
+          Define a treatment-effect question, choose a defensible comparison, estimate the effect, and explain what your conclusion depends on.
+        </p>
+        <p>
+          A free interactive course for anyone with basic statistics.
+        </p>
+        <nav aria-label="Interactive causal inference concept guides">
+          <a href="/causal-sandbox/dev/foundations/confounding/">Confounding</a>
+          <a href="/causal-sandbox/dev/foundations/collider-bias/">Collider bias</a>
+          <a href="/causal-sandbox/dev/foundations/positivity/">Positivity and overlap</a>
+          <a href="/causal-sandbox/dev/foundations/inverse-probability-weighting/">IPW</a>
+          <a href="/causal-sandbox/dev/foundations/aipw-double-robustness/">AIPW</a>
+          <a href="/causal-sandbox/dev/foundations/mediator-adjustment/">Mediator adjustment</a>
+          <a href="/causal-sandbox/dev/foundations/tmle/">TMLE</a>
+          <a href="/causal-sandbox/dev/foundations/propensity-score-clipping-trimming/"
+            >Clipping and trimming</a
+          >
+        </nav>
+      </main>
+    </div>
+  </body>
+</html>

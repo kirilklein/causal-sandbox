@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" />
+    <base href="/causal-sandbox/dev/foundations/" />
+    <script>
+      let preference = "system";
+      try {
+        const saved = localStorage.getItem("causal-sandbox-theme");
+        if (["light", "dark"].includes(saved)) preference = saved;
+      } catch (error) {
+        if (error.name !== "SecurityError") throw error;
+      }
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.dataset.theme =
+        preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : preference;
+    </script>
+    <meta
+      name="description"
+      content="Explore AIPW and double robustness interactively. Misspecify the outcome model, the propensity model, or both, and compare estimates with known truth."
+    />
+    <link
+      rel="canonical"
+      href="https://kirilklein.github.io/causal-sandbox/aipw-double-robustness/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kirilklein.github.io/causal-sandbox/aipw-double-robustness/"
+    />
+    <meta
+      property="og:title"
+      content="AIPW and Double Robustness: Interactive Guide"
+    />
+    <meta
+      property="og:description"
+      content="Change the outcome and treatment models separately to see what double robustness does—and does not—protect against."
+    />
+    <meta
+      property="og:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="AIPW and Double Robustness: Interactive Guide"
+    />
+    <meta
+      name="twitter:description"
+      content="Change the outcome and treatment models separately to see what double robustness does—and does not—protect against."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirilklein.github.io/causal-sandbox/screenshot.png"
+    />
+    <link rel="icon" type="image/svg+xml" href="/causal-sandbox/dev/foundations/assets/brand-BR7AOR4r.svg" />
+    <title>AIPW and Double Robustness: Interactive Guide</title>
+    <script
+      data-goatcounter="https://ckirkle.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/events-B779v5TJ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/glossary-Cn9xhfdQ.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/simulation-BOxkiD6q.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/theme-Vjupx5_i.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/foundations-progress-CLDiwUAt.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/brand--vQh_tom.js"></script>
+    <script type="module" crossorigin src="/causal-sandbox/dev/foundations/assets/main-hzDGxJqj.js"></script>
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/theme-UUf_kNuS.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/main-DCVcMBu0.css">
+    <link rel="stylesheet" crossorigin href="/causal-sandbox/dev/foundations/assets/style-Cs9p3pzY.css">
+  </head>
+  <body data-lesson="double-robustness">
+    <div id="app">
+      <main>
+        <h1>AIPW and double robustness</h1>
+        <p>
+          Combine outcome predictions with a propensity-weighted correction,
+          then make either model—or both models—too simple.
+        </p>
+      </main>
+    </div>
+    <article class="concept-content" aria-labelledby="aipw-heading">
+      <h2 id="aipw-heading">What does double robustness guarantee?</h2>
+      <p class="concept-answer">
+        With valid causal assumptions and sufficient overlap, AIPW can approach
+        the true effect as samples grow if either the outcome model or the
+        treatment propensity model consistently learns the correct relationship.
+        This is double robustness.
+      </p>
+      <h3>Try it in the experiment</h3>
+      <ol>
+        <li>Start with both models capturing the curved relationships.</li>
+        <li>
+          Make one model too simple, then restore it and change the other.
+        </li>
+        <li>Make both too simple and redraw several samples.</li>
+      </ol>
+      <p class="concept-note">
+        Double robustness does not fix an invalid adjustment set, unmeasured
+        confounding, or absent overlap. It need not give the closest estimate in
+        this sample.
+      </p>
+      <details>
+        <summary>Precise guarantee and limits</summary>
+        <p>
+          Under causal identification assumptions and regularity conditions,
+          AIPW is consistent if either model is correctly specified and
+          consistently estimated. Positivity requires that people at each
+          relevant combination of adjustment variables can receive either
+          treatment. See
+          <a href="https://pubmed.ncbi.nlm.nih.gov/16401269/"
+            >Bang &amp; Robins (2005)</a
+          >.
+        </p>
+        <p>
+          If both models are misspecified, there is no general guarantee,
+          although particular errors can cancel. Double robustness also does not
+          guarantee lower mean squared error than other estimators. See
+          <a href="https://doi.org/10.1214/07-STS227"
+            >Kang &amp; Schafer (2007)</a
+          >.
+        </p>
+      </details>
+      <nav class="concept-links" aria-label="Related causal inference concepts">
+        <h3>Continue exploring</h3>
+        <ul>
+          <li>
+            <a href="?lesson=misspecification"
+              >Separate causal specification from model misspecification</a
+            >
+          </li>
+          <li>
+            <a href="inverse-probability-weighting/"
+              >Review the weighting component</a
+            >
+          </li>
+          <li>
+            <a href="tmle/">Build the correction into predictions with TMLE</a>
+          </li>
+          <li><a href="positivity/">Test the overlap requirement</a></li>
+        </ul>
+      </nav>
+    </article>
+  </body>
+</html>
