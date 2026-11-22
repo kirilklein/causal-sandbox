@@ -75,8 +75,6 @@ export const activities = {
     },
     {
       id: "mediator",
-      writing:
-        "Write the path that would be lost if you adjusted for early recovery. Explain why it belongs in the total effect.",
       title: "Keep recovery in the effect",
       text: "Now treatment can improve early recovery, which affects day-12 health. A variable carrying part of the effect is a mediator. Select a set for the total effect, including that route.",
       graph: mediator,
@@ -178,8 +176,6 @@ export const activities = {
     },
     {
       id: "interpret",
-      writing:
-        "Write a two-sentence results paragraph. Give the estimate, its units and the population it describes. Explain one assumption that the calculation needs.",
       title: "Interpret the estimate",
       text: "The crude difference compares the arms as observed. Standardization, outcome regression and weighting each adjust for measured severity in the same 100 patients.",
       experiment: "estimates",
@@ -243,8 +239,6 @@ export const activities = {
     },
     {
       id: "triage",
-      writing:
-        "Write your request to the study team. Name the information you need and what finding would make you revise your interpretation.",
       title: "Choose the next investigation",
       text: "A new analyst has excellent fitted predictions in both arms, adequate measured overlap, and a concern that clinicians use unrecorded symptoms to assign treatment.",
       prompt: "What would you investigate first?",
@@ -261,8 +255,6 @@ export const activities = {
   capstone: [
     {
       id: "target",
-      writing:
-        "Write the effect question in your own words, including both policies and the observation period.",
       title: "Define the job-training question",
       text: "A city offered training to some of 200 eligible applicants. It recorded prior experience, whether an offer was made, attendance and employment six months later. The city wants to decide whether to offer training to everyone eligible.",
       prompt: "Which effect answers the city’s question?",
@@ -273,14 +265,12 @@ export const activities = {
       ],
       correct: 1,
       feedback:
-        "Specify the eligible population, the offer, its alternative, the binary outcome and six-month horizon.",
+        "This effect specifies the eligible population, the offer, its alternative, the binary outcome and six-month horizon.",
     },
     {
       id: "design",
-      writing:
-        "Record your adjustment rationale. Name the path you want to block and the path you want to keep.",
       title: "Defend your adjustment set",
-      text: "Use the proposed study graph. Select variables for the total effect of offering training and justify the choice.",
+      text: "Use the proposed study graph. Select variables for the total effect of offering training.",
       graph: employment,
       prompt: "Why is your set sufficient under the proposed graph?",
       choices: [
@@ -306,9 +296,8 @@ export const activities = {
     },
     {
       id: "report",
-      title: "Write the study conclusion",
-      text: "Give the city a short conclusion in your own words. Include who the result applies to, the comparison, the estimate in percentage points and one condition that matters for interpretation.",
-      writing: "Your study conclusion",
+      title: "Qualify the study conclusion",
+      text: "The city’s report states who the result applies to, the comparison, the estimate in percentage points and one condition that matters for interpretation.",
       prompt: "Which limitation belongs in the report?",
       choices: [
         "Unrecorded motivation could influence both who gets an offer and who finds employment.",
@@ -317,7 +306,7 @@ export const activities = {
       ],
       correct: 0,
       feedback:
-        "Compare your report with the worked interpretation. Among eligible applicants, offering training to everyone is estimated to increase six-month employment by 16 percentage points compared with offering it to nobody, assuming the adjustment accounts for common causes. The estimate does not identify the effect of attending.",
+        "Among eligible applicants, offering training to everyone is estimated to increase six-month employment by 16 percentage points compared with offering it to nobody, assuming the adjustment accounts for common causes. The estimate does not identify the effect of attending.",
     },
   ],
 };

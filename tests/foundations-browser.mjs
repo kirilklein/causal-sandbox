@@ -109,37 +109,20 @@ try {
     await expect(newExample).toBeDisabled();
     await page.getByRole("radio").nth(2).check();
     await newExample.click();
-    const explanation = page.getByLabel(/in your own words/);
-    const save = page.getByRole("button", {
-      name: "Save and see answer choices",
-    });
-    await expect(page.getByRole("radio")).toHaveCount(0);
-    await expect(save).toBeDisabled();
-    const firstText = "Low scorers get tutoring <b>and</b> finish lower.";
-    await explanation.fill(firstText);
-    await expect(save).toBeEnabled();
-    await page.reload();
-    await expect(explanation).toHaveValue(firstText);
+    await expect(page.locator("#patient-pilot")).toContainText(
+      "Yet their average final score is lower",
+    );
+    await expect(page.locator("#patient-pilot textarea")).toHaveCount(0);
     expect(await overflows()).toBe(false);
-    await save.click();
-    await page.getByRole("button", { name: "← Previous step" }).click();
-    await explanation.fill("Edited after seeing the choices.");
-    await save.click();
-    await expect(
-      page.getByRole("radio", { name: /tutored more/ }),
-    ).toBeVisible();
     await page.getByRole("radio").first().check();
     await expect(page.locator("#answer-feedback")).toContainText("Try again");
     await expect(
       page.getByRole("button", { name: "Finish this study" }),
     ).toBeDisabled();
-    await page.getByRole("radio").nth(1).check();
+    await page.getByRole("radio", { name: /tutored more/ }).check();
     await page.getByRole("button", { name: "Finish this study" }).click();
     await page.reload();
-    await expect(page.locator("#pilot-explanation")).toHaveText(firstText);
-    await expect(page.locator("#patient-pilot")).toContainText(
-      "different mixes of pupils",
-    );
+    await expect(page.locator("#patient-pilot textarea")).toHaveCount(0);
     expect(await overflows()).toBe(false);
     await page.locator("#pilot-onward").click();
     const tasks = [
@@ -147,11 +130,7 @@ try {
         "adjustment",
         [
           { graph: "C", choice: 1 },
-          {
-            graph: "C",
-            choice: 0,
-            note: "Adjust for severity; preserve treatment → early recovery → health.",
-          },
+          { graph: "C", choice: 0 },
           { graph: "none", choice: 2 },
         ],
       ],
@@ -166,7 +145,6 @@ try {
           {
             estimates: ["−2.93", "+12.00", "+12.00", "+12.00"],
             choice: 2,
-            note: "Treating all 100 would increase mean day-12 health by 12 points, assuming comparable groups within severity.",
           },
         ],
       ],
@@ -176,29 +154,16 @@ try {
           { settings: [1, 2], choice: 1 },
           { settings: [1], choice: 0 },
           { settings: [1], choice: 2 },
-          {
-            choice: 1,
-            note: "Ask clinicians which symptoms influenced their decisions and whether they also predict outcomes.",
-          },
+          { choice: 1 },
         ],
       ],
       [
         "capstone",
         [
-          {
-            choice: 1,
-            note: "Among eligible applicants, compare six-month employment if everyone versus nobody received an offer.",
-          },
-          {
-            graph: "C",
-            choice: 2,
-            note: "Prior experience affects offers and employment. Attendance is a mediator.",
-          },
+          { choice: 1 },
+          { graph: "C", choice: 2 },
           { number: 16 },
-          {
-            choice: 0,
-            note: "Among eligible applicants the estimated increase in employment is 16 percentage points if all receive an offer, assuming adjustment suffices.",
-          },
+          { choice: 0 },
         ],
       ],
     ];
@@ -224,11 +189,13 @@ try {
         if (task.choice !== undefined)
           await panel.locator("input[name=reason]").nth(task.choice).check();
         else await panel.getByRole("spinbutton").fill(String(task.number));
-        if (task.note) await panel.getByRole("textbox").fill(task.note);
+        await expect(panel.locator("textarea")).toHaveCount(0);
         if (module === "capstone" && index === 3) {
           await page.goto(home);
           await page.locator(".intro-opening").click();
-          await expect(panel.getByRole("textbox")).toHaveValue(task.note);
+          await expect(
+            panel.locator("input[name=reason]").nth(task.choice),
+          ).toBeChecked();
         }
         await panel.getByRole("button", { name: "Check my decision" }).click();
         await expect(panel.locator("#course-feedback")).not.toBeEmpty();

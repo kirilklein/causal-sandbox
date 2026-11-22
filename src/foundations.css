@@ -89,14 +89,6 @@
   background: var(--accent-surface);
   box-shadow: 0 0 0 2px var(--accent);
 }
-.pilot-review {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-  gap: 0 1.5rem;
-}
-.pilot-review h3 {
-  font-size: 1rem;
-}
 .pilot-axis {
   display: flex;
   justify-content: space-between;
@@ -152,17 +144,6 @@
   margin: 0.5rem 0 1.2rem;
   color: var(--text-secondary);
 }
-.course-activity textarea,
-.patient-pilot textarea {
-  display: block;
-  width: 100%;
-  padding: 0.6rem;
-  font: inherit;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-}
 .course-activity input[type="number"] {
   width: 7rem;
   min-height: 44px;
@@ -193,10 +174,6 @@
 .course-resources {
   margin-top: 1em;
   max-width: 40rem;
-}
-.course-report {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .course-activity .adjustment-input .quiz-diagram {
   grid-template-columns: 1fr;

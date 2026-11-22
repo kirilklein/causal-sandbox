@@ -96,8 +96,9 @@ function summary() {
   const next = modules[modules.indexOf(module) + 1];
   const scores = steps.filter((s) => records[s.id]?.first?.correct).length;
   const finished = completedModules().length;
+  const estimate = steps.find((s) => s.number !== undefined);
   return `<h2 tabindex="-1">${next ? "Module complete" : "Your final study"}</h2>
- ${next ? `<p>${module.goal}</p>` : `<dl class="study-summary">${steps.map((s) => `<dt>${s.title}</dt><dd class="course-report">${s.writing ? escapeText(records[s.id]?.report) : escapeText(records[s.id]?.answer) + " percentage points"}</dd>`).join("")}</dl><ul>${steps.map((s) => `<li>${s.title}: ${records[s.id]?.first?.correct ? "correct on first submission" : "revised after feedback"}</li>`).join("")}</ul><p>${scores} of ${steps.length} decisions correct on first submission. Your written conclusion is self-reviewed against the worked interpretation.</p><details><summary>Review the worked interpretation</summary><p>${steps.at(-1).feedback}</p></details>`}
+ ${next ? `<p>${module.goal}</p>` : `<dl class="study-summary"><dt>${estimate.title}</dt><dd>${+estimate.number.toFixed(2)} ${estimate.unit}</dd><dt>Conclusion</dt><dd>${steps.at(-1).feedback}</dd></dl><ul>${steps.map((s) => `<li>${s.title}: ${records[s.id]?.first?.correct ? "correct on first submission" : "revised after feedback"}</li>`).join("")}</ul><p>${scores} of ${steps.length} decisions correct on first submission.</p>`}
  <p>${finished} of 6 modules completed in this browser.</p>
  <a class="primary" href="${next?.href || learningUrl("learn")}">${next ? "Continue: " + next.title : "View course modules"} →</a>
  <button type="button" data-back>Review last activity</button>`;
@@ -126,9 +127,7 @@ function render(focus = true) {
     .join("");
   panel.innerHTML = `<p class="sample-note">Activity ${position + 1} of ${steps.length}</p><h2 tabindex="-1">${step.title}</h2><p>${step.text}</p>
  ${control}<div id="course-result" aria-live="polite">${experimentResult(step.experiment, r.setting || 0, r.severity)}</div>
- <form>${step.graph ? adjustmentMarkup(step.graph) : ""}
- ${step.writing ? `<label for="study-report">${step.writing}</label><textarea id="study-report" rows="5" required maxlength="2500">${escapeText(r.report)}</textarea>` : ""}
- <fieldset><legend>${step.prompt}</legend>${options ?? `<label><input type="number" name="number" step="any" required value="${escapeText(r.answer)}"> ${step.unit}</label>`}</fieldset>
+ <form>${step.graph ? adjustmentMarkup(step.graph) : ""} <fieldset><legend>${step.prompt}</legend>${options ?? `<label><input type="number" name="number" step="any" required value="${escapeText(r.answer)}"> ${step.unit}</label>`}</fieldset>
  <p id="course-feedback" role="status"></p><button class="primary" type="submit">${r.passed ? (position === steps.length - 1 ? "Finish module" : "Next activity") : "Check my decision"}</button></form>
  ${position ? '<button data-back class="pilot-back text-button">← Previous activity</button>' : ""}`;
   const form = panel.querySelector("form"),
@@ -150,7 +149,6 @@ function render(focus = true) {
   form.addEventListener("input", (event) => {
     if (event.target.name === "reason") r.answer = Number(event.target.value);
     else if (event.target.name === "number") r.answer = event.target.value;
-    else if (event.target.id === "study-report") r.report = event.target.value;
     else return;
     clearCheck();
   });
@@ -196,11 +194,6 @@ function render(focus = true) {
         "Select an adjustment set on the graph or choose one of the options below it.";
       return;
     }
-    if (step.writing && !r.report?.trim()) {
-      feedback.textContent =
-        "Add your reasoning before checking this decision.";
-      return;
-    }
     const judgment = step.graph ? gradeAdjustment(step.graph, r.graph) : null;
     const answerCorrect =
       step.number !== undefined
@@ -210,7 +203,6 @@ function render(focus = true) {
     r.first ??= {
       answer: r.answer,
       graph: r.graph,
-      report: r.report,
       correct: r.passed,
     };
     r.attempts = (r.attempts || 0) + 1;

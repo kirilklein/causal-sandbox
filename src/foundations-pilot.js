@@ -18,15 +18,14 @@ const stages = [
   "explain",
   "reveal",
   "repeat",
-  "write",
   "school",
   "done",
 ];
 const saved = readPilot();
 const state = {
   stage:
-    saved.stage === "transfer"
-      ? "write"
+    saved.stage === "transfer" || saved.stage === "write"
+      ? "school"
       : stages.includes(saved.stage)
         ? saved.stage
         : "predict",
@@ -38,10 +37,7 @@ const state = {
     : null,
   severity: SEVERITIES.includes(saved.severity) ? saved.severity : 7,
   sampleSize: [100, 1600].includes(saved.sampleSize) ? saved.sampleSize : 0,
-  explanation: typeof saved.explanation === "string" ? saved.explanation : "",
 };
-if (typeof saved.explanationFirst === "string")
-  state.explanationFirst = saved.explanationFirst;
 const questions = {
   predict: {
     prompt: "Does the lower treated mean show that treatment caused harm?",
@@ -84,7 +80,8 @@ const questions = {
     correct: 2,
   },
   school: {
-    prompt: "Which explanation fits the school result?",
+    prompt:
+      "How can that happen, and what would ten times as many pupils under the same rule change?",
     choices: [
       "Tutoring harms pupils overall. Ten times as many pupils would show the harm more precisely.",
       "Pupils who start low are tutored more and also finish lower. More pupils would narrow the spread of estimates without removing the gap.",
@@ -256,24 +253,14 @@ function render(focus = true) {
     case "repeat":
       body = repeats();
       break;
-    case "write":
-      body = `<p>A school offers extra tutoring mainly to pupils with low baseline scores. Within each starting-score group, tutored pupils improve more. Yet their average final score is lower than that of other pupils.</p>
-        <label for="explanation">How could that happen? What would enrolling ten times as many pupils under the same rule change? Answer in your own words.</label>
-        <textarea id="explanation" rows="5" maxlength="2500"></textarea>
-        <p>Your answer stays in this browser.</p>
-        <button class="primary" data-next ${state.explanation.trim() ? "" : "disabled"}>Save and see answer choices</button>`;
-      break;
     case "school":
-      body = ask("school", "Finish this study");
+      body =
+        "<p>A school offers extra tutoring mainly to pupils with low baseline scores. Within each starting-score group, tutored pupils improve more. Yet their average final score is lower than that of other pupils.</p>" +
+        ask("school", "Finish this study");
       break;
     case "done":
       body =
-        '<p>You explained how severity-based treatment assignment can reverse a comparison, and why a larger study can narrow its uncertainty while preserving the bias.</p><div class="pilot-review">' +
-        (state.explanationFirst
-          ? '<section><h3>Your first explanation</h3><p class="course-report" id="pilot-explanation"></p></section>'
-          : "") +
-        "<section><h3>Check it for three points</h3><ul><li>Starting score influences both who gets tutoring and the final score.</li><li>So the two groups average different mixes of pupils.</li><li>A larger sample narrows the spread of estimates but keeps the misleading comparison.</li></ul></section></div>" +
-        '<a class="primary" id="pilot-onward" href="' +
+        '<p>You explained how severity-based treatment assignment can reverse a comparison, and why a larger study can narrow its uncertainty while preserving the bias.</p><a class="primary" id="pilot-onward" href="' +
         learningUrl("foundations-adjustment") +
         '">Continue to adjustment choices →</a><p><a href="' +
         learningUrl("trajectory-landscape") +
@@ -287,7 +274,6 @@ function render(focus = true) {
     "Compare with the two possible futures",
     "Repeat the study",
     "Explain a new case",
-    "Choose an explanation",
     "Study complete",
   ];
   const index = stages.indexOf(state.stage);
@@ -300,11 +286,6 @@ function render(focus = true) {
       ? '<button class="text-button pilot-back" id="pilot-back">← Previous step</button>'
       : "");
   if (state.stage === "assign") updateComparison();
-  if (state.stage === "write")
-    panel.querySelector("#explanation").value = state.explanation;
-  if (state.stage === "done" && state.explanationFirst)
-    panel.querySelector("#pilot-explanation").textContent =
-      state.explanationFirst;
   if (focus) panel.querySelector("h2").focus();
 }
 panel.addEventListener("change", (event) => {
@@ -330,10 +311,6 @@ panel.addEventListener("input", (event) => {
     state.assignment = Number(event.target.value);
     updateComparison();
     persist();
-  } else if (event.target.id === "explanation") {
-    state.explanation = event.target.value;
-    panel.querySelector("[data-next]").disabled = !state.explanation.trim();
-    persist();
   }
 });
 panel.addEventListener("click", (event) => {
@@ -346,11 +323,8 @@ panel.addEventListener("click", (event) => {
     persist();
     return;
   }
-  if (event.target.matches("[data-next]")) {
-    if (state.stage === "write")
-      state.explanationFirst ??= state.explanation.trim();
-    state.stage = stages[index + 1];
-  } else if (event.target.id === "pilot-back") state.stage = stages[index - 1];
+  if (event.target.matches("[data-next]")) state.stage = stages[index + 1];
+  else if (event.target.id === "pilot-back") state.stage = stages[index - 1];
   else if (event.target.id === "repeat")
     state.sampleSize = state.sampleSize ? 1600 : 100;
   else if (event.target.id === "pilot-onward") {
