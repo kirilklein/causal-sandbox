@@ -15,7 +15,7 @@ import {
   setupLessonNavigation,
 } from "./lesson-navigation.js";
 import { createTrajectoryRenderer } from "./trajectory-render.js";
-import { ease, mix } from "./trajectory-model.js";
+import { BENEFIT, ease, mix } from "./trajectory-model.js";
 import { populationMarkup } from "./what-if-population.js";
 
 const scenes = [
@@ -100,7 +100,7 @@ document.querySelector("#app").innerHTML =
         ? `<div id="opening-prediction" class="opening-trial"><label for="patient-prediction">Does declining health after treatment show that treatment harmed this patient?</label>
       <select id="patient-prediction"><option value="">Make a prediction</option><option value="harm">Yes, their health declined</option><option value="unknown">We need their health without treatment</option><option value="unsure">I’m unsure</option></select><p id="prediction-feedback" role="status"></p></div><section id="opening-trial" class="opening-trial" hidden><h2>What would a randomized comparison show?</h2>
       <p>Give each of the 100 patients an independent coin flip for treatment. Predict how close the treated and untreated group difference will be to +12 points.</p>
-      <button id="run-trial">Randomly assign treatment</button><p role="status" id="trial-result"></p>
+      <button id="run-trial">Randomly assign treatment</button><p role="status" id="trial-result"></p><p id="trial-history" hidden></p>
       <fieldset id="target-answer"><legend>Which effect does this trial estimate?</legend>
         <label><input type="radio" name="target" value="before">Change since day 4 among treated patients</label>
         <label><input type="radio" name="target" value="total">Mean day-12 health if all 100 received treatment on day 4 versus none</label>
@@ -359,11 +359,23 @@ if (courseOpening) {
     updateTarget();
   });
   updateTarget();
+  const signed = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
   function showTrial() {
-    const { arms } = observedComparison(randomizedPatients(4217 + trialNumber));
-    const difference = arms[1].mean - arms[0].mean;
+    const recent = [];
+    let arms;
+    for (let n = Math.max(1, trialNumber - 2); n <= trialNumber; n++) {
+      ({ arms } = observedComparison(randomizedPatients(4217 + n)));
+      const tag = n === trialNumber ? "strong" : "span";
+      recent.push(
+        `<${tag} data-trial="${n}">Trial ${n}: ${signed(arms[1].mean - arms[0].mean)}</${tag}>`,
+      );
+    }
     $("trial-result").textContent =
-      `Day-12 means: ${arms[1].mean.toFixed(2)} treated, ${arms[0].mean.toFixed(2)} untreated. Difference: ${difference.toFixed(2)} points. Random assignment can leave groups imbalanced by chance.`;
+      `Day-12 means: ${arms[1].mean.toFixed(2)} treated, ${arms[0].mean.toFixed(2)} untreated. Difference: ${signed(arms[1].mean - arms[0].mean)} points. One assignment can leave the groups imbalanced by chance; across assignments, they are comparable on average.`;
+    $("trial-history").innerHTML =
+      `<span>Simulator truth: ${signed(BENEFIT)}</span> ${recent.join(" ")}`;
+    $("trial-history").hidden = trialNumber < 2;
+    $("run-trial").textContent = "Reassign the same patients";
   }
   if (trialNumber) showTrial();
   $("run-trial").addEventListener("click", () => {

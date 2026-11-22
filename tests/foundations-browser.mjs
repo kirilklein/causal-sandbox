@@ -16,6 +16,7 @@ try {
     await page
       .getByRole("link", { name: "Start the course →", exact: true })
       .click();
+    await expect(page.locator("#trajectory-next")).toBeDisabled();
     await page.locator("#patient-prediction").selectOption("unknown");
     for (let scene = 0; scene < 3; scene++) {
       const next = page.locator("#trajectory-next");
@@ -25,6 +26,32 @@ try {
     await page
       .getByRole("button", { name: "Randomly assign treatment" })
       .click();
+    const reassign = page.getByRole("button", {
+      name: "Reassign the same patients",
+    });
+    for (let trial = 2; trial <= 4; trial++) await reassign.click();
+    const checkRecent = async () => {
+      await expect(page.locator("#trial-history [data-trial]")).toHaveText([
+        "Trial 2: +16.72",
+        "Trial 3: +13.30",
+        "Trial 4: +4.95",
+      ]);
+      await expect(page.locator("#trial-history strong")).toHaveText(
+        "Trial 4: +4.95",
+      );
+      await expect(page.locator("#trial-result")).toContainText(
+        "Difference: +4.95 points",
+      );
+      await expect(page.locator("#trial-history")).toContainText(
+        "Simulator truth: +12.00",
+      );
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+      ).toBe(false);
+    };
+    await checkRecent();
     const before = page.getByRole("radio", { name: /Change since day 4/ });
     await before.check();
     await expect(page.locator("#target-feedback")).toContainText("Try again");
@@ -32,6 +59,7 @@ try {
     await expect(page.locator("#opening-next-locked")).toBeDisabled();
     await page.reload();
     await expect(before).toBeChecked();
+    await checkRecent();
     await page.getByRole("radio", { name: /Mean day-12 health/ }).check();
     await expect(page.locator("#target-feedback")).toContainText("Module 1 complete");
     await expect(page.locator("#opening-next")).toBeVisible();

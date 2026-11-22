@@ -201,3 +201,11 @@
   background: var(--surface);
   color: var(--trajectory-muted);
 }
+#trial-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+#trial-history[hidden] {
+  display: none;
+}
