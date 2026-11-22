@@ -313,6 +313,18 @@ window.addEventListener("pageshow", (event) => {
   }
 });
 if (courseOpening) {
+  $("patient-prediction").value = prediction;
+  $("patient-prediction").addEventListener("change", (event) => {
+    prediction = event.target.value;
+    savePilot({
+      openingPrediction: prediction,
+      firstOpeningPrediction: readPilot().firstOpeningPrediction || prediction,
+    });
+    $("prediction-feedback").textContent = prediction
+      ? "Reveal the patient’s other possible future to check your reasoning."
+      : "";
+    $("trajectory-next").disabled = !prediction;
+  });
   const { randomizedPatients, observedComparison } =
     await import("./foundations-study.js");
   const updateTarget = () => {
@@ -336,18 +348,6 @@ if (courseOpening) {
     $("opening-next-locked").hidden = openingComplete;
     $("opening-next").hidden = !openingComplete;
   };
-  $("patient-prediction").value = prediction;
-  $("patient-prediction").addEventListener("change", (event) => {
-    prediction = event.target.value;
-    savePilot({
-      openingPrediction: prediction,
-      firstOpeningPrediction: readPilot().firstOpeningPrediction || prediction,
-    });
-    $("prediction-feedback").textContent = prediction
-      ? "Reveal the patient’s other possible future to check your reasoning."
-      : "";
-    $("trajectory-next").disabled = !prediction;
-  });
   for (const option of $("target-answer").querySelectorAll("input"))
     option.checked = option.value === targetAnswer;
   $("target-answer").addEventListener("change", (event) => {
