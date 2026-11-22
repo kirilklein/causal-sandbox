@@ -14,6 +14,7 @@ const targetMeans = [0, 1].map((arm) =>
   strata.reduce((total, cell) => total + cell[arm].mean / strata.length, 0),
 );
 const format = (value) => value.toFixed(2);
+const signed = (value) => (value >= 0 ? "+" : "−") + format(Math.abs(value));
 function means(values) {
   return `<div class="pilot-means">${["Untreated", "Treated", "Difference"].map((label, i) => `<div><span>${label}</span><strong>${format([...values, values[1] - values[0]][i])}</strong></div>`).join("")}</div><small>Mean day-12 health, in points</small>`;
 }
@@ -112,6 +113,16 @@ export function experimentResult(id, setting, severity = 9) {
             `<section class="course-readout"><strong>${group.name}</strong><p>Employed after an offer: ${group.offer.join(" of ")}.<br>Employed without an offer: ${group.usual.join(" of ")}.</p></section>`,
         )
         .join("");
+    case "estimates": {
+      const [untreated, treated] = predictedMeans();
+      const values = [
+        arms[1].mean - arms[0].mean,
+        observedComparison(patients).standardized,
+        treated - untreated,
+        weightPatients(patients).effect,
+      ];
+      return `<div class="pilot-means course-estimates">${["Crude", "Standardized", "Regression", "Weighted"].map((label, i) => `<div><span>${label}</span><strong>${signed(values[i])}</strong></div>`).join("")}</div><small>Treated minus untreated mean day-12 health, in points</small>`;
+    }
     default:
       return "";
   }

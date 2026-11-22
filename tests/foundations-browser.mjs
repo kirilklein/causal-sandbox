@@ -161,9 +161,10 @@ try {
           { settings: [9], choice: 0 },
           { settings: [1], choice: 1 },
           { number: 66 },
-          { settings: [1], number: 10 },
           { settings: [1], choice: 1 },
+          { settings: [1], number: 10 },
           {
+            estimates: ["−2.93", "+12.00", "+12.00", "+12.00"],
             choice: 2,
             note: "Treating all 100 would increase mean day-12 health by 12 points, assuming comparable groups within severity.",
           },
@@ -205,6 +206,10 @@ try {
       await expect(page).toHaveURL(new RegExp("lesson=foundations-" + module));
       for (const [index, task] of steps.entries()) {
         const panel = page.locator("#course-activity");
+        if (task.estimates)
+          await expect(panel.locator(".course-estimates strong")).toHaveText(
+            task.estimates,
+          );
         if (task.settings)
           for (const value of task.settings)
             await panel.locator("#course-setting").selectOption(String(value));

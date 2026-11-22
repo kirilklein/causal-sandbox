@@ -150,21 +150,9 @@ export const activities = {
         "0.75 × 78 + 0.25 × 30 = 66 points. The treated mean would be 78. Here the target changes the two means equally because the benefit is constant across severity.",
     },
     {
-      id: "weight",
-      title: "Give rare assignments more representation",
-      text: "Inverse probability weighting (IPW) gives a patient a weight of one divided by the probability of receiving their actual treatment. These assignment shares are known in this teaching cohort. Reweight the observed patients and inspect the resulting group mix.",
-      experiment: "weight",
-      prompt:
-        "One of ten patients at severity 9 is untreated. What weight does that patient receive?",
-      number: 10,
-      unit: "units of weight",
-      feedback:
-        "An untreated probability of 1/10 gives weight 10. The one observed untreated outcome represents ten patients at this severity in the weighted untreated arm.",
-    },
-    {
       id: "outcome-model",
       title: "Predict under both treatment choices",
-      text: "Use the same 100 people. A fitted outcome model uses severity and treatment to predict day-12 health. Change which treatment you assign in the prediction. Everyone keeps their own baseline severity.",
+      text: "Return to the 100 patients. Instead of observed group means, a fitted outcome model uses severity and treatment to predict each patient’s day-12 health. Change which treatment you assign in the prediction. Everyone keeps their own baseline severity.",
       experiment: "predict",
       prompt: "Why average both sets of predictions over the same people?",
       choices: [
@@ -177,11 +165,24 @@ export const activities = {
         "Each person contributes a prediction to both population averages. The averages estimate the contrast if the model is adequate and the adjustment assumptions hold.",
     },
     {
+      id: "weight",
+      title: "Give rare assignments more representation",
+      text: "Inverse probability weighting (IPW) gives a patient a weight of one divided by the probability of receiving their actual treatment. These assignment shares are known in this teaching cohort. Reweight the observed patients and inspect the resulting group mix.",
+      experiment: "weight",
+      prompt:
+        "One of ten patients at severity 9 is untreated. What weight does that patient receive?",
+      number: 10,
+      unit: "units of weight",
+      feedback:
+        "An untreated probability of 1/10 gives weight 10. The one observed untreated outcome represents ten patients at this severity in the weighted untreated arm.",
+    },
+    {
       id: "interpret",
       writing:
         "Write a two-sentence results paragraph. Give the estimate, its units and the population it describes. Explain one assumption that the calculation needs.",
       title: "Interpret the estimate",
-      text: "Weighting and standardization now agree. Both methods used the same patients and measured severity.",
+      text: "The crude difference compares the arms as observed. Standardization, outcome regression and weighting each adjust for measured severity in the same 100 patients.",
+      experiment: "estimates",
       prompt: "Which conclusion is defensible?",
       choices: [
         "Every real patient would gain exactly 12 points.",
@@ -190,7 +191,7 @@ export const activities = {
       ],
       correct: 2,
       feedback:
-        "The target is a population average. Comparable patients within severity, consistent treatment and support are still needed.",
+        "The target is a population average. All three adjusted estimates need a well-defined treatment, comparable patients within severity and both treatment choices at every severity. Regression also needs a model that represents the outcome relationship.",
     },
   ],
   trust: [

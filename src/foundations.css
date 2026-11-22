@@ -181,6 +181,15 @@
 .course-readout p {
   margin: 0.25rem 0;
 }
+.course-estimates {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 0.75rem;
+}
+@media (min-width: 36rem) {
+  .course-estimates {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
 .course-resources {
   margin-top: 1em;
   max-width: 40rem;
