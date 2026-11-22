@@ -48,6 +48,8 @@ if (page === "glossary") {
     await import("./delta-method-lesson.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
+  } else if (lesson === "observed-difference") {
+    await import("./foundations-pilot.js");
   } else if (lesson === "what-if") {
     await import("./what-if.js");
   } else if (lesson === "trajectory-landscape") {

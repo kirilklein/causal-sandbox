@@ -75,7 +75,12 @@ export const mapRegions = [
         name: "Common causes",
         description:
           "A common cause of treatment and outcome can make a helpful treatment look harmful. Adjustment tries to account for measured differences that distort the comparison.",
-        lessons: ["confounding", "trajectory-landscape", "repeated-bias"],
+        lessons: [
+          "confounding",
+          "observed-difference",
+          "trajectory-landscape",
+          "repeated-bias",
+        ],
         connection: [
           "methods",
           "Weighting and outcome regression are two ways to account for measured confounders, under the causal assumptions and suitable model conditions.",

@@ -1,3 +1,4 @@
+import { readPilot, clearPilot } from "./foundations-progress.js";
 import "./lesson-navigation.css";
 import { clearProgress, readProgress } from "./progress.js";
 
@@ -26,10 +27,13 @@ export function lessonNavigation({
     completed.has(slug),
   ).length;
   const hasSavedResults =
-    completedCount > 0 || Object.keys(progress.answers).length > 0;
+    readPilot().current ||
+    completedCount > 0 ||
+    Object.keys(progress.answers).length > 0;
   const status = learningPage
     ? {
         "what-if": "Opening lesson",
+        "observed-difference": "Foundations pilot",
         "concept-map": "Concept map",
         learn: "Learning choices",
         topics: "Topic browser",
@@ -71,6 +75,7 @@ export function lessonNavigation({
             .join("")}</ol></section>`,
       )
       .join("")}
+    <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=observed-difference">Foundations patient study</a>
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=final-quiz" ${learningPage === "final-quiz" ? 'aria-current="step"' : ""}>Final quiz</a>
     <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2><p class="menu-note">Optional detours that go deeper.</p>
       ${optionalChapters
@@ -134,6 +139,7 @@ export function setupLessonNavigation() {
   document.querySelector("#reset-progress")?.addEventListener("click", () => {
     if (!confirm("Reset your lesson progress and saved answers?")) return;
     clearProgress();
+    clearPilot();
     location.reload();
   });
   if (app.dataset.lessonNavigationSetup) return;
