@@ -78,6 +78,25 @@
 .pilot-bars .arm-0 {
   background: var(--arm-0);
 }
+.pilot-bars span {
+  flex: 1;
+  display: flex;
+  align-items: end;
+  height: 100%;
+  cursor: pointer;
+}
+.pilot-bars .selected {
+  background: var(--accent-surface);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.pilot-review {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0 1.5rem;
+}
+.pilot-review h3 {
+  font-size: 1rem;
+}
 .pilot-axis {
   display: flex;
   justify-content: space-between;
@@ -133,7 +152,8 @@
   margin: 0.5rem 0 1.2rem;
   color: var(--text-secondary);
 }
-.course-activity textarea {
+.course-activity textarea,
+.patient-pilot textarea {
   display: block;
   width: 100%;
   padding: 0.6rem;

@@ -65,6 +65,18 @@ try {
     await page.keyboard.press("End");
     await expect(page.locator("#comparison")).toContainText("−2.93");
     await expect(page.locator("#cell")).toContainText("Treated: 9 of 10");
+    const column = page.locator('#comparison [data-severity="3"]').first();
+    if (width < 500) await column.tap();
+    else await column.click();
+    await expect(page.locator("#severity")).toHaveValue("3");
+    await expect(page.locator("#cell")).toContainText("Severity 3");
+    await expect(page.locator("#cell")).toContainText(
+      "Treated minus untreated: +12.00",
+    );
+    await expect(page.locator('#comparison [data-severity="3"]')).toHaveClass([
+      "selected",
+      "selected",
+    ]);
     const overflows = () =>
       page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     expect(await overflows()).toBe(false);
@@ -87,15 +99,48 @@ try {
     await page.getByRole("button", { name: /Run 60/ }).click();
     await page.getByRole("button", { name: /Increase to/ }).click();
     await expect(page.locator(".pilot-repeats")).toHaveCount(2);
+    await expect(page.locator("#patient-pilot")).not.toContainText(
+      "cluster more tightly around",
+    );
     expect(await overflows()).toBe(false);
-    await page.getByRole("button", { name: "Try another hospital" }).click();
+    const newExample = page.getByRole("button", { name: "Try a new example" });
     await page.getByRole("radio").first().check();
+    await expect(page.locator("#answer-feedback")).toContainText("Try again");
+    await expect(newExample).toBeDisabled();
+    await page.getByRole("radio").nth(2).check();
+    await newExample.click();
+    const explanation = page.getByLabel(/in your own words/);
+    const save = page.getByRole("button", {
+      name: "Save and see answer choices",
+    });
+    await expect(page.getByRole("radio")).toHaveCount(0);
+    await expect(save).toBeDisabled();
+    const firstText = "Low scorers get tutoring <b>and</b> finish lower.";
+    await explanation.fill(firstText);
+    await expect(save).toBeEnabled();
+    await page.reload();
+    await expect(explanation).toHaveValue(firstText);
+    expect(await overflows()).toBe(false);
+    await save.click();
+    await page.getByRole("button", { name: "← Previous step" }).click();
+    await explanation.fill("Edited after seeing the choices.");
+    await save.click();
+    await expect(
+      page.getByRole("radio", { name: /tutored more/ }),
+    ).toBeVisible();
+    await page.getByRole("radio").first().check();
+    await expect(page.locator("#answer-feedback")).toContainText("Try again");
     await expect(
       page.getByRole("button", { name: "Finish this study" }),
     ).toBeDisabled();
     await page.getByRole("radio").nth(1).check();
     await page.getByRole("button", { name: "Finish this study" }).click();
     await page.reload();
+    await expect(page.locator("#pilot-explanation")).toHaveText(firstText);
+    await expect(page.locator("#patient-pilot")).toContainText(
+      "different mixes of pupils",
+    );
+    expect(await overflows()).toBe(false);
     await page.locator("#pilot-onward").click();
     const tasks = [
       [

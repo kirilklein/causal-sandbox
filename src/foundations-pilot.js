@@ -18,12 +18,18 @@ const stages = [
   "explain",
   "reveal",
   "repeat",
-  "transfer",
+  "write",
+  "school",
   "done",
 ];
 const saved = readPilot();
 const state = {
-  stage: stages.includes(saved.stage) ? saved.stage : "predict",
+  stage:
+    saved.stage === "transfer"
+      ? "write"
+      : stages.includes(saved.stage)
+        ? saved.stage
+        : "predict",
   assignment: [0, 25, 50, 75, 100].includes(saved.assignment)
     ? saved.assignment
     : 100,
@@ -32,7 +38,10 @@ const state = {
     : null,
   severity: SEVERITIES.includes(saved.severity) ? saved.severity : 7,
   sampleSize: [100, 1600].includes(saved.sampleSize) ? saved.sampleSize : 0,
+  explanation: typeof saved.explanation === "string" ? saved.explanation : "",
 };
+if (typeof saved.explanationFirst === "string")
+  state.explanationFirst = saved.explanationFirst;
 const questions = {
   predict: {
     prompt: "Does the lower treated mean show that treatment caused harm?",
@@ -60,18 +69,31 @@ const questions = {
     ],
     correct: 1,
   },
-  transfer: {
-    prompt:
-      "A larger hospital uses the same assignment rule. Its crude difference is precisely negative. What would help you assess harm?",
+  repeat: {
+    prompt: "What changed when each study grew from 100 to 1,600 patients?",
     choices: [
-      "Collect more patients under the same rule to eliminate the difference.",
-      "Compare treated and untreated patients of the same baseline severity, then average using the hospital’s severity mix.",
-      "Conclude harm because a precise difference excludes zero.",
+      "The estimates moved closer to +12.",
+      "The estimates spread out more widely.",
+      "The estimates clustered more tightly, and their center stayed away from +12.",
     ],
     replies: [
-      "Try again. More patients can reduce sampling noise while leaving the severity imbalance intact.",
-      "That comparison addresses measured severity when both arms are represented. A causal interpretation still depends on having measured the important common causes.",
-      "Try again. Precision describes variation across samples. It cannot tell you whether the comparison groups started out alike.",
+      "Try again. Compare each plot’s mean with the +12 truth line.",
+      "Try again. Compare the range under each plot.",
+      "Yes. More patients reduce variation between samples. The severity imbalance remains, so the bias does too.",
+    ],
+    correct: 2,
+  },
+  school: {
+    prompt: "Which explanation fits the school result?",
+    choices: [
+      "Tutoring harms pupils overall. Ten times as many pupils would show the harm more precisely.",
+      "Pupils who start low are tutored more and also finish lower. More pupils would narrow the spread of estimates without removing the gap.",
+      "The gap is chance in a small school. Ten times as many pupils would make it disappear.",
+    ],
+    replies: [
+      "Try again. Within each starting-score group, tutored pupils improve more.",
+      "Yes. To estimate the effect, compare pupils with the same starting score, then average over one shared mix of starting scores.",
+      "Try again. A larger sample reduces chance variation. It leaves the difference in starting scores between the groups.",
     ],
     correct: 1,
   },
@@ -131,13 +153,15 @@ function ask(id, action) {
     <p role="status" id="answer-feedback">${question.replies[selected] || ""}</p>
     <button class="primary" data-next ${canContinue ? "" : "disabled"}>${action}</button>`;
 }
-function distribution(result) {
+function distribution(result, selected) {
   const strips = [1, 0].map((arm) => {
     const bars = result.strata
-      .map(
-        (cell) =>
-          `<i class="arm-${arm}" style="height:${cell[arm].count * 10}%"></i>`,
-      )
+      .map((cell, s) => {
+        const bar = `<i class="arm-${arm}" style="height:${cell[arm].count * 10}%"></i>`;
+        return selected === undefined
+          ? bar
+          : `<span data-severity="${s}"${s === selected ? ' class="selected"' : ""}>${bar}</span>`;
+      })
       .join("");
     return `<div class="pilot-strip"><span>${arm ? "Treated" : "Untreated"}</span>
       <div class="pilot-bars" aria-hidden="true">${bars}</div></div>`;
@@ -146,7 +170,9 @@ function distribution(result) {
 }
 function cellText(result) {
   const [untreated, treated] = result.strata[state.severity];
-  return `Severity ${state.severity} · Treated: ${treated.count} of 10, mean ${format(treated.mean)}. Untreated: ${untreated.count} of 10, mean ${format(untreated.mean)} points.`;
+  if (!treated.count || !untreated.count)
+    return `Severity ${state.severity} · Treated: ${treated.count} of 10. Untreated: ${untreated.count} of 10. No within-group comparison: one arm is empty.`;
+  return `Severity ${state.severity} · Treated: ${treated.count} of 10, mean ${format(treated.mean)}. Untreated: ${untreated.count} of 10, mean ${format(untreated.mean)} points. Treated minus untreated: ${signed(treated.mean - untreated.mean)} points.`;
 }
 function experiment() {
   const options = SEVERITIES.map(
@@ -156,7 +182,7 @@ function experiment() {
     <input id="assignment" type="range" min="0" max="100" step="25" value="${state.assignment}">
     <div class="pilot-axis"><span>Equal shares</span><span>Favor more severe</span></div>
     <div id="comparison" aria-live="polite"></div>
-    <label for="severity">Inspect baseline severity</label><select id="severity">${options}</select>
+    <label for="severity">Inspect baseline severity (or tap a bar column)</label><select id="severity">${options}</select>
     <p id="cell" role="status"></p><button class="primary" data-next>Explain the difference</button>`;
 }
 function updateComparison() {
@@ -166,7 +192,7 @@ function updateComparison() {
       ? null
       : observedComparison(observedPatients(state.previousAssignment / 100));
   document.querySelector("#comparison").innerHTML =
-    means(result, previous) + distribution(result);
+    means(result, previous) + distribution(result, state.severity);
   panel.querySelector("[data-next]").disabled = previous === null;
   document.querySelector("#cell").textContent = cellText(result);
 }
@@ -192,9 +218,7 @@ function repeats() {
   if (state.sampleSize === 100)
     action =
       '<button class="primary" id="repeat">Increase to 1,600 patients per study</button>';
-  if (state.sampleSize === 1600)
-    action =
-      '<p>With more patients the crude estimates cluster more tightly around the biased comparison.</p><button class="primary" data-next>Try another hospital</button>';
+  if (state.sampleSize === 1600) action = ask("repeat", "Try a new example");
   return `<p>Return to the rule that favors treating sicker patients. Predict where repeated crude differences will cluster. Each dot represents a new sample from the same patient population.</p>${figures}${action}`;
 }
 function render(focus = true) {
@@ -232,12 +256,24 @@ function render(focus = true) {
     case "repeat":
       body = repeats();
       break;
-    case "transfer":
-      body = ask("transfer", "Finish this study");
+    case "write":
+      body = `<p>A school offers extra tutoring mainly to pupils with low baseline scores. Within each starting-score group, tutored pupils improve more. Yet their average final score is lower than that of other pupils.</p>
+        <label for="explanation">How could that happen? What would enrolling ten times as many pupils under the same rule change? Answer in your own words.</label>
+        <textarea id="explanation" rows="5" maxlength="2500"></textarea>
+        <p>Your answer stays in this browser.</p>
+        <button class="primary" data-next ${state.explanation.trim() ? "" : "disabled"}>Save and see answer choices</button>`;
+      break;
+    case "school":
+      body = ask("school", "Finish this study");
       break;
     case "done":
       body =
-        '<p>You explained how severity-based treatment assignment can reverse a comparison, and why a larger study can narrow its uncertainty while preserving the bias.</p><a class="primary" id="pilot-onward" href="' +
+        '<p>You explained how severity-based treatment assignment can reverse a comparison, and why a larger study can narrow its uncertainty while preserving the bias.</p><div class="pilot-review">' +
+        (state.explanationFirst
+          ? '<section><h3>Your first explanation</h3><p class="course-report" id="pilot-explanation"></p></section>'
+          : "") +
+        "<section><h3>Check it for three points</h3><ul><li>Starting score influences both who gets tutoring and the final score.</li><li>So the two groups average different mixes of pupils.</li><li>A larger sample narrows the spread of estimates but keeps the misleading comparison.</li></ul></section></div>" +
+        '<a class="primary" id="pilot-onward" href="' +
         learningUrl("foundations-adjustment") +
         '">Continue to adjustment choices →</a><p><a href="' +
         learningUrl("trajectory-landscape") +
@@ -250,7 +286,8 @@ function render(focus = true) {
     "Explain the reversal",
     "Compare with the two possible futures",
     "Repeat the study",
-    "Apply it to another hospital",
+    "Explain a new case",
+    "Choose an explanation",
     "Study complete",
   ];
   const index = stages.indexOf(state.stage);
@@ -263,6 +300,11 @@ function render(focus = true) {
       ? '<button class="text-button pilot-back" id="pilot-back">← Previous step</button>'
       : "");
   if (state.stage === "assign") updateComparison();
+  if (state.stage === "write")
+    panel.querySelector("#explanation").value = state.explanation;
+  if (state.stage === "done" && state.explanationFirst)
+    panel.querySelector("#pilot-explanation").textContent =
+      state.explanationFirst;
   if (focus) panel.querySelector("h2").focus();
 }
 panel.addEventListener("change", (event) => {
@@ -278,7 +320,7 @@ panel.addEventListener("change", (event) => {
     persist();
   } else if (event.target.id === "severity") {
     state.severity = Number(event.target.value);
-    document.querySelector("#cell").textContent = cellText(comparison());
+    updateComparison();
     persist();
   }
 });
@@ -288,12 +330,27 @@ panel.addEventListener("input", (event) => {
     state.assignment = Number(event.target.value);
     updateComparison();
     persist();
+  } else if (event.target.id === "explanation") {
+    state.explanation = event.target.value;
+    panel.querySelector("[data-next]").disabled = !state.explanation.trim();
+    persist();
   }
 });
 panel.addEventListener("click", (event) => {
   const index = stages.indexOf(state.stage);
-  if (event.target.matches("[data-next]")) state.stage = stages[index + 1];
-  else if (event.target.id === "pilot-back") state.stage = stages[index - 1];
+  const column = event.target.closest("[data-severity]");
+  if (column) {
+    state.severity = Number(column.dataset.severity);
+    panel.querySelector("#severity").value = state.severity;
+    updateComparison();
+    persist();
+    return;
+  }
+  if (event.target.matches("[data-next]")) {
+    if (state.stage === "write")
+      state.explanationFirst ??= state.explanation.trim();
+    state.stage = stages[index + 1];
+  } else if (event.target.id === "pilot-back") state.stage = stages[index - 1];
   else if (event.target.id === "repeat")
     state.sampleSize = state.sampleSize ? 1600 : 100;
   else if (event.target.id === "pilot-onward") {

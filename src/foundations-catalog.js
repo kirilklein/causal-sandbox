@@ -12,7 +12,7 @@ export const modules = [
     title: "Explain a misleading difference",
     goal: "Separate severity-driven bias from the variation between samples.",
     href: "?lesson=observed-difference",
-    minutes: 40,
+    minutes: 35,
     topics: ["confounding", "uncertainty"],
   },
   {
@@ -50,7 +50,7 @@ export const modules = [
     title: "Solve a new study",
     goal: "Write and defend a conclusion about offering job training.",
     href: "?lesson=foundations-capstone",
-    minutes: 35,
+    minutes: 40,
     topics: ["leaving-the-sandbox", "final-quiz"],
   },
 ];
