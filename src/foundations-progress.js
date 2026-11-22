@@ -41,6 +41,8 @@ export function clearPilot() {
 export function pilotDestination(saved) {
   const active = moduleById[saved.current];
   if (!active) return openingUrl;
+  if (active.id === "opening" && completedModules(saved).includes("opening"))
+    return pilotUrl;
   const atEnd =
     active.id === "pilot"
       ? saved.stage === "done"

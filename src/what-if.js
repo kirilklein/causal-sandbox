@@ -1,5 +1,6 @@
 import {
   completeModule,
+  completedModules,
   pilotUrl,
   readPilot,
   savePilot,
@@ -58,6 +59,7 @@ let trialNumber =
     ? openingSaved.trialNumber
     : 0;
 let targetAnswer = openingSaved.targetAnswer || "";
+let openingComplete = completedModules(openingSaved).includes("opening");
 let prediction = openingSaved.openingPrediction || "";
 let step = 0;
 let frame = 0;
@@ -99,12 +101,18 @@ document.querySelector("#app").innerHTML =
       <select id="patient-prediction"><option value="">Make a prediction</option><option value="harm">Yes, their health declined</option><option value="unknown">We need their health without treatment</option><option value="unsure">I’m unsure</option></select><p id="prediction-feedback" role="status"></p></div><section id="opening-trial" class="opening-trial" hidden><h2>What would a randomized comparison show?</h2>
       <p>Give each of the 100 patients an independent coin flip for treatment. Predict how close the treated and untreated group difference will be to +12 points.</p>
       <button id="run-trial">Randomly assign treatment</button><p role="status" id="trial-result"></p>
-      <label for="target-answer">Which effect does this trial estimate?</label>
-      <select id="target-answer"><option value="">Choose the comparison</option><option value="before">Change since day 4 among treated patients</option><option value="total">Mean day-12 health if all 100 received treatment on day 4 versus none</option><option value="individual">The missing outcome for each patient</option></select><p id="target-feedback" role="status"></p></section>
+      <fieldset id="target-answer"><legend>Which effect does this trial estimate?</legend>
+        <label><input type="radio" name="target" value="before">Change since day 4 among treated patients</label>
+        <label><input type="radio" name="target" value="total">Mean day-12 health if all 100 received treatment on day 4 versus none</label>
+        <label><input type="radio" name="target" value="individual">The missing outcome for each patient</label>
+      </fieldset>
+      <p id="target-feedback" role="status"></p>
+      <button id="opening-next-locked" class="opening-next" disabled>Continue to module 2 →</button>
+      <a id="opening-next" class="opening-next" href="${campaignHref(pilotUrl)}" hidden>Continue to module 2 →</a></section>
       <p id="opening-save" role="status"></p><details class="opening-trial"><summary>Optional reading and practice</summary><p><a href="?lesson=randomization">Repeat a randomized experiment</a> · <a href="https://ctml.berkeley.edu/introduction-causal-inference">Berkeley Roadmap steps 0–2 and Lab 1B</a> · <a href="https://miguelhernan.org/whatifbook">What If, chapters 1–2</a></p></details>`
         : ""
     }
-    <div class="trajectory-story"><p id="trajectory-reading"></p><nav class="trajectory-navigation" aria-label="Continue learning"><button id="trajectory-back" aria-label="Previous scene">←</button><button id="trajectory-next"></button><a id="what-if-continue" href="${campaignHref("?lesson=randomization")}" hidden>Start with a randomized experiment →</a></nav></div>
+    <div class="trajectory-story"><p id="trajectory-reading"></p><nav class="trajectory-navigation" aria-label="Continue learning"><button id="trajectory-back" aria-label="Previous scene">←</button><button id="trajectory-next"></button>${courseOpening ? "" : `<a id="what-if-continue" href="${campaignHref("?lesson=randomization")}" hidden>Start with a randomized experiment →</a>`}</nav></div>
     <footer class="trajectory-footnote"><span>FICTIONAL PATIENTS · COUNTERFACTUALS ARE KNOWN ONLY INSIDE THIS MODEL</span>
       <details><summary>What assumptions make this possible?</summary><p>We need well-defined treatment choices and outcomes that match those choices (consistency), both choices to be possible for the people we compare (positivity), and comparable groups with respect to their potential outcomes (exchangeability, possibly after adjustment). Here we also assume that treating one person does not change another person’s outcome.</p><p>Randomization supports comparability. In observational studies, we must justify which variables to adjust for and whether important common causes remain unmeasured. Averaging alone does not establish these conditions.</p><p>Under these conditions, population-average potential outcomes can be identified from observed data. Finite-sample estimates still have uncertainty. Predicting a person’s outcome does not recover their individual counterfactual.</p><a href="?lesson=assumptions">Explore these assumptions later →</a></details>
       <details><summary>About this fictional world</summary><p>The curves illustrate a health score over twelve days; they are not clinical predictions. Treatment begins on day 4 and adds 12 points by day 12. The ten people have different baseline severities, with fixed illustrative treatment assignments. Their individual effects are equal here only to keep the first comparison simple.</p><p>Both population plots retain the same ten people in the same order and use identical health scales. Hollow marks reveal simulator-known counterfactuals. Hiding them removes both their positions and values. The average effect shown is simulator truth, not an estimate fitted from observed data.</p></details>
@@ -221,8 +229,7 @@ function enter(next, focus = true) {
   $("trajectory-back").disabled = step === 0;
   $("trajectory-next").hidden = step === 3;
   $("trajectory-next").textContent = `${scene.action || ""} →`;
-  $("what-if-continue").hidden =
-    step !== 3 || (courseOpening && (!trialNumber || targetAnswer !== "total"));
+  if (!courseOpening) $("what-if-continue").hidden = step !== 3;
   if (courseOpening) {
     $("opening-prediction").hidden = step !== 0;
     $("trajectory-next").disabled = step === 0 && !prediction;
@@ -309,14 +316,25 @@ if (courseOpening) {
   const { randomizedPatients, observedComparison } =
     await import("./foundations-study.js");
   const updateTarget = () => {
-    $("target-feedback").textContent =
-      targetAnswer === "total"
-        ? "Yes. Random assignment lets the two observed groups estimate those two population means."
-        : targetAnswer
-          ? "Compare the same target population at the same time under both choices."
-          : "";
-    $("what-if-continue").hidden =
-      step !== 3 || !trialNumber || targetAnswer !== "total";
+    if (trialNumber && targetAnswer === "total" && !openingComplete) {
+      openingComplete = true;
+      completeModule("opening");
+      const count = document.querySelector("[data-course-count]");
+      if (count) count.textContent = completedModules().length;
+    }
+    const feedback = {
+      before: "Try again. A before-and-after change includes what would have happened over time anyway. Which answer compares two treatment choices on day 12?",
+      individual: "Try again. Each patient has only one observed outcome. Which answer compares average health across the whole group?",
+      total: "Yes. The difference between the randomized groups estimates how much treating everyone would change average day-12 health.",
+    };
+    const instruction = trialNumber ? "" : "Run the randomized trial.";
+    $("target-feedback").textContent = [
+      feedback[targetAnswer] || "Choose the effect that the two group means estimate.",
+      instruction,
+      openingComplete ? "Module 1 complete." : "",
+    ].filter(Boolean).join(" ");
+    $("opening-next-locked").hidden = openingComplete;
+    $("opening-next").hidden = !openingComplete;
   };
   $("patient-prediction").value = prediction;
   $("patient-prediction").addEventListener("change", (event) => {
@@ -330,7 +348,8 @@ if (courseOpening) {
       : "";
     $("trajectory-next").disabled = !prediction;
   });
-  $("target-answer").value = targetAnswer;
+  for (const option of $("target-answer").querySelectorAll("input"))
+    option.checked = option.value === targetAnswer;
   $("target-answer").addEventListener("change", (event) => {
     targetAnswer = event.target.value;
     savePilot({
@@ -353,13 +372,9 @@ if (courseOpening) {
     savePilot({ trialNumber });
     updateTarget();
   });
-  const onward = $("what-if-continue");
-  onward.addEventListener("click", () => {
-    completeModule("opening");
+  $("opening-next").addEventListener("click", () => {
     savePilot({ current: "pilot" });
   });
-  onward.href = campaignHref(pilotUrl);
-  onward.textContent = "Compare the 100 patients →";
 }
 $("what-if-population").addEventListener("click", (event) => {
   event.target.closest(".what-if-person")?.focus();

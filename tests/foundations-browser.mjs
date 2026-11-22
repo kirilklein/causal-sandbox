@@ -25,9 +25,24 @@ try {
     await page
       .getByRole("button", { name: "Randomly assign treatment" })
       .click();
-    await page.locator("#target-answer").selectOption("total");
+    const before = page.getByRole("radio", { name: /Change since day 4/ });
+    await before.check();
+    await expect(page.locator("#target-feedback")).toContainText("Try again");
+    await expect(page.locator("#opening-next-locked")).toBeVisible();
+    await expect(page.locator("#opening-next-locked")).toBeDisabled();
+    await page.reload();
+    await expect(before).toBeChecked();
+    await page.getByRole("radio", { name: /Mean day-12 health/ }).check();
+    await expect(page.locator("#target-feedback")).toContainText("Module 1 complete");
+    await expect(page.locator("#opening-next")).toBeVisible();
     await expect(page.locator("#trial-result")).toContainText("Day-12 means");
-    await page.getByRole("link", { name: /Compare the 100 patients/ }).click();
+    if (width === 390) {
+      await page.goto(home);
+      await page.locator(".intro-opening").click();
+    } else {
+      await page.getByRole("link", { name: /Continue to module 2/ }).click();
+    }
+    await expect(page).toHaveURL(/lesson=observed-difference/);
     await page.getByRole("radio").first().check();
     await page.getByRole("button", { name: "Change assignment" }).click();
     const slider = page.locator("#assignment");
@@ -53,7 +68,7 @@ try {
     const overflows = () =>
       page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     expect(await overflows()).toBe(false);
-    const controlBox = await slider.boundingBox();
+    const controlBox = await page.locator("#assignment").boundingBox();
     const resultBox = await page.locator(".pilot-means").boundingBox();
     expect(resultBox.y + resultBox.height - controlBox.y).toBeLessThan(300);
     await page.getByRole("button", { name: "Explain the difference" }).click();

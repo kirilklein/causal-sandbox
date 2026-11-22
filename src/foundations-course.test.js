@@ -62,6 +62,12 @@ test("graph decisions and the job training estimate grade the intended contrasts
   );
   assert.equal(moduleForTopic("ipw").id, "estimation");
 });
+test("home resumes a completed opening at module 2 even before its onward link is used", () => {
+  const saved = { current: "opening", openingStep: 3, trialNumber: 1 };
+  assert.equal(pilotDestination(saved), modules[0].href);
+  assert.equal(pilotDestination({ ...saved, completedModules: ["opening"] }), modules[1].href);
+});
+
 test("pilot bookmarks survive new course activity and direct capstone entry", (t) => {
   const store = new Map();
   const descriptor = Object.getOwnPropertyDescriptor(
