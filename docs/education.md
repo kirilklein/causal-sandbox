@@ -2,7 +2,7 @@
 
 ## Causal Inference Foundations
 
-See the [delivery tracker](foundations-status.md) for implementation status, verification evidence and the next learner checks.
+See the [v2 curriculum plan](education-v2.md) for the proposed module sequence and learner pilot. The [delivery tracker](foundations-status.md) records implementation status and verification evidence.
 
 The homepage’s primary action starts the patient opening or continues the
 learner’s saved activity. The outline at `?lesson=learn` opens every module.
