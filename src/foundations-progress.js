@@ -1,3 +1,4 @@
+import { modules, moduleById } from "./foundations-catalog.js";
 export const pilotUrl = "?lesson=observed-difference";
 export const openingUrl = "?lesson=what-if&course=foundations";
 const key = "causal-sandbox-foundations-v1";
@@ -13,9 +14,15 @@ export function readPilot() {
 
 export function savePilot(changes) {
   try {
+    const previous = readPilot();
     localStorage.setItem(
       key,
-      JSON.stringify({ ...readPilot(), ...changes, version: 1 }),
+      JSON.stringify({
+        ...previous,
+        completedModules: completedModules(previous),
+        ...changes,
+        version: 1,
+      }),
     );
     return true;
   } catch {
@@ -32,7 +39,37 @@ export function clearPilot() {
 }
 
 export function pilotDestination(saved) {
-  if (saved.current === "adjustment") return "?lesson=mediator";
-  if (saved.current === "pilot") return pilotUrl;
-  return openingUrl;
+  const active = moduleById[saved.current];
+  if (!active) return openingUrl;
+  const atEnd =
+    active.id === "pilot"
+      ? saved.stage === "done"
+      : saved.activities?.[active.id]?.step === "summary";
+  if (atEnd && active.id !== "capstone")
+    return modules[modules.indexOf(active) + 1].href;
+  return active.href;
+}
+
+export function completedModules(saved = readPilot()) {
+  const ids = Array.isArray(saved.completedModules)
+    ? saved.completedModules
+    : [];
+  return [
+    ...new Set([...ids, ...(saved.stage === "done" ? ["pilot"] : [])]),
+  ].filter((id) => Object.hasOwn(moduleById, id));
+}
+export function completeModule(id) {
+  return savePilot({
+    completedModules: [...new Set([...completedModules(), id])],
+  });
+}
+export function saveActivity(module, changes) {
+  const { activities = {} } = readPilot();
+  return savePilot({
+    current: module,
+    activities: {
+      ...activities,
+      [module]: { ...activities[module], ...changes },
+    },
+  });
 }

@@ -1,3 +1,4 @@
+import { moduleForTopic, modules } from "./foundations-catalog.js";
 import { readPilot, pilotDestination } from "./foundations-progress.js";
 import { capture, campaignHref } from "./events.js";
 import { lessonGraph } from "./lesson-graph.js";
@@ -340,24 +341,22 @@ function enterIntroduction(focus = true, animate = false) {
   const savedPilot = readPilot();
   const hasProgress =
     progress.completedLessons.length > 0 || progress.currentLesson;
-  let primaryHref = pilotDestination(savedPilot);
-  if (
-    hasProgress &&
-    (!savedPilot.current || savedPilot.current === "adjustment")
-  ) {
-    primaryHref = lessonHref(resumeLesson);
-  }
+  const primaryHref =
+    !savedPilot.current && hasProgress
+      ? (moduleForTopic(resumeLesson[1]) || modules[0]).href
+      : pilotDestination(savedPilot);
   app.innerHTML = `
     <header class="lesson-header introduction-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning introduction${animate ? " introduction-arriving" : ""}">
       ${lessonNavigation({ introduction: true })}
       <section class="intro-hero" aria-labelledby="intro-title">
-        <div class="intro-copy"><p class="intro-kicker">Free interactive course · Pilot</p>
+        <div class="intro-copy"><p class="intro-kicker">Free interactive course</p>
           <h1 tabindex="-1" id="intro-title">Causal Inference Foundations</h1>
-          <p class="intro-context">Follow a patient study from two possible futures to a surprising result. Decide whether treatment caused harm and test your explanation.</p>
+          <p class="intro-context">Follow one patient study from question to conclusion. Choose a defensible comparison, estimate a treatment effect, and explain what your conclusion depends on.</p>
           <p class="intro-audience">For anyone with basic statistics. No causal inference background needed.</p>
           <a class="intro-opening primary" href="${campaignHref(import.meta.env.BASE_URL + primaryHref)}">${savedPilot.current || hasProgress ? "Continue" : "Start the course"} →</a>
-          <p><a href="?lesson=observed-difference">Jump to the patient study</a> · <a href="?lesson=quiz">Find my starting point</a></p>
+          ${savedPilot.current || hasProgress ? `<p class="intro-audience">${modules.find((m) => m.href === primaryHref)?.title || modules[0].title} · Saved in this browser</p>` : ""}
+          <p><a href="?lesson=learn">View all six modules</a> · <a href="?lesson=quiz">Find my starting point</a></p>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>

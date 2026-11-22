@@ -1,39 +1,50 @@
 # Progressive education delivery
 
-## Foundations pilot
+## Causal Inference Foundations
 
-The homepage opens the patient trajectory at `?lesson=what-if&course=foundations`.
-The four scenes lead to a randomized assignment of the same 100 patients and
-the pilot at `?lesson=observed-difference`. The standalone opening still leads
-to the original randomization lesson. The pilot saves the current activity,
-assignment, selected severity, first and latest responses, and repeated-study
-display in this browser. Its final action opens the existing mediator lesson.
+The homepage’s primary action starts the patient opening or continues the
+learner’s saved activity. The outline at `?lesson=learn` opens every module.
+Placement recommends a starting module and preserves its existing topic-level
+feedback. Returning to a standalone topic keeps the course bookmark.
 
-Review the pilot in three pieces.
+| Module | Required decision | Design budget |
+| --- | --- | ---: |
+| 1. Define the treatment effect | Predict from the observed trajectory, reveal the missing outcome, run a randomized trial and specify the day-12 population contrast. | 30 min |
+| 2. Explain a misleading difference | Change assignment on the same patients. Inspect severity, compare repeated-study distributions and explain why a precise comparison can be biased. | 40 min |
+| 3. Choose what to adjust for | Select variables on three proposed graphs and justify the set for the total effect. | 40 min |
+| 4. Estimate the effect | Inspect strata, calculate a standardized mean, reconstruct the population by weighting, then average model predictions and interpret the estimate. | 50 min |
+| 5. Decide when to trust the result | Inspect weak and absent support, reveal a hidden common cause and compare two outcome fits. Write the investigation you would request. | 45 min |
+| 6. Solve a new study | Define the job-training offer effect, defend a set, calculate a standardized employment difference and write a conclusion. | 35 min |
 
-1. **Patient calculation.** At maximum selection the full cohort has a crude
-   day-12 difference of −2.93 points. At equal shares it is +12. Check that
-   standardizing observed outcomes across severity gives +12 at both settings.
-   The repeat action samples new studies from the strongly selected population.
-2. **Teaching sequence.** Enter the pilot directly. Make an initial judgment,
-   change assignment, inspect a severity, explain the reversal, then reveal
-   truth. Compare the spread and center of the 100- and 1,600-patient studies.
-   Answer the hospital transfer question using only observable evidence.
-3. **Entry and resume.** Start from home, leave midway, reopen on the same
-   browser and continue. Check the legacy topic, placement and tool routes.
-   Run `node tests/foundations-browser.mjs` against a separately running
-   server using the [browser setup](../CONTRIBUTING.md#browser-checks).
+The 240 required minutes are a design budget. Budget an additional 30–45 minutes
+for selected reading and 45–90 for optional experiments. The advanced library is
+open-ended. Time the required path, optional work and idle time separately before
+publishing a completion estimate. Observe first-time learners on physical iOS and
+Android phones as well as desktop. Ask them to explain their reasoning without
+coaching and return after closing the browser. Record where help was needed and
+which comparisons required scrolling. Use the final report to check transfer.
 
-Before extending the course, observe six first-time learners with basic
-statistics using their phones. Include iOS Safari and Android Chrome. Ask them
-to start, interpret the pooled difference, change the assignment rule, finish
-the hospital question, and resume after closing the tab. Ask them to explain
-the reversal and what a larger sample would change in their own words.
-Record help needed, scrolls to rediscover a result, active minutes, and optional
-exploration separately. Aim for five of six to finish and resume unaided and
-explain both severity imbalance and sampling precision. Revise and repeat if
-either breaks down. Estimate the full course duration once the later modules
-and independent final study have also been tried.
+The course uses original exercises and synthetic outcomes. The opening draws on
+the question and counterfactual progression of Berkeley Roadmap steps 0–2 and
+Lab 1B. The comparison and adjustment sequence draws on Labs 2A and 2B, the
+estimation sequence on Labs 2C and 3, and the final case on step 7. Optional reading
+links point to Hernán and Robins, Neal, and Facure. No external datasets, figures,
+or notebook code are distributed with these exercises.
+
+`foundations-catalog.js` defines the six routes and the topic-to-module mapping.
+`foundations-activities.js` holds the decisions and feedback for modules 3–6.
+The legacy numeric levels and topic URLs retain their independent renderers.
+Course state extends the pilot’s existing browser record with module completions,
+activity drafts, settings and first submissions. Legacy lesson progress and
+the placement attempt remain in their original records. Free-text explanations
+are available for self-review. Structured adjustment sets, calculations and choices
+receive automatic feedback.
+
+Run `node tests/foundations-browser.mjs` against a separately running server
+following the [browser setup](../CONTRIBUTING.md#browser-checks). It exercises
+the complete journey and interruption/resume at 320, 390, 430 and desktop widths.
+
+## Standalone lessons and optional experiments
 
 The optional [Double ML chapter](double-ml.md) follows TMLE at
 `?lesson=double-ml`. With a k-nearest-neighbour learner in the curved AIPW world,

@@ -16,6 +16,7 @@ try {
     await page
       .getByRole("link", { name: "Start the course →", exact: true })
       .click();
+    await page.locator("#patient-prediction").selectOption("unknown");
     for (let scene = 0; scene < 3; scene++) {
       const next = page.locator("#trajectory-next");
       if (width < 500) await next.tap();
@@ -24,6 +25,7 @@ try {
     await page
       .getByRole("button", { name: "Randomly assign treatment" })
       .click();
+    await page.locator("#target-answer").selectOption("total");
     await expect(page.locator("#trial-result")).toContainText("Day-12 means");
     await page.getByRole("link", { name: /Compare the 100 patients/ }).click();
     await page.getByRole("radio").first().check();
@@ -73,7 +75,113 @@ try {
     await page.getByRole("button", { name: "Finish this study" }).click();
     await page.reload();
     await page.locator("#pilot-onward").click();
-    await expect(page).toHaveURL(/lesson=mediator/);
+    const tasks = [
+      [
+        "adjustment",
+        [
+          { graph: "C", choice: 1 },
+          {
+            graph: "C",
+            choice: 0,
+            note: "Adjust for severity; preserve treatment → early recovery → health.",
+          },
+          { graph: "none", choice: 2 },
+        ],
+      ],
+      [
+        "estimation",
+        [
+          { settings: [9], choice: 0 },
+          { settings: [1], choice: 1 },
+          { number: 66 },
+          { settings: [1], number: 10 },
+          { settings: [1], choice: 1 },
+          {
+            choice: 2,
+            note: "Treating all 100 would increase mean day-12 health by 12 points, assuming comparable groups within severity.",
+          },
+        ],
+      ],
+      [
+        "trust",
+        [
+          { settings: [1, 2], choice: 1 },
+          { settings: [1], choice: 0 },
+          { settings: [1], choice: 2 },
+          {
+            choice: 1,
+            note: "Ask clinicians which symptoms influenced their decisions and whether they also predict outcomes.",
+          },
+        ],
+      ],
+      [
+        "capstone",
+        [
+          {
+            choice: 1,
+            note: "Among eligible applicants, compare six-month employment if everyone versus nobody received an offer.",
+          },
+          {
+            graph: "C",
+            choice: 2,
+            note: "Prior experience affects offers and employment. Attendance is a mediator.",
+          },
+          { number: 16 },
+          {
+            choice: 0,
+            note: "Among eligible applicants the estimated increase in employment is 16 percentage points if all receive an offer, assuming adjustment suffices.",
+          },
+        ],
+      ],
+    ];
+    for (const [module, steps] of tasks) {
+      await expect(page).toHaveURL(new RegExp("lesson=foundations-" + module));
+      for (const [index, task] of steps.entries()) {
+        const panel = page.locator("#course-activity");
+        if (task.settings)
+          for (const value of task.settings)
+            await panel.locator("#course-setting").selectOption(String(value));
+        if (task.graph === "none")
+          await panel
+            .getByLabel("No adjustment needed", { exact: true })
+            .check();
+        else if (task.graph)
+          await panel
+            .locator('[data-adjust-node="' + task.graph + '"]')
+            .click();
+        if (task.choice !== undefined)
+          await panel.locator("input[name=reason]").nth(task.choice).check();
+        else await panel.getByRole("spinbutton").fill(String(task.number));
+        if (task.note) await panel.getByRole("textbox").fill(task.note);
+        if (module === "capstone" && index === 3) {
+          await page.goto(home);
+          await page.locator(".intro-opening").click();
+          await expect(panel.getByRole("textbox")).toHaveValue(task.note);
+        }
+        await panel.getByRole("button", { name: "Check my decision" }).click();
+        await expect(panel.locator("#course-feedback")).not.toBeEmpty();
+        expect(await overflows()).toBe(false);
+        await panel
+          .getByRole("button", {
+            name:
+              index === steps.length - 1 ? "Finish module" : "Next activity",
+          })
+          .click();
+      }
+      if (module !== "capstone")
+        await page.locator("#course-activity a.primary").click();
+    }
+    await expect(page.locator("#course-activity")).toContainText(
+      "6 of 6 modules completed",
+    );
+    await expect(page.locator("#course-activity")).toContainText(
+      "4 of 4 decisions correct on first submission",
+    );
+    await page.goto(home);
+    await page.locator(".intro-opening").click();
+    await expect(
+      page.getByRole("heading", { name: "Your final study" }),
+    ).toBeVisible();
     await context.close();
   }
 } finally {

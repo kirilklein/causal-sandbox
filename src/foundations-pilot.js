@@ -4,7 +4,11 @@ import {
   observedComparison,
   repeatedDifferences,
 } from "./foundations-study.js";
-import { readPilot, savePilot } from "./foundations-progress.js";
+import {
+  completeModule,
+  readPilot,
+  savePilot,
+} from "./foundations-progress.js";
 import { BENEFIT, SEVERITIES } from "./trajectory-model.js";
 import "./foundations.css";
 
@@ -84,7 +88,7 @@ for (const [id, question] of Object.entries(questions)) {
 learningFrame(
   "Did treatment harm these patients?",
   "observed-difference",
-  '<section id="patient-pilot" class="panel patient-pilot"></section><p id="pilot-save" role="status"></p>',
+  '<nav class="course-location"><a href="?lesson=learn">Course modules</a> · Module 2 of 6</nav><section id="patient-pilot" class="panel patient-pilot"></section><p id="pilot-save" role="status"></p><details class="course-resources"><summary>Optional reading and experiments</summary><p><a href="?lesson=uncertainty">Explore confidence intervals</a> · <a href="?lesson=trajectory-landscape">Follow the patient trajectories</a> · <a href="https://miguelhernan.org/whatifbook">What If, chapters 7 and 10</a></p></details>',
 );
 const panel = document.querySelector("#patient-pilot");
 function persist() {
@@ -231,7 +235,7 @@ function render(focus = true) {
     case "done":
       body =
         '<p>You explained how severity-based treatment assignment can reverse a comparison, and why a larger study can narrow its uncertainty while preserving the bias.</p><a class="primary" id="pilot-onward" href="' +
-        learningUrl("mediator") +
+        learningUrl("foundations-adjustment") +
         '">Continue to adjustment choices →</a><p><a href="' +
         learningUrl("trajectory-landscape") +
         '">Explore the patient trajectories</a></p>';
@@ -293,6 +297,7 @@ panel.addEventListener("click", (event) => {
     savePilot({ current: "adjustment" });
     return;
   } else return;
+  if (state.stage === "done") completeModule("pilot");
   persist();
   render();
 });

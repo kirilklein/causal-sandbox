@@ -1429,9 +1429,7 @@ try {
   await page.evaluate(() => localStorage.removeItem("causal-sandbox-progress"));
   await page.getByRole("link", { name: "Guided lessons", exact: true }).click();
   await page.locator("#lesson-menu-toggle").click();
-  await page
-    .getByRole("link", { name: "Learning choices", exact: true })
-    .click();
+  await page.getByRole("link", { name: "Course modules", exact: true }).click();
   await page
     .getByRole("link", { name: "Start from scratch", exact: false })
     .click();
@@ -1494,7 +1492,10 @@ try {
     experimentBeforeMenu,
   );
   assert.equal(await page.locator("#lesson-menu").isVisible(), true);
-  assert.equal(await page.locator(".lesson-nav details").count(), 0);
+  await expect(page.locator(".lesson-nav .topic-menu")).toHaveAttribute(
+    "open",
+    "",
+  );
   assert.deepEqual(await page.locator(".lesson-group h2").allTextContents(), [
     "Foundations",
     "Causal roles",

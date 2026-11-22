@@ -123,3 +123,74 @@
   display: inline-flex;
   align-items: center;
 }
+.course-location {
+  margin: 0.5rem 0 1.2rem;
+  color: var(--text-secondary);
+}
+.course-activity textarea {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+.course-activity input[type="number"] {
+  width: 7rem;
+  min-height: 44px;
+  font: inherit;
+}
+.course-activity select {
+  max-width: 100%;
+  margin: 0.4rem 0;
+  display: block;
+}
+.course-readout {
+  padding: 0.75rem;
+  background: var(--surface-subtle);
+  margin: 0.6rem 0;
+}
+.course-readout p {
+  margin: 0.25rem 0;
+}
+.course-resources {
+  margin-top: 1em;
+  max-width: 40rem;
+}
+.course-report {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.course-activity .adjustment-input .quiz-diagram {
+  grid-template-columns: 1fr;
+}
+.course-fit svg {
+  display: block;
+  width: 100%;
+  max-width: 28rem;
+}
+.course-fit svg path {
+  stroke: var(--grid);
+  fill: none;
+}
+.course-fit svg polyline {
+  stroke: var(--fitted);
+  stroke-width: 2.5;
+  fill: none;
+}
+.course-fit svg circle {
+  fill: var(--estimate);
+}
+.course-fit svg text {
+  font-size: 13px;
+  fill: var(--text-secondary);
+}
+.study-summary dt {
+  font-weight: 650;
+  margin-top: 1rem;
+}
+.study-summary dd {
+  margin: 0.25rem 0 0.75rem;
+}

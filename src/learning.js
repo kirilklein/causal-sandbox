@@ -1,3 +1,5 @@
+import { modules } from "./foundations-catalog.js";
+import { completedModules } from "./foundations-progress.js";
 import {
   coreLessons,
   optionalChapters,
@@ -188,16 +190,19 @@ export function renderLearning(mode) {
     );
   } else {
     learningFrame(
-      "Where would you like to begin?",
+      "Causal Inference Foundations",
       "learn",
-      `<p class="learning-lead">Start with the basics, revisit a topic, or let a few questions suggest a starting point.</p>
+      `<p class="learning-lead">Start with the patient study or open any module. Your place is saved in this browser.</p>
+      <ol class="course-outline">${modules.map((m) => `<li><a href="${campaignHref(import.meta.env.BASE_URL + m.href)}">${m.title}</a>${completedModules().includes(m.id) ? " · Completed" : ""}<p>${m.goal}</p></li>`).join("")}</ol>
+      <p><a href="${learningUrl("quiz")}">Optional placement quiz</a> · <a href="${learningUrl("topics")}">Topic library</a></p>
+      <details open><summary>Independent learning paths</summary>
       ${conceptMapCard()}
       <nav class="learning-choices" aria-label="Choose how to learn">
         <a class="panel learning-choice" href="${topicLesson("what-if").href}"><span class="learning-choice-number" aria-hidden="true">01</span><h2>Start from scratch</h2><p>Begin with one patient and the question at the heart of causal inference: what if?</p><span class="learning-choice-action">Begin: What if? →</span></a>
         <a class="panel learning-choice" href="${learningUrl("topics")}"><span class="learning-choice-number" aria-hidden="true">02</span><h2>Refresh & go deeper</h2><p>Pick a topic to revisit, then explore its nuances and advanced lessons.</p><span class="learning-choice-action">Browse topics →</span></a>
         <a class="panel learning-choice" href="${learningUrl("quiz")}"><span class="learning-choice-number" aria-hidden="true">03</span><h2>Find my starting point</h2><p>Answer up to seven questions for suggestions based on the ideas you want to review.</p><span class="learning-choice-action">Take the short quiz →</span></a>
       </nav><p class="learning-note">Every lesson is open to you. You can choose a different route at any time.</p>
-      <a href="${learningUrl("introduction")}">← Introduction</a>`,
+      </details><a href="${learningUrl("introduction")}">← Introduction</a>`,
     );
   }
 }

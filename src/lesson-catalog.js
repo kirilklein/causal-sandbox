@@ -1,3 +1,5 @@
+import { modules } from "./foundations-catalog.js";
+
 export const conceptMap = {
   id: "concept-map",
   title: "How the pieces fit together",
@@ -210,6 +212,15 @@ export const optionalChapters = [
 ];
 
 export const lessonExperiments = [
+  ...modules
+    .slice(2)
+    .map((module) => ({
+      id: "foundations-" + module.id,
+      title: module.title,
+      href: module.href,
+      description: module.goal,
+      keywords: "foundations course " + module.topics.join(" "),
+    })),
   {
     id: "observed-difference",
     title: "Did treatment harm these patients?",

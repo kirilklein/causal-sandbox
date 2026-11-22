@@ -161,3 +161,10 @@
 #opening-save:empty {
   display: none;
 }
+.opening-trial select {
+  display: block;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0.5rem 0;
+  font: inherit;
+}

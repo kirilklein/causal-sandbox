@@ -1,4 +1,9 @@
-import { pilotUrl, readPilot, savePilot } from "./foundations-progress.js";
+import {
+  completeModule,
+  pilotUrl,
+  readPilot,
+  savePilot,
+} from "./foundations-progress.js";
 import { campaignHref } from "./events.js";
 import "./trajectory-landscape.css";
 import "./what-if.css";
@@ -52,6 +57,8 @@ let trialNumber =
   Number.isSafeInteger(openingSaved.trialNumber) && openingSaved.trialNumber > 0
     ? openingSaved.trialNumber
     : 0;
+let targetAnswer = openingSaved.targetAnswer || "";
+let prediction = openingSaved.openingPrediction || "";
 let step = 0;
 let frame = 0;
 let animation = null;
@@ -76,6 +83,7 @@ document.querySelector("#app").innerHTML =
   <header class="trajectory-header"><a class="trajectory-brand" href="?lesson=introduction">${icon}<span>CAUSAL SANDBOX</span></a>${themeControl()}</header>
   <main>
     ${lessonNavigation({ learningPage: "what-if" })}
+    ${courseOpening ? `<p class="trajectory-course-link"><a href="?lesson=learn">Course modules</a> · Module 1 of 6</p>` : ""}
     <nav class="trajectory-chapters" aria-label="Opening chapters">${scenes.map((scene, i) => `<button type="button" data-chapter="${i}" aria-label="${i + 1}. ${scene.label}"><span>${String(i + 1).padStart(2, "0")}</span><span class="chapter-name">${scene.label}</span></button>`).join("")}</nav>
     <div class="trajectory-title"><p id="trajectory-kicker">WHAT IF? · THE QUESTION BEHIND CAUSAL INFERENCE</p><h1 id="trajectory-heading" tabindex="-1"></h1></div>
     <p id="trajectory-description"></p>
@@ -87,10 +95,13 @@ document.querySelector("#app").innerHTML =
     </section>
     ${
       courseOpening
-        ? `<section id="opening-trial" class="opening-trial" hidden><h2>What would a randomized comparison show?</h2>
+        ? `<div id="opening-prediction" class="opening-trial"><label for="patient-prediction">Does declining health after treatment show that treatment harmed this patient?</label>
+      <select id="patient-prediction"><option value="">Make a prediction</option><option value="harm">Yes, their health declined</option><option value="unknown">We need their health without treatment</option><option value="unsure">I’m unsure</option></select><p id="prediction-feedback" role="status"></p></div><section id="opening-trial" class="opening-trial" hidden><h2>What would a randomized comparison show?</h2>
       <p>Give each of the 100 patients an independent coin flip for treatment. Predict how close the treated and untreated group difference will be to +12 points.</p>
-      <button id="run-trial">Randomly assign treatment</button><p role="status" id="trial-result"></p></section>
-      <p id="opening-save" role="status"></p>`
+      <button id="run-trial">Randomly assign treatment</button><p role="status" id="trial-result"></p>
+      <label for="target-answer">Which effect does this trial estimate?</label>
+      <select id="target-answer"><option value="">Choose the comparison</option><option value="before">Change since day 4 among treated patients</option><option value="total">Mean day-12 health if all 100 received treatment on day 4 versus none</option><option value="individual">The missing outcome for each patient</option></select><p id="target-feedback" role="status"></p></section>
+      <p id="opening-save" role="status"></p><details class="opening-trial"><summary>Optional reading and practice</summary><p><a href="?lesson=randomization">Repeat a randomized experiment</a> · <a href="https://ctml.berkeley.edu/introduction-causal-inference">Berkeley Roadmap steps 0–2 and Lab 1B</a> · <a href="https://miguelhernan.org/whatifbook">What If, chapters 1–2</a></p></details>`
         : ""
     }
     <div class="trajectory-story"><p id="trajectory-reading"></p><nav class="trajectory-navigation" aria-label="Continue learning"><button id="trajectory-back" aria-label="Previous scene">←</button><button id="trajectory-next"></button><a id="what-if-continue" href="${campaignHref("?lesson=randomization")}" hidden>Start with a randomized experiment →</a></nav></div>
@@ -202,12 +213,20 @@ function enter(next, focus = true) {
   }
   const scene = scenes[step];
   $("trajectory-heading").innerHTML = scene.title;
-  $("trajectory-description").textContent = scene.copy;
+  $("trajectory-description").textContent =
+    courseOpening && step === 0
+      ? "Treatment begins on day 4. Follow the observed health score through day 12, then make a prediction."
+      : scene.copy;
   $("trajectory-reading").textContent = scene.reading;
   $("trajectory-back").disabled = step === 0;
   $("trajectory-next").hidden = step === 3;
   $("trajectory-next").textContent = `${scene.action || ""} →`;
-  $("what-if-continue").hidden = step !== 3;
+  $("what-if-continue").hidden =
+    step !== 3 || (courseOpening && (!trialNumber || targetAnswer !== "total"));
+  if (courseOpening) {
+    $("opening-prediction").hidden = step !== 0;
+    $("trajectory-next").disabled = step === 0 && !prediction;
+  }
   $("trajectory-untreated").hidden = step === 0;
   $("what-if-ghost").hidden = step === 0 || step === 3;
   $("trajectory-canvas").hidden = step >= 2;
@@ -289,6 +308,38 @@ window.addEventListener("pageshow", (event) => {
 if (courseOpening) {
   const { randomizedPatients, observedComparison } =
     await import("./foundations-study.js");
+  const updateTarget = () => {
+    $("target-feedback").textContent =
+      targetAnswer === "total"
+        ? "Yes. Random assignment lets the two observed groups estimate those two population means."
+        : targetAnswer
+          ? "Compare the same target population at the same time under both choices."
+          : "";
+    $("what-if-continue").hidden =
+      step !== 3 || !trialNumber || targetAnswer !== "total";
+  };
+  $("patient-prediction").value = prediction;
+  $("patient-prediction").addEventListener("change", (event) => {
+    prediction = event.target.value;
+    savePilot({
+      openingPrediction: prediction,
+      firstOpeningPrediction: readPilot().firstOpeningPrediction || prediction,
+    });
+    $("prediction-feedback").textContent = prediction
+      ? "Reveal the patient’s other possible future to check your reasoning."
+      : "";
+    $("trajectory-next").disabled = !prediction;
+  });
+  $("target-answer").value = targetAnswer;
+  $("target-answer").addEventListener("change", (event) => {
+    targetAnswer = event.target.value;
+    savePilot({
+      targetAnswer,
+      firstTargetAnswer: readPilot().firstTargetAnswer || targetAnswer,
+    });
+    updateTarget();
+  });
+  updateTarget();
   function showTrial() {
     const { arms } = observedComparison(randomizedPatients(4217 + trialNumber));
     const difference = arms[1].mean - arms[0].mean;
@@ -300,8 +351,13 @@ if (courseOpening) {
     trialNumber++;
     showTrial();
     savePilot({ trialNumber });
+    updateTarget();
   });
   const onward = $("what-if-continue");
+  onward.addEventListener("click", () => {
+    completeModule("opening");
+    savePilot({ current: "pilot" });
+  });
   onward.href = campaignHref(pilotUrl);
   onward.textContent = "Compare the 100 patients →";
 }

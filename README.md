@@ -5,10 +5,10 @@
     <img src="docs/brand-mark-light.svg" alt="" width="86" height="72" align="left">
   </picture>
   Causal Sandbox<br>
-  <small>An Interactive Causal Lab</small>
+  <small>Causal Inference Foundations</small>
 </h1>
 
-Learn causal inference through experiments. Free, in your browser, with nothing to install.
+A free interactive course for learners with basic statistics. Follow a simulated patient study from question to conclusion, then analyze a job-training study independently.
 
 [![Two possible futures reveal the causal effect that observed data cannot show directly](docs/intro.gif)](https://kirilklein.github.io/causal-sandbox/)
 
@@ -16,7 +16,7 @@ Learn causal inference through experiments. Free, in your browser, with nothing 
 
 ## [Learn →](https://kirilklein.github.io/causal-sandbox/?lesson=learn)
 
-Build intuition through guided experiments, one concept at a time.
+Define the treatment effect, explain a misleading comparison, choose an adjustment set, estimate the effect, test assumptions, and report a new study. Each module is open individually, with progress saved in the browser.
 
 Try the optional [Uplift modelling track](https://kirilklein.github.io/causal-sandbox/?lesson=uplift): compare who will buy with whose purchase a campaign changes, then estimate and evaluate targeting rules.
 

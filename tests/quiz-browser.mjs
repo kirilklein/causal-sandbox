@@ -64,7 +64,7 @@ try {
   );
   assert.equal(await page.locator(".intro-path").count(), 3);
   await page.getByRole("link", { name: "Learn", exact: true }).click();
-  await expect(page.locator("h1")).toHaveText("Where would you like to begin?");
+  await expect(page.locator("h1")).toHaveText("Causal Inference Foundations");
   assert.equal(await page.locator(".learning-choice").count(), 3);
   await page.screenshot({
     path: "/tmp/adaptive-learning-desktop.png",
