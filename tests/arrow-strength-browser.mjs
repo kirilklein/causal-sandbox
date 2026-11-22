@@ -134,7 +134,7 @@ try {
     await page.locator(".reading-list a").first().getAttribute("href"),
     /stacks\.cdc\.gov/,
   );
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.setViewportSize({ width: 320, height: 850 });
   assert.ok(
     await page.evaluate(
@@ -145,7 +145,7 @@ try {
     .locator(".panel")
     .screenshot({ path: "/tmp/arrow-strength-mobile-dark.png" });
   await page.setViewportSize({ width: 1280, height: 1000 });
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await page.getByRole("button", { name: "Paths cancel" }).click();
   await page
     .locator(".panel")

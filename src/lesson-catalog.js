@@ -21,6 +21,7 @@ export const openingLesson = {
 export const coreGroups = [
   {
     title: "Foundations",
+    question: "What makes a comparison fair?",
     lessons: [
       [1, "randomization", "A randomized experiment"],
       [2, "confounding", "A common cause"],
@@ -31,6 +32,7 @@ export const coreGroups = [
   },
   {
     title: "Causal roles",
+    question: "Which variables should I adjust for?",
     lessons: [
       [7, "mediator", "A mediator", "mediator-adjustment/"],
       [8, "collider", "A collider"],
@@ -39,6 +41,7 @@ export const coreGroups = [
   },
   {
     title: "Models and limitations",
+    question: "When should I trust the estimate?",
     lessons: [
       [5, "misspecification", "When a model is too simple"],
       [6, "double-robustness", "Double robustness", "aipw-double-robustness/"],
@@ -50,6 +53,34 @@ export const coreGroups = [
 ];
 
 export const optionalChapters = [
+  {
+    id: "delta-method",
+    menuTitle: "The Delta Method",
+    after: 14,
+    title: "How uncertain is revenue per order?",
+    href: "?lesson=delta-method",
+    description:
+      "Assess uncertainty in an A/B test’s revenue per order, then explore how Delta and bootstrap intervals work.",
+  },
+  {
+    id: "difference-in-differences",
+    menuTitle: "Difference-in-differences",
+    after: 9,
+    title: "Difference-in-differences",
+    href: "?lesson=difference-in-differences",
+    description:
+      "Build a missing counterfactual from a comparison group’s change, then test the parallel-trends assumption.",
+  },
+  {
+    id: "uplift",
+    menuTitle: "Uplift modelling",
+    track: true,
+    after: 1,
+    title: "Uplift modelling: from effects to decisions",
+    href: "?lesson=uplift",
+    description:
+      "Compare purchase prediction with incremental benefit, then estimate uplift and test targeting rules on an independent holdout.",
+  },
   {
     id: "front-door",
     menuTitle: "The front-door criterion",
@@ -144,6 +175,15 @@ export const optionalChapters = [
       "Explore two heatmaps to see how treatment- and outcome-model errors affect TMLE and IPW.",
   },
   {
+    id: "double-ml",
+    menuTitle: "Double ML and cross-fitting",
+    after: 11,
+    title: "Why does causal ML need cross-fitting?",
+    href: "?lesson=double-ml",
+    description:
+      "Compare a plug-in, an orthogonal score, and a cross-fitted score across repeated studies with a flexible learner.",
+  },
+  {
     id: "clipping",
     menuTitle: "Weight clipping",
     after: 10,
@@ -157,6 +197,14 @@ export const optionalChapters = [
     menuTitle: "Population trimming",
     title: "Trimming and the target population",
     href: "?lesson=trimming",
+  },
+  {
+    id: "positivity-sensitivity",
+    menuTitle: "Beyond trimming",
+    title: "Beyond trimming: bounds and sensitivity",
+    href: "?lesson=positivity-sensitivity",
+    description:
+      "Bound the ATT under incomplete support and test assumptions about the outcome without treatment.",
   },
 ];
 

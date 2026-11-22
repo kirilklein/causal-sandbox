@@ -203,3 +203,20 @@
     white-space: nowrap;
   }
 }
+.lesson-nav .menu-note {
+  margin: -6px 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.lesson-nav .guided-menu .menu-map-link {
+  min-height: 0;
+  padding: 2px 0;
+  color: var(--accent);
+  font-size: 12px;
+}
+.lesson-nav .guided-menu + .sandbox-nav-link {
+  margin-top: 8px;
+  padding-top: 0;
+  border-top: 0;
+}

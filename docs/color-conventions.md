@@ -25,8 +25,9 @@ color literals in component styles or JavaScript. The standalone favicon keeps
 light fallback colors; when embedded in the app, it inherits the shared palette.
 The offline visual examples below illustrate the light palette.
 
-The header offers System, Light, and Dark. System follows the device preference;
-an explicit choice persists across lessons, the sandbox, and reloads. The initial
+The header offers a sun/moon switch for Light and Dark. Until the first explicit
+choice, the theme follows the device preference; switching persists the choice
+across lessons, the sandbox, and reloads. There is no System option. The initial
 HTML resolves the preference before the app paints. Theme changes update SVG and
 CSS directly and redraw the sandbox canvas without resimulating the population.
 If browser storage is unavailable, the choice still works for the current page.
@@ -111,6 +112,10 @@ presentation changes.
   directly or in a legend; use circles for untreated and triangles for treated
   where points share a plot. These colors identify arm membership, not graph
   variables. Do not recolor a Y-axis label blue to imply it belongs to A=1.
+- In the DiD chart, simulator-known untreated recovery uses purple
+  (`--counterfactual-truth`), a dotted line, and a square marker. This local legend
+  distinguishes the missing outcome from both hospital groups. The DiD effect
+  bracket retains the neutral text color and an explicit DiD label.
 - Show bias through distance from the labeled truth reference and numeric values.
   The sandbox no longer uses its `abs(estimate - truth) < 0.15` green/orange classification; it is not a validity threshold. Keep actual warnings
   explicit in text, separate from variable identity. Do not add uncertainty

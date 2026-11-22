@@ -21,7 +21,9 @@ try {
     if (request.resourceType() === "media") requests.push(request.url());
   });
   await page.goto(url);
-  await page.getByRole("heading", { name: /See what.*causes what/ }).waitFor();
+  await page
+    .getByRole("heading", { name: /When does a difference tell you/ })
+    .waitFor();
   assert.equal(await page.locator(".experiment, .lesson-results").count(), 0);
   assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
   assert.equal(
@@ -75,7 +77,7 @@ try {
   await dialog.waitFor({ state: "hidden" });
   assert.ok(await video.evaluate((el) => el.paused));
   assert.ok(await open.evaluate((el) => el === document.activeElement));
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.screenshot({ path: "/tmp/cohort-site-dark.png", fullPage: true });
   await open.click();
   await video.evaluate((el) => {
@@ -109,7 +111,7 @@ try {
     });
   }
   await page.setViewportSize({ width: 1280, height: 1000 });
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await page.screenshot({ path: "/tmp/cohort-site-light.png", fullPage: true });
   await page.getByRole("link", { name: "Learn" }).click();
   await page

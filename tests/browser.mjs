@@ -750,7 +750,7 @@ try {
   assert.ok(helpBounds.x >= 0 && helpBounds.x + helpBounds.width <= 320);
   assert.ok(helpBounds.y >= 0 && helpBounds.y + helpBounds.height <= 740);
   await page.locator("#help-collider .close-help").tap();
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.screenshot({
     path: "/tmp/causal-scenarios-dark.png",
     fullPage: true,

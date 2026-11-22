@@ -202,7 +202,7 @@ try {
   await analysis();
   await page.locator('[data-adjust="v1"]').check();
   const mediatorResults = await values();
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.deepEqual(await values(), mediatorResults);
   await page.screenshot({
     path: "artifacts/graph-lab-dark.png",
@@ -226,7 +226,7 @@ try {
     path: "artifacts/graph-lab-phone-dark.png",
     fullPage: true,
   });
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await world();
   const touchNode = page.locator('[data-node="A"]');
   await touchNode.scrollIntoViewIfNeeded();
@@ -307,7 +307,7 @@ try {
   await page.locator('[data-edge="v1:Y"]').focus();
   await page.keyboard.press("Enter");
   await page.locator("#lab-strength").fill("-0.7");
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.screenshot({
     path: "artifacts/graph-lab-editor-dark.png",
     fullPage: true,

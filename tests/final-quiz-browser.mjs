@@ -173,7 +173,7 @@ try {
   await expect(page.locator("#final-quiz-content")).toContainText(
     "Practice · Choose your adjustment set · Question 1",
   );
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.screenshot({
     path: "/tmp/final-quiz-dark-mobile.png",
     fullPage: true,

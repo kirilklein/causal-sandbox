@@ -124,7 +124,7 @@ try {
     .locator("main")
     .screenshot({ path: "/tmp/propensity-desktop.png" });
   const modelText = await page.locator("#ps-person-prediction").textContent();
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(
     await page.locator("#ps-person-prediction").textContent(),
     modelText,

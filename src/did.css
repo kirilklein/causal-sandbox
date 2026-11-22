@@ -1,0 +1,463 @@
+.did-page main {
+  max-width: 1000px;
+}
+.did-page main a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+#did-title {
+  scroll-margin-top: 20px;
+}
+.did-page .intro {
+  font-size: 19px;
+}
+.did-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 7px;
+  margin-top: 26px;
+}
+.did-page .did-steps button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  font-size: 12px;
+  padding: 12px;
+  border-color: var(--border);
+}
+.did-steps button span {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.did-steps button[aria-current] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+  box-shadow: inset 0 -3px var(--accent);
+}
+.did-page .did-experiment {
+  margin-top: 18px;
+  padding: 28px;
+}
+.did-stage-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.did-stage-meta span:first-child {
+  letter-spacing: 1.5px;
+}
+.did-page .did-experiment h2 {
+  font-size: clamp(21px, 3vw, 27px);
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+}
+#did-intro {
+  max-width: 760px;
+  color: var(--text-secondary);
+}
+.did-figure {
+  margin: 22px 0 0;
+}
+.did-chart {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.did-chart text {
+  font:
+    13px system-ui,
+    sans-serif;
+  fill: var(--text);
+}
+.did-chart .did-axis {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+.did-chart .did-axis-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+.did-grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+.did-post-area {
+  fill: var(--accent-surface);
+  opacity: 0.45;
+}
+.did-program-line {
+  stroke: var(--text-muted);
+  stroke-dasharray: 2 5;
+}
+.did-line {
+  fill: none;
+  stroke-width: 2.5;
+}
+.did-line.did-a,
+.did-label-leader.did-a {
+  stroke: var(--arm-1);
+}
+.did-line.did-b,
+.did-label-leader.did-b {
+  stroke: var(--arm-0);
+}
+.did-chart .did-a {
+  fill: var(--arm-1);
+}
+.did-chart .did-b {
+  fill: var(--arm-0);
+}
+.did-line.did-a,
+.did-line.did-b {
+  fill: none;
+}
+.did-assumed {
+  stroke: var(--arm-1);
+  stroke-dasharray: 7 5;
+}
+.did-chart .did-hollow {
+  fill: var(--surface);
+  stroke: var(--arm-1);
+  stroke-width: 2;
+}
+.did-chart .did-assumed-label {
+  fill: var(--text);
+  font-size: 12px;
+}
+.did-label-leader {
+  stroke-width: 1;
+  fill: none !important;
+}
+.did-label-leader.did-assumed-label {
+  stroke: var(--text-secondary);
+}
+.did-truth-line {
+  stroke: var(--counterfactual-truth);
+  stroke-width: 2;
+  stroke-dasharray: 2 5;
+}
+.did-truth-point {
+  fill: none;
+  stroke: var(--counterfactual-truth);
+  stroke-width: 2;
+}
+.did-chart .did-truth-label {
+  fill: var(--counterfactual-truth);
+  font-size: 12px;
+}
+.did-label-leader.did-truth-label {
+  stroke: var(--counterfactual-truth);
+}
+.did-effect-bracket {
+  stroke: var(--text);
+  fill: none;
+  stroke-width: 2;
+}
+.did-chart .did-effect-label {
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.did-copy-change {
+  stroke: var(--arm-0);
+  stroke-width: 4;
+}
+.did-transfer {
+  pointer-events: none;
+  animation: did-borrow-change 1.4s ease-in-out both;
+}
+@keyframes did-borrow-change {
+  0%,
+  15% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  80% {
+    transform: translateY(var(--did-shift));
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(var(--did-shift));
+    opacity: 0;
+  }
+}
+.did-figure figcaption {
+  display: flex;
+  gap: 7px 22px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+}
+.did-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.did-treated {
+  color: var(--arm-1);
+}
+.did-comparison {
+  color: var(--arm-0);
+}
+.did-dashed {
+  width: 22px;
+  border-top: 2px dashed var(--arm-1);
+}
+.did-truth-key {
+  width: 22px;
+  border-top: 2px dotted var(--counterfactual-truth);
+}
+.did-chart-note {
+  flex-basis: 100%;
+  margin-top: 5px;
+}
+.did-takeaway {
+  padding: 18px 20px;
+  background: var(--accent-surface);
+  border-radius: 10px;
+}
+.did-takeaway > span {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.did-takeaway > strong {
+  font-size: clamp(19px, 3vw, 25px);
+  font-variant-numeric: tabular-nums;
+}
+.did-page .did-takeaway p {
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+.did-effect-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.did-effect-summary:has(> :only-child) {
+  grid-template-columns: 1fr;
+}
+.did-effect-card {
+  display: grid;
+  grid-template-rows: 42px auto auto 1fr;
+  align-content: start;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 10px;
+}
+.did-effect-card > span {
+  font-size: 13px;
+}
+.did-effect-card > strong {
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.did-effect-card > small,
+.did-effect-card .did-effect-source {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.did-effect-error {
+  font-weight: 600;
+}
+.did-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--page)
+  );
+}
+:root[data-theme="dark"] .did-estimate {
+  background: color-mix(
+    in srgb,
+    var(--error-surface) var(--error-tint, 0%),
+    var(--surface-subtle)
+  );
+}
+.did-page .did-calculation,
+.did-page .did-color-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.did-changes span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.did-changes strong {
+  font-size: clamp(21px, 3vw, 30px);
+  font-variant-numeric: tabular-nums;
+}
+.did-changes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 14px 0;
+  border-block: 1px solid var(--border);
+}
+.did-changes > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.did-interpretation {
+  font-size: 14px;
+}
+.did-truth-result {
+  background: color-mix(
+    in srgb,
+    var(--counterfactual-truth) 10%,
+    var(--surface)
+  );
+  border-left: 3px solid var(--counterfactual-truth);
+}
+.did-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.did-actions .primary {
+  margin-left: auto;
+}
+.did-choices {
+  border: 0;
+  padding: 0;
+  margin: 18px 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.did-choices legend {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.did-choices label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+}
+.did-choices input,
+.did-reveal input {
+  accent-color: var(--accent);
+  width: 17px;
+  height: 17px;
+}
+.did-choices button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
+.did-slider {
+  display: block;
+  padding: 14px 18px;
+  background: var(--surface-subtle);
+  border-radius: 10px;
+}
+.did-slider > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 14px;
+}
+.did-slider output {
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.did-slider input {
+  width: 100%;
+  height: 32px;
+  margin: 16px 0 2px;
+  background: linear-gradient(var(--text-muted), var(--text-muted)) center /
+    100% 4px no-repeat;
+  accent-color: var(--accent);
+}
+.did-slider input::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+}
+.did-slider input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
+.did-reveal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+.did-feedback {
+  font-size: 14px;
+  border-left: 3px solid var(--warning);
+  padding-left: 12px;
+}
+.did-feedback:empty {
+  display: none;
+}
+.did-feedback[data-result="correct"] {
+  border-color: var(--success);
+}
+.did-details {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.did-details p {
+  font-size: 14px;
+}
+.did-equation {
+  font-weight: 600;
+}
+.did-return {
+  font-size: 14px;
+  margin-top: 24px;
+}
+@media (max-width: 650px) {
+  .did-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .did-page .did-steps button {
+    flex-direction: row;
+    align-items: center;
+    padding: 9px;
+  }
+  .did-page .did-experiment {
+    padding: 16px;
+  }
+  .did-stage-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .did-effect-summary {
+    gap: 8px;
+  }
+  .did-effect-card {
+    padding: 12px;
+  }
+  .did-actions .primary {
+    width: 100%;
+    margin-left: 0;
+  }
+  .did-changes > div {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .did-transfer {
+    animation: none;
+    display: none;
+  }
+}

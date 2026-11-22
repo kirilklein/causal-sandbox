@@ -16,7 +16,7 @@ try {
     page.evaluate(() => ({
       results: document.querySelector(".lesson-results, #effects").textContent,
       graph: document.querySelector("#lesson-graph, #dag").innerHTML,
-      controls: [...document.querySelectorAll("input, select:not(#theme)")].map(
+      controls: [...document.querySelectorAll("input:not(#theme), select")].map(
         (el) => [el.value, el.checked, el.disabled],
       ),
       sample: document
@@ -26,29 +26,45 @@ try {
   await page.goto(`${url}?lesson=randomization`);
   await page.locator("#known-effect").waitFor();
   assert.equal(await theme(), "light");
-  const initial = await snapshot();
-  await page.getByLabel("Color theme").selectOption("dark");
-  assert.equal(await theme(), "dark");
-  assert.deepEqual(await snapshot(), initial);
+  const toggle = page.getByRole("switch", { name: "Dark mode" });
+  assert.equal(await toggle.isChecked(), false);
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.getByLabel("Color theme").selectOption("light");
-  assert.equal(await theme(), "light");
-  await page.reload();
-  await page.locator("#known-effect").waitFor();
-  assert.equal(await theme(), "light");
-  await page.getByLabel("Color theme").selectOption("system");
-  assert.equal(await theme(), "dark");
+  await page.waitForFunction(
+    () => document.documentElement.dataset.theme === "dark",
+  );
+  assert.equal(await toggle.isChecked(), true);
   await page.emulateMedia({ colorScheme: "light" });
   await page.waitForFunction(
     () => document.documentElement.dataset.theme === "light",
   );
-  await page.getByLabel("Color theme").selectOption("dark");
+  const initial = await snapshot();
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
+  assert.equal(await theme(), "dark");
+  assert.deepEqual(await snapshot(), initial);
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
+  assert.equal(await theme(), "light");
+  await page.reload();
+  await page.locator("#known-effect").waitFor();
+  assert.equal(await theme(), "light");
+  await page.emulateMedia({ colorScheme: "light" });
+  assert.equal(await theme(), "light");
+  await toggle.focus();
+  await page.keyboard.press("Space");
+  assert.equal(await theme(), "dark");
+  assert.equal(await toggle.isChecked(), true);
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.emulateMedia({ colorScheme: "light" });
+  assert.equal(await theme(), "dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   await page.locator("#continue").click();
-  assert.equal(await page.getByLabel("Color theme").inputValue(), "dark");
+  assert.equal(await toggle.isChecked(), true);
 
   // Check text and essential graphics against both palettes, including error-tint extremes.
   for (const mode of ["light", "dark"]) {
-    await page.getByLabel("Color theme").selectOption(mode);
+    await page
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(mode === "dark");
     const contrast = await page.evaluate(() => {
       const styles = getComputedStyle(document.documentElement);
       const rgb = (token) =>
@@ -128,13 +144,13 @@ try {
   const sandbox = await snapshot();
   const canvas = () => page.locator("canvas").evaluate((el) => el.toDataURL());
   const darkCanvas = await canvas();
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   assert.notEqual(await canvas(), darkCanvas);
   assert.deepEqual(await snapshot(), sandbox);
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await canvas(), darkCanvas);
 
-  for (const width of [390, 1280]) {
+  for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     for (const path of ["?level=1", "?level=5", "?level=10", "?sandbox"]) {
       await page.goto(url + path);
@@ -152,6 +168,13 @@ try {
       });
     }
   }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(
+    await page
+      .locator(".theme-thumb")
+      .evaluate((el) => getComputedStyle(el).transitionDuration),
+    "0s",
+  );
   // Denied storage must not prevent loading or changing the theme.
   const blocked = await browser.newPage({ colorScheme: "dark" });
   collectPageErrors(blocked, errors);
@@ -164,7 +187,7 @@ try {
   });
   await blocked.goto(`${url}?lesson=randomization`);
   await blocked.locator("#known-effect").waitFor();
-  await blocked.getByLabel("Color theme").selectOption("light");
+  await blocked.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   assert.equal(
     await blocked.locator("html").getAttribute("data-theme"),
     "light",

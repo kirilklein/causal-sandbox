@@ -178,7 +178,9 @@ try {
   const screenshotTable = await table();
   await mkdir("test-results", { recursive: true });
   for (const theme of ["light", "dark"]) {
-    await page.getByLabel("Color theme").selectOption(theme);
+    await page
+      .getByRole("switch", { name: "Dark mode" })
+      .setChecked(theme === "dark");
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 1100 });
       assert.ok(await contents.isVisible());

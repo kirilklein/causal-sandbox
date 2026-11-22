@@ -195,7 +195,7 @@ try {
     await page.locator(".prediction-bars strong").allTextContents(),
     proxyStats.map((s) => s.prediction.mean.toFixed(2)),
   );
-  await page.getByLabel("Color theme").selectOption("dark");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(true);
   assert.equal(await page.locator("#relevance-graph").innerHTML(), beforeGraph);
   await checkStudies("proxy");
   const firstFeedback = await page.locator("#guess-feedback").textContent();
@@ -328,7 +328,9 @@ try {
           await include.click();
       }
       for (const mode of ["light", "dark"]) {
-        await page.getByLabel("Color theme").selectOption(mode);
+        await page
+          .getByRole("switch", { name: "Dark mode" })
+          .setChecked(mode === "dark");
         if (scene < 2) {
           await include.click();
           await expect(page.locator(".effect-truth")).toHaveCount(1);

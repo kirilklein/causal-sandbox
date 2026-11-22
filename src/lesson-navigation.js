@@ -39,11 +39,13 @@ export function lessonNavigation({
     : introduction
       ? "Introduction"
       : currentOptional
-        ? ["propensity-score", "assumptions", "p-values"].includes(
-            currentOptional,
-          )
-          ? "Refresher"
-          : "Advanced lesson"
+        ? optionalChapters.find(({ id }) => id === currentOptional)?.track
+          ? "Optional track"
+          : ["propensity-score", "assumptions", "p-values"].includes(
+                currentOptional,
+              )
+            ? "Refresher"
+            : "Advanced lesson"
         : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
   const previous = coreLessons[revisiting ? position : position - 1];
   const backLabel = `Back to ${previous ? previous[2] : openingLesson.title}`;
@@ -54,12 +56,13 @@ export function lessonNavigation({
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
     <div class="lesson-nav-heading">${back}${back ? `<span class="lesson-position">${status}</span>` : ""}<button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button>${searchButton()}${back ? "" : `<span>${status}</span>`}</div>
     <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Learning choices</a>
-    <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}${conceptMap.href}" ${learningPage === "concept-map" ? 'aria-current="step"' : ""}>Concept map</a>
+    <section class="concept-menu guided-menu" aria-label="Guided path"><h2>Guided path</h2><p class="menu-note">Lessons in order, each building on the last.</p>
+    <a class="menu-map-link" href="${import.meta.env.BASE_URL}${conceptMap.href}" ${learningPage === "concept-map" ? 'aria-current="step"' : ""}>How the pieces fit together ↗</a></section>
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}${openingLesson.href}" ${learningPage === "what-if" ? 'aria-current="step"' : ""}>${openingLesson.title}</a>
     <div class="lesson-progress"><label for="lesson-progress">${completedCount} of ${coreLessons.length} guided lessons complete</label><progress id="lesson-progress" max="${coreLessons.length}" value="${completedCount}"></progress><span id="lesson-complete-description">Completed</span>${hasSavedResults ? '<button id="reset-progress" type="button">Reset progress</button>' : ""}</div>${coreGroups
       .map(
-        ({ title, lessons }) =>
-          `<section class="lesson-group" aria-label="${title}"><h2>${title}</h2><ol>${lessons
+        ({ title, question, lessons }) =>
+          `<section class="lesson-group" aria-label="${title}"><h2>${title}</h2><p class="menu-note">${question}</p><ol>${lessons
             .map((lesson) => {
               number += 1;
               const isComplete = completed.has(lesson[1]);
@@ -69,10 +72,25 @@ export function lessonNavigation({
       )
       .join("")}
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=final-quiz" ${learningPage === "final-quiz" ? 'aria-current="step"' : ""}>Final quiz</a>
-    <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2>
-      ${optionalChapters.map(({ id, menuTitle, href }) => `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`).join("")}
+    <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2><p class="menu-note">Optional detours that go deeper.</p>
+      ${optionalChapters
+        .filter(({ track }) => !track)
+        .map(
+          ({ id, menuTitle, href }) =>
+            `<a href="${href}" aria-label="${menuTitle}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`,
+        )
+        .join("")}
     </section>
-    <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2>
+    <section class="concept-menu" aria-label="Optional tracks"><h2>Optional tracks</h2><p class="menu-note">Longer side paths built on the guided lessons.</p>
+      ${optionalChapters
+        .filter(({ track }) => track)
+        .map(
+          ({ id, menuTitle, href }) =>
+            `<a href="${href}" ${currentOptional === id ? 'aria-current="step"' : ""}>${menuTitle}</a>`,
+        )
+        .join("")}
+    </section>
+    <section class="concept-menu" aria-label="Concept guides"><h2>Concept guides</h2><p class="menu-note">Standalone reference pages.</p>
       <a href="glossary/">Glossary</a>
       <a href="confounding/">Confounding</a>
       <a href="collider-bias/">Collider bias</a>
@@ -82,8 +100,10 @@ export function lessonNavigation({
       <a href="mediator-adjustment/">Mediator adjustment</a>
       <a href="tmle/">TMLE</a>
     </section>
-    <a class="sandbox-nav-link" href="?sandbox">Explore scenarios ↗</a>
-    <a class="sandbox-nav-link" href="?sandbox=graph-lab">Build a graph ↗</a></div>
+    <section class="concept-menu" aria-label="Tools"><h2>Tools</h2><p class="menu-note">Open-ended: change a world or draw your own graph.</p>
+      <a href="?sandbox">Explore scenarios ↗</a>
+      <a href="?sandbox=graph-lab">Build a graph ↗</a>
+    </section></div>
   </nav>`;
 }
 

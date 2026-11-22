@@ -11,6 +11,18 @@ import { scenarios } from "./sandbox-scenarios.js";
 import { graphPresets } from "./graph-presets.js";
 
 const lessonDetails = {
+  "delta-method": [
+    "Explore nonlinear uncertainty and compare confidence interval coverage for revenue per order.",
+    "delta method tangent Taylor approximation nonlinear ratio metrics AOV CTR covariance bootstrap percentile confidence interval coverage Anton Bugaev",
+  ],
+  "difference-in-differences": [
+    "Compare changes across hospitals, construct an assumed counterfactual, and explore when parallel trends fails.",
+    "DiD difference in differences difference-in-differences diff in diff parallel trends before after counterfactual trend policy hospital program ATT",
+  ],
+  uplift: [
+    "Learn uplift modelling, compare conversion and incremental benefit, fit a T-learner, and evaluate fixed targeting rules on a randomized holdout.",
+    "uplift modeling modelling CATE heterogeneous treatment effects targeting conversion purchase probability propensity marketing persuadables T-learner Qini AUUC policy value",
+  ],
   "front-door": [
     "Recover a total causal effect through a mediator under front-door assumptions, despite hidden confounding.",
     "frontdoor front-door front door criterion identification mediator mediation hidden unmeasured confounding tutoring practice",
@@ -67,6 +79,10 @@ const lessonDetails = {
     "Update outcome predictions using treatment probabilities.",
     "targeted maximum likelihood estimation targeted learning",
   ],
+  "double-ml": [
+    "Compare plug-in, orthogonal, and cross-fitted estimates of an average effect with a flexible learner.",
+    "double ML DML double machine learning debiased orthogonal score Neyman orthogonality cross-fitting sample splitting folds nuisance regularization bias overfitting k-nearest neighbours coverage",
+  ],
   "tmle-robustness": [
     "Compare TMLE and IPW across treatment- and outcome-model errors in two interactive heatmaps.",
     "TMLE vs IPW model misspecification misspecifications double robustness heatmap visual comparison both models wrong imperfect models shift scale",
@@ -114,6 +130,10 @@ const lessonDetails = {
   trimming: [
     "Remove people with extreme scores and see how the target population changes.",
     "population trimming propensity score restriction estimand",
+  ],
+  "positivity-sensitivity": [
+    "Explore how assumptions about excluded people change the overall ATT while observed outcomes stay fixed.",
+    "positivity violation beyond trimming ATT treated partial identification bounds sensitivity extrapolation missing controls calendar time structural practical overlap OWATT",
   ],
 };
 
@@ -191,7 +211,7 @@ export const searchEntries = [
   })),
   ...optionalChapters.map((chapter) => ({
     title: chapter.title,
-    type: "Optional chapter",
+    type: chapter.track ? "Optional track" : "Optional chapter",
     href: chapter.href,
     description: chapter.description || lessonDetails[chapter.id][0],
     keywords: lessonDetails[chapter.id][1],

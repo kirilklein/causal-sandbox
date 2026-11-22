@@ -45,10 +45,19 @@ export function learningFrame(title, current, body) {
 }
 
 const background = {
+  "difference-in-differences": ["what-if", "confounding", "hidden-confounding"],
+  uplift: [
+    "what-if",
+    "randomization",
+    "uncertainty",
+    "outcome-regression",
+    "overlap",
+  ],
   "front-door": ["mediator", "hidden-confounding"],
   "trajectory-landscape": ["confounding"],
   uncertainty: ["randomization", "confounding"],
   "p-values": ["uncertainty"],
+  "delta-method": ["uncertainty"],
   "propensity-score": ["confounding", "ipw"],
   "outcome-regression": ["confounding"],
   mediator: ["confounding", "outcome-regression"],
@@ -73,9 +82,11 @@ const background = {
   ],
   tmle: ["outcome-regression", "propensity-score", "double-robustness"],
   "tmle-robustness": ["ipw", "double-robustness", "tmle"],
+  "double-ml": ["outcome-regression", "double-robustness", "uncertainty"],
   overlap: ["ipw", "propensity-score"],
   clipping: ["ipw", "overlap"],
   trimming: ["ipw", "overlap", "clipping"],
+  "positivity-sensitivity": ["overlap", "trimming"],
 };
 
 export function backgroundLinks(topic) {
@@ -103,7 +114,7 @@ const groups = [
     summary:
       "Sampling uncertainty, confidence intervals, and interpreting p-values.",
     refreshers: ["uncertainty"],
-    advanced: ["p-values"],
+    advanced: ["p-values", "delta-method"],
   },
   {
     title: "What should I adjust for?",
@@ -130,9 +141,11 @@ const groups = [
     advanced: [
       "misspecification",
       "front-door",
+      "difference-in-differences",
       "double-robustness",
       "tmle",
       "tmle-robustness",
+      "double-ml",
       "leaving-the-sandbox",
     ],
   },
@@ -141,7 +154,7 @@ const groups = [
     summary:
       "Sparse comparisons, extreme weights, and changing the target population.",
     refreshers: ["ipw", "overlap"],
-    advanced: ["clipping", "trimming"],
+    advanced: ["clipping", "trimming", "positivity-sensitivity"],
   },
 ];
 
@@ -161,6 +174,7 @@ export function renderLearning(mode) {
       "topics",
       `<p class="learning-lead">Choose the question you want to explore. Open a topic to find refreshers and advanced lessons.</p>
       ${conceptMapCard()}
+      <section class="panel learning-experiments" aria-label="Optional tracks"><h2>Optional tracks</h2><p>Uplift modelling: learn what an intervention changes, choose whom to contact, and test the targeting rule.</p>${topicList(["uplift"])}</section>
       <section class="panel learning-experiments" aria-label="Experiments to try"><h2>Experiments to try</h2>${topicList(["tmle-robustness", ...lessonExperiments.map(({ id }) => id)])}</section>
       <div class="learning-topics">${groups
         .map(

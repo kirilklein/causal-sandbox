@@ -413,7 +413,7 @@ try {
     await page.locator("#lesson-graph svg text").allTextContents(),
     ["Treatment (A)", "Outcome (Y)"],
   );
-  assert.equal(await page.locator("input:enabled").count(), 1);
+  assert.equal(await page.locator("main input:enabled").count(), 1);
   await page.locator(".lesson-explanation summary").focus();
   await page.keyboard.press("Enter");
   assert.equal(await result(), first);
@@ -729,7 +729,7 @@ try {
     );
     roleBaselines.push([level, baseline]);
     assert.equal(await page.locator(".lesson-result:visible").count(), 2);
-    assert.equal(await page.locator("input:enabled").count(), 1);
+    assert.equal(await page.locator("main input:enabled").count(), 1);
     assert.equal(await page.locator("#post-adjustment").isChecked(), false);
     assert.equal(await page.locator("#model-weight-note").count(), 0);
     assert.equal(
@@ -839,8 +839,8 @@ try {
   assert.equal(await page.locator(".lesson-intuition").count(), 0);
   assert.match(await page.locator(".lesson-nav").innerText(), /Level 8 of 14/);
   assert.equal(await page.locator(".lesson-result:visible").count(), 3);
-  assert.equal(await page.locator('input[type="checkbox"]').count(), 0);
-  assert.equal(await page.locator("input:enabled").count(), 1);
+  assert.equal(await page.locator('main input[type="checkbox"]').count(), 0);
+  assert.equal(await page.locator("main input:enabled").count(), 1);
   const ninth = await result();
   assert.equal(await page.locator("#aipw").count(), 0);
   assert.doesNotMatch(await page.locator(".learning").textContent(), /AIPW/i);
@@ -1230,7 +1230,9 @@ try {
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const theme of ["light", "dark"]) {
-      await page.getByLabel("Color theme").selectOption(theme);
+      await page
+        .getByRole("switch", { name: "Dark mode" })
+        .setChecked(theme === "dark");
       assert.equal(await result(), complete);
       assert.ok(
         await page.evaluate(
@@ -1248,7 +1250,7 @@ try {
       });
     }
   }
-  await page.getByLabel("Color theme").selectOption("light");
+  await page.getByRole("switch", { name: "Dark mode" }).setChecked(false);
   await progress.tap();
   assert.ok(Number(await progress.inputValue()) < 100);
   await page.locator("#redraw").click();
@@ -1277,7 +1279,7 @@ try {
     .check();
   assert.equal(await page.locator(".lesson-result:visible").count(), 4);
   assert.equal(await page.locator("#propensity-histogram rect").count(), 20);
-  assert.equal(await page.locator("input:enabled").count(), 2);
+  assert.equal(await page.locator("main input:enabled").count(), 2);
   assert.equal(await page.locator("#model-weight-note").isVisible(), false);
   await checkClippingStatus(false);
   await page
@@ -1360,7 +1362,9 @@ try {
       /Level 13 of 14/,
     );
     assert.equal(
-      await page.locator("input, #restart, .lesson-results, #redraw").count(),
+      await page
+        .locator("main input, #restart, .lesson-results, #redraw")
+        .count(),
       0,
     );
     assert.equal(
@@ -1755,7 +1759,7 @@ try {
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const theme of ["light", "dark"]) {
-      await page.locator("#theme").selectOption(theme);
+      await page.locator("#theme").setChecked(theme === "dark");
       assert.ok(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,

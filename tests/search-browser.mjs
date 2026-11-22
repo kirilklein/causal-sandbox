@@ -173,7 +173,9 @@ try {
   ]) {
     await page.goto(url + path);
     for (const theme of ["light", "dark"]) {
-      await page.getByLabel("Color theme").selectOption(theme);
+      await page
+        .getByRole("switch", { name: "Dark mode" })
+        .setChecked(theme === "dark");
       for (const width of [1280, 390, 320]) {
         await page.setViewportSize({ width, height: 800 });
         const trigger = await open.boundingBox();

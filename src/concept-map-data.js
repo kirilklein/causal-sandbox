@@ -44,7 +44,7 @@ export const mapRegions = [
         name: "An effect for whom?",
         description:
           "An average effect belongs to a particular population. If treatment effects differ across people, changing that population can change the answer.",
-        lessons: ["trimming", "what-if"],
+        lessons: ["trimming", "what-if", "uplift"],
         connection: [
           "evidence",
           "Trimming removes people with extreme treatment probabilities. It can improve the available comparison, but the effect now concerns the retained population.",
@@ -114,6 +114,17 @@ export const mapRegions = [
         ],
       },
       {
+        id: "parallel-trends",
+        name: "Comparing changes over time",
+        description:
+          "Difference-in-differences compares changes across groups. It identifies an effect on the treated group if their untreated outcomes would have changed in parallel, with no anticipation or spillovers.",
+        lessons: ["difference-in-differences"],
+        connection: [
+          "question",
+          "The comparison group supplies an assumed change for the treated group’s missing future. The target remains the effect for the treated population.",
+        ],
+      },
+      {
         id: "overlap",
         name: "Comparable people",
         description:
@@ -171,7 +182,7 @@ export const mapRegions = [
         name: "Combine both · AIPW & TMLE",
         description:
           "AIPW corrects an outcome-model estimate using treatment probabilities. TMLE updates outcome predictions first. Under the causal and regularity assumptions, either model being correct can suffice for consistent estimation.",
-        lessons: ["double-robustness", "tmle", "tmle-robustness"],
+        lessons: ["double-robustness", "tmle", "tmle-robustness", "double-ml"],
         connection: [
           "evidence",
           "Double robustness is not a promise of accuracy in every sample. Both models can be wrong, and hidden confounding or poor overlap can still undermine the analysis.",
@@ -202,7 +213,12 @@ export const mapRegions = [
         name: "Uncertainty & precision",
         description:
           "A different sample gives a different estimate. Confidence intervals describe sampling uncertainty under their assumptions; p-values compare the data with a specified null model.",
-        lessons: ["uncertainty", "p-values", "sampling-variation"],
+        lessons: [
+          "uncertainty",
+          "p-values",
+          "delta-method",
+          "sampling-variation",
+        ],
         connection: [
           "comparison",
           "Precision does not establish causal validity. A narrow interval can surround a biased estimate when the comparison is confounded.",
@@ -235,7 +251,7 @@ export const mapRegions = [
         name: "Trimming the population",
         description:
           "Trimming excludes people with extreme treatment probabilities. The remaining population may support a better comparison, but it is a different target.",
-        lessons: ["trimming"],
+        lessons: ["trimming", "positivity-sensitivity"],
         connection: [
           "question",
           "Removing people changes whose effect we estimate. If effects vary, the retained population’s average effect can differ from the original population’s effect.",
