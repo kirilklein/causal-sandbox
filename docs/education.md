@@ -2,6 +2,8 @@
 
 ## Causal Inference Foundations
 
+See the [delivery tracker](foundations-status.md) for implementation status, verification evidence and the next learner checks.
+
 The homepage’s primary action starts the patient opening or continues the
 learner’s saved activity. The outline at `?lesson=learn` opens every module.
 Placement recommends a starting module and preserves its existing topic-level
