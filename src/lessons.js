@@ -1,3 +1,4 @@
+import { readPilot, pilotDestination } from "./foundations-progress.js";
 import { capture, campaignHref } from "./events.js";
 import { lessonGraph } from "./lesson-graph.js";
 import { graphComparison, setupGraphComparison } from "./graph-comparison.js";
@@ -336,18 +337,27 @@ function enterIntroduction(focus = true, animate = false) {
     coreLessons.find(([, slug]) => slug === progress.currentLesson) ||
     coreLessons.find(([, slug]) => !completed.has(slug)) ||
     coreLessons[0];
+  const savedPilot = readPilot();
   const hasProgress =
     progress.completedLessons.length > 0 || progress.currentLesson;
+  let primaryHref = pilotDestination(savedPilot);
+  if (
+    hasProgress &&
+    (!savedPilot.current || savedPilot.current === "adjustment")
+  ) {
+    primaryHref = lessonHref(resumeLesson);
+  }
   app.innerHTML = `
     <header class="lesson-header introduction-header"><a class="brand" href="./" data-introduction>${icon}<span>Causal Sandbox</span></a>${themeControl()}</header>
     <main class="learning introduction${animate ? " introduction-arriving" : ""}">
       ${lessonNavigation({ introduction: true })}
       <section class="intro-hero" aria-labelledby="intro-title">
-        <div class="intro-copy"><p class="intro-kicker">An interactive causal lab</p>
-          <h1 tabindex="-1" id="intro-title">When does a difference tell you what caused it?</h1>
-          <p class="intro-context">Learn causal inference by changing who gets treated, what you measure, and how you analyze the data. In each simulation, you can compare your estimate with the known effect.</p>
-          <p class="intro-audience">For data scientists and applied researchers getting started with causal inference.</p>
-          <a class="intro-opening" href="${campaignHref("?lesson=what-if")}">Start with one patient and two possible futures →</a>
+        <div class="intro-copy"><p class="intro-kicker">Free interactive course · Pilot</p>
+          <h1 tabindex="-1" id="intro-title">Causal Inference Foundations</h1>
+          <p class="intro-context">Follow a patient study from two possible futures to a surprising result. Decide whether treatment caused harm and test your explanation.</p>
+          <p class="intro-audience">For anyone with basic statistics. No causal inference background needed.</p>
+          <a class="intro-opening primary" href="${campaignHref(import.meta.env.BASE_URL + primaryHref)}">${savedPilot.current || hasProgress ? "Continue" : "Start the course"} →</a>
+          <p><a href="?lesson=observed-difference">Jump to the patient study</a> · <a href="?lesson=quiz">Find my starting point</a></p>
         </div>
         <svg class="intro-graph" viewBox="0 0 460 310" aria-hidden="true" focusable="false">
           <defs><marker id="intro-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
@@ -762,6 +772,10 @@ function navigate(level, callback = false) {
   );
   enter(callback ? 9 : level, true, callback);
 }
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted && document.querySelector(".introduction"))
+    enterIntroduction(false);
+});
 window.addEventListener("popstate", () => enterFromUrl());
 function renderModelPreview(points) {
   const treatment = state.treatmentCurve !== 0;

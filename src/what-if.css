@@ -143,3 +143,21 @@
     justify-content: center;
   }
 }
+
+.opening-trial {
+  max-width: 38rem;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.opening-trial h2 {
+  margin-top: 0;
+}
+.opening-trial button {
+  min-height: 44px;
+}
+#opening-save:empty {
+  display: none;
+}

@@ -1,5 +1,40 @@
 # Progressive education delivery
 
+## Foundations pilot
+
+The homepage opens the patient trajectory at `?lesson=what-if&course=foundations`.
+The four scenes lead to a randomized assignment of the same 100 patients and
+the pilot at `?lesson=observed-difference`. The standalone opening still leads
+to the original randomization lesson. The pilot saves the current activity,
+assignment, selected severity, first and latest responses, and repeated-study
+display in this browser. Its final action opens the existing mediator lesson.
+
+Review the pilot in three pieces.
+
+1. **Patient calculation.** At maximum selection the full cohort has a crude
+   day-12 difference of −2.93 points. At equal shares it is +12. Check that
+   standardizing observed outcomes across severity gives +12 at both settings.
+   The repeat action samples new studies from the strongly selected population.
+2. **Teaching sequence.** Enter the pilot directly. Make an initial judgment,
+   change assignment, inspect a severity, explain the reversal, then reveal
+   truth. Compare the spread and center of the 100- and 1,600-patient studies.
+   Answer the hospital transfer question using only observable evidence.
+3. **Entry and resume.** Start from home, leave midway, reopen on the same
+   browser and continue. Check the legacy topic, placement and tool routes.
+   Run `node tests/foundations-browser.mjs` against a separately running
+   server using the [browser setup](../CONTRIBUTING.md#browser-checks).
+
+Before extending the course, observe six first-time learners with basic
+statistics using their phones. Include iOS Safari and Android Chrome. Ask them
+to start, interpret the pooled difference, change the assignment rule, finish
+the hospital question, and resume after closing the tab. Ask them to explain
+the reversal and what a larger sample would change in their own words.
+Record help needed, scrolls to rediscover a result, active minutes, and optional
+exploration separately. Aim for five of six to finish and resume unaided and
+explain both severity imbalance and sampling precision. Revise and repeat if
+either breaks down. Estimate the full course duration once the later modules
+and independent final study have also been tried.
+
 The optional [Double ML chapter](double-ml.md) follows TMLE at
 `?lesson=double-ml`. With a k-nearest-neighbour learner in the curved AIPW world,
 it compares a plug-in, an AIPW score without cross-fitting, and a cross-fitted

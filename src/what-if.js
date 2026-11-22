@@ -1,3 +1,4 @@
+import { pilotUrl, readPilot, savePilot } from "./foundations-progress.js";
 import { campaignHref } from "./events.js";
 import "./trajectory-landscape.css";
 import "./what-if.css";
@@ -44,6 +45,13 @@ const scenes = [
   },
 ];
 const $ = (id) => document.getElementById(id);
+const courseOpening =
+  new URLSearchParams(location.search).get("course") === "foundations";
+const openingSaved = courseOpening ? readPilot() : {};
+let trialNumber =
+  Number.isSafeInteger(openingSaved.trialNumber) && openingSaved.trialNumber > 0
+    ? openingSaved.trialNumber
+    : 0;
 let step = 0;
 let frame = 0;
 let animation = null;
@@ -77,6 +85,14 @@ document.querySelector("#app").innerHTML =
       <div id="what-if-population" hidden></div>
       <div class="trajectory-playback" id="what-if-playback"><span id="trajectory-frame-label"></span><button id="trajectory-pause" aria-label="Pause animation">Ⅱ Pause</button><button id="trajectory-replay">↻ Replay scene</button></div>
     </section>
+    ${
+      courseOpening
+        ? `<section id="opening-trial" class="opening-trial" hidden><h2>What would a randomized comparison show?</h2>
+      <p>Give each of the 100 patients an independent coin flip for treatment. Predict how close the treated and untreated group difference will be to +12 points.</p>
+      <button id="run-trial">Randomly assign treatment</button><p role="status" id="trial-result"></p></section>
+      <p id="opening-save" role="status"></p>`
+        : ""
+    }
     <div class="trajectory-story"><p id="trajectory-reading"></p><nav class="trajectory-navigation" aria-label="Continue learning"><button id="trajectory-back" aria-label="Previous scene">←</button><button id="trajectory-next"></button><a id="what-if-continue" href="${campaignHref("?lesson=randomization")}" hidden>Start with a randomized experiment →</a></nav></div>
     <footer class="trajectory-footnote"><span>FICTIONAL PATIENTS · COUNTERFACTUALS ARE KNOWN ONLY INSIDE THIS MODEL</span>
       <details><summary>What assumptions make this possible?</summary><p>We need well-defined treatment choices and outcomes that match those choices (consistency), both choices to be possible for the people we compare (positivity), and comparable groups with respect to their potential outcomes (exchangeability, possibly after adjustment). Here we also assume that treating one person does not change another person’s outcome.</p><p>Randomization supports comparability. In observational studies, we must justify which variables to adjust for and whether important common causes remain unmeasured. Averaging alone does not establish these conditions.</p><p>Under these conditions, population-average potential outcomes can be identified from observed data. Finite-sample estimates still have uncertainty. Predicting a person’s outcome does not recover their individual counterfactual.</p><a href="?lesson=assumptions">Explore these assumptions later →</a></details>
@@ -177,6 +193,13 @@ function enter(next, focus = true) {
     }));
   }
   step = next;
+  if (courseOpening) {
+    $("opening-trial").hidden = step !== 3;
+    if (!savePilot({ current: "opening", openingStep: step })) {
+      $("opening-save").textContent =
+        "Progress is available for this visit. Browser storage is unavailable.";
+    }
+  }
   const scene = scenes[step];
   $("trajectory-heading").innerHTML = scene.title;
   $("trajectory-description").textContent = scene.copy;
@@ -263,4 +286,27 @@ window.addEventListener("pageshow", (event) => {
     replay();
   }
 });
-enter(0, false);
+if (courseOpening) {
+  const { randomizedPatients, observedComparison } =
+    await import("./foundations-study.js");
+  function showTrial() {
+    const { arms } = observedComparison(randomizedPatients(4217 + trialNumber));
+    const difference = arms[1].mean - arms[0].mean;
+    $("trial-result").textContent =
+      `Day-12 means: ${arms[1].mean.toFixed(2)} treated, ${arms[0].mean.toFixed(2)} untreated. Difference: ${difference.toFixed(2)} points. Random assignment can leave groups imbalanced by chance.`;
+  }
+  if (trialNumber) showTrial();
+  $("run-trial").addEventListener("click", () => {
+    trialNumber++;
+    showTrial();
+    savePilot({ trialNumber });
+  });
+  const onward = $("what-if-continue");
+  onward.href = campaignHref(pilotUrl);
+  onward.textContent = "Compare the 100 patients →";
+}
+$("what-if-population").addEventListener("click", (event) => {
+  event.target.closest(".what-if-person")?.focus();
+});
+const bookmark = openingSaved.openingStep;
+enter(Number.isInteger(bookmark) && scenes[bookmark] ? bookmark : 0, false);
