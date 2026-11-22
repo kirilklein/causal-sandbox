@@ -72,6 +72,13 @@ try {
     const resultBox = await page.locator(".pilot-means").boundingBox();
     expect(resultBox.y + resultBox.height - controlBox.y).toBeLessThan(300);
     await page.getByRole("button", { name: "Explain the difference" }).click();
+    await expect(page.locator("#patient-pilot")).toContainText("−2.93");
+    await expect(page.locator("#patient-pilot")).toContainText("+12.00");
+    await page.getByRole("radio").first().check();
+    await expect(page.locator("#answer-feedback")).toContainText("Try again");
+    await expect(
+      page.getByRole("button", { name: "Compare with simulator truth" }),
+    ).toBeDisabled();
     await page.getByRole("radio").nth(1).check();
     await page
       .getByRole("button", { name: "Compare with simulator truth" })

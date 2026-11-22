@@ -94,6 +94,12 @@
 .patient-pilot a.primary {
   min-height: 44px;
 }
+.patient-pilot button:disabled {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
 .pilot-repeats {
   width: 100%;
   color: var(--text-secondary);

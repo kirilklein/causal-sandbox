@@ -212,7 +212,7 @@ export const activities = {
     {
       id: "hidden",
       title: "Test a missing common cause",
-      text: "Start a different version of the study with both treatment options at each severity. Half the patients are frail. Frailty lowers health by 20 points and makes treatment more likely. The analyst initially sees only severity.",
+      text: "Start a different version of the study with both treatment options at each severity. The analyst initially sees only severity.",
       experiment: "hidden",
       prompt: "What can balance on recorded severity establish?",
       choices: [

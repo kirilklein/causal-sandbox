@@ -55,7 +55,7 @@ const questions = {
       "The rule changes which severities contribute to each arm’s mean.",
     ],
     replies: [
-      "The assignment control leaves each patient’s two possible outcomes fixed. Look at the shapes of the two groups.",
+      "Try again. The assignment control leaves each patient’s two possible outcomes fixed. Look at the shapes of the two groups.",
       "Yes. More severely ill patients have lower day-12 scores and receive treatment more often.",
     ],
     correct: 1,
@@ -69,9 +69,9 @@ const questions = {
       "Conclude harm because a precise difference excludes zero.",
     ],
     replies: [
-      "More patients can reduce sampling noise while leaving the severity imbalance intact.",
+      "Try again. More patients can reduce sampling noise while leaving the severity imbalance intact.",
       "That comparison addresses measured severity when both arms are represented. A causal interpretation still depends on having measured the important common causes.",
-      "Precision describes variation across samples. It cannot tell you whether the comparison groups started out alike.",
+      "Try again. Precision describes variation across samples. It cannot tell you whether the comparison groups started out alike.",
     ],
     correct: 1,
   },
@@ -214,9 +214,12 @@ function render(focus = true) {
       break;
     case "explain":
       body =
-        means(result) +
-        distribution(result) +
-        ask("explain", "Compare with simulator truth");
+        [1, 0]
+          .map((rule) => {
+            const ruled = observedComparison(observedPatients(rule));
+            return `<figure><figcaption>${rule ? "Favor more severe" : "Equal shares"}</figcaption>${means(ruled)}${distribution(ruled)}</figure>`;
+          })
+          .join("") + ask("explain", "Compare with simulator truth");
       break;
     case "reveal":
       body =

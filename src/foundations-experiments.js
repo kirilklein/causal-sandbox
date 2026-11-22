@@ -23,7 +23,10 @@ export const settings = {
   standardize: ["Observed arm mix", "All 100 patients"],
   weight: ["Original counts", "Inverse probability weights"],
   support: ["Equal shares", "Weak overlap", "Missing untreated group"],
-  hidden: ["Measured severity only", "Reveal and adjust for frailty"],
+  hidden: [
+    "Measured severity only",
+    "Reveal the hidden cause and adjust for it",
+  ],
   curve: ["Straight line", "Add a quadratic term"],
 };
 const labels = {
@@ -96,7 +99,7 @@ export function experimentResult(id, setting, severity = 9) {
     }
     case "hidden": {
       const result = hiddenStudy();
-      return `<div class="course-readout"><strong>Adjusted difference: ${format(setting ? result.withFrailty : result.adjusted)} points</strong><p>${setting ? "Within each severity, four of five treated patients are frail versus one of five untreated. Comparing within both severity and frailty recovers the simulated effect." : "Each severity has five treated and five untreated patients. On measured severity the groups look perfectly balanced."}</p></div>`;
+      return `<div class="course-readout"><strong>Adjusted difference: ${format(setting ? result.withFrailty : result.adjusted)} points</strong><p>${setting ? "Half the patients are frail. Frailty lowers health by 20 points. Within each severity, four of five treated patients are frail versus one of five untreated. Comparing within both severity and frailty recovers the simulated effect." : "Each severity has five treated and five untreated patients. On measured severity the groups look perfectly balanced."}</p></div>`;
     }
     case "curve": {
       const result = curvedStudy(Boolean(setting));
