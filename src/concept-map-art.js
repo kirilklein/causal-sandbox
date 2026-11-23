@@ -3,14 +3,14 @@ const dot = (x, y, r, cls = "") =>
 
 export function mapIllustration(region) {
   const art = {
-    question: `<path class="map-art-guide" d="M40 147H360M45 147V25"/>
+    question: `<path class="map-art-guide" d="M60 143H360M75 143V25"/>
       <path class="map-art-ribbon map-art-treated" d="M75 140C150 140 150 64 327 45L327 68C170 76 165 146 75 146Z"/>
       <path class="map-art-ribbon map-art-untreated" d="M75 140C170 140 205 121 327 114L327 134C190 137 165 146 75 146Z"/>
       <path class="map-art-line map-art-treated" d="M75 143C150 143 155 72 327 56"/>
       <path class="map-art-line map-art-untreated" d="M75 143C170 143 205 129 327 124"/>
       <g class="map-art-treated">${dot(327, 56, 7)}</g><g class="map-art-untreated">${dot(327, 124, 7)}</g>
-      <circle class="map-art-person" cx="60" cy="122" r="7"/><path class="map-art-line" d="M49 146v-5a11 11 0 0 1 22 0v5"/>
-      <text x="196" y="40">With treatment</text><text x="206" y="166">Without treatment</text>
+      <circle class="map-art-person" cx="75" cy="143" r="7"/>
+      <text x="196" y="40">With treatment</text><text x="206" y="162">Without treatment</text>
       <text class="map-art-caption" x="200" y="189">One person · two possible futures</text>`,
     comparison: `<path class="map-art-guide" d="M50 159H350"/>
       <path class="map-art-line" d="M180 60 117 110m8-1-8 1 1-8M220 60l63 50m-1-8 1 8-8-1"/>
