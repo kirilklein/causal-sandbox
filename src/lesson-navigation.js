@@ -1,3 +1,9 @@
+import { modules } from "./foundations-catalog.js";
+import {
+  readPilot,
+  clearPilot,
+  completedModules,
+} from "./foundations-progress.js";
 import "./lesson-navigation.css";
 import { clearProgress, readProgress } from "./progress.js";
 
@@ -26,27 +32,32 @@ export function lessonNavigation({
     completed.has(slug),
   ).length;
   const hasSavedResults =
-    completedCount > 0 || Object.keys(progress.answers).length > 0;
-  const status = learningPage
-    ? {
-        "what-if": "Opening lesson",
-        "concept-map": "Concept map",
-        learn: "Learning choices",
-        topics: "Topic browser",
-        quiz: "Starting-point quiz",
-        "final-quiz": "Final quiz",
-      }[learningPage]
-    : introduction
-      ? "Introduction"
-      : currentOptional
-        ? optionalChapters.find(({ id }) => id === currentOptional)?.track
-          ? "Optional track"
-          : ["propensity-score", "assumptions", "p-values"].includes(
-                currentOptional,
-              )
-            ? "Refresher"
-            : "Advanced lesson"
-        : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`;
+    readPilot().current ||
+    completedCount > 0 ||
+    Object.keys(progress.answers).length > 0;
+  const status =
+    modules.find((m) => m.id === learningPage)?.title ||
+    (learningPage
+      ? {
+          "what-if": "Opening lesson",
+          "observed-difference": "Foundations patient study",
+          "concept-map": "Concept map",
+          learn: "Learning choices",
+          topics: "Topic browser",
+          quiz: "Starting-point quiz",
+          "final-quiz": "Final quiz",
+        }[learningPage]
+      : introduction
+        ? "Introduction"
+        : currentOptional
+          ? optionalChapters.find(({ id }) => id === currentOptional)?.track
+            ? "Optional track"
+            : ["propensity-score", "assumptions", "p-values"].includes(
+                  currentOptional,
+                )
+              ? "Refresher"
+              : "Advanced lesson"
+          : `Level ${position + 1} of ${coreLessons.length + 1}${revisiting ? " · Optional revisit" : ""}`);
   const previous = coreLessons[revisiting ? position : position - 1];
   const backLabel = `Back to ${previous ? previous[2] : openingLesson.title}`;
   const back = Number.isInteger(position)
@@ -55,11 +66,12 @@ export function lessonNavigation({
   let number = 0;
   return `<nav class="lesson-nav" aria-label="Lesson navigation">
     <div class="lesson-nav-heading">${back}${back ? `<span class="lesson-position">${status}</span>` : ""}<button id="lesson-menu-toggle" aria-label="Contents" aria-expanded="false" aria-controls="lesson-menu"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M8 3v14"/><path class="contents-direction" d="m11 8 2 2-2 2"/></svg><span class="contents-label">Contents</span></button>${searchButton()}${back ? "" : `<span>${status}</span>`}</div>
-    <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Learning choices</a>
-    <section class="concept-menu guided-menu" aria-label="Guided path"><h2>Guided path</h2><p class="menu-note">Lessons in order, each building on the last.</p>
+    <div id="lesson-menu"><a class="sandbox-nav-link" href="?lesson=introduction" data-introduction ${introduction ? 'aria-current="step"' : ""}>Introduction</a><a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=learn" ${learningPage === "learn" ? 'aria-current="step"' : ""}>Course modules</a>
+    <section class="concept-menu" aria-label="Causal Inference Foundations"><h2>Causal Inference Foundations</h2><p class="menu-note"><span data-course-count>${completedModules().length}</span> of 6 modules complete</p>${modules.map((m, i) => `<a href="${import.meta.env.BASE_URL}${m.href}">${i + 1}. ${m.title}</a>`).join("")}</section>
+    ${hasSavedResults ? '<button id="reset-progress" type="button">Reset progress</button>' : ""}<details class="topic-menu" ${position !== undefined || currentOptional || learningPage === "topics" || learningPage === "final-quiz" ? "open" : ""}><summary>Standalone topic library</summary><section class="concept-menu guided-menu" aria-label="Guided path"><h2>Topic library</h2><p class="menu-note">Standalone lessons and advanced methods.</p>
     <a class="menu-map-link" href="${import.meta.env.BASE_URL}${conceptMap.href}" ${learningPage === "concept-map" ? 'aria-current="step"' : ""}>How the pieces fit together ↗</a></section>
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}${openingLesson.href}" ${learningPage === "what-if" ? 'aria-current="step"' : ""}>${openingLesson.title}</a>
-    <div class="lesson-progress"><label for="lesson-progress">${completedCount} of ${coreLessons.length} guided lessons complete</label><progress id="lesson-progress" max="${coreLessons.length}" value="${completedCount}"></progress><span id="lesson-complete-description">Completed</span>${hasSavedResults ? '<button id="reset-progress" type="button">Reset progress</button>' : ""}</div>${coreGroups
+    <div class="lesson-progress"><label for="lesson-progress">${completedCount} of ${coreLessons.length} guided lessons complete</label><progress id="lesson-progress" max="${coreLessons.length}" value="${completedCount}"></progress><span id="lesson-complete-description">Completed</span></div>${coreGroups
       .map(
         ({ title, question, lessons }) =>
           `<section class="lesson-group" aria-label="${title}"><h2>${title}</h2><p class="menu-note">${question}</p><ol>${lessons
@@ -71,6 +83,7 @@ export function lessonNavigation({
             .join("")}</ol></section>`,
       )
       .join("")}
+    <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=observed-difference">Foundations patient study</a>
     <a class="sandbox-nav-link" href="${import.meta.env.BASE_URL}?lesson=final-quiz" ${learningPage === "final-quiz" ? 'aria-current="step"' : ""}>Final quiz</a>
     <section class="concept-menu optional-menu" aria-label="Refreshers and advanced lessons"><h2>Refreshers & advanced lessons</h2><p class="menu-note">Optional detours that go deeper.</p>
       ${optionalChapters
@@ -100,7 +113,7 @@ export function lessonNavigation({
       <a href="mediator-adjustment/">Mediator adjustment</a>
       <a href="tmle/">TMLE</a>
     </section>
-    <section class="concept-menu" aria-label="Tools"><h2>Tools</h2><p class="menu-note">Open-ended: change a world or draw your own graph.</p>
+    </details><section class="concept-menu" aria-label="Tools"><h2>Tools</h2><p class="menu-note">Open-ended: change a world or draw your own graph.</p>
       <a href="?sandbox">Explore scenarios ↗</a>
       <a href="?sandbox=graph-lab">Build a graph ↗</a>
     </section></div>
@@ -134,6 +147,7 @@ export function setupLessonNavigation() {
   document.querySelector("#reset-progress")?.addEventListener("click", () => {
     if (!confirm("Reset your lesson progress and saved answers?")) return;
     clearProgress();
+    clearPilot();
     location.reload();
   });
   if (app.dataset.lessonNavigationSetup) return;

@@ -1,5 +1,53 @@
 # Progressive education delivery
 
+## Causal Inference Foundations
+
+See the [v2 curriculum plan](education-v2.md) for the proposed module sequence and learner pilot. The [delivery tracker](foundations-status.md) records implementation status and verification evidence.
+
+The homepage’s primary action starts the patient opening or continues the
+learner’s saved activity. The outline at `?lesson=learn` opens every module.
+Placement recommends a starting module and preserves its existing topic-level
+feedback. Returning to a standalone topic keeps the course bookmark.
+
+| Module | Required decision | Design budget |
+| --- | --- | ---: |
+| 1. Define the treatment effect | Predict from the observed trajectory, reveal the missing outcome, run a randomized trial and specify the day-12 population contrast. | 30 min |
+| 2. Explain a misleading difference | Change assignment on the same patients. Inspect severity, compare repeated-study distributions and explain why a precise comparison can be biased. | 40 min |
+| 3. Choose what to adjust for | Select variables on three proposed graphs and justify the set for the total effect. | 40 min |
+| 4. Estimate the effect | Inspect strata, calculate a standardized mean, reconstruct the population by weighting, then average model predictions and interpret the estimate. | 50 min |
+| 5. Decide when to trust the result | Inspect weak and absent support, reveal a hidden common cause and compare two outcome fits. Write the investigation you would request. | 45 min |
+| 6. Solve a new study | Define the job-training offer effect, defend a set, calculate a standardized employment difference and write a conclusion. | 35 min |
+
+The 240 required minutes are a design budget. Budget an additional 30–45 minutes
+for selected reading and 45–90 for optional experiments. The advanced library is
+open-ended. Time the required path, optional work and idle time separately before
+publishing a completion estimate. Observe first-time learners on physical iOS and
+Android phones as well as desktop. Ask them to explain their reasoning without
+coaching and return after closing the browser. Record where help was needed and
+which comparisons required scrolling. Use the final report to check transfer.
+
+The course uses original exercises and synthetic outcomes. The opening draws on
+the question and counterfactual progression of Berkeley Roadmap steps 0–2 and
+Lab 1B. The comparison and adjustment sequence draws on Labs 2A and 2B, the
+estimation sequence on Labs 2C and 3, and the final case on step 7. Optional reading
+links point to Hernán and Robins, Neal, and Facure. No external datasets, figures,
+or notebook code are distributed with these exercises.
+
+`foundations-catalog.js` defines the six routes and the topic-to-module mapping.
+`foundations-activities.js` holds the decisions and feedback for modules 3–6.
+The legacy numeric levels and topic URLs retain their independent renderers.
+Course state extends the pilot’s existing browser record with module completions,
+activity drafts, settings and first submissions. Legacy lesson progress and
+the placement attempt remain in their original records. Free-text explanations
+are available for self-review. Structured adjustment sets, calculations and choices
+receive automatic feedback.
+
+Run `node tests/foundations-browser.mjs` against a separately running server
+following the [browser setup](../CONTRIBUTING.md#browser-checks). It exercises
+the complete journey and interruption/resume at 320, 390, 430 and desktop widths.
+
+## Standalone lessons and optional experiments
+
 The optional [Double ML chapter](double-ml.md) follows TMLE at
 `?lesson=double-ml`. With a k-nearest-neighbour learner in the curved AIPW world,
 it compares a plug-in, an AIPW score without cross-fitting, and a cross-fitted

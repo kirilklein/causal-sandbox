@@ -1,3 +1,5 @@
+import { modules } from "./foundations-catalog.js";
+import { readPilot, pilotDestination } from "./foundations-progress.js";
 import { capture } from "./events.js";
 import "./style.css";
 import { setupTheme, themeControl } from "./theme.js";
@@ -48,6 +50,10 @@ if (page === "glossary") {
     await import("./delta-method-lesson.js");
   } else if (["instrument", "instrument-hidden-confounding"].includes(lesson)) {
     await import("./instrument-lesson.js");
+  } else if (modules.slice(2).some((m) => m.href === `?lesson=${lesson}`)) {
+    await import("./foundations-course.js");
+  } else if (lesson === "observed-difference") {
+    await import("./foundations-pilot.js");
   } else if (lesson === "what-if") {
     await import("./what-if.js");
   } else if (lesson === "trajectory-landscape") {
@@ -157,6 +163,22 @@ footer.innerHTML = `
       )
       .join("")}</ul>
   </details>`;
+const courseBookmark = readPilot();
+if (
+  courseBookmark.current &&
+  !["introduction", "learn"].includes(lesson) &&
+  (lesson || params.has("sandbox") || page)
+) {
+  const resumeHref = pilotDestination(courseBookmark);
+  const isCurrent =
+    new URLSearchParams(resumeHref.slice(1)).get("lesson") === lesson;
+  if (!isCurrent) {
+    const returnLink = document.createElement("a");
+    returnLink.href = import.meta.env.BASE_URL + resumeHref;
+    returnLink.textContent = "Return to my course";
+    footer.querySelector(".site-footer-links").prepend(returnLink);
+  }
+}
 document.body.append(footer);
 setupFeedback(footer);
 document

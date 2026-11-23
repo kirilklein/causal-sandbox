@@ -41,6 +41,6 @@ export function populationMarkup(observedOnly) {
   };
   return `<p class="what-if-population-note">${observedOnly ? "Keep the same people and day-12 health scale. Only observed outcomes remain." : "Keep the two day-12 endpoints. Time now stays fixed; the horizontal axis shows people."} <strong>Patient 08</strong> is highlighted in both worlds.</p>
     <div class="what-if-worlds">${world(1)}${world(0)}</div>
-    <p class="what-if-inspect">Hover or focus a person to read their outcome.${observedOnly ? " A ? marks an unobserved outcome; its position does not indicate health." : " Both plots use the same health scale."}</p>
+    <p class="what-if-inspect">Tap or focus a person to read their outcome.${observedOnly ? " A ? marks an unobserved outcome; its position does not indicate health." : " Both plots use the same health scale."}</p>
     <p class="what-if-effect" role="status">${observedOnly ? "The average effect is unknown from these outcomes alone." : `Average treatment effect: ${mean(1).toFixed(1)} − ${mean(0).toFixed(1)} = <strong>+${(mean(1) - mean(0)).toFixed(1)} health points</strong>`}</p>`;
 }

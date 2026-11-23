@@ -1,3 +1,4 @@
+import { modules, moduleForTopic } from "./foundations-catalog.js";
 import { adjustmentMarkup, bindAdjustment } from "./adjustment-input.js";
 import {
   adjustmentLabel,
@@ -290,6 +291,10 @@ function suggestionMarkup(item, index) {
 
 function renderResults() {
   const result = recommendLessons(state.answers);
+  const courseStart =
+    result.kind === "advanced"
+      ? modules[5]
+      : moduleForTopic(result.items[0]?.topic) || modules[0];
   const title =
     result.kind === "foundations"
       ? "Start with the foundations"
@@ -311,6 +316,7 @@ function renderResults() {
     "quiz",
     `<p class="learning-lead">${result.kind === "choose" ? "Start with the basics, browse topics, or return to the quiz." : introduction}</p>
     ${state.practice ? '<p class="learning-note">Practice attempt.</p>' : ""}
+    <p><a class="primary" href="${import.meta.env.BASE_URL}${courseStart.href}">${result.kind === "choose" ? "Start Foundations" : "Suggested module"}: ${courseStart.title} →</a></p>
     ${scoreSummary(state.answers)}
     ${experimentRecommendation()}
     <div class="quiz-suggestions">${result.items.slice(0, 3).map(suggestionMarkup).join("")}</div>

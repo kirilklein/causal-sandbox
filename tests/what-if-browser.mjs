@@ -19,12 +19,7 @@ try {
   await page.route("**/gc.zgo.at/count.js", (route) =>
     route.fulfill({ contentType: "application/javascript", body: "" }),
   );
-  await page.goto(`${url}?lesson=introduction`);
-  await page
-    .getByRole("link", {
-      name: "Start with one patient and two possible futures",
-    })
-    .click();
+  await page.goto(`${url}?lesson=what-if`);
   await expect(page.locator("h1")).toHaveText(
     "Did treatment help this patient?",
   );

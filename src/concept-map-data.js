@@ -33,7 +33,12 @@ export const mapRegions = [
         name: "Total or direct?",
         description:
           "A treatment can act directly and through intermediate changes. The total effect includes both routes. A direct-effect question needs a more specific comparison and additional assumptions.",
-        lessons: ["mediator", "arrow-strength", "paths-cancel"],
+        lessons: [
+          "mediator",
+          "arrow-strength",
+          "paths-cancel",
+          "foundations-adjustment",
+        ],
         connection: [
           "comparison",
           "For the total effect, adjusting for a mediator can block part of the effect we want to include. The causal question helps determine the adjustment set.",
@@ -75,7 +80,12 @@ export const mapRegions = [
         name: "Common causes",
         description:
           "A common cause of treatment and outcome can make a helpful treatment look harmful. Adjustment tries to account for measured differences that distort the comparison.",
-        lessons: ["confounding", "trajectory-landscape", "repeated-bias"],
+        lessons: [
+          "confounding",
+          "observed-difference",
+          "trajectory-landscape",
+          "repeated-bias",
+        ],
         connection: [
           "methods",
           "Weighting and outcome regression are two ways to account for measured confounders, under the causal assumptions and suitable model conditions.",
@@ -160,7 +170,7 @@ export const mapRegions = [
         name: "Reweight people · IPW",
         description:
           "A propensity score is a treatment probability given measured covariates. Inverse probability weighting gives greater contribution to people whose actual treatment was less likely.",
-        lessons: ["propensity-score", "ipw"],
+        lessons: ["propensity-score", "ipw", "foundations-estimation"],
         connection: [
           "comparison",
           "Weighting aims to balance measured confounders across treatment groups. It relies on the adjustment variables and treatment probabilities supporting a valid comparison.",
@@ -229,7 +239,7 @@ export const mapRegions = [
         name: "When models are wrong",
         description:
           "Even with the right adjustment variables, a fitted model may miss a curve or interaction. Causal assumptions and statistical model specification are separate requirements.",
-        lessons: ["misspecification", "tmle-robustness"],
+        lessons: ["misspecification", "tmle-robustness", "foundations-trust"],
         connection: [
           "methods",
           "IPW depends on the treatment model; outcome regression depends on the outcome model. AIPW and TMLE combine the two, with qualified protection against one being wrong.",
@@ -262,7 +272,7 @@ export const mapRegions = [
         name: "Beyond the sandbox",
         description:
           "In a simulation we can compare estimates with a known truth. In a real study we must justify assumptions, examine limitations, and consider plausible alternative causal structures.",
-        lessons: ["leaving-the-sandbox", "assumptions"],
+        lessons: ["leaving-the-sandbox", "assumptions", "foundations-capstone"],
         connection: [
           "question",
           "A credible causal claim starts with a well-defined question and keeps its assumptions visible all the way to the conclusion.",

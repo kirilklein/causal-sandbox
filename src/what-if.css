@@ -143,3 +143,69 @@
     justify-content: center;
   }
 }
+
+.opening-trial {
+  max-width: 38rem;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.opening-trial h2 {
+  margin-top: 0;
+}
+.opening-trial button {
+  min-height: 44px;
+}
+#opening-save:empty {
+  display: none;
+}
+.opening-trial select {
+  display: block;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0.5rem 0;
+  font: inherit;
+}
+#target-answer {
+  min-width: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+}
+#target-answer label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.25rem 0;
+  cursor: pointer;
+}
+#target-answer input {
+  flex: none;
+}
+.opening-next {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--trajectory-faint);
+  border-radius: 5px;
+  background: var(--film-ink);
+  color: var(--film-background);
+  font: inherit;
+  text-decoration: none;
+}
+.opening-next:disabled {
+  background: var(--surface);
+  color: var(--trajectory-muted);
+}
+#trial-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+#trial-history[hidden] {
+  display: none;
+}

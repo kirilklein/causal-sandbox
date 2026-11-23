@@ -22,7 +22,7 @@ try {
   });
   await page.goto(url);
   await page
-    .getByRole("heading", { name: /When does a difference tell you/ })
+    .getByRole("heading", { name: /Causal Inference Foundations/ })
     .waitFor();
   assert.equal(await page.locator(".experiment, .lesson-results").count(), 0);
   assert.equal(await page.evaluate(() => document.getAnimations().length), 0);

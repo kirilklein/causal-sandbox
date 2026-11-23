@@ -215,7 +215,7 @@ export const searchEntries = [
     href: chapter.href,
     description: chapter.description || lessonDetails[chapter.id][0],
     keywords: lessonDetails[chapter.id][1],
-    aliases: [chapter.menuTitle],
+    aliases: [chapter.menuTitle, ...(chapter.aliases || [])],
   })),
   ...Object.entries(glossary).map(([key, term]) => ({
     title: term.title,

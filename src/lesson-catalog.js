@@ -1,3 +1,5 @@
+import { modules } from "./foundations-catalog.js";
+
 export const conceptMap = {
   id: "concept-map",
   title: "How the pieces fit together",
@@ -65,6 +67,7 @@ export const optionalChapters = [
   {
     id: "difference-in-differences",
     menuTitle: "Difference-in-differences",
+    aliases: ["DiD"],
     after: 9,
     title: "Difference-in-differences",
     href: "?lesson=difference-in-differences",
@@ -209,6 +212,24 @@ export const optionalChapters = [
 ];
 
 export const lessonExperiments = [
+  ...modules
+    .slice(2)
+    .map((module) => ({
+      id: "foundations-" + module.id,
+      title: module.title,
+      href: module.href,
+      description: module.goal,
+      keywords: "foundations course " + module.topics.join(" "),
+    })),
+  {
+    id: "observed-difference",
+    title: "Did treatment harm these patients?",
+    href: "?lesson=observed-difference",
+    description:
+      "Compare day-12 health within severity groups, then see how bias persists in larger studies.",
+    keywords:
+      "foundations pilot patient study observed difference confounding bias precision assignment",
+  },
   {
     id: "sampling-variation",
     title: "Repeated studies: sampling variation",

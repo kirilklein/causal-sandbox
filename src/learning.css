@@ -394,3 +394,21 @@
     padding: 12px;
   }
 }
+.course-outline {
+  max-width: 44rem;
+  padding-left: 1.8rem;
+}
+.course-outline li {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.course-outline a {
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.course-outline p {
+  margin: 0;
+  color: var(--text-secondary);
+}
