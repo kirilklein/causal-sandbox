@@ -662,7 +662,9 @@ try {
   assert.ok(Number(await page.locator("#unadjusted").innerText()) > 3);
   assert.equal(await page.locator("#regression-explanation").isVisible(), true);
   assert.doesNotMatch(await page.locator(".learning").innerText(), /AIPW/);
-  assert.equal(await page.locator(".learning details").count(), 1);
+  assert.equal(await page.locator(".learning details:not(.topic-menu)").count(),
+    1,
+  );
   assert.equal(await page.locator("#outcome-formula").isVisible(), false);
   const outcomeSeed = await page.locator("#sample-label").innerText();
   await page.locator(".lesson-explanation summary").focus();
