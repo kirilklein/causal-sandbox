@@ -75,7 +75,7 @@ export const optionalChapters = [
     id: "uplift",
     menuTitle: "Uplift modelling",
     track: true,
-    after: 1,
+    after: 4,
     title: "Uplift modelling: from effects to decisions",
     href: "?lesson=uplift",
     description:

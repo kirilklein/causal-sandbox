@@ -17,7 +17,7 @@ try {
   collectPageErrors(page, errors);
   await stubGoatCounter(page);
   const url = getAppUrl();
-  await page.goto(`${url}?lesson=randomization`);
+  await page.goto(`${url}?lesson=outcome-regression`);
   await page
     .getByRole("link", {
       name: "Uplift modelling: from effects to decisions →",
